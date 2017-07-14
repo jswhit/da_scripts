@@ -1,0 +1,16 @@
+#!/bin/sh
+#PBS -A nggps_psd
+#PBS -l partition=c4
+##PBS -q debug
+##PBS -q urgent
+#PBS -q batch
+#PBS -l nodes=40:ppn=36
+#PBS -l walltime=03:00:00
+##PBS -l walltime=00:30:00
+#PBS -N C192_C384_test  
+#PBS -e C192_C384_test.err
+#PBS -o C192_C384_test.out
+#PBS -S /bin/sh
+export NODES=40
+export corespernode=36
+export machine='gaea'

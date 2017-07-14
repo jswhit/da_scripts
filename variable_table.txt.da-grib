@@ -1,0 +1,72 @@
+ucomp                ugrd                 mid layer            0 vector               F 3
+vcomp                vgrd                 mid layer            0 vector               F 3
+sphum                spfh                 mid layer            0 bilinear             T 3
+temp                 tmp                  mid layer            0 bilinear             F 3
+liq_wat              clwmr                mid layer            0 bilinear             T 3
+o3mr                 o3mr                 mid layer            0 bilinear             T 3
+tsfc                 tmp                  sfc                  1 bilinear             F 2
+weasd                weasd                sfc                  1 nrstnghbr            T 2
+soilw1               soilw                0-10 cm down         1 nrstnghbr            F 2
+soilw2               soilw                10-40 cm down        2 nrstnghbr            F 2
+soilw3               soilw                40-100 cm down       3 nrstnghbr            F 2
+soilw4               soilw                100-200 cm down      4 nrstnghbr            F 2
+slc_1                soill                0-10 cm down         1 nrstnghbr            F 2
+slc_2                soill                10-40 cm down        2 nrstnghbr            F 2
+slc_3                soill                40-100 cm down       3 nrstnghbr            F 2
+slc_4                soill                100-200 cm down      4 nrstnghbr            F 2
+soilt1               tmp                  0-10 cm down         1 nrstnghbr            F 2
+soilt2               tmp                  10-40 cm down        2 nrstnghbr            F 2
+soilt3               tmp                  40-100 cm down       3 nrstnghbr            F 2
+soilt4               tmp                  100-200 cm down      4 nrstnghbr            F 2
+tg3                  tg3                  sfc                  1 nrstnghbr            F 2
+zorlsfc              sfcr                 sfc                  1 bilinear             T 2
+alvsf                alvsf                sfc                  1 bilinear             T 2
+alvwf                alvwf                sfc                  1 bilinear             T 2
+alnsf                alnsf                sfc                  1 bilinear             T 2
+alnwf                alnwf                sfc                  1 bilinear             T 2
+slmsksfc             land                 sfc                  1 nrstnghbr            F 2
+vfracsfc             veg                  sfc                  1 bilinear             T 2
+canopy               cnwat                sfc                  1 bilinear             T 2
+f10m                 f10m                 10 m above gnd       1 bilinear             F 2
+u10m                 ugrd                 10 m above gnd       1 vector               F 2
+v10m                 vgrd                 10 m above gnd       1 vector               F 2
+t2m                  tmp                  2 m above gnd        1 bilinear             F 2
+q2m                  spfh                 2 m above gnd        1 bilinear             T 2
+tmpmax               tmax                 2 m above gnd        1 bilinear             T 2
+tmpmin               tmin                 2 m above gnd        1 bilinear             T 2
+ep                   pevpr                sfc                  1 nrstnghbr            F 2
+srunoff              ssrun                sfc                  1 nrstnghbr            F 2
+suntim               sunsd                sfc                  1 nrstnghbr            F 2
+cldwrk               cwork                atmos col            1 nrstnghbr            F 2
+vtype                vtype                sfc                  1 nrstnghbr            F 2
+stype                sotyp                sfc                  1 nrstnghbr            F 2
+uustar               fricv                sfc                  1 bilinear             F 2
+hice                 icetk                sfc                  1 nrstnghbr            T 2
+fice                 icec                 sfc                  1 nrstnghbr            T 2
+tisfc                tisfc                sfc                  1 nrstnghbr            F 2
+cnvprcp              cprat                sfc                  1 bilinear             T 2
+snowd                snod                 sfc                  1 nrstnghbr            T 2
+hgtsfc               hgt                  sfc                  1 bilinear             F 2
+pressfc              pres                 sfc                  1 bilinear             F 2
+ALBDOsfc             albdo                sfc                  1 bilinear             T 2
+totprcp              prate                sfc                  1 bilinear             F 2
+DLWRFsfc             dlwrf                sfc                  1 bilinear             F 2
+ULWRFsfc             ulwrf                sfc                  1 bilinear             F 2
+DSWRFsfc             dswrf                sfc                  1 bilinear             F 2
+USWRFsfc             uswrf                sfc                  1 bilinear             F 2
+DSWRFtoa             dswrf                sfc                  1 bilinear             F 2
+USWRFtoa             uswrf                nom. top             1 bilinear             F 2
+ULWRFtoa             ulwrf                nom. top             1 bilinear             F 2
+gflux                gflux                sfc                  1 nrstnghbr            F 2
+hpbl                 hpbl                 sfc                  1 bilinear             F 2
+dqsfc                lhtfl                sfc                  1 bilinear             F 2
+dtsfc                shtfl                sfc                  1 bilinear             F 2
+dugwd                u-gwd                sfc                  1 bilinear             F 2
+dvgwd                v-gwd                sfc                  1 bilinear             F 2
+dusfc                uflx                 sfc                  1 bilinear             F 2
+dvsfc                vflx                 sfc                  1 bilinear             F 2
+pwat                 pwat                 atmos col            1 bilinear             F 2
+TCDCclm              tcdc                 atmos col            1 bilinear             F 2
+TCDChcl              tcdc                 high cld lay         1 bilinear             F 2
+TCDClcl              tcdc                 low cld lay          1 bilinear             F 2
+TCDCmcl              tcdc                 mid cld lay          1 bilinear             F 2

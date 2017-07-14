@@ -1,0 +1,12 @@
+#PBS -l nodes=15:ppn=24
+#PBS -l walltime=1:00:00
+#PBS -A gsienkf
+##PBS -A hybrid   
+##PBS -q debug
+#PBS -N C96_singleres_fv3nems
+#PBS -S /bin/bash
+#PBS -o C96_singleres_fv3nems.stdout
+#PBS -e C96_singleres_fv3nems.stderr
+export NODES=15
+export corespernode=24
+export machine='theia'
