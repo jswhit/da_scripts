@@ -1,4 +1,4 @@
-cho "running on $machine using $NODES nodes"
+echo "running on $machine using $NODES nodes"
 ulimit -s unlimited
 
 export exptname=C96_singleres_fv3nems
