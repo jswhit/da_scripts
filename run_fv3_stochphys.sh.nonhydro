@@ -224,7 +224,7 @@ cat > input.nml <<EOF
   fv_debug = F,
   range_warn = F,
   reset_eta = F,
-  n_sponge = 13,
+  n_sponge = 24,
   nudge_qv = T,
   tau = 5.0,
   rf_cutoff = 750.0,
@@ -343,14 +343,14 @@ cat > input.nml <<EOF
   fntsfc = "${FIXGLOBAL}/RTGSST.1982.2012.monthly.clim.grb",
   fnsnoc = "${FIXGLOBAL}/global_snoclim.1.875.grb",
   fnzorc = "igbp",
-  fnalbc = "${FIXGLOBAL}/global_snowfree_albedo.bosu.t126.384.190.rg.grb",
+  fnalbc = "${FIXGLOBAL}/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb",
   fnalbc2 = "${FIXGLOBAL}/global_albedo4.1x1.grb"
   fnaisc = "${FIXGLOBAL}/CFSR.SEAICE.1982.2012.monthly.clim.grb",
   fntg3c = "${FIXGLOBAL}/global_tg3clim.2.6x1.5.grb",
   fnvegc = "${FIXGLOBAL}/global_vegfrac.0.144.decpercent.grb",
-  fnvetc = "${FIXGLOBAL}/global_vegtype.igbp.t126.384.190.rg.grb",
-  fnsmcc = "${FIXGLOBAL}/global_soilmgldas.t126.384.190.grb",
-  fnsotc = "${FIXGLOBAL}/global_soiltype.statsgo.t126.384.190.rg.grb",
+  fnvetc = "${FIXGLOBAL}/global_vegtype.igbp.t1534.3072.1536.rg.grb",
+  fnsmcc = "${FIXGLOBAL}/global_soilmgldas.t1534.3072.1536.grb",
+  fnsotc = "${FIXGLOBAL}/global_soiltype.statsgo.t1534.3072.1536.rg.grb",
   fnmskh = "${FIXGLOBAL}/seaice_newland.grb",
   fntsfa = "${datapath2}/${charnanal}/sstgrb",
   fnacna = "${datapath2}/${charnanal}/engicegrb",
@@ -358,7 +358,7 @@ cat > input.nml <<EOF
   fnvmnc = "${FIXGLOBAL}/global_shdmin.0.144x0.144.grb",
   fnvmxc = "${FIXGLOBAL}/global_shdmax.0.144x0.144.grb",
   fnslpc = "${FIXGLOBAL}/global_slope.1x1.grb",
-  fnabsc = "${FIXGLOBAL}/global_mxsnoalb.uariz.t126.384.190.rg.grb",
+  fnabsc = "${FIXGLOBAL}/global_mxsnoalb.uariz.t1534.3072.1536.rg.grb",
   ldebug = F,
   fsmcl(2) = 60,
   fsmcl(3) = 60,
@@ -419,6 +419,21 @@ export nprocs=$LEVP
 export PGM=${execdir}/regrid_nemsio
 ncdump -v time fv3_history.tile1.nc
 ncdump -v time fv3_history2d.tile1.nc
+ntry=0
+while [ $ntry -lt $nitermax ]; do
+fh=$FHMIN
+filemissing=0
+while [ $fh -le $FHMAX ]; do
+  charfhr="fhr"`printf %02i $fh`
+  if [ ! -s ${datapathp1}/sfg_${analdatep1}_${charfhr}_${charnanal} ]; then
+    filemissing=1
+  fi
+  if [ ! -s ${datapathp1}/bfg_${analdatep1}_${charfhr}_${charnanal} ]; then
+    filemissing=1
+  fi
+  fh=$[$fh+$FHOUT]
+done
+if [ $filemissing -eq 1 ]; then
 cat > regrid-nemsio.input <<EOF
 &share
 debug=T,nlons=$LONB,nlats=$LATB,ntrunc=$JCAP,
@@ -432,8 +447,8 @@ nemsio_opt='bin4'
 /
 &interpio
 gfs_hyblevs_filename='${enkfscripts}/global_hyblev.l${LEVP}.txt',
-esmf_bilinear_filename='${enkfscripts}/fv3_SCRIP_C${RES}_GRIDSPEC_gaussian_lon${LONB}_lat${LATB}.bilinear.nc'
-esmf_neareststod_filename='${enkfscripts}/fv3_SCRIP_C${RES}_GRIDSPEC_gaussian_lon${LONB}_lat${LATB}.neareststod.nc'
+esmf_bilinear_filename='${FIXFV3}/C${RES}/fv3_SCRIP_C${RES}_GRIDSPEC_lon${LONB}_lat${LATB}.gaussian.bilinear.nc'
+esmf_neareststod_filename='${FIXFV3}/C${RES}/fv3_SCRIP_C${RES}_GRIDSPEC_lon${LONB}_lat${LATB}.gaussian.neareststod.nc'
 /
 EOF
 sh ${enkfscripts}/runmpi
@@ -450,6 +465,9 @@ while [ $fh -le $FHMAX ]; do
 done
 /bin/rm -f ${datapathp1}/sfg*fhr000
 /bin/rm -f ${datapathp1}/bfg*fhr000
+fi
+ntry=$[$ntry+1]
+done
 
 
 # copy restart file to INPUT directory for next analysis time.
