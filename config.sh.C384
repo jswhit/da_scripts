@@ -90,8 +90,8 @@ export massbal_adjust=.false.
 
 # model parameters for ensemble (rest set in $rungfs)
 # lo-res
-export fg_proc=72 # number of total cores per enkf fg ens member. 
-export layout="3, 4" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=fg_proc/fg_threads)
+export fg_proc=144 # number of total cores per enkf fg ens member. 
+export layout="4, 6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=fg_proc/fg_threads)
 export fg_threads=1 # ens fcst threads
 export RES=384 
 export cdmbgwd="2.0,0.25"
