@@ -91,15 +91,15 @@ export massbal_adjust=.false.
 # model parameters for ensemble (rest set in $rungfs)
 # lo-res
 export fg_proc=144 # number of total cores per enkf fg ens member. 
-export layout="4, 6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=fg_proc/fg_threads)
 export fg_threads=1 # ens fcst threads
+export layout="4, 6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=fg_proc/fg_threads)
 export RES=384 
 export cdmbgwd="1.0,1.2"
 export fv_sg_adj=450
 export dt_atmos=225
 export k_split=1
 export n_split=6
-export hydrostatic=F
+export hydrostatic=T
 export vtdm4=0.05
 export hord_mt=10
 export hord_vt=10
@@ -120,7 +120,7 @@ export SHUM=0.005
 export SHUM_TSCALE=21600.
 export SHUM_LSCALE=250.e3
 export do_skeb=T
-export SKEB=1.0
+export SKEB=0.5
 export SKEB_TSCALE=21600.
 export SKEB_LSCALE=250.e3
 export SKEBNORM=0 # 0 is psi norm, 1 is KE norm

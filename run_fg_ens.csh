@@ -1,19 +1,3 @@
-# turn on stochastic physics
-#setenv sppt_import 1
-#setenv sppt_export 1
-#setenv shum_import 1
-#setenv shum_export 1
-#setenv skeb_import 1
-#setenv skeb_export 1
-#setenv vc_import 0
-#setenv vc_export 0
-#
-#setenv WRT_GROUP 1
-#setenv WRTPE_PER_GROUP 1
-#
-#setenv postprocnodes $postprocnodes_ens
-#setenv postprocthreads $postprocthreads_ens
-
 # run ensemble first guess.
 # first, clean up old first guesses.
 if ($cleanup_fg == 'true') then
