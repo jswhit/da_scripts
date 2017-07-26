@@ -286,7 +286,7 @@ cat > input.nml <<EOF
 
 &external_ic_nml
   filtered_terrain = T,
-  ncep_plevels = F,
+  ncep_plevels = T,
   levp = $LEVP,
   gfs_dwinds = T,
   checker_tr = F,
