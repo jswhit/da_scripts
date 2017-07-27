@@ -99,6 +99,17 @@ export fv_sg_adj=0
 export dt_atmos=900
 export k_split=1
 export n_split=6
+export hydrostatic=T
+export vtdm4=0.05
+export hord_mt=10
+export hord_vt=10
+export hord_tm=10
+export hord_dp=10
+if [ $hydrostatic == 'T' ];  then
+   export fv3exec='fv3-hydro.exe'
+else
+   export fv3exec='fv3-nonhydro.exe'
+fi
 
 export do_sppt=T
 export SPPT=0.6

@@ -13,7 +13,12 @@ if [ "$VERBOSE" == "YES" ]; then
  set -x
 fi
 
-npx=`expr $RES + 1`
+nmem=`echo $charnanal | cut -f3 -d"m"`
+export imem=10#$nmem
+export ISEED_SPPT=$((analdate*1000 + imem*10 + 1))
+export ISEED_SKEB=$((analdate*1000 + imem*10 + 2))
+export ISEED_SHUM=$((analdate*1000 + imem*10 + 3))
+export npx=`expr $RES + 1`
 export LEVP=`expr $LEVS \+ 1`
 export year=`echo $analdate |cut -c 1-4`
 export mon=`echo $analdate |cut -c 5-6`
@@ -27,6 +32,10 @@ export hrp1=`echo $analdatep1 |cut -c 9-10`
 
 # copy data, diag and field tables.
 cd ${datapath2}/${charnanal}
+if [ $? -ne 0 ]; then
+  echo "cd to ${datapath2}/${charnanal} failed, stopping..."
+  exit 1
+fi
 /bin/cp -f $enkfscripts/diag_table .
 /bin/cp -f $enkfscripts/nems.configure .
 # for diag table, insert correct starting time.
@@ -105,6 +114,7 @@ fi
 if [ "$fg_only" == "true" ]; then
    # cold start from chgres'd GFS analyes
    warm_start=F
+   make_nh=T
    externalic=T
    reslatlondynamics=""
    mountain=F
@@ -114,6 +124,7 @@ if [ "$fg_only" == "true" ]; then
 else
    # warm start from restart file with lat/lon increments ingested by the model
    warm_start=T
+   make_nh=F
    externalic=F
    reslatlondynamics="${increment_file}"
    readincrement=T
@@ -218,11 +229,11 @@ cat > input.nml <<EOF
   npz      = ${LEVS},
   ntiles = 6,
   grid_type = -1,
-  make_nh = F,
+  make_nh = ${make_nh},
   fv_debug = F,
   range_warn = F,
   reset_eta = F,
-  n_sponge = 13,
+  n_sponge = 24,
   nudge_qv = T,
   tau = 5.0,
   rf_cutoff = 750.0,
@@ -232,7 +243,7 @@ cat > input.nml <<EOF
   kord_mt = 9,
   kord_wz = 9,
   kord_tr = 9,
-  hydrostatic = T,
+  hydrostatic = ${hydrostatic},
   phys_hydrostatic = F,
   use_hydro_pressure = F,
   beta = 0,
@@ -250,7 +261,7 @@ cat > input.nml <<EOF
   dddmp = 0.1,
   d4_bg = 0.12,
   delt_max = 0.002,
-  vtdm4 = 0.05,
+  vtdm4 = ${vtdm4},
   ke_bg = 0.0,
   do_vort_damp = T,
   external_ic = $externalic,
@@ -261,10 +272,10 @@ cat > input.nml <<EOF
   mountain = ${mountain},
   ncep_ic = F,
   d_con = 1.0,
-  hord_mt = 10,
-  hord_vt = 10,
-  hord_tm = 10,
-  hord_dp = 10,
+  hord_mt = ${hord_mt},
+  hord_vt = ${hord_vt},
+  hord_tm = ${hord_tm},
+  hord_dp = ${hord_dp},
   hord_tr = 8,
   adjust_dry_mass = F,
   consv_te = 0,
@@ -341,14 +352,14 @@ cat > input.nml <<EOF
   fntsfc = "${FIXGLOBAL}/RTGSST.1982.2012.monthly.clim.grb",
   fnsnoc = "${FIXGLOBAL}/global_snoclim.1.875.grb",
   fnzorc = "igbp",
-  fnalbc = "${FIXGLOBAL}/global_snowfree_albedo.bosu.t126.384.190.rg.grb",
+  fnalbc = "${FIXGLOBAL}/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb",
   fnalbc2 = "${FIXGLOBAL}/global_albedo4.1x1.grb"
   fnaisc = "${FIXGLOBAL}/CFSR.SEAICE.1982.2012.monthly.clim.grb",
   fntg3c = "${FIXGLOBAL}/global_tg3clim.2.6x1.5.grb",
   fnvegc = "${FIXGLOBAL}/global_vegfrac.0.144.decpercent.grb",
-  fnvetc = "${FIXGLOBAL}/global_vegtype.igbp.t126.384.190.rg.grb",
-  fnsmcc = "${FIXGLOBAL}/global_soilmgldas.t126.384.190.grb",
-  fnsotc = "${FIXGLOBAL}/global_soiltype.statsgo.t126.384.190.rg.grb",
+  fnvetc = "${FIXGLOBAL}/global_vegtype.igbp.t1534.3072.1536.rg.grb",
+  fnsmcc = "${FIXGLOBAL}/global_soilmgldas.t1534.3072.1536.grb",
+  fnsotc = "${FIXGLOBAL}/global_soiltype.statsgo.t1534.3072.1536.rg.grb",
   fnmskh = "${FIXGLOBAL}/seaice_newland.grb",
   fntsfa = "${datapath2}/${charnanal}/sstgrb",
   fnacna = "${datapath2}/${charnanal}/engicegrb",
@@ -356,7 +367,7 @@ cat > input.nml <<EOF
   fnvmnc = "${FIXGLOBAL}/global_shdmin.0.144x0.144.grb",
   fnvmxc = "${FIXGLOBAL}/global_shdmax.0.144x0.144.grb",
   fnslpc = "${FIXGLOBAL}/global_slope.1x1.grb",
-  fnabsc = "${FIXGLOBAL}/global_mxsnoalb.uariz.t126.384.190.rg.grb",
+  fnabsc = "${FIXGLOBAL}/global_mxsnoalb.uariz.t1534.3072.1536.rg.grb",
   ldebug = F,
   fsmcl(2) = 60,
   fsmcl(3) = 60,
@@ -389,7 +400,8 @@ cat > input.nml <<EOF
   SKEB=$SKEB, -999, -999, -999, -999,
   SKEB_TAU=$SKEB_TSCALE, 1.728E5, 2.592E6, 7.776E6, 3.1536E7,
   SKEB_LSCALE=$SKEB_LSCALE, 1000.E3, 2000.E3, 2000.E3, 2000.E3,
-  SKEB_VDOF=$SKEB_VDOF
+  SKEB_VDOF=$SKEB_VDOF,
+  ISEED_SPPT=$ISEED_SPPT,ISEED_SHUM=$ISEED_SHUM,ISEED_SKEB=$ISEED_SKEB
 /
 EOF
 
@@ -413,10 +425,35 @@ fi
 ls -l RESTART
 
 # regrid output to NEMSIO
-export nprocs=$LEVP
 export PGM=${execdir}/regrid_nemsio
+
+export OMP_NUM_THREADS=`python -c "import math; print int(math.floor(float(${fg_proc})/float(${LEVP})))"`
+export mpitaskspernode=`expr $corespernode \/ $OMP_NUM_THREADS`
+if [ "$machine" == 'theia' ]; then
+   HOSTFILE2="${HOSTFILE}_2"
+   awk "NR%${OMP_NUM_THREADS} == 1" ${HOSTFILE} > $HOSTFILE2
+   export HOSTFILE=$HOSTFILE2
+fi
+
+export nprocs=$LEVP
+
 ncdump -v time fv3_history.tile1.nc
 ncdump -v time fv3_history2d.tile1.nc
+ntry=0
+while [ $ntry -lt $nitermax ]; do
+fh=$FHMIN
+filemissing=0
+while [ $fh -le $FHMAX ]; do
+  charfhr="fhr"`printf %02i $fh`
+  if [ ! -s ${datapathp1}/sfg_${analdatep1}_${charfhr}_${charnanal} ]; then
+    filemissing=1
+  fi
+  if [ ! -s ${datapathp1}/bfg_${analdatep1}_${charfhr}_${charnanal} ]; then
+    filemissing=1
+  fi
+  fh=$[$fh+$FHOUT]
+done
+if [ $filemissing -eq 1 ]; then
 cat > regrid-nemsio.input <<EOF
 &share
 debug=T,nlons=$LONB,nlats=$LATB,ntrunc=$JCAP,
@@ -430,8 +467,8 @@ nemsio_opt='bin4'
 /
 &interpio
 gfs_hyblevs_filename='${enkfscripts}/global_hyblev.l${LEVP}.txt',
-esmf_bilinear_filename='${enkfscripts}/fv3_SCRIP_C${RES}_GRIDSPEC_gaussian_lon${LONB}_lat${LATB}.bilinear.nc'
-esmf_neareststod_filename='${enkfscripts}/fv3_SCRIP_C${RES}_GRIDSPEC_gaussian_lon${LONB}_lat${LATB}.neareststod.nc'
+esmf_bilinear_filename='$FIXFV3/C${RES}/fv3_SCRIP_C${RES}_GRIDSPEC_lon${LONB}_lat${LATB}.gaussian.bilinear.nc'
+esmf_neareststod_filename='$FIXFV3/C${RES}/fv3_SCRIP_C${RES}_GRIDSPEC_lon${LONB}_lat${LATB}.gaussian.neareststod.nc'
 /
 EOF
 sh ${enkfscripts}/runmpi
@@ -448,6 +485,9 @@ while [ $fh -le $FHMAX ]; do
 done
 /bin/rm -f ${datapathp1}/sfg*fhr000
 /bin/rm -f ${datapathp1}/bfg*fhr000
+fi
+ntry=$[$ntry+1]
+done
 
 
 # copy restart file to INPUT directory for next analysis time.
