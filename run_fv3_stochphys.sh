@@ -182,7 +182,7 @@ if [ $nrecs_snow -eq 0 ]; then
    # no snow depth in file, use model
    fnsnoa='        ' # no input file
    fsnol=99999 # use model value
-   echo "no snow depth in file, use model"
+   echo "no snow depth in snow analysis file, use model"
 else
    # snow depth in file, but is it current?
    if [ `$WGRIB -4yr ${fnsnoa} 2>/dev/null|grep -i $snoid |\
@@ -193,7 +193,7 @@ else
       fnsnoa='        ' # no input file
       fsnol=99999 # use model value
    else
-      echo "snow analysis found, replace model"
+      echo "current snow analysis found in snow analysis file, replace model"
       fsnol=0 # use analysis value
    fi
 fi
