@@ -133,6 +133,8 @@ else
    FHCYC=6
 fi
 
+snoid='SNOD'
+
 # if next sst,snow,ice analyses available, use them in surface cycling
 #fntsfa=${datapath2}/${charnanal}/sstgrb
 #fnacna=${datapath2}/${charnanal}/engicegrb
@@ -151,16 +153,16 @@ fi
 #else
 #  ln -fs ${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.engicegrb ${fnacna}
 #fi
-## check for missing snow depth, SNOD
-#nrecs_snow=`$WGRIB ${datapath2}/${charnanal}/snogrb | grep SNOD | wc -l`
+## check for missing snow depth
+#nrecs_snow=`$WGRIB ${datapath2}/${charnanal}/snogrb | grep -i $snoid | wc -l`
 #fsnol=0
 #if [ $nrecs_snow -eq 0 ]; then
 #   fnsnoa='        '
 #   fsnol=99909
-#   echo "no snow analysis, persist model value"
+#   echo "no current snow analysis, use model"
 #elif [ $nrecs_snow -eq 1 ]; then
 #   echo "one bad snogrb record, check individual files..."
-#   nrecs_snow=`$WGRIB ${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.snogrb | grep SNOD | wc -l`
+#   nrecs_snow=`$WGRIB ${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.snogrb | grep -i $snoid | wc -l`
 #   if [ $nrecs_snow -eq 1 ]; then
 #      fnsnoa=${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.snogrb
 #   else
@@ -170,20 +172,30 @@ fi
 #   fnsnoa=${datapath2}/${charnanal}/snogrb
 #fi
 
-snoid='SNOD'
+# Turn off snow analysis if it has already been used.
+# (snow analysis only available once per day at 18z)
 fntsfa=${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.sstgrb
 fnacna=${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.engicegrb
 fnsnoa=${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.snogrb
-# Turn off snow analysis if it has already been used.
-# (snow analysis only available once per day);
-if [ `$WGRIB -4yr ${fnsnoa} 2>/dev/null|grep -i $snoid |\
-      awk -F: '{print $3}'|awk -F= '{print $2}'` -le \
-     `$WGRIB -4yr ${fnsnoa} 2>/dev/null |grep -i $snoid  |\
-            awk -F: '{print $3}'|awk -F= '{print $2}'` ] ; then
+nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
+if [ $nrecs_snow -eq 0 ]; then
+   # no snow depth in file, use model
    fnsnoa='        ' # no input file
    fsnol=99999 # use model value
+   echo "no snow depth in file, use model"
 else
-   fsnol=-2 # nudging coeff
+   # snow depth in file, but is it current?
+   if [ `$WGRIB -4yr ${fnsnoa} 2>/dev/null|grep -i $snoid |\
+         awk -F: '{print $3}'|awk -F= '{print $2}'` -le \
+        `$WGRIB -4yr ${fnsnoa} 2>/dev/null |grep -i $snoid  |\
+               awk -F: '{print $3}'|awk -F= '{print $2}'` ] ; then
+      echo "no snow analysis, use model"
+      fnsnoa='        ' # no input file
+      fsnol=99999 # use model value
+   else
+      echo "snow analysis found, replace model"
+      fsnol=0 # use analysis value
+   fi
 fi
 
 ls -l 
@@ -450,9 +462,12 @@ export PGM=${execdir}/regrid_nemsio
 export OMP_NUM_THREADS=`python -c "import math; print int(math.floor(float(${fg_proc})/float(${LEVP})))"`
 export mpitaskspernode=`expr $corespernode \/ $OMP_NUM_THREADS`
 if [ "$machine" == 'theia' ]; then
-   HOSTFILE2="${HOSTFILE}_2"
-   awk "NR%${OMP_NUM_THREADS} == 1" ${HOSTFILE} > $HOSTFILE2
-   export HOSTFILE=$HOSTFILE2
+   if [ $OMP_NUM_THREADS -gt 1 ]; then
+      HOSTFILE2="${HOSTFILE}_2"
+      awk "NR%${OMP_NUM_THREADS} == 1" ${HOSTFILE} > $HOSTFILE2
+      export HOSTFILE=$HOSTFILE2
+      cat $HOSTFILE
+   fi
 fi
 
 export nprocs=$LEVP
