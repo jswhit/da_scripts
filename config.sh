@@ -112,15 +112,15 @@ else
 fi
 
 export do_sppt=T
-export SPPT=0.6
+export SPPT=0.8
 export SPPT_TSCALE=21600.
 export SPPT_LSCALE=500.e3
 export do_shum=T
-export SHUM=0.005
+export SHUM=0.006
 export SHUM_TSCALE=21600.
 export SHUM_LSCALE=500.e3
 export do_skeb=T
-export SKEB=1.0
+export SKEB=0.5
 export SKEB_TSCALE=21600.
 export SKEB_LSCALE=500.e3
 export SKEBNORM=1
@@ -217,22 +217,23 @@ if [ "$machine" == 'theia' ]; then
    export fixgsi=${gsipath}/fix
    export fixcrtm=${fixgsi}/crtm_2.2.3
    export execdir=${enkfscripts}/exec_${machine}
-   export nemsio_get=${execdir}/nemsio_get
    export enkfbin=${execdir}/global_enkf
-   export FCSTEXEC=${execdir}/fv3.exe
+   export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
    export nemsioget=${execdir}/nemsio_get
 elif [ "$machine" == 'gaea' ]; then
+# warning - these paths need to be updated on gaea
    export FIXGLOBAL=${basedir}/fv3gfs/global_shared.v15.0.0/fix/fix_am
    export FIXFV3=${basedir}/fv3gfs/fix_fv3
    export gsipath=${basedir}/gsi/branches/EXP-enkflinhx
    export gsiexec=${gsipath}/src/global_gsi
    export fixgsi=${gsipath}/fix
    export fixcrtm=${fixgsi}/crtm-2.2.3
-   export FCSTEXEC=${basedir}/fv3gfs/global_shared.v15.0.0/sorc/fv3gfs.fd/BUILD/bin/fv3_gfs_hydro.prod.32bit.x
-   export utilexec=${gsipath}/util/EnKF/gfs/src/bin
-   export enkfbin=${gsipath}/src/enkf/global_enkf
-   export nemsioget=${basedir}/utils/sorc/nemsio_get
+   export execdir=${enkfscripts}/exec_${machine}
+   export enkfbin=${execdir}/global_enkf
+   export FCSTEXEC=${execdir}/${fv3exec}
+   export gsiexec=${execdir}/global_gsi
+   export nemsioget=${execdir}/nemsio_get
 elif [ "$machine" == 'wcoss' ]; then
    export fv3gfspath=/gpfs/hps3/emc/global/noscrub/emc.glopara/svn/fv3gfs
    export gsipath=/gpfs/hps2/esrl/gefsrr/noscrub/Jeffrey.S.Whitaker/gsi/EXP-enkflinhx
@@ -241,9 +242,8 @@ elif [ "$machine" == 'wcoss' ]; then
    export fixgsi=${gsipath}/fix
    export fixcrtm=${fixgsi}/crtm-2.2.3
    export execdir=${enkfscripts}/exec_${machine}
-   export nemsio_get=${execdir}/nemsio_get
    export enkfbin=${execdir}/global_enkf
-   export FCSTEXEC=${execdir}/fv3.exe
+   export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
    export nemsioget=${execdir}/nemsio_get
 elif [ "$machine" == 'jet' ]; then
