@@ -123,7 +123,7 @@ export do_skeb=T
 export SKEB=0.5
 export SKEB_TSCALE=21600.
 export SKEB_LSCALE=500.e3
-export SKEBNORM=1
+export SKEBNORM=0
 export SKEB_NPASS=30
 export SKEB_VDOF=5
 
