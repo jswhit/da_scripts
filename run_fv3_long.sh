@@ -49,11 +49,11 @@ else
 fi
 export npx=`expr $RES + 1`
 export enkfscripts=/gpfs/hps2/esrl/gefsrr/noscrub/${USER}/scripts/${exptname}
-export execdir=${enkfscripts}/exec
+export execdir=${enkfscripts}/exec_${machine}
 export fv3gfspath=/gpfs/hps3/emc/global/noscrub/emc.glopara/svn/fv3gfs
 export FIXFV3=${fv3gfspath}/fix_fv3
 export FIXGLOBAL=${fv3gfspath}/fix/fix_am
-export FCSTEXEC=${execdir}/fv3.exe
+#export FCSTEXEC=${execdir}/fv3-hydro.exe # inherit from calling script
 
 export obs_datapath=/gpfs/hps2/esrl/gefsrr/noscrub/cfsr_dumps
 export datapath=/gpfs/hps2/ptmp/${USER}/${exptname}
