@@ -1,7 +1,7 @@
 echo "running on $machine using $NODES nodes"
 ulimit -s unlimited
 
-export exptname=C384_singleres_fv3nems
+export exptname=C384_singleres_fv3nems_noskeb
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia and jet.
@@ -119,8 +119,8 @@ export do_shum=T
 export SHUM=0.006
 export SHUM_TSCALE=21600.
 export SHUM_LSCALE=250.e3
-export do_skeb=T
-export SKEB=0.25
+export do_skeb=F
+export SKEB=0.0
 export SKEB_TSCALE=21600.
 export SKEB_LSCALE=250.e3
 export SKEBNORM=0 # 0 is psi norm, 1 is KE norm
@@ -241,9 +241,9 @@ elif [ "$machine" == 'wcoss' ]; then
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
    export fixgsi=${gsipath}/fix
    export fixcrtm=${fixgsi}/crtm-2.2.3
-   export execdir=${enkfscripts}/exec
+   export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
-   export FCSTEXEC=${execdir}/fv3.exe
+   export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
    export nemsioget=${execdir}/nemsio_get
 elif [ "$machine" == 'jet' ]; then
