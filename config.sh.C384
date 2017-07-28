@@ -216,7 +216,7 @@ if [ "$machine" == 'theia' ]; then
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
    export fixgsi=${gsipath}/fix
    export fixcrtm=${fixgsi}/crtm_2.2.3
-   export execdir=${enkfscripts}/exec
+   export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
