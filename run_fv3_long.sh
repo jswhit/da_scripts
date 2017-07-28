@@ -76,7 +76,7 @@ if [ "$nfcst" == "1" ]; then
 else
    export charnanal='cfsr'
    mkdir -p ${datapath2}/${charnanal}/INPUT
-   /bin/cp -f /gpfs/hps2/esrl/gefsrr/noscrub/Jeffrey.S.Whitaker/cfsrics/C${RES}_${analdate}/control/* ${datapath2}/${charnanal}/INPUT
+   /bin/cp -f /gpfs/hps2/esrl/gefsrr/noscrub/cfsrics/C${RES}_${analdate}/control/* ${datapath2}/${charnanal}/INPUT
    warm_start=F
    externalic=T
    reslatlondynamics=""
