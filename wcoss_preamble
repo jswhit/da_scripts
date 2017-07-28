@@ -1,7 +1,7 @@
 #BSUB -W 1:30                    # wall clock time 
-#BSUB -o C96_singleres_fv3nems.stdout
-#BSUB -e C96_singleres_fv3nems.stderr
-#BSUB -J C96_singleres_fv3nems  
+#BSUB -o C96_fv3reanl.stdout
+#BSUB -e C96_fv3reanl.stderr
+#BSUB -J C96_fv3reanl  
 #BSUB -q "dev"                   # job queue 
 #BSUB -P GFS-T2O                 # project code 
 #BSUB -M 600                    # Memory req's for serial portion
