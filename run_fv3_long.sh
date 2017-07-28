@@ -34,7 +34,7 @@ export FHMAX=240
 export FHOUT=24
 export FHZER=$FHOUT
 export cdmbgwd="0.125, 3.0"
-export fv_sg_adj=0
+export fv_sg_adj=1800
 export dt_atmos=900
 # suggested nyblocks=`expr \( $RES \) \/ $layout_y `
 # suggested nxblocks=`expr \( $RES \) \/ $layout_x \/ 32`
@@ -196,7 +196,7 @@ cat > input.nml <<EOF
   fv_debug = F,
   range_warn = F,
   reset_eta = F,
-  n_sponge = 13,
+  n_sponge = 24,
   nudge_qv = T,
   tau = 5.0,
   rf_cutoff = 750.0,
@@ -238,7 +238,7 @@ cat > input.nml <<EOF
   hord_mt = 10, 
   hord_vt = 10,
   hord_tm = 10,
-  hord_dp = 5,
+  hord_dp = 10,
   hord_tr = 8,
   adjust_dry_mass = F,
   consv_te = 0,
@@ -254,7 +254,7 @@ cat > input.nml <<EOF
 
 &external_ic_nml
   filtered_terrain = T,
-  ncep_plevels = F,
+  ncep_plevels = T,
   levp = $LEVP,
   gfs_dwinds = T,
   checker_tr = F,
@@ -388,8 +388,8 @@ nemsio_opt='grib'
 /
 &interpio
 gfs_hyblevs_filename='${enkfscripts}/global_hyblev.l${LEVP}.txt',
-esmf_bilinear_filename='${enkfscripts}/fv3_SCRIP_C${RES}_GRIDSPEC_gaussian_lon${LONB}_lat${LATB}.bilinear.nc'
-esmf_neareststod_filename='${enkfscripts}/fv3_SCRIP_C${RES}_GRIDSPEC_gaussian_lon${LONB}_lat${LATB}.neareststod.nc'
+esmf_bilinear_filename='$FIXFV3/C${RES}/fv3_SCRIP_C${RES}_GRIDSPEC_lon${LONB}_lat${LATB}.gaussian.bilinear.nc'
+esmf_neareststod_filename='$FIXFV3/C${RES}/fv3_SCRIP_C${RES}_GRIDSPEC_lon${LONB}_lat${LATB}.gaussian.neareststod.nc'
 /
 EOF
 sh ${enkfscripts}/runmpi
