@@ -8,7 +8,7 @@
 #BSUB -extsched 'CRAYLINUX[]'    # Request to run on compute nodes
 export NODES=3
 export corespernode=24
-export machine='wcoss'
+#export machine='wcoss'
 # allow this script to submit other scripts on WCOSS
 unset LSB_SUB_RES_REQ
 
@@ -24,18 +24,18 @@ fi
 
 #export exptname=C96_fv3reanl # inherit from calling script`
 
-export RES=96  
-export LEVS=64
-export LEVP=`expr $LEVS \+ 1`
-export JCAP=126 
-export LONB=384   
-export LATB=190  
+#export RES=96  
+#export LEVS=64
+#export LEVP=`expr $LEVS \+ 1`
+#export JCAP=126 
+#export LONB=384   
+#export LATB=190  
 export FHMAX=240
 export FHOUT=24
 export FHZER=$FHOUT
-export cdmbgwd="0.125, 3.0"
-export fv_sg_adj=1800
-export dt_atmos=900
+#export cdmbgwd="0.125, 3.0"
+#export fv_sg_adj=1800
+#export dt_atmos=900
 # suggested nyblocks=`expr \( $RES \) \/ $layout_y `
 # suggested nxblocks=`expr \( $RES \) \/ $layout_x \/ 32`
 if [ "$NODES" == "12" ]; then
@@ -48,17 +48,17 @@ else
   export nxblocks=2
 fi
 export npx=`expr $RES + 1`
-export enkfscripts=/gpfs/hps2/esrl/gefsrr/noscrub/${USER}/scripts/${exptname}
-export execdir=${enkfscripts}/exec_${machine}
-export fv3gfspath=/gpfs/hps3/emc/global/noscrub/emc.glopara/svn/fv3gfs
-export FIXFV3=${fv3gfspath}/fix_fv3
-export FIXGLOBAL=${fv3gfspath}/fix/fix_am
+#export enkfscripts=/gpfs/hps2/esrl/gefsrr/noscrub/${USER}/scripts/${exptname}
+#export execdir=${enkfscripts}/exec_${machine}
+#export fv3gfspath=/gpfs/hps3/emc/global/noscrub/emc.glopara/svn/fv3gfs
+#export FIXFV3=${fv3gfspath}/fix_fv3
+#export FIXGLOBAL=${fv3gfspath}/fix/fix_am
 #export FCSTEXEC=${execdir}/fv3-hydro.exe # inherit from calling script
 
-export obs_datapath=/gpfs/hps2/esrl/gefsrr/noscrub/cfsr_dumps
-export datapath=/gpfs/hps2/ptmp/${USER}/${exptname}
-export datapath2=${datapath}/${analdate}
-export hsidir="/3year/NCEPDEV/GEFSRR/${USER}/${exptname}"
+#export obs_datapath=/gpfs/hps2/esrl/gefsrr/noscrub/cfsr_dumps
+#export datapath=/gpfs/hps2/ptmp/${USER}/${exptname}
+#export datapath2=${datapath}/${analdate}
+#export hsidir="/3year/NCEPDEV/GEFSRR/${USER}/${exptname}"
 
 # run forecast from ensemble mean analysis, then CFSR analysis.
 
