@@ -22,7 +22,7 @@ if [ "$VERBOSE" == "YES" ]; then
  set -x
 fi
 
-export exptname=C96_singleres_fv3nems
+#export exptname=C96_fv3reanl # inherit from calling script`
 
 export RES=96  
 export LEVS=64
