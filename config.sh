@@ -95,7 +95,7 @@ export layout="3, 4" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_
 export fg_threads=1 # ens fcst threads
 export RES=96  
 export cdmbgwd="0.125,3.0"
-export fv_sg_adj=0
+export fv_sg_adj=1800
 export dt_atmos=900
 export k_split=1
 export n_split=6
