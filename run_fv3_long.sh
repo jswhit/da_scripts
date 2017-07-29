@@ -93,6 +93,16 @@ export hour=`echo $analdate |cut -c 9-10`
 
 # copy data, diag and field tables.
 cd ${datapath2}/${charnanal}
+if [ $? -ne 0 ]; then
+  echo "cd to ${datapath2}/${charnanal} failed, stopping..."
+  exit 1
+fi
+# make sure we are really in the right directory
+pwd
+if [ "$(realpath "$PWD")" != "$(realpath "${datapath2}/${charnanal}")" ]; then
+  echo "cd to ${datapath2}/${charnanal} failed, stopping..."
+  exit 1
+fi
 /bin/cp -f $enkfscripts/diag_table_long diag_table
 /bin/cp -f $enkfscripts/nems.configure .
 # for diag table, insert correct starting time.
