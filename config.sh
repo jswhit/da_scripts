@@ -14,10 +14,10 @@ if [ "$machine" != 'wcoss' ]; then
 fi
 export KMP_AFFINITY=disabled
 
-export fg_gfs="run_fg_fv3_noiau.csh"
+export fg_gfs="run_ens_fv3.csh"
 export ensda="enkf_run.csh"
 export rungsi='run_gsi_4densvar.sh'
-export rungfs='run_fv3_stochphys.sh' # ensemble forecast
+export rungfs='run_fv3.sh' # ensemble forecast
 
 export recenter_anal="true" # recenter enkf analysis around GSI hybrid 4DEnVar analysis
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
@@ -144,10 +144,10 @@ export FHMAX=9
 export FHOUT=3
 FHMAXP1=`expr $FHMAX + 1`
 export enkfstatefhrs=`python -c "print range(${FHMIN},${FHMAXP1},${FHOUT})" | cut -f2 -d"[" | cut -f1 -d"]"`
-export IAU=.false. 
-export iaufhrs="6"
-#export IAU=.true. 
-#export iaufhrs=$enkfstatefhrs
+export iaufhrs="3,6,9"
+export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
+#export iaufhrs="6"
+#export iau_delthrs=-1
 
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
