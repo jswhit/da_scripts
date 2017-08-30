@@ -20,14 +20,53 @@ export ISEED_SKEB=$((analdate*1000 + imem*10 + 2))
 export ISEED_SHUM=$((analdate*1000 + imem*10 + 3))
 export npx=`expr $RES + 1`
 export LEVP=`expr $LEVS \+ 1`
-export year=`echo $analdate |cut -c 1-4`
-export mon=`echo $analdate |cut -c 5-6`
-export day=`echo $analdate |cut -c 7-8`
-export hour=`echo $analdate |cut -c 9-10`
-export yrp1=`echo $analdatep1 |cut -c 1-4`
-export monp1=`echo $analdatep1 |cut -c 5-6`
-export dayp1=`echo $analdatep1 |cut -c 7-8`
-export hrp1=`echo $analdatep1 |cut -c 9-10`
+# yr,mon,day,hr at middle of assim window (analysis time)
+export yeara=`echo $analdate |cut -c 1-4`
+export mona=`echo $analdate |cut -c 5-6`
+export daya=`echo $analdate |cut -c 7-8`
+export houra=`echo $analdate |cut -c 9-10`
+if [ $iau_delthrs -gt 0 ]  && [ "${fg_only}" == "false" ]; then
+   # start date for forecast (previous analysis time)
+   export year=`echo $analdatem1 |cut -c 1-4`
+   export mon=`echo $analdatem1 |cut -c 5-6`
+   export day=`echo $analdatem1 |cut -c 7-8`
+   export hour=`echo $analdatem1 |cut -c 9-10`
+   # current date in restart (beginning of analysis window)
+   export year_start=`echo $analdatem3 |cut -c 1-4`
+   export mon_start=`echo $analdatem3 |cut -c 5-6`
+   export day_start=`echo $analdatem3 |cut -c 7-8`
+   export hour_start=`echo $analdatem3 |cut -c 9-10`
+   # end time of analysis window (time for next restart)
+   export yrnext=`echo $analdatep1m3 |cut -c 1-4`
+   export monnext=`echo $analdatep1m3 |cut -c 5-6`
+   export daynext=`echo $analdatep1m3 |cut -c 7-8`
+   export hrnext=`echo $analdatep1m3 |cut -c 9-10`
+else
+   # if no IAU, start date is middle of window
+   export year=`echo $analdate |cut -c 1-4`
+   export mon=`echo $analdate |cut -c 5-6`
+   export day=`echo $analdate |cut -c 7-8`
+   export hour=`echo $analdate |cut -c 9-10`
+   # date in restart file is same as start date (not continuing a forecast)
+   export year_start=`echo $analdate |cut -c 1-4`
+   export mon_start=`echo $analdate |cut -c 5-6`
+   export day_start=`echo $analdate |cut -c 7-8`
+   export hour_start=`echo $analdate |cut -c 9-10`
+   # time for restart file
+   if [ $iau_delthrs -gt 0 ]; then
+      # beginning of next analysis window
+      export yrnext=`echo $analdatep1m3 |cut -c 1-4`
+      export monnext=`echo $analdatep1m3 |cut -c 5-6`
+      export daynext=`echo $analdatep1m3 |cut -c 7-8`
+      export hrnext=`echo $analdatep1m3 |cut -c 9-10`
+   else
+      # end of next analysis window
+      export yrnext=`echo $analdatep1 |cut -c 1-4`
+      export monnext=`echo $analdatep1 |cut -c 5-6`
+      export daynext=`echo $analdatep1 |cut -c 7-8`
+      export hrnext=`echo $analdatep1 |cut -c 9-10`
+   fi
+fi
 
 
 # copy data, diag and field tables.
@@ -36,19 +75,10 @@ if [ $? -ne 0 ]; then
   echo "cd to ${datapath2}/${charnanal} failed, stopping..."
   exit 1
 fi
-# make sure we are really in the right directory
-pwd
-if [ "$(realpath "$PWD")" != "$(realpath "${datapath2}/${charnanal}")" ]; then
-  echo "cd to ${datapath2}/${charnanal} failed, stopping..."
-  exit 1
-fi
 /bin/cp -f $enkfscripts/diag_table .
 /bin/cp -f $enkfscripts/nems.configure .
 # for diag table, insert correct starting time.
 sed -i -e "s/YYYY MM DD HH/${year} ${mon} ${day} ${hour}/g" diag_table
-#FHMAXP1=`expr $FHMAX + 1`
-#fdiag=`python -c "print range(${FHMIN},${FHMAXP1},${FHOUT})" | cut -f2 -d"[" | cut -f1 -d"]"`
-#sed -i -e "s/FHOUT/${FHOUT}/g" diag_table
 /bin/cp -f $enkfscripts/field_table .
 /bin/cp -f $enkfscripts/data_table . 
 /bin/rm -rf RESTART
@@ -87,9 +117,42 @@ for file in `ls $FIXGLOBAL/global_volcanic_aerosols* ` ; do
    ln -fs $file $(echo $(basename $file) |sed -e "s/global_//g")
 done
 
-# create netcdf increment file.
+# create netcdf increment files.
 if [ "$fg_only" == "false" ]; then
    cd INPUT
+
+   if [ $iau_delthrs -gt 0 ]; then
+   iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
+# IAU - multiple increments.
+   for fh in $iaufhrs2; do
+      export increment_file="fv3_increment${fh}.nc"
+      echo "create ${increment_file}"
+      /bin/rm -f ${increment_file}
+      cat > calc-increment.input <<EOF
+&share
+debug=F
+analysis_filename="${datapath2}/sanl_${analdate}_fhr0${fh}_${charnanal}"
+firstguess_filename="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}"
+increment_filename="${increment_file}"
+/
+EOF
+      nprocs_save=$nprocs
+      mpitaskspernode_save=$mpitaskspernode
+      export nprocs=1
+      export mpitaskspernode=1
+      export PGM=${execdir}/calc_increment.x
+      sh ${enkfscripts}/runmpi
+      #${execdir}/calc_increment.x
+      if [ $? -ne 0 -o ! -s ${increment_file} ]; then
+         echo "problem creating ${increment_file}, stopping .."
+         exit 1
+      fi
+      export nprocs=$nprocs_save
+      export mpitaskspernode=$mpitaskspernode_save
+   done # do next forecast
+
+   else
+# no IAU, single increment
    export increment_file="fv3_increment.nc"
    /bin/rm -f ${increment_file}
    cat > calc-increment.input <<EOF
@@ -113,6 +176,9 @@ EOF
    fi
    export nprocs=$nprocs_save
    export mpitaskspernode=$mpitaskspernode_save
+
+   fi
+
    cd ..
 fi
 
@@ -127,62 +193,44 @@ if [ "$fg_only" == "true" ]; then
    readincrement=F
    na_init=1
    FHCYC=0
+   iaudelthrs=-1
+   iau_inc_files=""
 else
    # warm start from restart file with lat/lon increments ingested by the model
+   iaudelthrs=${iau_delthrs}
    warm_start=T
    make_nh=F
    externalic=F
-   reslatlondynamics="${increment_file}"
-   readincrement=T
    mountain=T
    na_init=0 
    FHCYC=6
+   if [ $iau_delthrs -gt 0 ]; then
+      if [ "$iaufhrs" == "3,4,5,6,7,8,9" ]; then
+         iau_inc_files="'fv3_increment3.nc','fv3_increment4.nc','fv3_increment5.nc','fv3_increment6.nc','fv3_increment7.nc','fv3_increment8.nc','fv3_increment9.nc'"
+      elif [ "$iaufhrs" == "3,6,9" ]; then
+         iau_inc_files="'fv3_increment3.nc','fv3_increment6.nc','fv3_increment9.nc'"
+      elif [ "$iaufhrs" == "6" ]; then
+         iau_inc_files="'fv3_increment6.nc'"
+      else
+         echo "illegal value for iaufhrs"
+         exit 1
+      fi
+      reslatlondynamics=""
+      readincrement=F
+   else
+      reslatlondynamics="fv3_increment.nc"
+      readincrement=T
+      iau_inc_files=""
+   fi
 fi
 
 snoid='SNOD'
 
-# if next sst,snow,ice analyses available, use them in surface cycling
-#fntsfa=${datapath2}/${charnanal}/sstgrb
-#fnacna=${datapath2}/${charnanal}/engicegrb
-#if [ -s ${obs_datapath}/bufr_${analdatep1}/gdas1.t${hrp1}z.sstgrb ]; then
-#  cat ${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.sstgrb ${obs_datapath}/bufr_${analdatep1}/gdas1.t${hrp1}z.sstgrb > ${fntsfa}
-#else
-#  ln -fs ${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.sstgrb ${fntsfa}
-#fi
-#if [ -s ${obs_datapath}/bufr_${analdatep1}/gdas1.t${hrp1}z.snogrb ]; then
-#  cat ${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.snogrb ${obs_datapath}/bufr_${analdatep1}/gdas1.t${hrp1}z.snogrb > ${datapath2}/${charnanal}/snogrb
-#else
-#  ln -fs ${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.snogrb ${datapath2}/${charnanal}/snogrb
-#fi
-#if [ -s ${obs_datapath}/bufr_${analdatep1}/gdas1.t${hrp1}z.engicegrb ]; then
-#  cat ${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.engicegrb ${obs_datapath}/bufr_${analdatep1}/gdas1.t${hrp1}z.engicegrb > ${fnacna}
-#else
-#  ln -fs ${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.engicegrb ${fnacna}
-#fi
-## check for missing snow depth
-#nrecs_snow=`$WGRIB ${datapath2}/${charnanal}/snogrb | grep -i $snoid | wc -l`
-#fsnol=0
-#if [ $nrecs_snow -eq 0 ]; then
-#   fnsnoa='        '
-#   fsnol=99909
-#   echo "no current snow analysis, use model"
-#elif [ $nrecs_snow -eq 1 ]; then
-#   echo "one bad snogrb record, check individual files..."
-#   nrecs_snow=`$WGRIB ${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.snogrb | grep -i $snoid | wc -l`
-#   if [ $nrecs_snow -eq 1 ]; then
-#      fnsnoa=${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.snogrb
-#   else
-#      fnsnoa=${obs_datapath}/bufr_${analdatep1}/gdas1.t${hrp1}z.snogrb
-#   fi
-#else
-#   fnsnoa=${datapath2}/${charnanal}/snogrb
-#fi
-
 # Turn off snow analysis if it has already been used.
 # (snow analysis only available once per day at 18z)
-fntsfa=${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.sstgrb
-fnacna=${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.engicegrb
-fnsnoa=${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.snogrb
+fntsfa=${obs_datapath}/bufr_${analdate}/gdas1.t${houra}z.sstgrb
+fnacna=${obs_datapath}/bufr_${analdate}/gdas1.t${houra}z.engicegrb
+fnsnoa=${obs_datapath}/bufr_${analdate}/gdas1.t${houra}z.snogrb
 nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
 if [ $nrecs_snow -eq 0 ]; then
    # no snow depth in file, use model
@@ -206,6 +254,19 @@ fi
 
 ls -l 
 
+FHRESTART=`expr $ANALINC`
+if [ $iau_delthrs -gt 0 ]; then
+   FHOFFSET=`expr $iau_delthrs`
+   FHMAX_FCST=`expr $FHMAX + $FHOFFSET`
+   if [ "${fg_only}" == "true" ]; then
+      FHRESTART=`expr $ANALINC \/ 2`
+      FHMAX_FCST=$FHMAX
+      FHOFFSET=0
+   fi
+else
+   FHMAX_FCST=$FHMAX
+fi
+
 cat > model_configure <<EOF
 total_member:            1
 PE_MEMBER01:             ${nprocs}
@@ -215,7 +276,7 @@ start_day:               ${day}
 start_hour:              ${hour}
 start_minute:            0
 start_second:            0
-nhours_fcst:             ${FHMAX}
+nhours_fcst:             ${FHMAX_FCST}
 RUN_CONTINUE:            F
 ENS_SPS:                 F
 dt_atmos:                ${dt_atmos} 
@@ -224,10 +285,20 @@ memuse_verbose:          F
 atmos_nthreads:          ${OMP_NUM_THREADS}
 use_hyper_thread:        F
 ncores_per_node:         ${corespernode}
-restart_interval:        ${ANALINC}
+restart_interval:        ${FHRESTART}
 EOF
 #restart_interval:        `expr ${ANALINC} \* 3600`
 cat model_configure
+
+# setup coupler.res (need for restarts)
+if [ $iau_delthrs -gt 0 ]  && [ "${fg_only}" == "false" ]; then
+   echo "     2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)" > INPUT/coupler.res
+   echo "  ${year}  ${mon}  ${day}  ${hour}     0     0        Model start time:   year, month, day, hour, minute, second" >> INPUT/coupler.res
+   echo "  ${year_start}  ${mon_start}  ${day_start}  ${hour_start}     0     0        Current model time: year, month, day, hour, minute, second" >> INPUT/coupler.res
+   cat INPUT/coupler.res
+else
+   /bin/rm -f INPUT/coupler.res
+fi
 
 cat > input.nml <<EOF
 &amip_interp_nml
@@ -374,6 +445,9 @@ cat > input.nml <<EOF
   debug          = F
   nstf_name      = 0
   cdmbgwd = ${cdmbgwd}
+  iaufhrs = ${iaufhrs}
+  iau_delthrs = ${iaudelthrs}
+  iau_inc_files = ${iau_inc_files}
 /
 
 &nggps_diag_nml
@@ -480,8 +554,15 @@ export nprocs=$LEVP
 
 ncdump -v time fv3_history.tile1.nc
 ncdump -v time fv3_history2d.tile1.nc
+# nemsio_timestamp is initial time for forecast.
+if [ $iau_delthrs -gt 0 ]  && [ "${fg_only}" == "false" ]; then
+  nemsio_timestamp=$analdatem1
+else
+  nemsio_timestamp=$analdate
+fi
 ntry=0
-while [ $ntry -lt $nitermax ]; do
+ntrymax=10
+while [ $ntry -lt $ntrymax ]; do
 fh=$FHMIN
 filemissing=0
 while [ $fh -le $FHMAX ]; do
@@ -495,6 +576,9 @@ while [ $fh -le $FHMAX ]; do
   fh=$[$fh+$FHOUT]
 done
 if [ $filemissing -eq 1 ]; then
+if [ $ntry -gt 0 ]; then
+  sleep 10
+fi
 cat > regrid-nemsio.input <<EOF
 &share
 debug=T,nlons=$LONB,nlats=$LATB,ntrunc=$JCAP,
@@ -502,7 +586,7 @@ datapathout2d='${datapathp1}/bfg_${analdatep1}_${charnanal}',
 datapathout3d='${datapathp1}/sfg_${analdatep1}_${charnanal}',
 analysis_filename='fv3_history.tile1.nc','fv3_history.tile2.nc','fv3_history.tile3.nc','fv3_history.tile4.nc','fv3_history.tile5.nc','fv3_history.tile6.nc',
 analysis_filename2d='fv3_history2d.tile1.nc','fv3_history2d.tile2.nc','fv3_history2d.tile3.nc','fv3_history2d.tile4.nc','fv3_history2d.tile5.nc','fv3_history2d.tile6.nc',
-forecast_timestamp='${analdate}',
+forecast_timestamp='${nemsio_timestamp}',
 variable_table='${enkfscripts}/variable_table.txt.da',
 nemsio_opt='bin4'
 /
@@ -516,18 +600,26 @@ sh ${enkfscripts}/runmpi
 
 # rename nemsio files
 echo "rename output files, copy data"
-fh=$FHMIN
-while [ $fh -le $FHMAX ]; do
+ls -l ${datapathp1}/sfg_${analdatep1}_${charnanal}.*
+ls -l ${datapathp1}/bfg_${analdatep1}_${charnanal}.*
+fh=`expr $FHMIN + $FHOFFSET`
+while [ $fh -le $FHMAX_FCST ]; do
+  fh2=$[$fh-$FHOFFSET]
   charfhr1="fhr"`printf %03i $fh`
-  charfhr2="fhr"`printf %02i $fh`
+  charfhr2="fhr"`printf %02i $fh2`
   /bin/mv -f ${datapathp1}/sfg_${analdatep1}_${charnanal}.${charfhr1} ${datapathp1}/sfg_${analdatep1}_${charfhr2}_${charnanal}
   /bin/mv -f ${datapathp1}/bfg_${analdatep1}_${charnanal}.${charfhr1} ${datapathp1}/bfg_${analdatep1}_${charfhr2}_${charnanal}
   fh=$[$fh+$FHOUT]
 done
-/bin/rm -f ${datapathp1}/sfg*fhr000
-/bin/rm -f ${datapathp1}/bfg*fhr000
+/bin/rm -f ${datapathp1}/sfg*.fhr*
+/bin/rm -f ${datapathp1}/bfg*.fhr*
 fi
-ntry=$[$ntry+1]
+
+if [ $filemissing -eq 0 ]; then
+  ntry=$ntrymax
+else
+  ntry=$[$ntry+1]
+fi
 done
 
 
@@ -536,7 +628,7 @@ done
 mkdir -p ${datapathp1}/${charnanal}/INPUT
 cd RESTART
 ls -l
-datestring="${yrp1}${monp1}${dayp1}.${hrp1}0000."
+datestring="${yrnext}${monnext}${daynext}.${hrnext}0000."
 for file in ${datestring}*nc; do
    file2=`echo $file | cut -f3-10 -d"."`
    /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT/$file2
@@ -549,9 +641,6 @@ cd INPUT
 find -type l -delete
 cd ..
 /bin/rm -rf RESTART # don't need RESTART dir anymore.
-#/bin/rm -f ${datapath2}/${charnanal}/sstgrb
-#/bin/rm -f ${datapath2}/${charnanal}/snogrb
-#/bin/rm -f ${datapath2}/${charnanal}/engicegrb
 
 echo "all done at `date`"
 exit 0

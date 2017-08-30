@@ -131,6 +131,21 @@ setenv mpitaskspernode 1
 setenv PGM ${execdir}/calc_increment.x
 mkdir -p ${datapath2}/ensmean/INPUT
 pushd ${datapath2}/ensmean/INPUT
+if ($iau_delthrs > 0) then
+set iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
+foreach nfhr ( $iaufhrs2 )
+set charfhr="fhr"`printf %02i $nfhr`
+cat > calc-increment.input <<EOF
+&share
+debug=F
+analysis_filename="${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}"
+firstguess_filename="${datapath2}/sfg_${analdate}_${charfhr}_${charnanal}"
+increment_filename="fv3_increment${nfhr}.nc"
+/
+EOF
+sh ${enkfscripts}/runmpi
+end
+else
 cat > calc-increment.input <<EOF
 &share
 debug=F
@@ -140,6 +155,7 @@ increment_filename="fv3_increment.nc"
 /
 EOF
 sh ${enkfscripts}/runmpi
+endif
 popd
 
 if($alldone == 'no') then

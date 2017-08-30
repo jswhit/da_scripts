@@ -39,7 +39,7 @@ set nanal=1
 set filemissing='no'
 while ($nanal <= $nanals)
    set charnanal="mem"`printf %03i $nanal`
-   if ($IAU == ".true.") then
+   if ($iau_delthrs > 0) then
       set analfile="${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}"
    else
       set analfile="${datapath2}/sanl_${analdate}_${charnanal}"
@@ -82,7 +82,7 @@ cat <<EOF1 >! enkf.nml
   reducedgrid=$reducedgrid,nlevs=$LEVS,nanals=$nanals,deterministic=$deterministic,
   npefiles=0,lobsdiag_forenkf=.true.write_spread_diag=.true.,
   sortinc=$sortinc,univaroz=$univaroz,massbal_adjust=$massbal_adjust,nhr_anal=$iaufhrs,nhr_state=$enkfstatefhrs,
-  use_gfs_nemsio=.true.,adp_anglebc=.true.,angord=4,newpc4pred=.true.,use_edges=.false.,emiss_bc=.true.,biasvar=-500,write_spread_diag=.true.
+  use_gfs_nemsio=.true.,adp_anglebc=.true.,angord=4,newpc4pred=.true.,use_edges=.false.,emiss_bc=.true.,biasvar=-500,write_spread_diag=.true.,nobsl_max=$nobsl_max
  /
  &satobs_enkf
   sattypes_rad(1) = 'amsua_n15',     dsis(1) = 'amsua_n15',
@@ -220,7 +220,10 @@ set nanal=1
 set filemissing='no'
 while ($nanal <= $nanals)
    set charnanal="mem"`printf %03i $nanal`
-   if ($IAU == ".true.") then
+   if ($#iaufhrs2 == 1 && $iau_delthrs > 0) then
+      /bin/mv -f "${datapath2}/sanl_${analdate}_${charnanal}" "${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}"
+   endif
+   if ($iau_delthrs > 0) then
       set analfile="${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}"
    else
       set analfile="${datapath2}/sanl_${analdate}_${charnanal}"

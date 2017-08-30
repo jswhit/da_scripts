@@ -7,16 +7,10 @@ unsetenv LSB_SUB_RES_REQ
 source $datapath/fg_only.csh # define fg_only variable.
 echo "nodes = $NODES"
 
-# if fg_only == true, reset IAU to false
-if ($fg_only == "true") then
-   setenv IAU .false.
-endif
-
 setenv startupenv "${datapath}/analdate.csh"
 source $startupenv
 
 # add SATINFO here (instead of submit.sh) since it depends on analysis time.
-#setenv SATINFO ${fixgsi}/global_satinfo.txt
 setenv SATINFO ${obs_datapath}/bufr_${analdate}/global_satinfo.txt
 
 #------------------------------------------------------------------------
@@ -67,9 +61,14 @@ endif
 # current analysis time.
 setenv analdate $analdate
 # previous analysis time.
+set FHOFFSET=`expr $ANALINC \/ 2`
 setenv analdatem1 `${incdate} $analdate -$ANALINC`
 # next analysis time.
 setenv analdatep1 `${incdate} $analdate $ANALINC`
+# beginning of current assimilation window
+setenv analdatem3 `${incdate} $analdate -$FHOFFSET`
+# beginning of next assimilation window
+setenv analdatep1m3 `${incdate} $analdate $FHOFFSET`
 setenv hrp1 `echo $analdatep1 | cut -c9-10`
 setenv hrm1 `echo $analdatem1 | cut -c9-10`
 setenv hr `echo $analdate | cut -c9-10`

@@ -3,6 +3,7 @@
 setenv VERBOSE YES
 setenv OMP_STACKSIZE 256M
 set charnanal="control"
+pushd ${datapath2}
 
 set iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
 echo  "iaufhrs2= $iaufhrs2"
@@ -10,16 +11,16 @@ foreach nhr_anal ( $iaufhrs2 )
 set charfhr="fhr"`printf %02i $nhr_anal`
 
 echo "recenter ensemble perturbations about low resolution hybrid analysis"
-if ($IAU == ".true.") then
-  set filename_meanin=${datapath2}/sanl_${analdate}_${charfhr}_ensmean
-  set filename_meanout=${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}
-  set filenamein=${datapath2}/sanl_${analdate}_${charfhr}
-  set filenameout=${datapath2}/sanlr_${analdate}_${charfhr}
+if ($iau_delthrs > 0) then
+  set filename_meanin=sanl_${analdate}_${charfhr}_ensmean
+  set filename_meanout=sanl_${analdate}_${charfhr}_${charnanal}
+  set filenamein=sanl_${analdate}_${charfhr}
+  set filenameout=sanlr_${analdate}_${charfhr}
 else
-  set filename_meanin=${datapath2}/sanl_${analdate}_ensmean
-  set filename_meanout=${datapath2}/sanl_${analdate}_${charnanal}
-  set filenamein=${datapath2}/sanl_${analdate}
-  set filenameout=${datapath2}/sanlr_${analdate}
+  set filename_meanin=sanl_${analdate}_ensmean
+  set filename_meanout=sanl_${analdate}_${charnanal}
+  set filenamein=sanl_${analdate}
+  set filenameout=sanlr_${analdate}
 endif
 
 setenv PGM "${execdir}/recentersigp.x $filenamein $filename_meanin $filename_meanout $filenameout $nanals"
@@ -39,13 +40,13 @@ endif
 /bin/cp -f $filename_meanout $filename_meanin
 set nanal=1
 while ($nanal <= $nanals)
-   set charnanal="mem"`printf %03i $nanal`
-   if ($IAU == ".true.") then
-      set analfiler="${datapath2}/sanlr_${analdate}_${charfhr}_${charnanal}"
-      set analfile="${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}"
+   set charnanal_tmp="mem"`printf %03i $nanal`
+   if ($iau_delthrs > 0) then
+      set analfiler=sanlr_${analdate}_${charfhr}_${charnanal_tmp}
+      set analfile=sanl_${analdate}_${charfhr}_${charnanal_tmp}
    else
-      set analfiler="${datapath2}/sanlr_${analdate}_${charnanal}"
-      set analfile="${datapath2}/sanl_${analdate}_${charnanal}"
+      set analfiler=sanlr_${analdate}_${charnanal_tmp}
+      set analfile=sanl_${analdate}_${charnanal_tmp}
    endif
    if ( -s $analfiler) then
       /bin/mv -f $analfile ${analfile}.orig
@@ -58,16 +59,17 @@ end
 if ($errorcode == 0) then
    echo "yes" >! ${current_logdir}/recenter_ens.log
 else
+   echo "error encountered, copying original files back.."
    echo "no" >! ${current_logdir}/recenter_ens.log
    # rename files back
    /bin/mv -f ${filename_meanin}.orig  ${filename_meanin}
    set nanal=1
    while ($nanal <= $nanals)
-      set charnanal="mem"`printf %03i $nanal`
-      if ($IAU == ".true.") then
-         set analfile="${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}"
+      set charnanal_tmp="mem"`printf %03i $nanal`
+      if ($iau_delthrs > 0) then
+         set analfile=sanl_${analdate}_${charfhr}_${charnanal_tmp}
       else
-         set analfile="${datapath2}/sanl_${analdate}_${charnanal}"
+         set analfile=sanl_${analdate}_${charnanal_tmp}
       endif
       /bin/mv -f ${analfile}.orig ${analfile}
       @ nanal = $nanal + 1
@@ -76,5 +78,6 @@ else
 endif
 
 end # next time
+popd
 
 exit 0
