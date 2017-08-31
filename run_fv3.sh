@@ -562,7 +562,7 @@ else
   nemsio_timestamp=$analdate
 fi
 ntry=0
-ntrymax=10
+ntrymax=nitermax
 while [ $ntry -lt $ntrymax ]; do
 fh=$FHMIN
 filemissing=0
@@ -577,9 +577,6 @@ while [ $fh -le $FHMAX ]; do
   fh=$[$fh+$FHOUT]
 done
 if [ $filemissing -eq 1 ]; then
-if [ $ntry -gt 0 ]; then
-  sleep 10
-fi
 cat > regrid-nemsio.input <<EOF
 &share
 debug=T,nlons=$LONB,nlats=$LATB,ntrunc=$JCAP,
@@ -612,8 +609,8 @@ while [ $fh -le $FHMAX_FCST ]; do
   /bin/mv -f ${datapathp1}/bfg_${analdatep1}_${charnanal}.${charfhr1} ${datapathp1}/bfg_${analdatep1}_${charfhr2}_${charnanal}
   fh=$[$fh+$FHOUT]
 done
-/bin/rm -f ${datapathp1}/sfg*.fhr*
-/bin/rm -f ${datapathp1}/bfg*.fhr*
+/bin/rm -f ${datapathp1}/sfg*${charnanal}*.fhr*
+/bin/rm -f ${datapathp1}/bfg*${charnanal}*.fhr*
 fi
 
 if [ $filemissing -eq 0 ]; then
