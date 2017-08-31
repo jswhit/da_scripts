@@ -11,7 +11,7 @@ setenv startupenv "${datapath}/analdate.csh"
 source $startupenv
 
 # add SATINFO here (instead of submit.sh) since it depends on analysis time.
-setenv SATINFO ${obs_datapath}/bufr_${analdate}/global_satinfo.txt
+#setenv SATINFO ${obs_datapath}/bufr_${analdate}/global_satinfo.txt
 
 #------------------------------------------------------------------------
 mkdir -p $datapath
