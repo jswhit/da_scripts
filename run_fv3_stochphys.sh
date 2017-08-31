@@ -28,6 +28,10 @@ export yrp1=`echo $analdatep1 |cut -c 1-4`
 export monp1=`echo $analdatep1 |cut -c 5-6`
 export dayp1=`echo $analdatep1 |cut -c 7-8`
 export hrp1=`echo $analdatep1 |cut -c 9-10`
+export yrm1=`echo $analdatem1 |cut -c 1-4`
+export monm1=`echo $analdatem1 |cut -c 5-6`
+export daym1=`echo $analdatem1 |cut -c 7-8`
+export hrm1=`echo $analdatem1 |cut -c 9-10`
 
 
 # copy data, diag and field tables.
@@ -183,6 +187,7 @@ snoid='SNOD'
 fntsfa=${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.sstgrb
 fnacna=${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.engicegrb
 fnsnoa=${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.snogrb
+fnsnog=${obs_datapath}/bufr_${analdatem1}/gdas1.t${hrm1}z.snogrb
 nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
 if [ $nrecs_snow -eq 0 ]; then
    # no snow depth in file, use model
@@ -193,7 +198,7 @@ else
    # snow depth in file, but is it current?
    if [ `$WGRIB -4yr ${fnsnoa} 2>/dev/null|grep -i $snoid |\
          awk -F: '{print $3}'|awk -F= '{print $2}'` -le \
-        `$WGRIB -4yr ${fnsnoa} 2>/dev/null |grep -i $snoid  |\
+        `$WGRIB -4yr ${fnsnog} 2>/dev/null |grep -i $snoid  |\
                awk -F: '{print $3}'|awk -F= '{print $2}'` ] ; then
       echo "no snow analysis, use model"
       fnsnoa='        ' # no input file
