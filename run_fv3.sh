@@ -265,6 +265,7 @@ if [ $iau_delthrs -gt 0 ]; then
    fi
 else
    FHMAX_FCST=$FHMAX
+   FHOFFSET=0
 fi
 
 cat > model_configure <<EOF
