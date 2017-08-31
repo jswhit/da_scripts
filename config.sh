@@ -1,7 +1,7 @@
 echo "running on $machine using $NODES nodes"
 ulimit -s unlimited
 
-export exptname=C96_fv3reanl
+export exptname=C96_iau
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia and jet.
@@ -154,8 +154,8 @@ export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 
 export SMOOTHINF=35
 export npts=`expr \( $LONA \) \* \( $LATA \)`
-#export obs_datapath=${basedir}/gdas1bufr
-export obs_datapath=/gpfs/hps2/esrl/gefsrr/noscrub/cfsr_dumps
+export obs_datapath=${basedir}/gdas1bufr
+#export obs_datapath=/gpfs/hps2/esrl/gefsrr/noscrub/cfsr_dumps
 export RUN=gdas1 # use gdas obs
 export reducedgrid=.false.
 export univaroz=.false.
@@ -171,6 +171,7 @@ export pseudo_rh=.true.
 export use_qsatensmean=.true.
                                                                     
 export letkf_flag=.false.
+export nobsl_max=10000
 export sprd_tol=1.e30
 export varqc=.false.
 export huber=.false.
@@ -254,19 +255,19 @@ else
    exit 1
 fi
 
-export ANAVINFO=${enkfscripts}/global_anavinfo.l${LEVS}.txt
-export ANAVINFO_ENKF=${ANAVINFO}
-export HYBENSINFO=${enkfscripts}/global_hybens_info.l${LEVS}.txt
-export CONVINFO=${fixgsi}/global_convinfo.txt
-export OZINFO=${enkfscripts}/global_ozinfo.txt
+#export ANAVINFO=${enkfscripts}/global_anavinfo.l${LEVS}.txt
+#export ANAVINFO_ENKF=${ANAVINFO}
+#export HYBENSINFO=${enkfscripts}/global_hybens_info.l${LEVS}.txt
+#export CONVINFO=${fixgsi}/global_convinfo.txt
+#export OZINFO=${enkfscripts}/global_ozinfo.txt
 # set SATINFO in main.csh
 
-#export ANAVINFO=${fixgsi}/global_anavinfo.l64.txt
-#export ANAVINFO_ENKF=${ANAVINFO}
-#export HYBENSINFO=${fixgsi}/global_hybens_info.l64.txt
-#export CONVINFO=${fixgsi}/global_convinfo.txt
-#export OZINFO=${fixgsi}/global_ozinfo.txt
-#export SATINFO=${fixgsi}/global_satinfo.txt
+export ANAVINFO=${fixgsi}/global_anavinfo.l64.txt
+export ANAVINFO_ENKF=${ANAVINFO}
+export HYBENSINFO=${fixgsi}/global_hybens_info.l64.txt
+export CONVINFO=${fixgsi}/global_convinfo.txt
+export OZINFO=${fixgsi}/global_ozinfo.txt
+export SATINFO=${fixgsi}/global_satinfo.txt
 # comment out SATINFO in main.csh
 
 # parameters for hybrid
