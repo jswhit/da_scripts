@@ -25,6 +25,10 @@ export yeara=`echo $analdate |cut -c 1-4`
 export mona=`echo $analdate |cut -c 5-6`
 export daya=`echo $analdate |cut -c 7-8`
 export houra=`echo $analdate |cut -c 9-10`
+export yearprev=`echo $analdatem1 |cut -c 1-4`
+export monprev=`echo $analdatem1 |cut -c 5-6`
+export dayprev=`echo $analdatem1 |cut -c 7-8`
+export hourprev=`echo $analdatem1 |cut -c 9-10`
 if [ $iau_delthrs -gt 0 ]  && [ "${fg_only}" == "false" ]; then
    # start date for forecast (previous analysis time)
    export year=`echo $analdatem1 |cut -c 1-4`
@@ -231,6 +235,7 @@ snoid='SNOD'
 fntsfa=${obs_datapath}/bufr_${analdate}/gdas1.t${houra}z.sstgrb
 fnacna=${obs_datapath}/bufr_${analdate}/gdas1.t${houra}z.engicegrb
 fnsnoa=${obs_datapath}/bufr_${analdate}/gdas1.t${houra}z.snogrb
+fnsnog=${obs_datapath}/bufr_${analdatem1}/gdas1.t${hourprev}z.snogrb
 nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
 if [ $nrecs_snow -eq 0 ]; then
    # no snow depth in file, use model
@@ -241,7 +246,7 @@ else
    # snow depth in file, but is it current?
    if [ `$WGRIB -4yr ${fnsnoa} 2>/dev/null|grep -i $snoid |\
          awk -F: '{print $3}'|awk -F= '{print $2}'` -le \
-        `$WGRIB -4yr ${fnsnoa} 2>/dev/null |grep -i $snoid  |\
+        `$WGRIB -4yr ${fnsnog} 2>/dev/null |grep -i $snoid  |\
                awk -F: '{print $3}'|awk -F= '{print $2}'` ] ; then
       echo "no snow analysis, use model"
       fnsnoa='        ' # no input file
