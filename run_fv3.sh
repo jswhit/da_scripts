@@ -567,7 +567,7 @@ else
   nemsio_timestamp=$analdate
 fi
 ntry=0
-ntrymax=nitermax
+ntrymax=$nitermax
 while [ $ntry -lt $ntrymax ]; do
 fh=$FHMIN
 filemissing=0
