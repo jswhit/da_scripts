@@ -490,20 +490,7 @@ cat > input.nml <<EOF
   fsmcl(2) = 60,
   fsmcl(3) = 60,
   fsmcl(4) = 60,
-  ftsfs = 0,
-  faiss = 0,
   fsnol = ${fsnol},
-  fsicl = 99999,
-  ftsfl = 99999,
-  faisl = 0,
-  fvetl = 99999,
-  fsotl = 99999,
-  fvmnl = 99999,
-  fvmxl = 99999,
-  fslpl = 99999,
-  fabsl = 99999,
-  fsnos = 99999,
-  fsics = 99999,
 /
 
 &fv_grid_nml
