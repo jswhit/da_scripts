@@ -6,6 +6,6 @@
 #BSUB -P GFS-T2O                 # project code 
 #BSUB -M 600                    # Memory req's for serial portion
 #BSUB -extsched 'CRAYLINUX[]'    # Request to run on compute nodes
-export NODES=24
+export NODES=15
 export corespernode=24
 export machine='wcoss'
