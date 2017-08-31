@@ -145,45 +145,8 @@ fi
 
 snoid='SNOD'
 
-# if next sst,snow,ice analyses available, use them in surface cycling
-#fntsfa=${datapath2}/${charnanal}/sstgrb
-#fnacna=${datapath2}/${charnanal}/engicegrb
-#if [ -s ${obs_datapath}/bufr_${analdatep1}/gdas1.t${hrp1}z.sstgrb ]; then
-#  cat ${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.sstgrb ${obs_datapath}/bufr_${analdatep1}/gdas1.t${hrp1}z.sstgrb > ${fntsfa}
-#else
-#  ln -fs ${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.sstgrb ${fntsfa}
-#fi
-#if [ -s ${obs_datapath}/bufr_${analdatep1}/gdas1.t${hrp1}z.snogrb ]; then
-#  cat ${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.snogrb ${obs_datapath}/bufr_${analdatep1}/gdas1.t${hrp1}z.snogrb > ${datapath2}/${charnanal}/snogrb
-#else
-#  ln -fs ${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.snogrb ${datapath2}/${charnanal}/snogrb
-#fi
-#if [ -s ${obs_datapath}/bufr_${analdatep1}/gdas1.t${hrp1}z.engicegrb ]; then
-#  cat ${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.engicegrb ${obs_datapath}/bufr_${analdatep1}/gdas1.t${hrp1}z.engicegrb > ${fnacna}
-#else
-#  ln -fs ${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.engicegrb ${fnacna}
-#fi
-## check for missing snow depth
-#nrecs_snow=`$WGRIB ${datapath2}/${charnanal}/snogrb | grep -i $snoid | wc -l`
-#fsnol=0
-#if [ $nrecs_snow -eq 0 ]; then
-#   fnsnoa='        '
-#   fsnol=99909
-#   echo "no current snow analysis, use model"
-#elif [ $nrecs_snow -eq 1 ]; then
-#   echo "one bad snogrb record, check individual files..."
-#   nrecs_snow=`$WGRIB ${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.snogrb | grep -i $snoid | wc -l`
-#   if [ $nrecs_snow -eq 1 ]; then
-#      fnsnoa=${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.snogrb
-#   else
-#      fnsnoa=${obs_datapath}/bufr_${analdatep1}/gdas1.t${hrp1}z.snogrb
-#   fi
-#else
-#   fnsnoa=${datapath2}/${charnanal}/snogrb
-#fi
-
 # Turn off snow analysis if it has already been used.
-# (snow analysis only available once per day at 18z)
+# (new snow analysis typically only available once per day at 00z)
 fntsfa=${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.sstgrb
 fnacna=${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.engicegrb
 fnsnoa=${obs_datapath}/bufr_${analdate}/gdas1.t${hour}z.snogrb
@@ -415,20 +378,7 @@ cat > input.nml <<EOF
   fsmcl(2) = 60,
   fsmcl(3) = 60,
   fsmcl(4) = 60,
-  ftsfs = 0,
-  faiss = 0,
   fsnol = ${fsnol},
-  fsicl = 99999,
-  ftsfl = 99999,
-  faisl = 0,
-  fvetl = 99999,
-  fsotl = 99999,
-  fvmnl = 99999,
-  fvmxl = 99999,
-  fslpl = 99999,
-  fabsl = 99999,
-  fsnos = 99999,
-  fsics = 99999,
 /
 
 &fv_grid_nml
