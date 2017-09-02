@@ -146,7 +146,10 @@ FHMAXP1=`expr $FHMAX + 1`
 export enkfstatefhrs=`python -c "print range(${FHMIN},${FHMAXP1},${FHOUT})" | cut -f2 -d"[" | cut -f1 -d"]"`
 export iaufhrs="3,6,9"
 export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
+# dump increment in one time step (for debugging)
 #export iaufhrs="6"
+#export iau_delthrs=0.25
+# to turn off iau, use iau_delthrs=-1
 #export iau_delthrs=-1
 
 # other model variables set in ${rungfs}

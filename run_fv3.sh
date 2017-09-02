@@ -29,7 +29,7 @@ export yearprev=`echo $analdatem1 |cut -c 1-4`
 export monprev=`echo $analdatem1 |cut -c 5-6`
 export dayprev=`echo $analdatem1 |cut -c 7-8`
 export hourprev=`echo $analdatem1 |cut -c 9-10`
-if [ $iau_delthrs -gt 0 ]  && [ "${fg_only}" == "false" ]; then
+if [ "${iau_delthrs}" != "-1" ]  && [ "${fg_only}" == "false" ]; then
    # start date for forecast (previous analysis time)
    export year=`echo $analdatem1 |cut -c 1-4`
    export mon=`echo $analdatem1 |cut -c 5-6`
@@ -57,7 +57,7 @@ else
    export day_start=`echo $analdate |cut -c 7-8`
    export hour_start=`echo $analdate |cut -c 9-10`
    # time for restart file
-   if [ $iau_delthrs -gt 0 ]; then
+   if [ "${iau_delthrs}" != "-1" ] ; then
       # beginning of next analysis window
       export yrnext=`echo $analdatep1m3 |cut -c 1-4`
       export monnext=`echo $analdatep1m3 |cut -c 5-6`
@@ -125,7 +125,7 @@ done
 if [ "$fg_only" == "false" ]; then
    cd INPUT
 
-   if [ $iau_delthrs -gt 0 ]; then
+   if [ "${iau_delthrs}" != "-1" ]; then
    iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
 # IAU - multiple increments.
    for fh in $iaufhrs2; do
@@ -208,7 +208,7 @@ else
    mountain=T
    na_init=0 
    FHCYC=6
-   if [ $iau_delthrs -gt 0 ]; then
+   if [ "${iau_delthrs}" != "-1" ]; then
       if [ "$iaufhrs" == "3,4,5,6,7,8,9" ]; then
          iau_inc_files="'fv3_increment3.nc','fv3_increment4.nc','fv3_increment5.nc','fv3_increment6.nc','fv3_increment7.nc','fv3_increment8.nc','fv3_increment9.nc'"
       elif [ "$iaufhrs" == "3,6,9" ]; then
@@ -260,8 +260,8 @@ fi
 ls -l 
 
 FHRESTART=`expr $ANALINC`
-if [ $iau_delthrs -gt 0 ]; then
-   FHOFFSET=`expr $iau_delthrs`
+if [ "${iau_delthrs}" != "-1" ]; then
+   FHOFFSET=`expr $ANALINC \/ 2`
    FHMAX_FCST=`expr $FHMAX + $FHOFFSET`
    if [ "${fg_only}" == "true" ]; then
       FHRESTART=`expr $ANALINC \/ 2`
@@ -297,7 +297,7 @@ EOF
 cat model_configure
 
 # setup coupler.res (need for restarts)
-if [ $iau_delthrs -gt 0 ]  && [ "${fg_only}" == "false" ]; then
+if [ "${iau_delthrs}" != "-1" ]  && [ "${fg_only}" == "false" ]; then
    echo "     2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)" > INPUT/coupler.res
    echo "  ${year}  ${mon}  ${day}  ${hour}     0     0        Model start time:   year, month, day, hour, minute, second" >> INPUT/coupler.res
    echo "  ${year_start}  ${mon_start}  ${day_start}  ${hour_start}     0     0        Current model time: year, month, day, hour, minute, second" >> INPUT/coupler.res
@@ -548,7 +548,7 @@ export nprocs=$LEVP
 ncdump -v time fv3_history.tile1.nc
 ncdump -v time fv3_history2d.tile1.nc
 # nemsio_timestamp is initial time for forecast.
-if [ $iau_delthrs -gt 0 ]  && [ "${fg_only}" == "false" ]; then
+if [ "${iau_delthrs}" != "-1" ]  && [ "${fg_only}" == "false" ]; then
   nemsio_timestamp=$analdatem1
 else
   nemsio_timestamp=$analdate

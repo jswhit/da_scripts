@@ -13,7 +13,7 @@ foreach nhr_anal ( $iaufhrs2 )
 set charfhr="fhr"`printf %02i $nhr_anal`
 set charfhr2=`printf %02i $nhr_anal`
 
-if ($iau_delthrs > 0) then
+if ($iau_delthrs != -1) then
    if ($cleanup_ensmean == 'true' || ($cleanup_ensmean == 'false' && ! -s ${datapath}/${analdate}/sanl_${analdate}_${charfhr}_ensmean)) then
    setenv PGM "${execdir}/getsigensmeanp_smooth.x ${datapath2}/ sanl_${analdate}_${charfhr}_ensmean sanl_${analdate}_${charfhr} ${nanals}"
    sh ${enkfscripts}/runmpi

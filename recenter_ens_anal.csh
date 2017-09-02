@@ -11,7 +11,7 @@ foreach nhr_anal ( $iaufhrs2 )
 set charfhr="fhr"`printf %02i $nhr_anal`
 
 echo "recenter ensemble perturbations about low resolution hybrid analysis"
-if ($iau_delthrs > 0) then
+if ($iau_delthrs != -1) then
   set filename_meanin=sanl_${analdate}_${charfhr}_ensmean
   set filename_meanout=sanl_${analdate}_${charfhr}_${charnanal}
   set filenamein=sanl_${analdate}_${charfhr}
@@ -41,7 +41,7 @@ endif
 set nanal=1
 while ($nanal <= $nanals)
    set charnanal_tmp="mem"`printf %03i $nanal`
-   if ($iau_delthrs > 0) then
+   if ($iau_delthrs != -1) then
       set analfiler=sanlr_${analdate}_${charfhr}_${charnanal_tmp}
       set analfile=sanl_${analdate}_${charfhr}_${charnanal_tmp}
    else
@@ -66,7 +66,7 @@ else
    set nanal=1
    while ($nanal <= $nanals)
       set charnanal_tmp="mem"`printf %03i $nanal`
-      if ($iau_delthrs > 0) then
+      if ($iau_delthrs != -1) then
          set analfile=sanl_${analdate}_${charfhr}_${charnanal_tmp}
       else
          set analfile=sanl_${analdate}_${charnanal_tmp}

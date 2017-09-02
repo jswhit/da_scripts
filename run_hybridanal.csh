@@ -131,7 +131,7 @@ setenv mpitaskspernode 1
 setenv PGM ${execdir}/calc_increment.x
 mkdir -p ${datapath2}/ensmean/INPUT
 pushd ${datapath2}/ensmean/INPUT
-if ($iau_delthrs > 0) then
+if ($iau_delthrs != -1) then
 set iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
 foreach nfhr ( $iaufhrs2 )
 set charfhr="fhr"`printf %02i $nfhr`

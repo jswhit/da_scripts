@@ -261,7 +261,7 @@ if [ $ICO -gt 0 ] ; then
    fi
 fi
 
-if [ $iau_delthrs -ge 0 ]; then
+if [ "${iau_delthrs}" != "-1" ]; then
    lwrite4danl=.true.
 else
    lwrite4danl=.false.

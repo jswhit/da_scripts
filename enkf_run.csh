@@ -39,7 +39,7 @@ set nanal=1
 set filemissing='no'
 while ($nanal <= $nanals)
    set charnanal="mem"`printf %03i $nanal`
-   if ($iau_delthrs > 0) then
+   if ($iau_delthrs != -1) then
       set analfile="${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}"
    else
       set analfile="${datapath2}/sanl_${analdate}_${charnanal}"
@@ -220,10 +220,10 @@ set nanal=1
 set filemissing='no'
 while ($nanal <= $nanals)
    set charnanal="mem"`printf %03i $nanal`
-   if ($#iaufhrs2 == 1 && $iau_delthrs > 0) then
+   if ($#iaufhrs2 == 1 && $iau_delthrs != -1) then
       /bin/mv -f "${datapath2}/sanl_${analdate}_${charnanal}" "${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}"
    endif
-   if ($iau_delthrs > 0) then
+   if ($iau_delthrs != -1) then
       set analfile="${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}"
    else
       set analfile="${datapath2}/sanl_${analdate}_${charnanal}"
