@@ -259,9 +259,9 @@ fi
 
 ls -l 
 
-FHRESTART=`expr $ANALINC`
+FHRESTART=$ANALINC
 if [ "${iau_delthrs}" != "-1" ]; then
-   FHOFFSET=`expr $ANALINC \/ 2`
+   FHOFFSET=$ANALINC
    FHMAX_FCST=`expr $FHMAX + $FHOFFSET`
    if [ "${fg_only}" == "true" ]; then
       FHRESTART=`expr $ANALINC \/ 2`
