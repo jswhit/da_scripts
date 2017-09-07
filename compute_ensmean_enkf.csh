@@ -17,7 +17,7 @@ if ($iau_delthrs != -1) then
    if ($cleanup_ensmean == 'true' || ($cleanup_ensmean == 'false' && ! -s ${datapath}/${analdate}/sanl_${analdate}_${charfhr}_ensmean)) then
    setenv PGM "${execdir}/getsigensmeanp_smooth.x ${datapath2}/ sanl_${analdate}_${charfhr}_ensmean sanl_${analdate}_${charfhr} ${nanals}"
    sh ${enkfscripts}/runmpi
-   if ($fh == $ANALINC) then
+   if ($nhr_anal == $ANALINC) then
       setenv PGM "${execdir}/getsigensstatp.x ${datapath2}/ sanl_${analdate}_${charfhr} ${nanals}"
       sh ${enkfscripts}/runmpi
    endif
