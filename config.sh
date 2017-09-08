@@ -35,8 +35,8 @@ export save_hpss_subset="true" # save a subset of data each analysis time to HPS
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
-#export cleanup_anal='false'
 #export cleanup_controlanl='false'
+#export cleanup_anal='false'
 #export recenter_anal="false"
 #export cleanup_fg='false'
 #export resubmit='false'
