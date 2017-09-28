@@ -1,7 +1,7 @@
 echo "running on $machine using $NODES nodes"
 ulimit -s unlimited
 
-export exptname=C384_singleres_fv3nems_noskeb
+export exptname=C384_test
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia and jet.
@@ -112,7 +112,7 @@ else
 fi
 
 export do_sppt=T
-export SPPT=0.8
+export SPPT=0.6
 export SPPT_TSCALE=21600.
 export SPPT_LSCALE=250.e3
 export do_shum=T
@@ -198,7 +198,7 @@ fi
                                                                     
 export nanals=80                                                    
                                                                     
-export paoverpb_thresh=0.995
+export paoverpb_thresh=0.99
 export saterrfact=1.0
 export deterministic=.true.
 export sortinc=.true.

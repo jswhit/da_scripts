@@ -4,7 +4,6 @@ if ($machine == 'wcoss') then
    module load nco-gnu-sandybridge
 else
    module load nco
-   module load gsl
 endif
 setenv HOSTFILE ${datapath2}/machinesx
 

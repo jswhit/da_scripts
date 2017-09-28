@@ -16,6 +16,7 @@ setenv startupenv "${datapath}/analdate.csh"
 source $startupenv
 
 # add SATINFO here (instead of submit.sh) since it depends on analysis time.
+setenv SATINFO ${fixgsi}/global_satinfo.txt
 #setenv SATINFO ${obs_datapath}/bufr_${analdate}/global_satinfo.txt
 
 #------------------------------------------------------------------------
@@ -226,9 +227,9 @@ else
 endif
 
 if ($hr == "00") then
-  if ($machine == 'wcoss') then
-     bsub -env "all" < run_fv3_long.sh
-   endif
+  #if ($machine == 'wcoss') then
+  #   bsub -env "all" < run_fv3_long.sh
+  #endif
 endif
 
 
