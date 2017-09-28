@@ -167,7 +167,7 @@ export covinflatemin=1.0
 export analpertwtnh=0.75
 export analpertwtsh=0.75
 export analpertwttr=0.75
-export pseudo_rh=.true.
+export pseudo_rh=.false.
 export use_qsatensmean=.true.
                                                                     
 export letkf_flag=.false.
