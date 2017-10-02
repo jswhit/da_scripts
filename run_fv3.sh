@@ -1,11 +1,14 @@
 # model was compiled with these 
 echo "staring at `date`"
 if [ "$machine" == 'theia' ]; then
-   module list
+   module purge
    module load intel/15.1.133
-   module load impi/5.0.3.048
+   module load impi/5.1.1.109
    module load netcdf/4.3.0
-   module load esmf/7.0.0
+   module load pnetcdf
+   module use /scratch4/NCEPDEV/nems/noscrub/emc.nemspara/soft/modulefiles
+   module load esmf/7.1.0bs34
+   module list
 fi
 
 export VERBOSE=${VERBOSE:-"NO"}
@@ -15,9 +18,9 @@ fi
 
 nmem=`echo $charnanal | cut -f3 -d"m"`
 export imem=10#$nmem
-export ISEED_SPPT=$((analdate*1000 + imem*10 + 1))
-export ISEED_SKEB=$((analdate*1000 + imem*10 + 2))
-export ISEED_SHUM=$((analdate*1000 + imem*10 + 3))
+export ISEED_SPPT=$((analdate*1000 + imem*10 + 4))
+export ISEED_SKEB=$((analdate*1000 + imem*10 + 5))
+export ISEED_SHUM=$((analdate*1000 + imem*10 + 6))
 export npx=`expr $RES + 1`
 export LEVP=`expr $LEVS \+ 1`
 # yr,mon,day,hr at middle of assim window (analysis time)
@@ -263,6 +266,7 @@ FHRESTART=$ANALINC
 if [ "${iau_delthrs}" != "-1" ]; then
    FHOFFSET=$ANALINC
    FHMAX_FCST=`expr $FHMAX + $FHOFFSET`
+   #FHMAX_FCST=`expr $FHMAX + $ANALINC \/ 2`
    if [ "${fg_only}" == "true" ]; then
       FHRESTART=`expr $ANALINC \/ 2`
       FHMAX_FCST=$FHMAX
@@ -275,7 +279,7 @@ fi
 
 cat > model_configure <<EOF
 total_member:            1
-PE_MEMBER01:             ${nprocs}
+PE_MEMBER01:             ${fcst_mpi_tasks}
 start_year:              ${year}
 start_month:             ${mon}
 start_day:               ${day}
@@ -292,11 +296,24 @@ atmos_nthreads:          ${OMP_NUM_THREADS}
 use_hyper_thread:        F
 ncores_per_node:         ${corespernode}
 restart_interval:        ${FHRESTART}
+quilting:                .true.
+write_groups:            1
+write_tasks_per_group:   6
+num_files:               2
+filename_base:           'dyn' 'phy'
+output_grid:             'gaussian_grid'
+write_nemsiofile:        .true.
+write_nemsioflip:        .true.
+imo:                     ${LONB}
+jmo:                     ${LATB}
+nfhout:                  3
+nfhmax_hf:               -1
+nfhout_hf:               -1
+nsout:                   -1
 EOF
-#restart_interval:        `expr ${ANALINC} \* 3600`
 cat model_configure
 
-# setup coupler.res (need for restarts)
+# setup coupler.res (needed for restarts ??)
 if [ "${iau_delthrs}" != "-1" ]  && [ "${fg_only}" == "false" ]; then
    echo "     2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)" > INPUT/coupler.res
    echo "  ${year}  ${mon}  ${day}  ${hour}     0     0        Model start time:   year, month, day, hour, minute, second" >> INPUT/coupler.res
@@ -332,11 +349,12 @@ cat > input.nml <<EOF
 
 &fms_nml
   clock_grain = "ROUTINE",
-  domains_stack_size = 115200,
+  domains_stack_size = 460800,
   print_memory_usage = F,
 /
 
 &fv_core_nml
+  external_eta = T, 
   layout = ${layout},
   io_layout = 1, 1,
   npx      = ${npx},
@@ -401,12 +419,10 @@ cat > input.nml <<EOF
   warm_start = ${warm_start},
   no_dycore = F,
   z_tracer = T,
-  do_skeb=${do_skeb},SKEB_NPASS=$SKEB_NPASS
 /
 
 &external_ic_nml
   filtered_terrain = T,
-  ncep_plevels = T,
   levp = $LEVP,
   gfs_dwinds = T,
   checker_tr = F,
@@ -506,6 +522,7 @@ cat > input.nml <<EOF
   SKEB_TAU=$SKEB_TSCALE, 1.728E5, 2.592E6, 7.776E6, 3.1536E7,
   SKEB_LSCALE=$SKEB_LSCALE, 1000.E3, 2000.E3, 2000.E3, 2000.E3,
   SKEB_VDOF=$SKEB_VDOF,
+  SKEB_NPASS=$SKEB_NPASS,
   ISEED_SPPT=$ISEED_SPPT,ISEED_SHUM=$ISEED_SHUM,ISEED_SKEB=$ISEED_SKEB
 /
 EOF
@@ -519,100 +536,37 @@ ls -l INPUT
 
 # run model
 export PGM=$FCSTEXEC
+export nprocs=$fcst_mpi_tasks
 echo "start running model `date`"
 sh ${enkfscripts}/runmpi
 if [ $? -ne 0 ]; then
    echo "model failed..."
    exit 1
 else
-   echo "done running model, now post-process.. `date`"
-fi
-ls -l RESTART
-
-# regrid output to NEMSIO
-export PGM=${execdir}/regrid_nemsio
-
-export OMP_NUM_THREADS=`python -c "import math; print int(math.floor(float(${fg_proc})/float(${LEVP})))"`
-export mpitaskspernode=`expr $corespernode \/ $OMP_NUM_THREADS`
-if [ "$machine" == 'theia' ]; then
-   if [ $OMP_NUM_THREADS -gt 1 ]; then
-      HOSTFILE2="${HOSTFILE}_2"
-      awk "NR%${OMP_NUM_THREADS} == 1" ${HOSTFILE} > $HOSTFILE2
-      export HOSTFILE=$HOSTFILE2
-      cat $HOSTFILE
-   fi
+   echo "done running model.. `date`"
 fi
 
-export nprocs=$LEVP
-
-ncdump -v time fv3_history.tile1.nc
-ncdump -v time fv3_history2d.tile1.nc
-# nemsio_timestamp is initial time for forecast.
-if [ "${iau_delthrs}" != "-1" ]  && [ "${fg_only}" == "false" ]; then
-  nemsio_timestamp=$analdatem1
-else
-  nemsio_timestamp=$analdate
-fi
-ntry=0
-ntrymax=$nitermax
-while [ $ntry -lt $ntrymax ]; do
+ls -l *nemsio*
+# rename nemsio files.
 fh=$FHMIN
-filemissing=0
 while [ $fh -le $FHMAX ]; do
+  fh2=`expr $fh + $FHOFFSET`
   charfhr="fhr"`printf %02i $fh`
-  if [ ! -s ${datapathp1}/sfg_${analdatep1}_${charfhr}_${charnanal} ]; then
-    filemissing=1
+  charfhr3="f"`printf %03i $fh2`
+  /bin/mv -f dyn${charfhr3}.nemsio ${datapathp1}/sfg_${analdatep1}_${charfhr}_${charnanal}
+  if [ $? -ne 0 ]; then
+     echo "nemsio file missing..."
+     exit 1
   fi
-  if [ ! -s ${datapathp1}/bfg_${analdatep1}_${charfhr}_${charnanal} ]; then
-    filemissing=1
+  /bin/mv -f phy${charfhr3}.nemsio ${datapathp1}/bfg_${analdatep1}_${charfhr}_${charnanal}
+  if [ $? -ne 0 ]; then
+     echo "nemsio file missing..."
+     exit 1
   fi
   fh=$[$fh+$FHOUT]
 done
-if [ $filemissing -eq 1 ]; then
-cat > regrid-nemsio.input <<EOF
-&share
-debug=T,nlons=$LONB,nlats=$LATB,ntrunc=$JCAP,
-datapathout2d='${datapathp1}/bfg_${analdatep1}_${charnanal}',
-datapathout3d='${datapathp1}/sfg_${analdatep1}_${charnanal}',
-analysis_filename='fv3_history.tile1.nc','fv3_history.tile2.nc','fv3_history.tile3.nc','fv3_history.tile4.nc','fv3_history.tile5.nc','fv3_history.tile6.nc',
-analysis_filename2d='fv3_history2d.tile1.nc','fv3_history2d.tile2.nc','fv3_history2d.tile3.nc','fv3_history2d.tile4.nc','fv3_history2d.tile5.nc','fv3_history2d.tile6.nc',
-forecast_timestamp='${nemsio_timestamp}',
-variable_table='${enkfscripts}/variable_table.txt.da',
-nemsio_opt='bin4'
-/
-&interpio
-gfs_hyblevs_filename='${enkfscripts}/global_hyblev.l${LEVP}.txt',
-esmf_bilinear_filename='$FIXFV3/C${RES}/fv3_SCRIP_C${RES}_GRIDSPEC_lon${LONB}_lat${LATB}.gaussian.bilinear.nc'
-esmf_neareststod_filename='$FIXFV3/C${RES}/fv3_SCRIP_C${RES}_GRIDSPEC_lon${LONB}_lat${LATB}.gaussian.neareststod.nc'
-/
-EOF
-sh ${enkfscripts}/runmpi
 
-# rename nemsio files
-echo "rename output files, copy data"
-ls -l ${datapathp1}/sfg_${analdatep1}_${charnanal}.*
-ls -l ${datapathp1}/bfg_${analdatep1}_${charnanal}.*
-fh=`expr $FHMIN + $FHOFFSET`
-while [ $fh -le $FHMAX_FCST ]; do
-  fh2=$[$fh-$FHOFFSET]
-  charfhr1="fhr"`printf %03i $fh`
-  charfhr2="fhr"`printf %02i $fh2`
-  /bin/mv -f ${datapathp1}/sfg_${analdatep1}_${charnanal}.${charfhr1} ${datapathp1}/sfg_${analdatep1}_${charfhr2}_${charnanal}
-  /bin/mv -f ${datapathp1}/bfg_${analdatep1}_${charnanal}.${charfhr1} ${datapathp1}/bfg_${analdatep1}_${charfhr2}_${charnanal}
-  fh=$[$fh+$FHOUT]
-done
-/bin/rm -f ${datapathp1}/sfg*${charnanal}*.fhr*
-/bin/rm -f ${datapathp1}/bfg*${charnanal}*.fhr*
-fi
-
-if [ $filemissing -eq 0 ]; then
-  ntry=$ntrymax
-else
-  ntry=$[$ntry+1]
-fi
-done
-
-
+ls -l RESTART
 # copy restart file to INPUT directory for next analysis time.
 /bin/rm -rf ${datapathp1}/${charnanal}/RESTART ${datapathp1}/${charnanal}/INPUT
 mkdir -p ${datapathp1}/${charnanal}/INPUT

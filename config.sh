@@ -1,7 +1,7 @@
 echo "running on $machine using $NODES nodes"
 ulimit -s unlimited
 
-export exptname=C96_iau
+export exptname=C96_iau_test
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia and jet.
@@ -35,8 +35,8 @@ export save_hpss_subset="true" # save a subset of data each analysis time to HPS
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
-#export cleanup_anal='false'
 #export cleanup_controlanl='false'
+#export cleanup_anal='false'
 #export recenter_anal="false"
 #export cleanup_fg='false'
 #export resubmit='false'
@@ -90,9 +90,13 @@ export massbal_adjust=.false.
 
 # model parameters for ensemble (rest set in $rungfs)
 # lo-res
-export fg_proc=72 # number of total cores per enkf fg ens member. 
-export layout="3, 4" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=fg_proc/fg_threads)
+export fg_proc=48 # number of total cores allocated to each enkf fg ens member. 
 export fg_threads=1 # ens fcst threads
+export fcst_mpi_tasks=42 # number of mpi tasks used to run each model instance (6 are for IO)
+export layout="2, 3" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fcst_mpi_tasks-6)/fg_threads)
+# quilt=.false. use this
+#export fcst_mpi_tasks=48 # number of mpi tasks used to run each model instance 
+#export layout="2, 4" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=$fcst_mpi_tasks/fg_threads)
 export RES=96  
 export cdmbgwd="0.125,3.0"
 export fv_sg_adj=1800
@@ -112,7 +116,7 @@ else
 fi
 
 export do_sppt=T
-export SPPT=0.8
+export SPPT=0.6
 export SPPT_TSCALE=21600.
 export SPPT_LSCALE=500.e3
 export do_shum=T
@@ -120,7 +124,7 @@ export SHUM=0.006
 export SHUM_TSCALE=21600.
 export SHUM_LSCALE=500.e3
 export do_skeb=T
-export SKEB=0.5
+export SKEB=0.0
 export SKEB_TSCALE=21600.
 export SKEB_LSCALE=500.e3
 export SKEBNORM=0
@@ -167,9 +171,9 @@ export iassim_order=0
 
 export covinflatemax=1.e2
 export covinflatemin=1.0                                            
-export analpertwtnh=0.75
-export analpertwtsh=0.75
-export analpertwttr=0.75
+export analpertwtnh=0.85
+export analpertwtsh=0.85
+export analpertwttr=0.85
 export pseudo_rh=.true.
 export use_qsatensmean=.true.
                                                                     
@@ -207,7 +211,7 @@ export saterrfact=1.0
 export deterministic=.true.
 export sortinc=.true.
                                                                     
-export nitermax=3 
+export nitermax=2 
 
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
