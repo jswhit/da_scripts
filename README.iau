@@ -63,6 +63,8 @@ assimilation window.
 - For a single-resolution run, there is no control forecast and the EnKF ensemble mean backgrounds are fed
   to the GSI and no recentering of backgrounds is necessary.
 
+* The regrid_nemio utility is no longer needed.
+
 * Mods to the GSI, EnKF, anavinfo and EnKF utiltiies.
 - use /home/Jeffrey.S.Whitaker/fv3diff.out on theia for mods to apply to the EXP-enkflinhx gerrit/git branch.
   The EXP-enkflinhx-fix branch contains the updated anavinfo file.
