@@ -8,7 +8,7 @@ start_hour:              ${hour}
 nhours_fcst:             15
 RUN_CONTINUE:            F
 ENS_SPS:                 F
-restart_interval:        3
+restart_interval:        6
 quilting:                .true.
 write_groups:            1
 write_tasks_per_group:   6
@@ -25,9 +25,9 @@ nfhout_hf:               -1
 nsout:                   -1
 where year, month, day, hour refer to the *previous* analysis time
 and LONB, LATB is the resolution of the gaussian grid.
-Restarts will be output every three hours - but the only one you need to save for
-the next analysis cycle is the one that is output at the *end* of the 
-assimilation window (6 hours into the forecast).
+Restarts will be output every six hours - but the only one you need to save for
+the next analysis cycle is the one that is output at the *end* of the current
+assimilation window (the beginning of the next assimilation windo, 6 hours into the forecast).
 - in coupler.res:
         2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)
    ${year}  ${mon}  ${day}  ${hour}     0     0        Model start time:   year, month, day, hour, minute, second
@@ -63,5 +63,6 @@ assimilation window.
 - For a single-resolution run, there is no control forecast and the EnKF ensemble mean backgrounds are fed
   to the GSI and no recentering of backgrounds is necessary.
 
-* Mods to the GSI.
+* Mods to the GSI, EnKF, anavinfo and EnKF utiltiies.
 - use /home/Jeffrey.S.Whitaker/fv3diff.out on theia for mods to apply to the EXP-enkflinhx gerrit/git branch.
+  The EXP-enkflinhx-fix branch contains the updated anavinfo file.
