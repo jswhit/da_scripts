@@ -211,22 +211,19 @@ if ($machine != 'wcoss') then
     endif
 endif
 
-echo "$analdate starting ens mean analysis computation `date`"
-csh ${enkfscripts}/compute_ensmean_enkf.csh >&!  ${current_logdir}/compute_ensmean_anal.out
-echo "$analdate done computing ensemble mean analyses `date`"
-
 # check output files again.
 set nanal=1
 set filemissing='no'
 while ($nanal <= $nanals)
    set charnanal="mem"`printf %03i $nanal`
    if ($#iaufhrs2 == 1 && $iau_delthrs != -1) then
-      /bin/mv -f "${datapath2}/sanl_${analdate}_${charnanal}" "${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}"
+      echo "rename output file sanl_${analdate}_${charnanal} to sanl_${analdate}_${charfhr}_${charnanal}"
+      /bin/mv -f ${datapath2}/sanl_${analdate}_${charnanal} ${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}
    endif
    if ($iau_delthrs != -1) then
-      set analfile="${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}"
+      set analfile=${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}
    else
-      set analfile="${datapath2}/sanl_${analdate}_${charnanal}"
+      set analfile=${datapath2}/sanl_${analdate}_${charnanal}
    endif
    if ( ! -s $analfile) set filemissing='yes'
    @ nanal = $nanal + 1
@@ -239,5 +236,9 @@ if ($filemissing == 'yes') then
 else
     echo "all output files seem OK `date`"
 endif
+
+echo "$analdate starting ens mean analysis computation `date`"
+csh ${enkfscripts}/compute_ensmean_enkf.csh >&!  ${current_logdir}/compute_ensmean_anal.out
+echo "$analdate done computing ensemble mean analyses `date`"
 
 exit 0
