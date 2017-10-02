@@ -4,7 +4,6 @@ if ($machine == 'wcoss') then
    module load nco-gnu-sandybridge
 else
    module load nco
-   module load gsl
 endif
 setenv HOSTFILE ${datapath2}/machinesx
 
@@ -23,8 +22,8 @@ while ($fh <= $FHMAX)
   endif
   if ($cleanup_ensmean == 'true' || ($cleanup_ensmean == 'false' && ! -s ${datapath}/${analdate}/sfg_${analdate}_${charfhr}_ensmean)) then
       /bin/rm -f ${datapath2}/sfg_${analdate}_${charfhr}_ensmean
-      echo "running ${execdir}/getsigensmeanp_smooth.x ${datapath2}/ sfg_${analdate}_${charfhr}_ensmean sfg_${analdate}_${charfhr} ${nanals}"
-      setenv PGM "${execdir}/getsigensmeanp_smooth.x ${datapath2}/ sfg_${analdate}_${charfhr}_ensmean sfg_${analdate}_${charfhr} ${nanals}"
+      echo "running ${execdir}/getsigensmeanp_smooth.x ${datapath2}/ sfg_${analdate}_${charfhr}_ensmean sfg_${analdate}_${charfhr} ${nanals} ${JCAP}"
+      setenv PGM "${execdir}/getsigensmeanp_smooth.x ${datapath2}/ sfg_${analdate}_${charfhr}_ensmean sfg_${analdate}_${charfhr} ${nanals} ${JCAP}"
       sh ${enkfscripts}/runmpi
       if ($fh == $ANALINC) then
       echo "running ${execdir}/getsigensstatp.x ${datapath2}/ sfg_${analdate}_${charfhr} ${nanals}"
