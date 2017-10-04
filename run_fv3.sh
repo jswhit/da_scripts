@@ -1,5 +1,5 @@
 # model was compiled with these 
-echo "staring at `date`"
+echo "starting at `date`"
 if [ "$machine" == 'theia' ]; then
    module purge
    module load intel/15.1.133
