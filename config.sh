@@ -89,30 +89,47 @@ export readin_localization=.true.
 export massbal_adjust=.false.
 
 # model parameters for ensemble (rest set in $rungfs)
-# lo-res
-export fg_proc=48 # number of total cores allocated to each enkf fg ens member. 
+export fg_proc=24 # number of total cores allocated to each enkf fg ens member. 
 export fg_threads=1 # ens fcst threads
-export fcst_mpi_tasks=42 # number of mpi tasks used to run each model instance (6 are for IO)
-export layout="2, 3" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fcst_mpi_tasks-6)/fg_threads)
-# quilt=.false. use this
-#export fcst_mpi_tasks=48 # number of mpi tasks used to run each model instance 
-#export layout="2, 4" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=$fcst_mpi_tasks/fg_threads)
+export write_groups=1
+export write_tasks=6 # write tasks
+export layout="3, 1" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc-$write_tasks)/fg_threads)
 export RES=96  
 export cdmbgwd="0.125,3.0"
+export psautco="2.0d-4,2.0d-4"
+export zhao_mic=F
+if [ $zhao_mic == "F" ]; then
+   export ncld=5
+   export nwat=6
+   export cal_pre=F
+   export dnats=1
+else
+   export ncld=1
+   export nwat=2
+   export cal_pre=T
+   export dnats=0
+fi
 export fv_sg_adj=1800
 export dt_atmos=900
 export k_split=1
 export n_split=6
-export hydrostatic=T
-export vtdm4=0.05
-export hord_mt=10
-export hord_vt=10
-export hord_tm=10
-export hord_dp=10
+export hydrostatic=F
 if [ $hydrostatic == 'T' ];  then
    export fv3exec='fv3-hydro.exe'
+   export hord_mt=10
+   export hord_vt=10
+   export hord_tm=10
+   export hord_dp=-10
+   export vtdm4=0.05
+   export consv_te=0
 else
    export fv3exec='fv3-nonhydro.exe'
+   export hord_mt=5
+   export hord_vt=5
+   export hord_tm=5
+   export hord_dp=-5
+   export vtdm4=0.06
+   export consv_te=1
 fi
 
 export do_sppt=T
@@ -132,8 +149,8 @@ export SKEB_NPASS=30
 export SKEB_VDOF=5
 
 # Assimilation parameters
-export enkf_threads=2 
-export gsi_control_threads=2
+export enkf_threads=1 
+export gsi_control_threads=1
 export JCAP=126 
 export LONB=384   
 export LATB=190  

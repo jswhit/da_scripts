@@ -11,16 +11,31 @@ if [ "$machine" == 'theia' ]; then
    module list
 fi
 
+# workaround for error on theia
+# 'Unable to allocate shared memory for intra-node messaging'
+if [ "$machine" == 'theia' ]; then
+   n=1
+   cat $HOSTFILE | uniq > nodes_${charnanal}
+   ncount=`wc -l nodes_${charnanal} | cut -f1 -d " "`
+   while [ $n -le $ncount ]; do
+    node=`head -$n nodes_${charnanal} | tail -1`
+    ssh -n $node "/bin/rm -rf /dev/shm/*"
+    n=$((n+1))
+   done
+   /bin/rm -f nodes_${charnanal}
+fi
+
 export VERBOSE=${VERBOSE:-"NO"}
 if [ "$VERBOSE" == "YES" ]; then
  set -x
 fi
 
 nmem=`echo $charnanal | cut -f3 -d"m"`
-export imem=10#$nmem
-export ISEED_SPPT=$((analdate*1000 + imem*10 + 4))
-export ISEED_SKEB=$((analdate*1000 + imem*10 + 5))
-export ISEED_SHUM=$((analdate*1000 + imem*10 + 6))
+nmem=$(( 10#$nmem )) # convert to decimal (remove leading zeros)
+charnanal2=`printf %02i $nmem`
+export ISEED_SPPT=$((analdate*1000 + nmem*10 + 4))
+export ISEED_SKEB=$((analdate*1000 + nmem*10 + 5))
+export ISEED_SHUM=$((analdate*1000 + nmem*10 + 6))
 export npx=`expr $RES + 1`
 export LEVP=`expr $LEVS \+ 1`
 # yr,mon,day,hr at middle of assim window (analysis time)
@@ -84,9 +99,14 @@ if [ $? -ne 0 ]; then
 fi
 /bin/cp -f $enkfscripts/diag_table .
 /bin/cp -f $enkfscripts/nems.configure .
-# for diag table, insert correct starting time.
+# insert correct starting time and output interval in diag_table template.
 sed -i -e "s/YYYY MM DD HH/${year} ${mon} ${day} ${hour}/g" diag_table
+#sed -i -e "s/FHOUT/${FHOUT}/g" diag_table
+if [ "$zhao_mic" == 'T' ]; then
 /bin/cp -f $enkfscripts/field_table .
+else
+/bin/cp -f $enkfscripts/field_table_ncld5 field_table
+fi
 /bin/cp -f $enkfscripts/data_table . 
 /bin/rm -rf RESTART
 mkdir -p RESTART
@@ -231,6 +251,10 @@ else
    fi
 fi
 
+#fntsfa=${sstpath}/${yeara}/sst_${charnanal2}.grib
+#fnacna=${sstpath}/${yeara}/icec_${charnanal2}.grib
+#fnsnoa='        ' # no input file, use model snow
+
 snoid='SNOD'
 
 # Turn off snow analysis if it has already been used.
@@ -278,8 +302,9 @@ else
 fi
 
 cat > model_configure <<EOF
+print_esmf:              .true.
 total_member:            1
-PE_MEMBER01:             ${fcst_mpi_tasks}
+PE_MEMBER01:             ${fg_proc}
 start_year:              ${year}
 start_month:             ${mon}
 start_day:               ${day}
@@ -297,8 +322,8 @@ use_hyper_thread:        F
 ncores_per_node:         ${corespernode}
 restart_interval:        ${FHRESTART}
 quilting:                .true.
-write_groups:            1
-write_tasks_per_group:   6
+write_groups:            ${write_groups}
+write_tasks_per_group:   ${write_tasks}
 num_files:               2
 filename_base:           'dyn' 'phy'
 output_grid:             'gaussian_grid'
@@ -349,7 +374,7 @@ cat > input.nml <<EOF
 
 &fms_nml
   clock_grain = "ROUTINE",
-  domains_stack_size = 460800,
+  domains_stack_size = 1280000,
   print_memory_usage = F,
 /
 
@@ -366,32 +391,34 @@ cat > input.nml <<EOF
   fv_debug = F,
   range_warn = F,
   reset_eta = F,
-  n_sponge = 24,
+  n_sponge = 10,
   nudge_qv = T,
-  tau = 5.0,
+  nudge_dz = F,
+  tau = 10.0,
   rf_cutoff = 750.0,
   d2_bg_k1 = 0.15,
   d2_bg_k2 = 0.02,
+  d2_bg = 0.
   kord_tm = -9,
   kord_mt = 9,
   kord_wz = 9,
   kord_tr = 9,
   hydrostatic = ${hydrostatic},
   phys_hydrostatic = F,
-  use_hydro_pressure = F,
+  use_hydro_pressure = ${hydrostatic},
   beta = 0,
   a_imp = 1.0,
   p_fac = 0.1,
   k_split  = ${k_split:-2},
   n_split  = ${n_split:-6},
-  nwat = 2,
+  nwat = ${nwat},
   na_init = ${na_init},
   d_ext = 0.0,
-  dnats = 0,
+  dnats = ${dnats},
   fv_sg_adj = ${fv_sg_adj:-600},
   d2_bg = 0.0,
-  nord = 2,
-  dddmp = 0.1,
+  nord = 3,
+  dddmp = 0.2,
   d4_bg = 0.12,
   delt_max = 0.002,
   vtdm4 = ${vtdm4},
@@ -411,7 +438,7 @@ cat > input.nml <<EOF
   hord_dp = ${hord_dp},
   hord_tr = 8,
   adjust_dry_mass = F,
-  consv_te = 0,
+  consv_te = ${consv_te},
   consv_am = F,
   fill = T,
   dwind_2d = F,
@@ -433,11 +460,11 @@ cat > input.nml <<EOF
   fhzero         = ${FHOUT}
   ldiag3d        = F
   fhcyc          = ${FHCYC}
-  nst_anl        = F
+  elv_cor        = F
   use_ufo        = T
   pre_rad        = F
-  ncld           = 1
-  zhao_mic       = T
+  ncld           = ${ncld}
+  zhao_mic       = ${zhao_mic}
   pdfcld         = F
   fhswr          = 3600.
   fhlwr          = 3600.
@@ -452,7 +479,7 @@ cat > input.nml <<EOF
   swhtr          = T
   cnvgwd         = T
   shal_cnv       = T
-  cal_pre        = T
+  cal_pre        = ${cal_pre}
   redrag         = T
   dspheat        = F
   hybedmf        = T
@@ -467,9 +494,60 @@ cat > input.nml <<EOF
   debug          = F
   nstf_name      = 0
   cdmbgwd = ${cdmbgwd}
+  psautco = ${psautco}
   iaufhrs = ${iaufhrs}
   iau_delthrs = ${iaudelthrs}
   iau_inc_files = ${iau_inc_files}
+/
+
+&gfdl_cloud_microphysics_nml
+  sedi_transport = .true.
+  do_sedi_heat = .false.
+  rad_snow = .true.
+  rad_graupel = .true.
+  rad_rain = .true.
+  const_vi = .F.
+  const_vs = .F.
+  const_vg = .F.
+  const_vr = .F.
+  vi_max = 1.
+  vs_max = 2.
+  vg_max = 12.
+  vr_max = 12.
+  qi_lim = 1.
+  prog_ccn = .false.
+  do_qa = .true.
+  fast_sat_adj = .true.
+  tau_l2v = 300.
+  tau_l2v = 225.
+  tau_v2l = 150.
+  tau_g2v = 900.
+  rthresh = 10.e-6  ! This is a key parameter for cloud water
+  dw_land  = 0.16
+  dw_ocean = 0.10
+  ql_gen = 1.0e-3
+  ql_mlt = 1.0e-3
+  qi0_crt = 8.0E-5
+  qs0_crt = 1.0e-3
+  tau_i2s = 1000.
+  c_psaci = 0.05
+  c_pgacs = 0.01
+  rh_inc = 0.30
+  rh_inr = 0.30
+  rh_ins = 0.30
+  ccn_l = 300.
+  ccn_o = 100.
+  c_paut = 0.5
+  c_cracw = 0.8
+  use_ppm = .false.
+  use_ccn = .true.
+  mono_prof = .true.
+  z_slope_liq  = .true.
+  z_slope_ice  = .true.
+  de_ice = .false.
+  fix_negative = .true.
+  icloud_f = 1
+  mp_time = 150.
 /
 
 &nggps_diag_nml
@@ -506,7 +584,7 @@ cat > input.nml <<EOF
   fsmcl(2) = 60,
   fsmcl(3) = 60,
   fsmcl(4) = 60,
-  fsnol = ${fsnol},
+  fsnol=99999,
 /
 
 &fv_grid_nml
@@ -536,7 +614,7 @@ ls -l INPUT
 
 # run model
 export PGM=$FCSTEXEC
-export nprocs=$fcst_mpi_tasks
+export nprocs=$fg_proc
 echo "start running model `date`"
 sh ${enkfscripts}/runmpi
 if [ $? -ne 0 ]; then
@@ -548,7 +626,8 @@ fi
 
 ls -l *nemsio*
 # rename nemsio files.
-fh=$FHMIN
+#fh=$FHMIN
+fh=0
 while [ $fh -le $FHMAX ]; do
   fh2=`expr $fh + $FHOFFSET`
   charfhr="fhr"`printf %02i $fh`
@@ -566,6 +645,7 @@ while [ $fh -le $FHMAX ]; do
   fh=$[$fh+$FHOUT]
 done
 
+ls -l *nc
 ls -l RESTART
 # copy restart file to INPUT directory for next analysis time.
 /bin/rm -rf ${datapathp1}/${charnanal}/RESTART ${datapathp1}/${charnanal}/INPUT
@@ -578,6 +658,13 @@ for file in ${datestring}*nc; do
    /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT/$file2
 done
 cd ..
+# also move history files.
+#n=1
+#while [ $n -le 6 ]; do
+# /bin/mv -f fv3new_history.tile${n}.nc ${datapathp1}/${charnanal}/fv3_history.tile${n}.nc
+# n=$((n+1))
+#done
+ls -l ${datapathp1}/${charnanal}
 ls -l ${datapathp1}/${charnanal}/INPUT
 
 # remove symlinks from INPUT directory
@@ -587,4 +674,5 @@ cd ..
 /bin/rm -rf RESTART # don't need RESTART dir anymore.
 
 echo "all done at `date`"
+
 exit 0
