@@ -522,7 +522,7 @@ cat > input.nml <<EOF
   tau_l2v = 225.
   tau_v2l = 150.
   tau_g2v = 900.
-  rthresh = 10.e-6  ! This is a key parameter for cloud water
+  rthresh = 10.e-6  
   dw_land  = 0.16
   dw_ocean = 0.10
   ql_gen = 1.0e-3
