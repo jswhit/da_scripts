@@ -76,7 +76,7 @@ control_vector::
  q        64      1       0.75        -1.0     state    q
  oz       64      1       0.75        -1.0     state    oz
 !sst       1      0       1.00        -1.0     state    sst
-!cw       64      1       1.00        -1.0     state    cw
+ cw       64      1       1.00        -1.0     state    cw
 !stl       1      0       3.00        -1.0     motley   sst
 !sti       1      0       3.00        -1.0     motley   sst
 ::
