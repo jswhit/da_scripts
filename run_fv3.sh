@@ -19,6 +19,7 @@ if [ "$machine" == 'theia' ]; then
    ncount=`wc -l nodes_${charnanal} | cut -f1 -d " "`
    while [ $n -le $ncount ]; do
     node=`head -$n nodes_${charnanal} | tail -1`
+    ssh -n $node "ls -l /dev/shm/*"
     ssh -n $node "/bin/rm -rf /dev/shm/*"
     n=$((n+1))
    done
@@ -374,7 +375,7 @@ cat > input.nml <<EOF
 
 &fms_nml
   clock_grain = "ROUTINE",
-  domains_stack_size = 1280000,
+  domains_stack_size = 5000000,
   print_memory_usage = F,
 /
 
@@ -460,7 +461,7 @@ cat > input.nml <<EOF
   fhzero         = ${FHOUT}
   ldiag3d        = F
   fhcyc          = ${FHCYC}
-  elv_cor        = F
+  nst_anl        = F
   use_ufo        = T
   pre_rad        = F
   ncld           = ${ncld}

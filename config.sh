@@ -1,7 +1,7 @@
 echo "running on $machine using $NODES nodes"
 ulimit -s unlimited
 
-export exptname=C96_iau_test
+export exptname=C192_test_iau
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia and jet.
@@ -94,10 +94,10 @@ export fg_threads=1 # ens fcst threads
 export write_groups=1
 export write_tasks=6 # write tasks
 export layout="3, 1" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc-$write_tasks)/fg_threads)
-export RES=96  
-export cdmbgwd="0.125,3.0"
-export psautco="2.0d-4,2.0d-4"
-export zhao_mic=F
+export RES=192 
+export cdmbgwd="0.25,2.0"
+export psautco="6.0d-4,3.0d-4"
+export zhao_mic=T
 if [ $zhao_mic == "F" ]; then
    export ncld=5
    export nwat=6
@@ -109,8 +109,8 @@ else
    export cal_pre=T
    export dnats=0
 fi
-export fv_sg_adj=1800
-export dt_atmos=900
+export fv_sg_adj=900
+export dt_atmos=450
 export k_split=1
 export n_split=6
 export hydrostatic=F
@@ -141,7 +141,7 @@ export SHUM=0.006
 export SHUM_TSCALE=21600.
 export SHUM_LSCALE=500.e3
 export do_skeb=T
-export SKEB=0.0
+export SKEB=1.0
 export SKEB_TSCALE=21600.
 export SKEB_LSCALE=500.e3
 export SKEBNORM=0
@@ -149,11 +149,11 @@ export SKEB_NPASS=30
 export SKEB_VDOF=5
 
 # Assimilation parameters
-export enkf_threads=1 
-export gsi_control_threads=1
-export JCAP=126 
-export LONB=384   
-export LATB=190  
+export enkf_threads=2 
+export gsi_control_threads=2
+export JCAP=382 
+export LONB=768   
+export LATB=384  
 export LONA=$LONB
 export LATA=$LATB      
 
@@ -236,11 +236,11 @@ export incdate="${enkfscripts}/incdate.sh"
 
 if [ "$machine" == 'theia' ]; then
    export fv3gfspath=/scratch4/NCEPDEV/global/save/glopara/svn/fv3gfs
-   export gsipath=/scratch3/BMC/gsienkf/whitaker/gsi/branches/EXP-enkflinhx
+   export gsipath=/scratch3/BMC/gsienkf/whitaker/gsi/ProdGSI
    export FIXFV3=${fv3gfspath}/fix_fv3
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
    export fixgsi=${gsipath}/fix
-   export fixcrtm=${fixgsi}/crtm_2.2.3
+   export fixcrtm=/scratch3/BMC/gsienkf/whitaker/gsi/branches/EXP-enkflinhx/fix/crtm_2.2.3
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
@@ -261,11 +261,11 @@ elif [ "$machine" == 'gaea' ]; then
    export nemsioget=${execdir}/nemsio_get
 elif [ "$machine" == 'wcoss' ]; then
    export fv3gfspath=/gpfs/hps3/emc/global/noscrub/emc.glopara/svn/fv3gfs
-   export gsipath=/gpfs/hps2/esrl/gefsrr/noscrub/Jeffrey.S.Whitaker/gsi/EXP-enkflinhx
+   export gsipath=/gpfs/hps2/esrl/gefsrr/noscrub/Jeffrey.S.Whitaker/gsi/ProdGSI
    export FIXFV3=${fv3gfspath}/fix_fv3
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
    export fixgsi=${gsipath}/fix
-   export fixcrtm=${fixgsi}/crtm-2.2.3
+   export fixcrtm=/gpfs/hps/nco/ops/nwprod/lib/crtm/v2.2.3/fix
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
@@ -286,7 +286,7 @@ fi
 #export OZINFO=${enkfscripts}/global_ozinfo.txt
 # set SATINFO in main.csh
 
-export ANAVINFO=${fixgsi}/global_anavinfo.l64.txt
+export ANAVINFO=${enkfscripts}/global_anavinfo.l64.txt
 export ANAVINFO_ENKF=${ANAVINFO}
 export HYBENSINFO=${fixgsi}/global_hybens_info.l64.txt
 export CONVINFO=${fixgsi}/global_convinfo.txt

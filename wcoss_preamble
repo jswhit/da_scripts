@@ -1,11 +1,11 @@
-#BSUB -W 1:30                    # wall clock time 
-#BSUB -o C96_iau.stdout
-#BSUB -e C96_iau.stderr
-#BSUB -J C96_iau  
+#BSUB -W 2:30                    # wall clock time 
+#BSUB -o C192_test_iau.stdout
+#BSUB -e C192_test_iau.stderr
+#BSUB -J C192_test_iau  
 #BSUB -q "dev"                   # job queue 
 #BSUB -P GFS-T2O                 # project code 
 #BSUB -M 600                    # Memory req's for serial portion
 #BSUB -extsched 'CRAYLINUX[]'    # Request to run on compute nodes
-export NODES=15
+export NODES=40
 export corespernode=24
 export machine='wcoss'
