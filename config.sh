@@ -1,7 +1,7 @@
 echo "running on $machine using $NODES nodes"
 ulimit -s unlimited
 
-export exptname=C192_test_iau
+export exptname=C96_test_iau
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia and jet.
@@ -94,10 +94,11 @@ export fg_threads=1 # ens fcst threads
 export write_groups=1
 export write_tasks=6 # write tasks
 export layout="3, 1" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc-$write_tasks)/fg_threads)
-export RES=192 
-export cdmbgwd="0.25,2.0"
+
+export RES=96  
 export psautco="6.0d-4,3.0d-4"
 export zhao_mic=T
+
 if [ $zhao_mic == "F" ]; then
    export ncld=5
    export nwat=6
@@ -109,11 +110,9 @@ else
    export cal_pre=T
    export dnats=0
 fi
-export fv_sg_adj=900
-export dt_atmos=450
 export k_split=1
 export n_split=6
-export hydrostatic=F
+export hydrostatic=T
 if [ $hydrostatic == 'T' ];  then
    export fv3exec='fv3-hydro.exe'
    export hord_mt=10
@@ -133,7 +132,7 @@ else
 fi
 
 export do_sppt=T
-export SPPT=0.6
+export SPPT=0.8
 export SPPT_TSCALE=21600.
 export SPPT_LSCALE=500.e3
 export do_shum=T
@@ -149,11 +148,36 @@ export SKEB_NPASS=30
 export SKEB_VDOF=5
 
 # Assimilation parameters
-export enkf_threads=2 
-export gsi_control_threads=2
-export JCAP=382 
-export LONB=768   
-export LATB=384  
+export enkf_threads=1 
+export gsi_control_threads=1
+
+# resolution dependent model parameters
+if [ $RES -eq 384 ]; then
+   export JCAP=878 
+   export LONB=1760  
+   export LATB=880  
+   export fv_sg_adj=600
+   export dt_atmos=225
+   export cdmbgwd="1.0,1.2"
+elif [ $RES -eq 192 ]; then
+   export JCAP=382 
+   export LONB=768   
+   export LATB=384  
+   export fv_sg_adj=900
+   export dt_atmos=450
+   export cdmbgwd="0.25,2.0"
+elif [ $RES -eq 96 ]; then
+   export JCAP=126 
+   export LONB=384   
+   export LATB=190  
+   export fv_sg_adj=1800
+   export dt_atmos=900
+   export cdmbgwd="0.125,3.0"
+else
+   echo "unknown RES=${RES}"
+   exit 1
+fi
+
 export LONA=$LONB
 export LATA=$LATB      
 
@@ -165,13 +189,13 @@ export FHMAX=9
 export FHOUT=3
 FHMAXP1=`expr $FHMAX + 1`
 export enkfstatefhrs=`python -c "print range(${FHMIN},${FHMAXP1},${FHOUT})" | cut -f2 -d"[" | cut -f1 -d"]"`
-export iaufhrs="3,6,9"
-export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
+#export iaufhrs="3,6,9"
+#export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 # dump increment in one time step (for debugging)
-#export iaufhrs="6"
+export iaufhrs="6"
 #export iau_delthrs=0.25
 # to turn off iau, use iau_delthrs=-1
-#export iau_delthrs=-1
+export iau_delthrs=-1
 
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
@@ -236,11 +260,11 @@ export incdate="${enkfscripts}/incdate.sh"
 
 if [ "$machine" == 'theia' ]; then
    export fv3gfspath=/scratch4/NCEPDEV/global/save/glopara/svn/fv3gfs
-   export gsipath=/scratch3/BMC/gsienkf/whitaker/gsi/ProdGSI
+   export gsipath=/scratch3/BMC/gsienkf/whitaker/gsi/branches/EXP-enkflinhx
    export FIXFV3=${fv3gfspath}/fix_fv3
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
    export fixgsi=${gsipath}/fix
-   export fixcrtm=/scratch3/BMC/gsienkf/whitaker/gsi/branches/EXP-enkflinhx/fix/crtm_2.2.3
+   export fixcrtm=${fixgsi}/crtm_2.2.3
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
