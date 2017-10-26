@@ -5,6 +5,7 @@ if [ "$machine" == 'theia' ]; then
    module load intel/15.1.133
    module load impi/5.1.1.109
    module load netcdf/4.3.0
+   module load hdf5
    module load pnetcdf
    module use /scratch4/NCEPDEV/nems/noscrub/emc.nemspara/soft/modulefiles
    module load esmf/7.1.0bs34
@@ -231,7 +232,7 @@ else
    externalic=F
    mountain=T
    na_init=0 
-   FHCYC=6
+   FHCYC=${FHCYC}
    if [ "${iau_delthrs}" != "-1" ]; then
       if [ "$iaufhrs" == "3,4,5,6,7,8,9" ]; then
          iau_inc_files="'fv3_increment3.nc','fv3_increment4.nc','fv3_increment5.nc','fv3_increment6.nc','fv3_increment7.nc','fv3_increment8.nc','fv3_increment9.nc'"
@@ -300,6 +301,40 @@ if [ "${iau_delthrs}" != "-1" ]; then
 else
    FHMAX_FCST=$FHMAX
    FHOFFSET=0
+fi
+
+if [ $FHCYC -eq 0 ] && [ "$warm_start" == "T" ]; then
+   # run global_cycle to update surface in restart file.
+   export BASE_GSM=${fv3gfspath}
+   export FIXgsm=$FIXGSM
+   export FIXfv3=$FIXFV3
+   export CDATE="${year_start}${mon_start}${day_start}${hour_start}"
+   export CYCLEXEC=${execdir}/global_cycle
+   export CYCLESH=${enkfscripts}/global_cycle.sh
+   export COMIN=${PWD}/INPUT
+   export COMOUT=$COMIN
+   export FNTSFA="${fntsfa}"
+   export FNSNOA="${fnsnoa}"
+   export FNACNA="${fnacna}"
+   export CASE="C${RES}"
+   # NST update
+   #export DONST=T
+   #export GSI_FILE=${COMIN}/dtfanl.nc
+   sh ${enkfscripts}/global_cycle_driver.sh
+   n=1
+   while [ $n -le 6 ]; do
+     ls -l ${COMOUT}/sfcanl_data.tile${n}.nc
+     ls -l ${COMOUT}/sfc_data.tile${n}.nc
+     if [ -s ${COMOUT}/sfcanl_data.tile${n}.nc ]; then
+         /bin/mv -f ${COMOUT}/sfcanl_data.tile${n}.nc ${COMOUT}/sfc_data.tile${n}.nc
+     else
+         echo "global_cycle failed, exiting .."
+         exit 1
+     fi
+     ls -l ${COMOUT}/sfc_data.tile${n}.nc
+     n=$((n+1))
+   done
+   /bin/rm -rf rundir*
 fi
 
 cat > model_configure <<EOF
@@ -429,6 +464,7 @@ cat > input.nml <<EOF
   res_latlon_dynamics=$reslatlondynamics,
   read_increment=$readincrement,
   gfs_phil = F,
+  agrid_vel_rst = F,
   nggps_ic = T,
   mountain = ${mountain},
   ncep_ic = F,

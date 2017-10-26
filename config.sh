@@ -34,10 +34,10 @@ export resubmit='true'
 export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
 
 # override values from above for debugging.
-#export cleanup_ensmean='false'
-#export cleanup_controlanl='false'
-#export cleanup_anal='false'
-#export recenter_anal="false"
+export cleanup_ensmean='false'
+export cleanup_controlanl='false'
+export cleanup_anal='false'
+export recenter_anal="false"
 #export cleanup_fg='false'
 #export resubmit='false'
 #export do_cleanup='false'
@@ -177,6 +177,7 @@ else
    echo "unknown RES=${RES}"
    exit 1
 fi
+export FHCYC=0 # run global_cycle instead of gcycle inside model
 
 export LONA=$LONB
 export LATA=$LATB      
@@ -259,9 +260,9 @@ export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
 
 if [ "$machine" == 'theia' ]; then
-   export fv3gfspath=/scratch4/NCEPDEV/global/save/glopara/svn/fv3gfs
+   export fv3gfspath=/scratch4/NCEPDEV/global/save/glopara/svn/fv3gfs/trunk/global_shared.v15.0.0
    export gsipath=/scratch3/BMC/gsienkf/whitaker/gsi/branches/EXP-enkflinhx
-   export FIXFV3=${fv3gfspath}/fix_fv3
+   export FIXFV3=${fv3gfspath}/fix/fix_fv3
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
    export fixgsi=${gsipath}/fix
    export fixcrtm=${fixgsi}/crtm_2.2.3
