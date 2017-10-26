@@ -75,10 +75,10 @@ control_vector::
  t        64      0       0.75        -1.0     state    tv
  q        64      1       0.75        -1.0     state    q
  oz       64      1       0.75        -1.0     state    oz
-!sst       1      0       1.00        -1.0     state    sst
+ sst       1      0       1.00        -1.0     state    sst
  cw       64      1       1.00        -1.0     state    cw
-!stl       1      0       3.00        -1.0     motley   sst
-!sti       1      0       3.00        -1.0     motley   sst
+ stl       1      0       3.00        -1.0     motley   sst
+ sti       1      0       3.00        -1.0     motley   sst
 ::
 
 ! Following table shows the use of all four prescribed trace gas data.
