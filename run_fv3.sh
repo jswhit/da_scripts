@@ -308,7 +308,9 @@ if [ $FHCYC -eq 0 ] && [ "$warm_start" == "T" ]; then
    export BASE_GSM=${fv3gfspath}
    export FIXgsm=$FIXGSM
    export FIXfv3=$FIXFV3
-   export CDATE="${year_start}${mon_start}${day_start}${hour_start}"
+   # global_cycle chokes for 3,9,15,18 UTC hours in CDATE
+   #export CDATE="${year_start}${mon_start}${day_start}${hour_start}"
+   export CDATE=${analdate}
    export CYCLEXEC=${execdir}/global_cycle
    export CYCLESH=${enkfscripts}/global_cycle.sh
    export COMIN=${PWD}/INPUT
