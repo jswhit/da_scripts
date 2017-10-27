@@ -1,7 +1,7 @@
 echo "running on $machine using $NODES nodes"
 ulimit -s unlimited
 
-export exptname=C96_test_iau
+export exptname=C192_test_iau
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia and jet.
@@ -95,7 +95,7 @@ export write_groups=1
 export write_tasks=6 # write tasks
 export layout="3, 1" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc-$write_tasks)/fg_threads)
 
-export RES=96  
+export RES=192 
 export psautco="6.0d-4,3.0d-4"
 export zhao_mic=T
 
@@ -112,7 +112,7 @@ else
 fi
 export k_split=1
 export n_split=6
-export hydrostatic=T
+export hydrostatic=F
 if [ $hydrostatic == 'T' ];  then
    export fv3exec='fv3-hydro.exe'
    export hord_mt=10
@@ -148,8 +148,8 @@ export SKEB_NPASS=30
 export SKEB_VDOF=5
 
 # Assimilation parameters
-export enkf_threads=1 
-export gsi_control_threads=1
+export enkf_threads=2 
+export gsi_control_threads=2
 
 # resolution dependent model parameters
 if [ $RES -eq 384 ]; then
@@ -190,13 +190,13 @@ export FHMAX=9
 export FHOUT=3
 FHMAXP1=`expr $FHMAX + 1`
 export enkfstatefhrs=`python -c "print range(${FHMIN},${FHMAXP1},${FHOUT})" | cut -f2 -d"[" | cut -f1 -d"]"`
-#export iaufhrs="3,6,9"
-#export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
+export iaufhrs="3,6,9"
+export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 # dump increment in one time step (for debugging)
-export iaufhrs="6"
+#export iaufhrs="6"
 #export iau_delthrs=0.25
 # to turn off iau, use iau_delthrs=-1
-export iau_delthrs=-1
+#export iau_delthrs=-1
 
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
@@ -253,7 +253,7 @@ export saterrfact=1.0
 export deterministic=.true.
 export sortinc=.true.
                                                                     
-export nitermax=1 
+export nitermax=2 
 
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
