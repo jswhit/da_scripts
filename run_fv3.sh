@@ -167,7 +167,6 @@ increment_filename="${increment_file}"
 EOF
       export PGM=${execdir}/calc_increment.x
       nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
-      #${execdir}/calc_increment.x
       if [ $? -ne 0 -o ! -s ${increment_file} ]; then
          echo "problem creating ${increment_file}, stopping .."
          exit 1
@@ -188,7 +187,6 @@ increment_filename="${increment_file}"
 EOF
    export PGM=${execdir}/calc_increment.x
    nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
-   #${execdir}/calc_increment.x
    if [ $? -ne 0 -o ! -s ${increment_file} ]; then
       echo "problem creating ${increment_file}, stopping .."
       exit 1
