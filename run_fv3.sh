@@ -165,19 +165,13 @@ firstguess_filename="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}"
 increment_filename="${increment_file}"
 /
 EOF
-      nprocs_save=$nprocs
-      mpitaskspernode_save=$mpitaskspernode
-      export nprocs=1
-      export mpitaskspernode=1
       export PGM=${execdir}/calc_increment.x
-      sh ${enkfscripts}/runmpi
+      nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
       #${execdir}/calc_increment.x
       if [ $? -ne 0 -o ! -s ${increment_file} ]; then
          echo "problem creating ${increment_file}, stopping .."
          exit 1
       fi
-      export nprocs=$nprocs_save
-      export mpitaskspernode=$mpitaskspernode_save
    done # do next forecast
 
    else
@@ -192,19 +186,13 @@ firstguess_filename="${datapath2}/sfg_${analdate}_fhr06_${charnanal}"
 increment_filename="${increment_file}"
 /
 EOF
-   nprocs_save=$nprocs
-   mpitaskspernode_save=$mpitaskspernode
-   export nprocs=1
-   export mpitaskspernode=1
    export PGM=${execdir}/calc_increment.x
-   sh ${enkfscripts}/runmpi
+   nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
    #${execdir}/calc_increment.x
    if [ $? -ne 0 -o ! -s ${increment_file} ]; then
       echo "problem creating ${increment_file}, stopping .."
       exit 1
    fi
-   export nprocs=$nprocs_save
-   export mpitaskspernode=$mpitaskspernode_save
 
    fi
 
@@ -320,8 +308,12 @@ if [ $FHCYC -eq 0 ] && [ "$warm_start" == "T" ]; then
    export FNACNA="${fnacna}"
    export CASE="C${RES}"
    # NST update
-   #export DONST=T
-   #export GSI_FILE=${COMIN}/dtfanl.nc
+   export DONST=T
+   export GSI_FILE=${COMIN}/dtfanl.nc
+   export PGM="${execdir}/global_cycle < global_cycle.nml"
+   #if [ "$machine" == 'wcoss' ]; then
+   #    export APRUNCY="aprun -n 1 -N 1 -d ${corespernode} -cc depth"
+   #fi
    sh ${enkfscripts}/global_cycle_driver.sh
    n=1
    while [ $n -le 6 ]; do

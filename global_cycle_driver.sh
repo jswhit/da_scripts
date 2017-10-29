@@ -28,7 +28,6 @@ COMOUT=${COMOUT:-$pwd}
 
 CYCLESH=${CYCLESH:-$BASE_GSM/ush/global_cycle.sh}
 export CYCLEXEC=${CYCLEXEC:-$BASE_GSM/exec/global_cycle}
-export OMP_NUM_THREADS_CY=${OMP_NUM_THREADS_CY:-24}
 export APRUNCY=${APRUNCY:-"time"}
 export VERBOSE=${VERBOSE:-"YES"}
 

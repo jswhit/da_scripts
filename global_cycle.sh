@@ -323,8 +323,8 @@ cd $DATA||exit 99
 
 ################################################################################
 #  Make surface analysis
-export PGM=$CYCLEXEC
-export pgm=$PGM
+#export PGM=$CYCLEXEC
+#export pgm=$PGM
 $LOGSCRIPT
 
 rm -f $SFCANL
@@ -368,8 +368,7 @@ cat << EOF > fort.35
   $CYCLVARS
  /
 EOF
-
-eval $APRUNCY $CYCLEXEC <<EOF $REDOUT$PGMOUT $REDERR$PGMERR
+ cat <<EOF > global_cycle.nml
  &NAMCYC
   idim=$CRES, jdim=$CRES, lsoil=$LSOIL,
   iy=$iy, im=$im, id=$id, ih=$ih, fh=$FHOUR,
@@ -385,6 +384,8 @@ eval $APRUNCY $CYCLEXEC <<EOF $REDOUT$PGMOUT $REDERR$PGMERR
  /
 EOF
 
+#eval $APRUNCY $CYCLEXEC < global_cycle.nml
+nprocs=1 mpitaskspernode=1 OMP_NUM_THREADS=$corespernode ${enkfscripts}/runmpi
 export ERR=$?
 export err=$ERR
 $ERRSCRIPT||exit 2
