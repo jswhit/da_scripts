@@ -11,13 +11,13 @@ elif [ "$machine" == 'theia' ]; then
    [ -z "$HOSTFILE" ] && echo "Need to set HOSTFILE" && exit 1;
    cat $HOSTFILE
    echo "running mpirun -np $nprocs -machinefile $HOSTFILE $PGM"
-   mpirun -np $nprocs -machinefile $HOSTFILE $PGM
+   eval mpirun -np $nprocs -machinefile $HOSTFILE $PGM
 elif [ "$machine" == 'jet' ]; then
    # HOSTFILE env var must be set
    [ -z "$HOSTFILE" ] && echo "Need to set HOSTFILE" && exit 1;
    cat $HOSTFILE
    echo "running mpiexec -np $nprocs -f $HOSTFILE $PGM"
-   mpiexec -np $nprocs -f $HOSTFILE $PGM
+   eval mpiexec -np $nprocs -f $HOSTFILE $PGM
 else
    echo "machine must be 'wcoss', 'theia', or 'jet', got $machine"
    exit 1

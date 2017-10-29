@@ -308,12 +308,9 @@ if [ $FHCYC -eq 0 ] && [ "$warm_start" == "T" ]; then
    export FNACNA="${fnacna}"
    export CASE="C${RES}"
    # NST update
-   export DONST=T
-   export GSI_FILE=${COMIN}/dtfanl.nc
+   #export DONST=T
+   #export GSI_FILE=${COMIN}/dtfanl.nc
    export PGM="${execdir}/global_cycle < global_cycle.nml"
-   #if [ "$machine" == 'wcoss' ]; then
-   #    export APRUNCY="aprun -n 1 -N 1 -d ${corespernode} -cc depth"
-   #fi
    sh ${enkfscripts}/global_cycle_driver.sh
    n=1
    while [ $n -le 6 ]; do
