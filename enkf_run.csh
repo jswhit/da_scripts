@@ -4,9 +4,9 @@ module list
 
 if ($machine == 'theia') then
   module list
-  module load intel/15.1.133
-  module load impi/5.0.3.048
-  #module switch impi mvapich2/2.1rc1
+  module load intel/16.1.150
+  #module load impi/5.1.2.150
+  module switch impi mvapich2/2.1rc1
   module list
 endif
 
@@ -80,9 +80,9 @@ cat <<EOF1 >! enkf.nml
   sprd_tol=$sprd_tol,paoverpb_thresh=$paoverpb_thresh,letkf_flag=$letkf_flag,
   use_qsatensmean=$use_qsatensmean,
   reducedgrid=$reducedgrid,nlevs=$LEVS,nanals=$nanals,deterministic=$deterministic,
-  npefiles=0,lobsdiag_forenkf=.true.write_spread_diag=.true.,
+  npefiles=0,lobsdiag_forenkf=.true.write_spread_diag=.false.,
   sortinc=$sortinc,univaroz=$univaroz,massbal_adjust=$massbal_adjust,nhr_anal=$iaufhrs,nhr_state=$enkfstatefhrs,
-  use_gfs_nemsio=.true.,adp_anglebc=.true.,angord=4,newpc4pred=.true.,use_edges=.false.,emiss_bc=.true.,biasvar=-500,write_spread_diag=.true.,nobsl_max=$nobsl_max
+  use_gfs_nemsio=.true.,adp_anglebc=.true.,angord=4,newpc4pred=.true.,use_edges=.false.,emiss_bc=.true.,biasvar=-500,nobsl_max=$nobsl_max
  /
  &satobs_enkf
   sattypes_rad(1) = 'amsua_n15',     dsis(1) = 'amsua_n15',
@@ -179,6 +179,7 @@ cat enkf.nml
 /bin/rm -f ${datapath2}/enkf.log
 /bin/mv -f ${current_logdir}/ensda.out ${current_logdir}/ensda.out.save
 setenv PGM $enkfbin
+echo "OMP_NUM_THREADS = $OMP_NUM_THREADS"
 sh ${enkfscripts}/runmpi >>& ${current_logdir}/ensda.out
 if ( ! -s ${datapath2}/enkf.log ) then
    echo "no enkf log file found"

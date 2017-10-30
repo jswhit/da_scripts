@@ -14,8 +14,6 @@ echo "Time starting at `date` "
 # gsi was compiled with these 
 if [ "$machine" == 'theia' ]; then
    module list
-   #module load intel/15.1.133
-   #module load impi/5.0.3.048
    module load intel/16.1.150
    module load impi/5.1.2.150
    #module switch impi mvapich2/2.1rc1
