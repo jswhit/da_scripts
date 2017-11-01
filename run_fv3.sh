@@ -32,12 +32,16 @@ if [ "$VERBOSE" == "YES" ]; then
  set -x
 fi
 
-nmem=`echo $charnanal | cut -f3 -d"m"`
-nmem=$(( 10#$nmem )) # convert to decimal (remove leading zeros)
+if [ "$charnanal" != "control" ] && [ "$charnanal" != "ensmean" ]; then
+   nmem=`echo $charnanal | cut -f3 -d"m"`
+   nmem=$(( 10#$nmem )) # convert to decimal (remove leading zeros)
+else
+   nmem=0
+fi
 charnanal2=`printf %02i $nmem`
-export ISEED_SPPT=$((analdate*1000 + nmem*10 + 4))
-export ISEED_SKEB=$((analdate*1000 + nmem*10 + 5))
-export ISEED_SHUM=$((analdate*1000 + nmem*10 + 6))
+export ISEED_SPPT=$((analdate*1000 + nmem*10 + 0 + niter))
+export ISEED_SKEB=$((analdate*1000 + nmem*10 + 1 + niter))
+export ISEED_SHUM=$((analdate*1000 + nmem*10 + 2 + niter))
 export npx=`expr $RES + 1`
 export LEVP=`expr $LEVS \+ 1`
 # yr,mon,day,hr at middle of assim window (analysis time)

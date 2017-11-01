@@ -12,7 +12,7 @@ end
 endif
 mkdir -p ${datapath}/${analdatep1}
 
-set niter=1
+setenv niter 1
 set alldone='no'
 echo "${analdate} compute first guesses `date`"
 while ($alldone == 'no' && $niter <= $nitermax)
@@ -28,6 +28,7 @@ while ($alldone == 'no' && $niter <= $nitermax)
     else
        echo "some files missing, try again .."
        @ niter = $niter + 1
+       setenv niter $niter
     endif
 end
 
