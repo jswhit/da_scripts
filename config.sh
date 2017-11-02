@@ -20,8 +20,10 @@ export rungsi='run_gsi_4densvar.sh'
 export rungfs='run_fv3.sh' # ensemble forecast
 
 export recenter_anal="true" # recenter enkf analysis around GSI hybrid 4DEnVar analysis
+export recenter_fcst="false" # recenter enkf forecasts around control forecast (needed for dual-res and IAU)
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
-export controlanal='true'
+export controlanal='true' # use gsi hybrid (if false, pure enkf is used)
+export controlfcst='false' # if true, run dual-res setup with single high-res control
 export cleanup_fg='true'
 export cleanup_ensmean='true'
 export cleanup_anal='true'
@@ -37,6 +39,7 @@ export save_hpss_subset="true" # save a subset of data each analysis time to HPS
 #export cleanup_ensmean='false'
 #export cleanup_controlanl='false'
 #export cleanup_anal='false'
+#export recenter_fcst="false"
 #export recenter_anal="false"
 #export cleanup_fg='false'
 #export resubmit='false'
@@ -91,11 +94,15 @@ export massbal_adjust=.false.
 # model parameters for ensemble (rest set in $rungfs)
 export fg_proc=24 # number of total cores allocated to each enkf fg ens member. 
 export fg_threads=1 # ens fcst threads
+export control_proc=444  
+export control_threads=2 # control forecast threads
 export write_groups=1
 export write_tasks=6 # write tasks
 export layout="3, 1" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc-$write_tasks)/fg_threads)
+export layout_ctl="6, 6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($control_proc-$write_tasks)/control_threads)
 
 export RES=192 
+export RES_CTL=384 
 export psautco="6.0d-4,3.0d-4"
 export zhao_mic=T
 
@@ -131,15 +138,12 @@ else
    export consv_te=1
 fi
 
-export do_sppt=T
 export SPPT=0.8
 export SPPT_TSCALE=21600.
 export SPPT_LSCALE=500.e3
-export do_shum=T
 export SHUM=0.006
 export SHUM_TSCALE=21600.
 export SHUM_LSCALE=500.e3
-export do_skeb=T
 export SKEB=1.0
 export SKEB_TSCALE=21600.
 export SKEB_LSCALE=500.e3
@@ -175,6 +179,23 @@ elif [ $RES -eq 96 ]; then
    export cdmbgwd="0.125,3.0"
 else
    echo "unknown RES=${RES}"
+   exit 1
+fi
+
+if [ $RES_CTL -eq 384 ]; then
+   export fv_sg_adj_ctl=600
+   export dt_atmos_ctl=225
+   export cdmbgwd_ctl="1.0,1.2"
+elif [ $RES_CTL -eq 192 ]; then
+   export fv_sg_adj_ctl=900
+   export dt_atmos_ctl=450
+   export cdmbgwd_ctl="0.25,2.0"
+elif [ $RES_CTL -eq 96 ]; then
+   export fv_sg_adj_ctl=1800
+   export dt_atmos_ctl=900
+   export cdmbgwd_ctl="0.125,3.0"
+else
+   echo "unknown RES_CTL=${RES_CTL}"
    exit 1
 fi
 export FHCYC=0 # run global_cycle instead of gcycle inside model

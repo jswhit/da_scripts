@@ -108,8 +108,32 @@ echo "$analdate starting ens mean computation `date`"
 csh ${enkfscripts}/compute_ensmean_fcst.csh >&!  ${current_logdir}/compute_ensmean_fcst.out
 echo "$analdate done computing ensemble mean `date`"
 
+# change orography in high-res control forecast nemsio file so it matches enkf ensemble, adjust
+# surface pressure accordingly.
+if ($controlfcst == 'true') then
+   set fh=0
+   while ($fh <= $FHMAX)
+     set fhr=`printf %02i $fh`
+     sh ${enkfscripts}/adjustps.sh $datapath2/sfg_${analdate}_fhr${fhr}_control $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_control >&! ${current_logdir}/adjustps.out
+     @ fh = $fh + $FHOUT
+   end
+endif
+
+# recenter enkf forecasts around control forecast
+if ($controlfcst == 'true' && $recenter_fcst == 'true') then
+   echo "$analdate recenter enkf ensemble around control forecast `date`"
+   csh ${enkfscripts}/recenter_ens_fcst.csh >&! ${current_logdir}/recenter_ens_fcst.out 
+   set recenter_done=`cat ${current_logdir}/recenter_ens.log`
+   if ($recenter_done == 'yes') then
+     echo "$analdate recentering enkf forecasts completed successfully `date`"
+   else
+     echo "$analdate recentering enkf forecasts did not complete successfully, exiting `date`"
+     exit 1
+   endif
+endif
+
 # do hybrid control analysis
-if ($controlanal == 'true') then
+if ($controlanal == 'true' && $controlfcst == 'false') then
    # single res hybrid, just symlink ensmean to control (no separate control forecast)
    set fh=0
    while ($fh <= $FHMAX)
@@ -118,6 +142,8 @@ if ($controlanal == 'true') then
      ln -fs $datapath2/bfg_${analdate}_fhr${fhr}_ensmean $datapath2/bfg_${analdate}_fhr${fhr}_control
      @ fh = $fh + $FHOUT
    end
+endif
+if ($controlanal == 'true') then
    # if ${datapathm1}/cold_start_bias exists, GSI run in 'observer' mode
    # to generate diag_rad files to initialize angle-dependent 
    # bias correction.
@@ -135,6 +161,19 @@ if ($controlanal == 'true') then
      echo "$analdate hybrid analysis completed successfully `date`"
    else
      echo "$analdate hybrid analysis did not complete successfully, exiting `date`"
+     exit 1
+   endif
+else if ($controlfcst == 'true' && $controlfcst_observer == 'true') then
+   # for passive (replay) cycling of control forecast, just run GSI observer
+   # on control forecast background (diag files saved with 'control2' suffix)
+   echo "$analdate run hybrid observer `date`"
+   csh ${enkfscripts}/run_hybridobserver.csh >&! ${current_logdir}/run_gsi_observer.out 
+   # once observer has completed, check log files.
+   set hybrid_done=`cat ${current_logdir}/run_gsi_observer.log`
+   if ($hybrid_done == 'yes') then
+     echo "$analdate hybrid observer completed successfully `date`"
+   else
+     echo "$analdate hybrid observer did not complete successfully, exiting `date`"
      exit 1
    endif
 endif
@@ -166,10 +205,21 @@ endif
 
 endif # skip to here if fg_only = true or fg_only == true
 
+if ($controlfcst == 'true') then
+    echo "$analdate run high-res control first guess `date`"
+    csh ${enkfscripts}/run_fg_control.csh  >&! ${current_logdir}/run_fg_control.out  
+    set control_done=`cat ${current_logdir}/run_fg_control.log`
+    if ($control_done == 'yes') then
+      echo "$analdate high-res control first-guess completed successfully `date`"
+    else
+      echo "$analdate high-res control did not complete successfully, exiting `date`"
+      exit 1
+    endif
+endif
 echo "$analdate run enkf ens first guess `date`"
 csh ${enkfscripts}/run_fg_ens.csh  >>& ${current_logdir}/run_fg_ens.out  
-set enkf_done=`cat ${current_logdir}/run_fg_ens.log`
-if ($enkf_done == 'yes') then
+set ens_done=`cat ${current_logdir}/run_fg_ens.log`
+if ($ens_done == 'yes') then
   echo "$analdate enkf first-guess completed successfully `date`"
 else
   echo "$analdate enkf first-guess did not complete successfully, exiting `date`"
@@ -190,13 +240,15 @@ mkdir fgens2
 /bin/mv -f mem* fgens
 /bin/mv -f sfg*mem* fgens2
 /bin/mv -f bfg*mem* fgens2
+/bin/cp -f sfg*control fgens2
+/bin/cp -f bfg*control fgens2
 echo "files moved to fgens, fgens2 `date`"
 #if ($npefiles == 0) then
 #   mkdir diagens
 #   /bin/mv -f diag_conv_ges*mem* diagens
 #endif
 # these are too big to save
-#/bin/rm -f diag*cris* diag*metop* diag*airs* diag*hirs4* 
+/bin/rm -f diag*cris* diag*metop* diag*airs* diag*hirs4* 
 
 /bin/rm -f hostfile*
 /bin/rm -f fort*
@@ -205,7 +257,7 @@ echo "files moved to fgens, fgens2 `date`"
 /bin/rm -f ozinfo convinfo satinfo scaninfo anavinfo
 /bin/rm -rf hybridtmp* gsitmp* gfstmp* nodefile* machinefile*
 echo "unwanted files removed `date`"
-endif
+endif # do_cleanup = true
 
 wait # wait for backgrounded processes to finish
 
@@ -230,8 +282,6 @@ if ($hr == "00") then
      bsub -env "all" < run_fv3_long.sh
    endif
 endif
-
-
 
 endif # skip to here if fg_only = true
 

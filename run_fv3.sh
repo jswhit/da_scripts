@@ -39,9 +39,12 @@ else
    nmem=0
 fi
 charnanal2=`printf %02i $nmem`
-export ISEED_SPPT=$((analdate*1000 + nmem*10 + 0 + niter))
-export ISEED_SKEB=$((analdate*1000 + nmem*10 + 1 + niter))
-export ISEED_SHUM=$((analdate*1000 + nmem*10 + 2 + niter))
+#export ISEED_SPPT=$((analdate*1000 + nmem*10 + 0 + niter))
+#export ISEED_SKEB=$((analdate*1000 + nmem*10 + 1 + niter))
+#export ISEED_SHUM=$((analdate*1000 + nmem*10 + 2 + niter))
+export ISEED_SPPT=$((analdate*1000 + nmem*10 + 0))
+export ISEED_SKEB=$((analdate*1000 + nmem*10 + 1))
+export ISEED_SHUM=$((analdate*1000 + nmem*10 + 2))
 export npx=`expr $RES + 1`
 export LEVP=`expr $LEVS \+ 1`
 # yr,mon,day,hr at middle of assim window (analysis time)

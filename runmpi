@@ -11,6 +11,7 @@ elif [ "$machine" == 'theia' ]; then
    [ -z "$HOSTFILE" ] && echo "Need to set HOSTFILE" && exit 1;
    cat $HOSTFILE
    echo "running mpirun -np $nprocs -machinefile $HOSTFILE $PGM"
+   echo "OMP_NUM_THREADS = $OMP_NUM_THREADS"
    eval mpirun -np $nprocs -machinefile $HOSTFILE $PGM
 elif [ "$machine" == 'jet' ]; then
    # HOSTFILE env var must be set
