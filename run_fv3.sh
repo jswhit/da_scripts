@@ -32,7 +32,7 @@ if [ "$VERBOSE" == "YES" ]; then
  set -x
 fi
 
-if [ "$charnanal" != "control" ] && [ "$charnanal" != "ensmean" ]; then
+if [ "$charnanal" != "control" ] && [ "$charnanal" != "ensmean" ] && [ "$charnanal" != "control2" ]; then
    nmem=`echo $charnanal | cut -f3 -d"m"`
    nmem=$(( 10#$nmem )) # convert to decimal (remove leading zeros)
 else
@@ -162,12 +162,17 @@ if [ "$fg_only" == "false" ]; then
 # IAU - multiple increments.
    for fh in $iaufhrs2; do
       export increment_file="fv3_increment${fh}.nc"
+      if [ "$replay_controlfcst" == 'true' ]; then
+         export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_ensmean"
+      else
+         export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_${charnanal}"
+      fi
       echo "create ${increment_file}"
       /bin/rm -f ${increment_file}
       cat > calc-increment.input <<EOF
 &share
 debug=F
-analysis_filename="${datapath2}/sanl_${analdate}_fhr0${fh}_${charnanal}"
+analysis_filename="${analfile}"
 firstguess_filename="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}"
 increment_filename="${increment_file}"
 /
@@ -183,11 +188,16 @@ EOF
    else
 # no IAU, single increment
    export increment_file="fv3_increment.nc"
+      if [ "$replay_controlfcst" == 'true' ]; then
+         export analfile="${datapath2}/sanl_${analdate}_ensmean"
+      else
+         export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_${charnanal}"
+      fi
    /bin/rm -f ${increment_file}
    cat > calc-increment.input <<EOF
 &share
 debug=F
-analysis_filename="${datapath2}/sanl_${analdate}_${charnanal}"
+analysis_filename="${analfile}"
 firstguess_filename="${datapath2}/sfg_${analdate}_fhr06_${charnanal}"
 increment_filename="${increment_file}"
 /
@@ -299,7 +309,6 @@ fi
 if [ $FHCYC -eq 0 ] && [ "$warm_start" == "T" ]; then
    # run global_cycle to update surface in restart file.
    export BASE_GSM=${fv3gfspath}
-   export FIXgsm=$FIXGSM
    export FIXfv3=$FIXFV3
    # global_cycle chokes for 3,9,15,18 UTC hours in CDATE
    #export CDATE="${year_start}${mon_start}${day_start}${hour_start}"

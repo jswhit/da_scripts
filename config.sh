@@ -31,9 +31,12 @@ export cleanup_controlanl='true'
 export resubmit='true'
 # for 'passive' or 'replay' cycling of control fcst 
 # set controlfcst='true' and recenter_fcst=recenter_anal='false'
-# plus controlanal='false'. 
-# to run GSI observer on replay control forecast, set the following to true
-export controlfcst_observer='false'
+if [ "$controlfcst" == 'true' ] && [ "$recenter_fcst" == 'false' ] && [ "$recenter_anal" == 'false' ]; then
+   # control forecast files have 'control2' suffix, instead of 'control'
+   # GSI observer will be run on 'control2' forecast
+   # this is for diagnostic purposes (to get GSI diagnostic files) 
+   export replay_controlfcst='true'
+fi
 # python script checkdate.py used to check
 # YYYYMMDDHH analysis date string to see if
 # full ensemble should be saved to HPSS (returns 0 if 
