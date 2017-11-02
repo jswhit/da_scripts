@@ -30,13 +30,10 @@ export cleanup_anal='true'
 export cleanup_controlanl='true'
 export resubmit='true'
 # for 'passive' or 'replay' cycling of control fcst 
-# set controlfcst='true' and recenter_fcst=recenter_anal='false'
-if [ "$controlfcst" == 'true' ] && [ "$recenter_fcst" == 'false' ] && [ "$recenter_anal" == 'false' ]; then
-   # control forecast files have 'control2' suffix, instead of 'control'
-   # GSI observer will be run on 'control2' forecast
-   # this is for diagnostic purposes (to get GSI diagnostic files) 
-   export replay_controlfcst='true'
-fi
+# control forecast files have 'control2' suffix, instead of 'control'
+# GSI observer will be run on 'control2' forecast
+# this is for diagnostic purposes (to get GSI diagnostic files) 
+export replay_controlfcst='false'
 export cleanup_observer='true' # only used if replay_controlfcst=true
 # python script checkdate.py used to check
 # YYYYMMDDHH analysis date string to see if
