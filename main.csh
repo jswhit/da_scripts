@@ -133,7 +133,7 @@ if ($controlfcst == 'true' && $recenter_fcst == 'true') then
 endif
 
 # do hybrid control analysis
-if ($controlanal == 'true' && $controlfcst == 'false') then
+if ($controlanal == 'true' && ($controlfcst == 'false' || $replay_controlfcst == 'true') ) then
    # single res hybrid, just symlink ensmean to control (no separate control forecast)
    set fh=0
    while ($fh <= $FHMAX)
@@ -163,8 +163,9 @@ if ($controlanal == 'true') then
      echo "$analdate hybrid analysis did not complete successfully, exiting `date`"
      exit 1
    endif
-else if ($controlfcst == 'true' && $controlfcst_observer == 'true') then
-   # for passive (replay) cycling of control forecast, just run GSI observer
+endif
+if ($controlfcst == 'true' && $replay_controlfcst == 'true') then
+   # for passive (replay) cycling of control forecast, run GSI observer
    # on control forecast background (diag files saved with 'control2' suffix)
    echo "$analdate run hybrid observer `date`"
    csh ${enkfscripts}/run_hybridobserver.csh >&! ${current_logdir}/run_gsi_observer.out 

@@ -37,6 +37,7 @@ if [ "$controlfcst" == 'true' ] && [ "$recenter_fcst" == 'false' ] && [ "$recent
    # this is for diagnostic purposes (to get GSI diagnostic files) 
    export replay_controlfcst='true'
 fi
+export cleanup_observer='true' # only used if replay_controlfcst=true
 # python script checkdate.py used to check
 # YYYYMMDDHH analysis date string to see if
 # full ensemble should be saved to HPSS (returns 0 if 
@@ -47,6 +48,7 @@ export save_hpss_subset="true" # save a subset of data each analysis time to HPS
 #export cleanup_ensmean='false'
 #export cleanup_controlanl='false'
 #export cleanup_anal='false'
+#export cleanup_observer='true'
 #export recenter_fcst="false"
 #export recenter_anal="false"
 #export cleanup_fg='false'
