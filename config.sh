@@ -29,6 +29,11 @@ export cleanup_ensmean='true'
 export cleanup_anal='true'
 export cleanup_controlanl='true'
 export resubmit='true'
+# for 'passive' or 'replay' cycling of control fcst 
+# set controlfcst='true' and recenter_fcst=recenter_anal='false'
+# plus controlanal='false'. 
+# to run GSI observer on replay control forecast, set the following to true
+export controlfcst_observer='false'
 # python script checkdate.py used to check
 # YYYYMMDDHH analysis date string to see if
 # full ensemble should be saved to HPSS (returns 0 if 
