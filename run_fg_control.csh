@@ -19,8 +19,8 @@ setenv mpitaskspernode `expr $corespernode \/ $OMP_NUM_THREADS`
 echo "mpitaskspernode = $mpitaskspernode"
 if ($machine != 'wcoss') then
    setenv HOSTFILE $PBS_NODEFILE
+   echo "HOSTFILE = $HOSTFILE"
 endif
-echo "HOSTFILE = $HOSTFILE"
 
 setenv RES $RES_CTL
 echo "RES = $RES"
