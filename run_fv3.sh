@@ -345,7 +345,7 @@ fi
 cat > model_configure <<EOF
 print_esmf:              .true.
 total_member:            1
-PE_MEMBER01:             ${fg_proc}
+PE_MEMBER01:             ${nprocs}
 start_year:              ${year}
 start_month:             ${mon}
 start_day:               ${day}
@@ -656,7 +656,6 @@ ls -l INPUT
 
 # run model
 export PGM=$FCSTEXEC
-export nprocs=$fg_proc
 echo "start running model `date`"
 sh ${enkfscripts}/runmpi
 if [ $? -ne 0 ]; then

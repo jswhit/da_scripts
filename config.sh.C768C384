@@ -1,7 +1,7 @@
 echo "running on $machine using $NODES nodes"
 ulimit -s unlimited
 
-export exptname=C384C384_test_iau
+export exptname=C768C384_test_iau
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia and jet.
@@ -201,7 +201,13 @@ else
    exit 1
 fi
 
-if [ $RES_CTL -eq 384 ]; then
+if [ $RES_CTL -eq 1534 ]; then
+   export fv_sg_adj_ctl=600
+   export dt_atmos_ctl=120
+   export cdmbgwd_ctl="3.5,0.25"
+   export psautco_ctl="0.0008,0.0005"
+   export prautco_ctl="0.00015,0.00015"
+elif [ $RES_CTL -eq 384 ]; then
    export fv_sg_adj_ctl=600
    export dt_atmos_ctl=225
    export cdmbgwd_ctl="1.0,1.2"

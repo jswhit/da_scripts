@@ -48,7 +48,22 @@ if ($cleanup_fg == 'true') then
 endif
 
 setenv niter 1
-set alldone='no'
+set outfiles=""
+set fhr=$FHMIN
+while ($fhr <= $FHMAX)
+   set charhr="fhr`printf %02i $fhr`"
+   set outfiles = "${outfiles} ${datapath}/${analdatep1}/sfg_${analdatep1}_${charhr}_${charnanal} ${datapath}/${analdatep1}/bfg_${analdatep1}_${charhr}_${charnanal}"
+   @ fhr = $fhr + $FHOUT
+end
+set alldone='yes'
+foreach outfile ($outfiles) 
+  if ( ! -s $outfile) then
+    echo "${outfile} is missing"
+    set alldone='no'
+  else
+    echo "${outfile} is OK"
+  endif
+end
 echo "${analdate} compute first guesses `date`"
 while ($alldone == 'no' && $niter <= $nitermax)
     if ($niter == 1) then
@@ -60,7 +75,16 @@ while ($alldone == 'no' && $niter <= $nitermax)
     endif
     if ($exitstat == 0) then
        set alldone='yes'
+       foreach outfile ($outfiles) 
+         if ( ! -s $outfile) then
+           echo "${outfile} is missing"
+           set alldone='no'
+         else
+           echo "${outfile} is OK"
+         endif
+       end
     else
+       set alldone='no'
        echo "some files missing, try again .."
        @ niter = $niter + 1
        setenv niter $niter
