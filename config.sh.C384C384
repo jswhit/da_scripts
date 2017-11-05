@@ -1,7 +1,7 @@
 echo "running on $machine using $NODES nodes"
 ulimit -s unlimited
 
-export exptname=C384C192_test_iau
+export exptname=C384C384_test_iau
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia and jet.
@@ -99,8 +99,8 @@ export readin_localization=.true.
 export massbal_adjust=.false.
 
 # model parameters for ensemble (rest set in $rungfs)
-export fg_proc=24 # number of total cores allocated to each enkf fg ens member. 
-export fg_threads=1 # ens fcst threads
+export fg_proc=48 # number of total cores allocated to each enkf fg ens member. 
+export fg_threads=2 # ens fcst threads
 export write_groups=1
 export write_tasks=6 # write tasks
 export layout="3, 1" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc-$write_tasks)/fg_threads)
@@ -120,7 +120,7 @@ echo "processor layout for $NODES nodes not set"
 exit 1
 fi
 
-export RES=192 
+export RES=384 
 export RES_CTL=384 
 export psautco="6.0d-4,3.0d-4"
 export zhao_mic=T
