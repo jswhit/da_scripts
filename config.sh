@@ -109,11 +109,13 @@ if [ $NODES -eq 20 ]; then
 # 20 nodes, 2 threads
 export control_threads=2 # control forecast threads
 export control_proc=444  
+export write_groups_ctl=1
 export layout_ctl="6, 6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($control_proc-$write_tasks)/control_threads)
 elif [ $NODES -eq 40 ]; then
 # 40 nodes, 2 threads
 export control_threads=2 # control forecast threads
 export control_proc=876  
+export write_groups_ctl=1
 export layout_ctl="12, 6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($control_proc-$write_tasks)/control_threads)
 else
 echo "processor layout for $NODES nodes not set"
@@ -201,7 +203,13 @@ else
    exit 1
 fi
 
-if [ $RES_CTL -eq 384 ]; then
+if [ $RES_CTL -eq 1534 ]; then
+   export fv_sg_adj_ctl=600
+   export dt_atmos_ctl=120
+   export cdmbgwd_ctl="3.5,0.25"
+   export psautco_ctl="0.0008,0.0005"
+   export prautco_ctl="0.00015,0.00015"
+elif [ $RES_CTL -eq 384 ]; then
    export fv_sg_adj_ctl=600
    export dt_atmos_ctl=225
    export cdmbgwd_ctl="1.0,1.2"
