@@ -110,7 +110,7 @@ echo "$analdate done computing ensemble mean `date`"
 
 # change orography in high-res control forecast nemsio file so it matches enkf ensemble, adjust
 # surface pressure accordingly.
-if ($controlfcst == 'true') then
+if ($controlfcst == 'true' && $replay_controlfcst == 'false') then
    set fh=0
    while ($fh <= $FHMAX)
      set fhr=`printf %02i $fh`
