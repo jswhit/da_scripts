@@ -20,7 +20,9 @@ export rungsi='run_gsi_4densvar.sh'
 export rungfs='run_fv3.sh' # ensemble forecast
 
 export recenter_anal="true" # recenter enkf analysis around GSI hybrid 4DEnVar analysis
-export recenter_fcst="true" # recenter enkf forecasts around control forecast (needed for dual-res and IAU)
+# recenter enkf forecasts around control forecast (needed for dual-res and IAU)
+# shoulbe be 'false' for passive replay cycling of control forecast
+export recenter_fcst="true" 
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
 export controlanal='true' # use gsi hybrid (if false, pure enkf is used)
 export controlfcst='true' # if true, run dual-res setup with single high-res control
@@ -34,6 +36,10 @@ export resubmit='true'
 # GSI observer will be run on 'control2' forecast
 # this is for diagnostic purposes (to get GSI diagnostic files) 
 export replay_controlfcst='false'
+if ($replay_controlfcst == 'true')
+  echo "resetting recenter_fcst to false for passive replay of control forecast"
+  export recenter_fcst='false'
+endif
 export cleanup_observer='true' # only used if replay_controlfcst=true
 # python script checkdate.py used to check
 # YYYYMMDDHH analysis date string to see if
