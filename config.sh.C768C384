@@ -171,8 +171,8 @@ export SKEB_NPASS=30
 export SKEB_VDOF=5
 
 # Assimilation parameters
-export enkf_threads=2 
-export gsi_control_threads=2
+export enkf_threads=4 
+export gsi_control_threads=6
 
 # resolution dependent model parameters
 if [ $RES -eq 384 ]; then
