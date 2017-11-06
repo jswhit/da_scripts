@@ -43,10 +43,10 @@ export save_hpss_subset="true" # save a subset of data each analysis time to HPS
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
+#export recenter_fcst="false"
 #export cleanup_controlanl='false'
 #export cleanup_anal='false'
 #export cleanup_observer='true'
-#export recenter_fcst="false"
 #export recenter_anal="false"
 #export cleanup_fg='false'
 #export resubmit='false'
@@ -171,8 +171,8 @@ export SKEB_NPASS=30
 export SKEB_VDOF=5
 
 # Assimilation parameters
-export enkf_threads=4 
-export gsi_control_threads=6
+export enkf_threads=12
+export gsi_control_threads=8
 
 # resolution dependent model parameters
 if [ $RES -eq 384 ]; then
