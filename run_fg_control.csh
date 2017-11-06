@@ -24,6 +24,8 @@ endif
 
 setenv RES $RES_CTL
 echo "RES = $RES"
+setenv write_groups "$write_groups_ctl"
+echo "write_groups = $write_groups"
 setenv layout "$layout_ctl"
 echo "layout = $layout"
 setenv dt_atmos $dt_atmos_ctl
@@ -32,6 +34,14 @@ setenv fv_sg_adj $fv_sg_adj_ctl
 echo "fv_sg_adj = $fv_sg_adj"
 setenv cdmbgwd "$cdmbgwd_ctl"
 echo "cdmbgwd = $cdmbgwd"
+if ($?psautco_ctl) then
+setenv psautco "$psautco_ctl"
+echo "psautco = $psautco"
+endif
+if ($?prautco_ctl) then
+setenv prautco "$psautco_ctl"
+echo "prautco = $psautco"
+endif
 setenv fg_proc $nprocs
 echo "fg_proc = $fg_proc"
 
