@@ -106,11 +106,12 @@ if [ $? -ne 0 ]; then
   echo "cd to ${datapath2}/${charnanal} failed, stopping..."
   exit 1
 fi
-/bin/cp -f $enkfscripts/diag_table .
+export DIAG_TABLE=${DIAG_TABLE:-$enkfscripts/diag_table}
+/bin/cp -f $DIAG_TABLE .
 /bin/cp -f $enkfscripts/nems.configure .
 # insert correct starting time and output interval in diag_table template.
 sed -i -e "s/YYYY MM DD HH/${year} ${mon} ${day} ${hour}/g" diag_table
-sed -i -e "s/FHOUT/${FHOUT}/g" diag_table
+#sed -i -e "s/FHOUT/${FHOUT}/g" diag_table
 if [ "$zhao_mic" == 'T' ]; then
 /bin/cp -f $enkfscripts/field_table .
 else
@@ -291,7 +292,7 @@ fi
 
 ls -l 
 
-FHRESTART=$ANALINC
+export FHRESTART=${FHRESTART:-$ANALINC}
 if [ "${iau_delthrs}" != "-1" ]; then
    FHOFFSET=$ANALINC
    FHMAX_FCST=`expr $FHMAX + $FHOFFSET`
@@ -667,18 +668,18 @@ fi
 
 ls -l *nemsio*
 # rename nemsio files.
-#fh=$FHMIN
+export DATOUT=${DATOUT:-$datapathp1}
 fh=0
 while [ $fh -le $FHMAX ]; do
   fh2=`expr $fh + $FHOFFSET`
   charfhr="fhr"`printf %02i $fh`
   charfhr3="f"`printf %03i $fh2`
-  /bin/mv -f dyn${charfhr3}.nemsio ${datapathp1}/sfg_${analdatep1}_${charfhr}_${charnanal}
+  /bin/mv -f dyn${charfhr3}.nemsio ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
   if [ $? -ne 0 ]; then
      echo "nemsio file missing..."
      exit 1
   fi
-  /bin/mv -f phy${charfhr3}.nemsio ${datapathp1}/bfg_${analdatep1}_${charfhr}_${charnanal}
+  /bin/mv -f phy${charfhr3}.nemsio ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
   if [ $? -ne 0 ]; then
      echo "nemsio file missing..."
      exit 1
@@ -687,18 +688,20 @@ while [ $fh -le $FHMAX ]; do
 done
 
 ls -l *nc
-ls -l RESTART
-# copy restart file to INPUT directory for next analysis time.
-/bin/rm -rf ${datapathp1}/${charnanal}/RESTART ${datapathp1}/${charnanal}/INPUT
-mkdir -p ${datapathp1}/${charnanal}/INPUT
-cd RESTART
-ls -l
-datestring="${yrnext}${monnext}${daynext}.${hrnext}0000."
-for file in ${datestring}*nc; do
-   file2=`echo $file | cut -f3-10 -d"."`
-   /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT/$file2
-done
-cd ..
+if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
+   ls -l RESTART
+   # copy restart file to INPUT directory for next analysis time.
+   /bin/rm -rf ${datapathp1}/${charnanal}/RESTART ${datapathp1}/${charnanal}/INPUT
+   mkdir -p ${datapathp1}/${charnanal}/INPUT
+   cd RESTART
+   ls -l
+   datestring="${yrnext}${monnext}${daynext}.${hrnext}0000."
+   for file in ${datestring}*nc; do
+      file2=`echo $file | cut -f3-10 -d"."`
+      /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT/$file2
+   done
+   cd ..
+fi
 # also move history files.
 #n=1
 #while [ $n -le 6 ]; do
