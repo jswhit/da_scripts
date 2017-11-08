@@ -110,13 +110,21 @@ echo "$analdate done computing ensemble mean `date`"
 
 # change orography in high-res control forecast nemsio file so it matches enkf ensemble, adjust
 # surface pressure accordingly.
-if ($controlfcst == 'true' && $replay_controlfcst == 'false') then
+if ($controlfcst == 'true') then
+   if ($replay_controlfcst == 'true') then
+     # sfg*control2 only to compute IAU forcing
+     set charnanal='control2'
+   else
+     set charnanal='control'
+   endif
+   echo "$analdate adjust orog/ps of control forecast on ens grid `date`"
    set fh=0
    while ($fh <= $FHMAX)
      set fhr=`printf %02i $fh`
-     sh ${enkfscripts}/adjustps.sh $datapath2/sfg_${analdate}_fhr${fhr}_control $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_control >&! ${current_logdir}/adjustps.out
+     sh ${enkfscripts}/adjustps.sh $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} >&! ${current_logdir}/adjustps.out
      @ fh = $fh + $FHOUT
    end
+   echo "$analdate done adjusting orog/ps of control forecast on ens grid `date`"
 endif
 
 # recenter enkf forecasts around control forecast
