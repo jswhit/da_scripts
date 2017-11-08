@@ -112,7 +112,7 @@ echo "$analdate done computing ensemble mean `date`"
 # surface pressure accordingly.
 if ($controlfcst == 'true') then
    if ($replay_controlfcst == 'true') then
-     # sfg*control2 only to compute IAU forcing
+     # sfg*control2 only used to compute IAU forcing
      set charnanal='control2'
    else
      set charnanal='control'
@@ -140,8 +140,9 @@ if ($controlfcst == 'true' && $recenter_fcst == 'true') then
    endif
 endif
 
-# do hybrid control analysis
-if ($controlanal == 'true' && ($controlfcst == 'false' || $replay_controlfcst == 'true') ) then
+# for pure enkf or if replay cycle used for control forecast, symlink
+# ensmean files to 'control'
+if ($controlfcst == 'false' || $replay_controlfcst == 'true') then
    # single res hybrid, just symlink ensmean to control (no separate control forecast)
    set fh=0
    while ($fh <= $FHMAX)
@@ -151,6 +152,7 @@ if ($controlanal == 'true' && ($controlfcst == 'false' || $replay_controlfcst ==
      @ fh = $fh + $FHOUT
    end
 endif
+# do hybrid control analysis or just run gsi observer for pure enkf
 if ($controlanal == 'true') then
    # if ${datapathm1}/cold_start_bias exists, GSI run in 'observer' mode
    # to generate diag_rad files to initialize angle-dependent 
@@ -171,18 +173,32 @@ if ($controlanal == 'true') then
      echo "$analdate hybrid analysis did not complete successfully, exiting `date`"
      exit 1
    endif
-endif
-if ($controlfcst == 'true' && $replay_controlfcst == 'true') then
-   # for passive (replay) cycling of control forecast, run GSI observer
-   # on control forecast background (diag files saved with 'control2' suffix)
-   echo "$analdate run hybrid observer `date`"
-   csh ${enkfscripts}/run_hybridobserver.csh >&! ${current_logdir}/run_gsi_observer.out 
+else # pure enkf
+   # just run gsi observer on ensemble mean for pure enkf experiment
+   setenv charnanal 'control'
+   echo "$analdate run gsi observer on ensemble mean `date`"
+   csh ${enkfscripts}/run_gsiobserver.csh >&! ${current_logdir}/run_gsi_observer.out 
    # once observer has completed, check log files.
    set hybrid_done=`cat ${current_logdir}/run_gsi_observer.log`
    if ($hybrid_done == 'yes') then
-     echo "$analdate hybrid observer completed successfully `date`"
+     echo "$analdate gsi observer completed successfully `date`"
    else
-     echo "$analdate hybrid observer did not complete successfully, exiting `date`"
+     echo "$analdate gsi observer did not complete successfully, exiting `date`"
+     exit 1
+   endif
+endif
+# for passive (replay) cycling of control forecast, run GSI observer
+# on control forecast background (diag files saved with 'control2' suffix)
+if ($controlfcst == 'true' && $replay_controlfcst == 'true') then
+   setenv charnanal 'control2'
+   echo "$analdate run gsi observer on control forecast `date`"
+   csh ${enkfscripts}/run_gsiobserver.csh >&! ${current_logdir}/run_gsi_observer.out 
+   # once observer has completed, check log files.
+   set hybrid_done=`cat ${current_logdir}/run_gsi_observer.log`
+   if ($hybrid_done == 'yes') then
+     echo "$analdate gsi observer completed successfully `date`"
+   else
+     echo "$analdate gsi observer did not complete successfully, exiting `date`"
      exit 1
    endif
 endif
