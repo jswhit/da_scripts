@@ -295,6 +295,7 @@ fi
 #export biascorrdir=<exptdir>
 
 
+# turn on enkf analog of VarQC
 #export sprd_tol=10.
 #export varqc=.true.
 #export huber=.true.
@@ -303,7 +304,7 @@ fi
                                                                     
 export nanals=80                                                    
                                                                     
-export paoverpb_thresh=0.99 
+export paoverpb_thresh=0.99  # set to 1.0 to use all the obs in serial EnKF
 export saterrfact=1.0
 export deterministic=.true.
 export sortinc=.true.
