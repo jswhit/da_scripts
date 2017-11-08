@@ -292,6 +292,7 @@ fi
 # use pre-generated bias files.
 #export lupd_satbiasc=.false.
 #export numiter=1
+#export biascorrdir=<exptdir>
 
 
 #export sprd_tol=10.
