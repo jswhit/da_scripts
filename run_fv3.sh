@@ -163,7 +163,7 @@ if [ "$fg_only" == "false" ]; then
 # IAU - multiple increments.
    for fh in $iaufhrs2; do
       export increment_file="fv3_increment${fh}.nc"
-      if [ "$replay_controlfcst" == 'true' ]; then
+      if [ "$replay_controlfcst" == 'true' ] && [ "$charnanal" == 'control2' ]; then
          export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_ensmean"
       else
          export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_${charnanal}"
@@ -189,10 +189,10 @@ EOF
    else
 # no IAU, single increment
    export increment_file="fv3_increment.nc"
-      if [ "$replay_controlfcst" == 'true' ]; then
+      if [ "$replay_controlfcst" == 'true' ] && [ "$charnanal" == 'control2' ]; then
          export analfile="${datapath2}/sanl_${analdate}_ensmean"
       else
-         export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_${charnanal}"
+         export analfile="${datapath2}/sanl_${analdate}_${charnanal}"
       fi
    /bin/rm -f ${increment_file}
    cat > calc-increment.input <<EOF
