@@ -111,7 +111,7 @@ export DIAG_TABLE=${DIAG_TABLE:-$enkfscripts/diag_table}
 /bin/cp -f $enkfscripts/nems.configure .
 # insert correct starting time and output interval in diag_table template.
 sed -i -e "s/YYYY MM DD HH/${year} ${mon} ${day} ${hour}/g" diag_table
-#sed -i -e "s/FHOUT/${FHOUT}/g" diag_table
+sed -i -e "s/FHOUT/${FHOUT}/g" diag_table
 if [ "$zhao_mic" == 'T' ]; then
 /bin/cp -f $enkfscripts/field_table .
 else
