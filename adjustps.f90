@@ -1,7 +1,6 @@
 program adjustps    
 !
-! ifort -O2 -I${NEMSIO_INC} adjustps_new.f90 ${NEMSIO_LIB} ${W3NCO_LIB4}
-! ${BACIO_LIB4}
+!ifort -I${NEMSIO_INC} adjustps.f90 ${NEMSIO_LIB} ${W3NCO_LIB4} ${BACIO_LIB4}
 !
 !$$$  main program documentation block
 !
@@ -96,7 +95,7 @@ program adjustps
   endif
 
   npts=lonb*latb
-  nflds = 2 + 6*nlevs
+  nflds = 2 + 6*nlevs ! FIXME: generalize for GFDL MP
   print *,'nrec,nflds',nrec,nflds
   if (nrec .ne. nflds) then
      print *,'number of records in file not what is expected, aborting..'
@@ -165,6 +164,7 @@ program adjustps
       iretsum = iret + 1
       call nemsio_readrecv(gfile_1,'o3mr', 'mid layer',k,rwork_1(:,krecoz),  iret=iret)
       iretsum = iret + 1
+! FIXME - add support for GFDL MP extra tracers
       call nemsio_readrecv(gfile_1,'clwmr','mid layer',k,rwork_1(:,kreccwmr),iret=iret)
       iretsum = iret + 1
   enddo
@@ -308,6 +308,8 @@ program adjustps
   call w3tage('ADJUSTPS')
 
 END program adjustps
+
+! these routines copied from global_chgres with minor mods to VINTG
 
       SUBROUTINE VINTG(IM,IX,KM1,KM2,NT,P1,U1,V1,T1,Q1,P2, &
                        U2,V2,T2,Q2)
