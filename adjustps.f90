@@ -34,7 +34,7 @@ program adjustps
 
   character*500 filename_1,filename_2,filename_o
   character*3 charnlev
-  integer nflds,iret,latb,lonb,nlevs,npts,k,n,nlevt,iretsum
+  integer nflds,iret,latb,lonb,nlevs,npts,k,n,nlevt
   integer krecu,krecv,krect,krecq,krecoz,kreccwmr,nrec
   real,allocatable,dimension(:,:,:) :: vcoord
   real,allocatable,dimension(:,:) ::&
@@ -244,12 +244,12 @@ program adjustps
   endif
   call nemsio_writerecv(gfile_o,'pres','sfc',1,rwork_1(:,1),iret=iret)
   if (iret /= 0) then
-     print *,'Error reading writing ps to ',trim(filename_o)
+     print *,'Error writing ps to ',trim(filename_o)
      stop
   endif
   call nemsio_writerecv(gfile_o,'hgt','sfc',1,rwork_1(:,2),iret=iret)
   if (iret /= 0) then
-     print *,'Error reading writing zs to ',trim(filename_o)
+     print *,'Error writing zs to ',trim(filename_o)
      stop
   endif
 ! interpolate fields to new pressures.
