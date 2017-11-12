@@ -35,7 +35,7 @@ program adjustps
 
   character*500 filename_1,filename_2,filename_o
   character*3 charnlev
-  integer nflds,iret,latb,lonb,nlevs,npts,k,n,nlevt
+  integer nflds,iret,latb,lonb,nlevs,npts,k,n,nlevt,iretsum
   integer krecu,krecv,krect,krecq,krecoz,kreccwmr,nrec
   real,allocatable,dimension(:,:,:) :: vcoord
   real,allocatable,dimension(:,:) ::&
@@ -90,6 +90,10 @@ program adjustps
   endif
 
   call nemsio_open(gfile_2,trim(filename_2),'READ',iret=iret)
+  if (iret /= 0) then
+     print *,'Error opening ',trim(filename_2)
+     stop
+  endif
 
   npts=lonb*latb
   nflds = 2 + 6*nlevs
@@ -112,17 +116,38 @@ program adjustps
   rwork_1 = zero; rwork_2 = zero
   allocate(vcoord(nlevs+1,3,2))
   call nemsio_getfilehead(gfile_1,vcoord=vcoord,iret=iret)
+  if (iret /= 0) then
+     print *,'Error reading vcoord from ',trim(filename_1)
+     stop
+  endif
   ak = vcoord(:,1,1); bk = vcoord(:,2,1)
   deallocate(vcoord)
 
   call nemsio_readrecv(gfile_1,'pres','sfc',1,rwork_1(:,1),iret=iret)
+  if (iret /= 0) then
+     print *,'Error reading ps from ',trim(filename_1)
+     stop
+  endif
   call nemsio_readrecv(gfile_1,'hgt','sfc',1,rwork_1(:,2),iret=iret)
+  if (iret /= 0) then
+     print *,'Error reading zs from ',trim(filename_1)
+     stop
+  endif
   call nemsio_readrecv(gfile_2,'pres','sfc',1,rwork_2(:,1),iret=iret)
+  if (iret /= 0) then
+     print *,'Error reading ps from ',trim(filename_2)
+     stop
+  endif
   call nemsio_readrecv(gfile_2,'hgt','sfc',1,rwork_2(:,2),iret=iret)
+  if (iret /= 0) then
+     print *,'Error reading zs from ',trim(filename_1)
+     stop
+  endif
   delz = rwork_1(:,2) - rwork_2(:,2)
   delps = rwork_1(:,1) - rwork_2(:,1)
   print *,'min/max delz = ',minval(delz),maxval(delz)
   print *,'min/max delps = ',minval(delps),maxval(delps)
+  iretsum = 0
   do k = 1,nlevs
       krecu    = 2 + 0*nlevs + k
       krecv    = 2 + 1*nlevs + k
@@ -131,14 +156,27 @@ program adjustps
       krecoz   = 2 + 4*nlevs + k
       kreccwmr = 2 + 5*nlevs + k
       call nemsio_readrecv(gfile_1,'ugrd', 'mid layer',k,rwork_1(:,krecu),   iret=iret)
+      iretsum = iret + 1
       call nemsio_readrecv(gfile_1,'vgrd', 'mid layer',k,rwork_1(:,krecv),   iret=iret)
+      iretsum = iret + 1
       call nemsio_readrecv(gfile_1,'tmp',  'mid layer',k,rwork_1(:,krect),   iret=iret)
+      iretsum = iret + 1
       call nemsio_readrecv(gfile_1,'spfh', 'mid layer',k,rwork_1(:,krecq),   iret=iret)
+      iretsum = iret + 1
       call nemsio_readrecv(gfile_1,'o3mr', 'mid layer',k,rwork_1(:,krecoz),  iret=iret)
+      iretsum = iret + 1
       call nemsio_readrecv(gfile_1,'clwmr','mid layer',k,rwork_1(:,kreccwmr),iret=iret)
+      iretsum = iret + 1
   enddo
+  if (iretsum /= 0) then
+     print *,'Error reading 3d fields from ',trim(filename_1)
+     stop
+  endif
   call nemsio_close(gfile_1,iret=iret)
-  !call nemsio_close(gfile_2,iret=iret)
+  if (iret /= 0) then
+     print *,'Error closing ',trim(filename_1)
+     stop
+  endif
 
   !==> pressure at layers and interfaces.
   do k=1,nlevs+1
@@ -187,8 +225,20 @@ program adjustps
   end do
   gfile_o=gfile_2
   call nemsio_open(gfile_o,trim(filename_o),'WRITE',iret=iret)
+  if (iret /= 0) then
+     print *,'Error opening ',trim(filename_o)
+     stop
+  endif
   call nemsio_writerecv(gfile_o,'pres','sfc',1,rwork_1(:,1),iret=iret)
+  if (iret /= 0) then
+     print *,'Error reading writing ps to ',trim(filename_o)
+     stop
+  endif
   call nemsio_writerecv(gfile_o,'hgt','sfc',1,rwork_1(:,2),iret=iret)
+  if (iret /= 0) then
+     print *,'Error reading writing zs to ',trim(filename_o)
+     stop
+  endif
 ! interpolate fields to new pressures.
   krecu    = 2 + 0*nlevs + 1
   krecv    = 2 + 1*nlevs + 1
@@ -216,6 +266,7 @@ program adjustps
                            maxval(rwork_1(:,krecoz:krecoz+nlevs-1)-rwork_2(:,krecoz:krecoz+nlevs-1))
   print *,'min/max cwmr diff',minval(rwork_1(:,kreccwmr:kreccwmr+nlevs-1)-rwork_2(:,kreccwmr:kreccwmr+nlevs-1)),&
                            maxval(rwork_1(:,kreccwmr:kreccwmr+nlevs-1)-rwork_2(:,kreccwmr:kreccwmr+nlevs-1))
+  iretsum = 0
   do k = 1,nlevs
       krecu    = 2 + 0*nlevs + k
       krecv    = 2 + 1*nlevs + k
@@ -224,17 +275,35 @@ program adjustps
       krecoz   = 2 + 4*nlevs + k
       kreccwmr = 2 + 5*nlevs + k
       call nemsio_writerecv(gfile_o,'ugrd', 'mid layer',k,rwork_2(:,krecu),   iret=iret)
+      iretsum = iretsum + 1
       call nemsio_writerecv(gfile_o,'vgrd', 'mid layer',k,rwork_2(:,krecv),   iret=iret)
+      iretsum = iretsum + 1
       call nemsio_writerecv(gfile_o,'tmp',  'mid layer',k,rwork_2(:,krect),   iret=iret)
+      iretsum = iretsum + 1
       call nemsio_writerecv(gfile_o,'spfh', 'mid layer',k,rwork_2(:,krecq),   iret=iret)
+      iretsum = iretsum + 1
       call nemsio_writerecv(gfile_o,'o3mr', 'mid layer',k,rwork_2(:,krecoz),  iret=iret)
+      iretsum = iretsum + 1
       call nemsio_writerecv(gfile_o,'clwmr','mid layer',k,rwork_2(:,kreccwmr),iret=iret)
+      iretsum = iretsum + 1
   enddo
+  if (iret /= 0) then
+     print *,'Error writing 3d fields to ',trim(filename_o)
+     stop
+  endif
   deallocate(delps,delz,t0)
   deallocate(rwork_1,rwork_2)
   deallocate(ak,bk,pressi,pressl,pressi_new,pressl_new)
   call nemsio_close(gfile_o,iret=iret)
+  if (iret /= 0) then
+     print *,'Error closing ',trim(filename_o)
+     stop
+  endif
   call nemsio_close(gfile_2,iret=iret)
+  if (iret /= 0) then
+     print *,'Error closing ',trim(filename_2)
+     stop
+  endif
 
   call w3tage('ADJUSTPS')
 
