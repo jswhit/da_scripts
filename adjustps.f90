@@ -146,7 +146,6 @@ program adjustps
   delps = rwork_1(:,1) - rwork_2(:,1)
   print *,'min/max delz = ',minval(delz),maxval(delz)
   print *,'min/max delps = ',minval(delps),maxval(delps)
-  iretsum = 0
   do k = 1,nlevs
       krecu    = 2 + 0*nlevs + k
       krecv    = 2 + 1*nlevs + k
@@ -155,23 +154,37 @@ program adjustps
       krecoz   = 2 + 4*nlevs + k
       kreccwmr = 2 + 5*nlevs + k
       call nemsio_readrecv(gfile_1,'ugrd', 'mid layer',k,rwork_1(:,krecu),   iret=iret)
-      iretsum = iret + 1
+      if (iret /= 0) then
+         print *,'Error reading u from ',trim(filename_1)
+         stop
+      endif
       call nemsio_readrecv(gfile_1,'vgrd', 'mid layer',k,rwork_1(:,krecv),   iret=iret)
-      iretsum = iret + 1
+      if (iret /= 0) then
+         print *,'Error reading v from ',trim(filename_1),k
+         stop
+      endif
       call nemsio_readrecv(gfile_1,'tmp',  'mid layer',k,rwork_1(:,krect),   iret=iret)
-      iretsum = iret + 1
+      if (iret /= 0) then
+         print *,'Error reading t from ',trim(filename_1),k
+         stop
+      endif
       call nemsio_readrecv(gfile_1,'spfh', 'mid layer',k,rwork_1(:,krecq),   iret=iret)
-      iretsum = iret + 1
+      if (iret /= 0) then
+         print *,'Error reading q from ',trim(filename_1),k
+         stop
+      endif
       call nemsio_readrecv(gfile_1,'o3mr', 'mid layer',k,rwork_1(:,krecoz),  iret=iret)
-      iretsum = iret + 1
+      if (iret /= 0) then
+         print *,'Error reading o3 from ',trim(filename_1),k
+         stop
+      endif
 ! FIXME - add support for GFDL MP extra tracers
       call nemsio_readrecv(gfile_1,'clwmr','mid layer',k,rwork_1(:,kreccwmr),iret=iret)
-      iretsum = iret + 1
+      if (iret /= 0) then
+         print *,'Error reading cwmr from ',trim(filename_1),k
+         stop
+      endif
   enddo
-  if (iretsum /= 0) then
-     print *,'Error reading 3d fields from ',trim(filename_1)
-     stop
-  endif
   call nemsio_close(gfile_1,iret=iret)
   if (iret /= 0) then
      print *,'Error closing ',trim(filename_1)
@@ -266,7 +279,6 @@ program adjustps
                            maxval(rwork_1(:,krecoz:krecoz+nlevs-1)-rwork_2(:,krecoz:krecoz+nlevs-1))
   print *,'min/max cwmr diff',minval(rwork_1(:,kreccwmr:kreccwmr+nlevs-1)-rwork_2(:,kreccwmr:kreccwmr+nlevs-1)),&
                            maxval(rwork_1(:,kreccwmr:kreccwmr+nlevs-1)-rwork_2(:,kreccwmr:kreccwmr+nlevs-1))
-  iretsum = 0
   do k = 1,nlevs
       krecu    = 2 + 0*nlevs + k
       krecv    = 2 + 1*nlevs + k
@@ -275,22 +287,36 @@ program adjustps
       krecoz   = 2 + 4*nlevs + k
       kreccwmr = 2 + 5*nlevs + k
       call nemsio_writerecv(gfile_o,'ugrd', 'mid layer',k,rwork_2(:,krecu),   iret=iret)
-      iretsum = iretsum + 1
+      if (iret /= 0) then
+         print *,'Error writing u to ',trim(filename_1)
+         stop
+      endif
       call nemsio_writerecv(gfile_o,'vgrd', 'mid layer',k,rwork_2(:,krecv),   iret=iret)
-      iretsum = iretsum + 1
+      if (iret /= 0) then
+         print *,'Error writing v to ',trim(filename_1),k
+         stop
+      endif
       call nemsio_writerecv(gfile_o,'tmp',  'mid layer',k,rwork_2(:,krect),   iret=iret)
-      iretsum = iretsum + 1
+      if (iret /= 0) then
+         print *,'Error writing t to ',trim(filename_1),k
+         stop
+      endif
       call nemsio_writerecv(gfile_o,'spfh', 'mid layer',k,rwork_2(:,krecq),   iret=iret)
-      iretsum = iretsum + 1
+      if (iret /= 0) then
+         print *,'Error writing o3 to ',trim(filename_1),k
+         stop
+      endif
       call nemsio_writerecv(gfile_o,'o3mr', 'mid layer',k,rwork_2(:,krecoz),  iret=iret)
-      iretsum = iretsum + 1
+      if (iret /= 0) then
+         print *,'Error writing o3 to ',trim(filename_1),k
+         stop
+      endif
       call nemsio_writerecv(gfile_o,'clwmr','mid layer',k,rwork_2(:,kreccwmr),iret=iret)
-      iretsum = iretsum + 1
+      if (iret /= 0) then
+         print *,'Error writing cwmr to ',trim(filename_1),k
+         stop
+      endif
   enddo
-  if (iret /= 0) then
-     print *,'Error writing 3d fields to ',trim(filename_o)
-     stop
-  endif
   deallocate(delps,delz,t0)
   deallocate(rwork_1,rwork_2)
   deallocate(ak,bk,pressi,pressl,pressi_new,pressl_new)
