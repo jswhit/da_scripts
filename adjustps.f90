@@ -303,7 +303,7 @@ program adjustps
       endif
       call nemsio_writerecv(gfile_o,'spfh', 'mid layer',k,rwork_2(:,krecq),   iret=iret)
       if (iret /= 0) then
-         print *,'Error writing o3 to ',trim(filename_1),k
+         print *,'Error writing q to ',trim(filename_1),k
          stop
       endif
       call nemsio_writerecv(gfile_o,'o3mr', 'mid layer',k,rwork_2(:,krecoz),  iret=iret)
