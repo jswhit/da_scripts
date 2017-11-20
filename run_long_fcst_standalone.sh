@@ -2,17 +2,17 @@
 #PBS -l walltime=2:00:00
 #PBS -A gsienkf
 ##PBS -q debug
-#PBS -N longfcst_test
+#PBS -N longfcst_standalone
 #PBS -S /bin/bash
-#PBS -o longfcst_test.stdout
-#PBS -e longfcst_test.stderr
+#PBS -o longfcst_standalone.stdout
+#PBS -e longfcst_standalone.stderr
 export NODES=20
 export corespernode=24
 export machine='theia'
 echo "running on $machine using $NODES nodes"
 ulimit -s unlimited
 
-#export analdate=2016011400
+export analdate=2016010500
 
 export fg_only='false'
 
@@ -59,7 +59,7 @@ else
    exit 1
 fi
 export datapath="${datadir}/${exptname}"
-. ${datapath}/analdate.sh
+#. ${datapath}/analdate.sh
 export datapath2="${datapath}/${analdate}"
 export ANALINC=6
 export FHOFFSET=`expr $ANALINC \/ 2`
@@ -263,11 +263,11 @@ fi
 echo "$analdate run high-res control long fcst `date`"
 export FHMAX_LONG=120 
 export FHOUT=6
-export quilting=.false.
+export quilting=.true.
 export VERBOSE=YES
 csh ${enkfscripts}/run_long_fcst.csh
 
-export analdate=`${incdate} $analdate 12`
-echo "export analdate=${analdate}" > ${datapath}/analdate.sh
-cd ${enkfscripts}
-if ($analdate < '2016011900') qsub run_long_fcst_test.sh
+#export analdate=`${incdate} $analdate 12`
+#echo "export analdate=${analdate}" > ${datapath}/analdate.sh
+#cd ${enkfscripts}
+#if ($analdate < '2016011712') qsub run_long_fcst_test.sh
