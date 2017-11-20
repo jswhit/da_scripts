@@ -28,7 +28,9 @@ if [ "$machine" == 'theia' ]; then
 fi
 
 export VERBOSE=${VERBOSE:-"NO"}
+export quilting=${quilting:-'.true.'}
 if [ "$VERBOSE" == "YES" ]; then
+
  set -x
 fi
 
@@ -107,7 +109,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 export DIAG_TABLE=${DIAG_TABLE:-$enkfscripts/diag_table}
-/bin/cp -f $DIAG_TABLE .
+/bin/cp -f $DIAG_TABLE diag_table
 /bin/cp -f $enkfscripts/nems.configure .
 # insert correct starting time and output interval in diag_table template.
 sed -i -e "s/YYYY MM DD HH/${year} ${mon} ${day} ${hour}/g" diag_table
@@ -155,7 +157,7 @@ for file in `ls $FIXGLOBAL/global_volcanic_aerosols* ` ; do
 done
 
 # create netcdf increment files.
-if [ "$fg_only" == "false" ]; then
+if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
    cd INPUT
 
    if [ "${iau_delthrs}" != "-1" ]; then
@@ -307,7 +309,7 @@ else
    FHOFFSET=0
 fi
 
-if [ $FHCYC -eq 0 ] && [ "$warm_start" == "T" ]; then
+if [ $FHCYC -eq 0 ] && [ "$warm_start" == "T" ] && [ -z $skip_global_cycle ]; then
    # run global_cycle to update surface in restart file.
    export BASE_GSM=${fv3gfspath}
    export FIXfv3=$FIXFV3
@@ -363,7 +365,7 @@ atmos_nthreads:          ${OMP_NUM_THREADS}
 use_hyper_thread:        F
 ncores_per_node:         ${corespernode}
 restart_interval:        ${FHRESTART}
-quilting:                .true.
+quilting:                ${quilting}
 write_groups:            ${write_groups}
 write_tasks_per_group:   ${write_tasks}
 num_files:               2
@@ -666,26 +668,28 @@ else
    echo "done running model.. `date`"
 fi
 
-ls -l *nemsio*
-# rename nemsio files.
+# rename nemsio files (if quilting = .true.).
 export DATOUT=${DATOUT:-$datapathp1}
-fh=0
-while [ $fh -le $FHMAX ]; do
-  fh2=`expr $fh + $FHOFFSET`
-  charfhr="fhr"`printf %02i $fh`
-  charfhr3="f"`printf %03i $fh2`
-  /bin/mv -f dyn${charfhr3}.nemsio ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
-  if [ $? -ne 0 ]; then
-     echo "nemsio file missing..."
-     exit 1
-  fi
-  /bin/mv -f phy${charfhr3}.nemsio ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
-  if [ $? -ne 0 ]; then
-     echo "nemsio file missing..."
-     exit 1
-  fi
-  fh=$[$fh+$FHOUT]
-done
+if [ "$quilting" == ".true." ]; then
+   ls -l *nemsio*
+   fh=0
+   while [ $fh -le $FHMAX ]; do
+     fh2=`expr $fh + $FHOFFSET`
+     charfhr="fhr"`printf %02i $fh`
+     charfhr3="f"`printf %03i $fh2`
+     /bin/mv -f dyn${charfhr3}.nemsio ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
+     if [ $? -ne 0 ]; then
+        echo "nemsio file missing..."
+        exit 1
+     fi
+     /bin/mv -f phy${charfhr3}.nemsio ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
+     if [ $? -ne 0 ]; then
+        echo "nemsio file missing..."
+        exit 1
+     fi
+     fh=$[$fh+$FHOUT]
+   done
+fi
 
 ls -l *nc
 if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
@@ -702,13 +706,23 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
    done
    cd ..
 fi
-# also move history files.
-#n=1
-#while [ $n -le 6 ]; do
-# /bin/mv -f fv3new_history.tile${n}.nc ${datapathp1}/${charnanal}/fv3_history.tile${n}.nc
-# n=$((n+1))
-#done
-ls -l ${datapathp1}/${charnanal}
+
+# also move history files if copy_history_files is set.
+if [ ! -z $copy_history_files ]; then
+  #/bin/mv -f fv3_history*.nc ${DATOUT}
+  module load nco/4.6.0
+  n=1
+  while [ $n -le 6 ]; do
+     # lossless compression
+     ncks -4 -L 5 -O fv3_history.tile${n}.nc ${DATOUT}/fv3_history.tile${n}.nc
+     # lossy compression
+     #ncks -4 --ppc default=5 -O fv3_history.tile${n}.nc ${DATOUT}/fv3_history.tile${n}.nc
+     /bin/rm -f fv3_history.tile${n}.nc
+     n=$((n+1))
+  done
+fi
+
+ls -l ${DATOUT}
 ls -l ${datapathp1}/${charnanal}/INPUT
 
 # remove symlinks from INPUT directory

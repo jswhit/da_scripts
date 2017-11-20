@@ -155,7 +155,7 @@ program adjustps
       kreccwmr = 2 + 5*nlevs + k
       call nemsio_readrecv(gfile_1,'ugrd', 'mid layer',k,rwork_1(:,krecu),   iret=iret)
       if (iret /= 0) then
-         print *,'Error reading u from ',trim(filename_1)
+         print *,'Error reading u from ',trim(filename_1),k
          stop
       endif
       call nemsio_readrecv(gfile_1,'vgrd', 'mid layer',k,rwork_1(:,krecv),   iret=iret)
@@ -288,7 +288,7 @@ program adjustps
       kreccwmr = 2 + 5*nlevs + k
       call nemsio_writerecv(gfile_o,'ugrd', 'mid layer',k,rwork_2(:,krecu),   iret=iret)
       if (iret /= 0) then
-         print *,'Error writing u to ',trim(filename_1)
+         print *,'Error writing u to ',trim(filename_1),k
          stop
       endif
       call nemsio_writerecv(gfile_o,'vgrd', 'mid layer',k,rwork_2(:,krecv),   iret=iret)
