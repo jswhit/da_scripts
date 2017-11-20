@@ -85,6 +85,10 @@ echo "fg_proc = $fg_proc"
 setenv FHMAX $FHMAX_LONG
 echo "FHMAX = $FHMAX"
 setenv FHRESTART $FHMAX
+setenv LONB $LONB_CTL
+echo "LONB = $LONB"
+setenv LATB $LATB_CTL
+echo "LATB = $LATB"
 
 # turn off stochastic physics
 setenv SKEB 0
