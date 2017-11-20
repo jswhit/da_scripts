@@ -302,14 +302,14 @@ else
    qsub -V job_hpss.sh
 endif
 
-#if ($hr == "00") then
-#  cat ${machine}_preamble_longfcst run_long_fcst.sh >! job_longfcst.sh
-#  if ($machine == 'wcoss') then
-#      bsub < job_longfcst.sh
-#  else
-#      qsub job_longfcst.sh
-#  endif
-#endif
+if ($hr == "00" || $hr == 12) then
+  cat ${machine}_preamble_longfcst run_long_fcst.sh >! job_longfcst.sh
+  if ($machine == 'wcoss') then
+      bsub -env "all" < job_longfcst.sh
+  else
+      qsub -V job_longfcst.sh
+  endif
+endif
 
 endif # skip to here if fg_only = true
 
