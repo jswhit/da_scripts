@@ -1,0 +1,12 @@
+#PBS -l nodes=20:ppn=24
+#PBS -l walltime=2:00:00
+#PBS -A gsienkf
+##PBS -A hybrid   
+##PBS -q debug
+#PBS -N longfcst
+#PBS -S /bin/bash
+#PBS -o longfcst.stdout
+#PBS -e longfcst.stderr
+export NODES=20
+export corespernode=24
+export machine='theia'
