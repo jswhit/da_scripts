@@ -215,18 +215,26 @@ if [ $RES_CTL -eq 1534 ]; then
    export cdmbgwd_ctl="3.5,0.25"
    export psautco_ctl="0.0008,0.0005"
    export prautco_ctl="0.00015,0.00015"
+   export LONB_CTL=3072
+   export LATB_CTL=1536
 elif [ $RES_CTL -eq 384 ]; then
    export fv_sg_adj_ctl=600
    export dt_atmos_ctl=225
    export cdmbgwd_ctl="1.0,1.2"
+   export LONB_CTL=1760
+   export LATB_CTL=880
 elif [ $RES_CTL -eq 192 ]; then
    export fv_sg_adj_ctl=900
    export dt_atmos_ctl=450
    export cdmbgwd_ctl="0.25,2.0"
+   export LONB_CTL=768  
+   export LATB_CTL=384
 elif [ $RES_CTL -eq 96 ]; then
    export fv_sg_adj_ctl=1800
    export dt_atmos_ctl=900
    export cdmbgwd_ctl="0.125,3.0"
+   export LONB_CTL=384  
+   export LATB_CTL=192
 else
    echo "unknown RES_CTL=${RES_CTL}"
    exit 1
