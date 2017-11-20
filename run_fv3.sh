@@ -710,7 +710,11 @@ fi
 # also move history files if copy_history_files is set.
 if [ ! -z $copy_history_files ]; then
   #/bin/mv -f fv3_history*.nc ${DATOUT}
+  if [ "$machine" == 'theia' ]; then
   module load nco/4.6.0
+  elif [ "$machine" == 'theia' ]; then
+  module load nco-gnu-sandybridge
+  fi
   n=1
   while [ $n -le 6 ]; do
      # lossless compression
