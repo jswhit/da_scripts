@@ -158,31 +158,6 @@ export enkf_threads=2
 export gsi_control_threads=2
 
 # resolution dependent model parameters
-if [ $RES -eq 384 ]; then
-   export JCAP=878 
-   export LONB=1760  
-   export LATB=880  
-   export fv_sg_adj=600
-   export dt_atmos=225
-   export cdmbgwd="1.0,1.2"
-elif [ $RES -eq 192 ]; then
-   export JCAP=382 
-   export LONB=768   
-   export LATB=384  
-   export fv_sg_adj=900
-   export dt_atmos=450
-   export cdmbgwd="0.25,2.0"
-elif [ $RES -eq 96 ]; then
-   export JCAP=126 
-   export LONB=384   
-   export LATB=190  
-   export fv_sg_adj=1800
-   export dt_atmos=900
-   export cdmbgwd="0.125,3.0"
-else
-   echo "unknown RES=${RES}"
-   exit 1
-fi
 
 if [ $RES_CTL -eq 1534 ]; then
    export fv_sg_adj_ctl=600
