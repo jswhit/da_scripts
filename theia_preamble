@@ -1,12 +1,12 @@
-#PBS -l nodes=16:ppn=24
-#PBS -l walltime=1:00:00
+#PBS -l nodes=20:ppn=24
+#PBS -l walltime=3:00:00
 #PBS -A gsienkf
 ##PBS -A hybrid   
 ##PBS -q debug
-#PBS -N C96_test_iau
+#PBS -N C192C384_test_iau
 #PBS -S /bin/bash
-#PBS -o C96_test_iau.stdout
-#PBS -e C96_test_iau.stderr
-export NODES=16
+#PBS -o C192C384_test_iau.stdout
+#PBS -e C192C384_test_iau.stderr
+export NODES=20
 export corespernode=24
 export machine='theia'
