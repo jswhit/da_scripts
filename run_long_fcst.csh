@@ -36,8 +36,13 @@ echo "charnanal = $charnanal"
 setenv DATOUT "${datapath2}/longfcst"
 echo "DATOUT = $DATOUT"
 mkdir -p ${DATOUT}
-setenv DIAG_TABLE "${enkfscripts}/diag_table_long"
-echo "DIAG_TABLE = $DIAG_TABLE"
+if ($quilting == ".false.") then
+  setenv DIAG_TABLE "${enkfscripts}/diag_table_long"
+  echo "DIAG_TABLE = $DIAG_TABLE"
+else
+  setenv DIAG_TABLE "${enkfscripts}/diag_table"
+  echo "DIAG_TABLE = $DIAG_TABLE"
+endif
 
 setenv OMP_NUM_THREADS $control_threads
 echo "OMP_NUM_THREADS = $OMP_NUM_THREADS"
