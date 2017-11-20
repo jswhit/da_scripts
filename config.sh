@@ -209,7 +209,7 @@ else
    exit 1
 fi
 
-if [ $RES_CTL -eq 1534 ]; then
+if [ $RES_CTL -eq 768 ]; then
    export fv_sg_adj_ctl=600
    export dt_atmos_ctl=120
    export cdmbgwd_ctl="3.5,0.25"
