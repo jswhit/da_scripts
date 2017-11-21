@@ -60,6 +60,7 @@ for date in dates:
     yyyy,mm,dd,hh = dateutils.splitdate(datev)
     grbclimo = grbsclimo.select(shortName=vargrb,level=level,dataTime=100*hh)[0]
     climo_data = grbclimo.values[::-1,:]
+    grbsclimo.close()
     #print climo_data.shape, climo_data.min(), climo_data.max()
     # read forecast data from tiled history files.
     cube_data = np.zeros((6,res,res),np.float32)
