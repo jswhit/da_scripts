@@ -36,10 +36,10 @@ export resubmit='true'
 # GSI observer will be run on 'control2' forecast
 # this is for diagnostic purposes (to get GSI diagnostic files) 
 export replay_controlfcst='false'
-if ($replay_controlfcst == 'true')
+if [ "$replay_controlfcst" == "true" ]; then
   echo "resetting recenter_fcst to false for passive replay of control forecast"
   export recenter_fcst='false'
-endif
+fi
 export cleanup_observer='true' # only used if replay_controlfcst=true
 # python script checkdate.py used to check
 # YYYYMMDDHH analysis date string to see if
