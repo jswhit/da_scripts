@@ -1,7 +1,7 @@
 #BSUB -W 2:30                    # wall clock time 
-#BSUB -o C384C192_test_iau.stdout
-#BSUB -e C384C192_test_iau.stderr
-#BSUB -J C384C192_test_iau  
+#BSUB -o longfcst.stdout
+#BSUB -e longfcst.stderr
+#BSUB -J longfcst  
 #BSUB -q "dev"                   # job queue 
 #BSUB -P GFS-T2O                 # project code 
 #BSUB -M 600                    # Memory req's for serial portion
