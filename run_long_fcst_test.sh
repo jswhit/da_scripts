@@ -245,4 +245,6 @@ csh ${enkfscripts}/run_long_fcst.csh
 export analdate=`${incdate} $analdate 12`
 echo "export analdate=${analdate}" > ${datapath}/analdate.sh
 cd ${enkfscripts}
-if ($analdate < '2016011900') qsub run_long_fcst_test.sh
+if [ $analdate -lt 2016012000 ]; then
+  qsub run_long_fcst_test.sh
+fi

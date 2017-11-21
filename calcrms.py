@@ -58,8 +58,7 @@ for date in dates:
     # read climo
     grbsclimo = pygrib.open(os.path.join(climopath,'cmean_1d.1959%s'%datev[4:8]))
     yyyy,mm,dd,hh = dateutils.splitdate(datev)
-    nhour = hh/6
-    grbclimo = grbsclimo.select(shortName=vargrb,level=level,hour=nhour)[0]
+    grbclimo = grbsclimo.select(shortName=vargrb,level=level,dataTime=100*hh)[0]
     climo_data = grbclimo.values[::-1,:]
     #print climo_data.shape, climo_data.min(), climo_data.max()
     # read forecast data from tiled history files.
