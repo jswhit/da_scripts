@@ -6,13 +6,10 @@ import time, cPickle, sys, os
 # assumes all variables are 3d with dimensions time, grid_yt, grid_xt
 
 res = 384
-date = 2016010600
 nlons = 360; nlats = 181
-exptname = 'C192C384_test_iau2b'
 
-fileout = sys.argv[1]
-
-datapath = '/scratch3/BMC/gsienkf/whitaker/%s' % exptname
+datapath = sys.argv[1]
+fileout = sys.argv[2]
 
 # read in triangulation.
 picklefile = 'C%s_grid.pickle' % res
@@ -27,7 +24,7 @@ olons, olats = np.meshgrid(olons, olats)
 # open all history files.
 ncfiles = []
 for ntile in range(1,7,1):
-    datafile = '%s/%s/longfcst/fv3_history.tile%s.nc'% (datapath,date,ntile)
+    datafile = '%s/fv3_history.tile%s.nc'% (datapath,ntile)
     ncfiles.append(Dataset(datafile))
 # get times and variable names.
 nc = ncfiles[0]
@@ -35,7 +32,7 @@ varnames = nc.variables.keys()
 times = nc['time'][:].tolist()
 ntimes = len(times)
 
-ncout = Dataset(fileout,'w',format='NETCDF4_CLASSIC')
+ncout = Dataset('%s/%s' % (datapath,fileout) ,'w',format='NETCDF4_CLASSIC')
 # define dimensions, coordinate vars in output file
 latd = ncout.createDimension('latitude',nlats)
 lats = ncout.createVariable('latitude',np.float32,'latitude')
@@ -51,20 +48,25 @@ for varname in varnames:
     # skip coordinate variables.
     if varname in ['grid_xt','grid_yt','time']: continue
     # define variable in output file.
-    varout = ncout.createVariable(varname, np.float32, ('time','latitude','longitude'),zlib=False)
+    #lsd = 4
+    #if varname.startswith('q'): lsd = 6
+    #varout = ncout.createVariable(varname, np.float32, ('time','latitude','longitude'),zlib=True,least_significant_digit=lsd)
+    varout = ncout.createVariable(varname, np.float32, ('time','latitude','longitude'))
     print 'processing ',varname
     # read cube data for this variable.
-    cube_data = np.zeros((ntimes,6,res,res),np.float32)
+    cube_data = np.empty((ntimes,6,res,res),np.float32)
     for ntile in range(6):
         # assume all variables are 3d (time, grid_yt, grid_xt)
         nc = ncfiles[ntile]
         var = nc[varname]
         cube_data[:,ntile,:,:] = var[:]
     cube_data = cube_data.reshape(ntimes,6*res*res)
+    latlon_data = np.empty((ntimes,nlats,nlons),np.float32)
     # interpolate tiles to lat/lon grid for each time for this variable.
     for ntime in range(ntimes):
-        varout[ntime] = tri.interp_linear(olons,olats,cube_data[ntime])
+        latlon_data[ntime] = tri.interp_linear(olons,olats,cube_data[ntime])
         #print ntime, varout[ntime].min(), varout[ntime].max()
+    varout[:] = latlon_data
 
 # close all files.
 for nc in ncfiles:
