@@ -1,22 +1,44 @@
 # run high-res long forecast
 
+setenv write_tasks 6
+setenv write_groups 1
 if ($quilting == '.false.') then
    echo "no nemsio files will be produced"
    if ($NODES == 20) then
       # 20 nodes, 2 threads
       setenv control_threads 2 # control forecast threads
       setenv control_proc 480  
-      setenv layout_ctl "10, 4" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($control_proc-$write_tasks)/control_threads)
+      setenv layout "10, 4" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($control_proc-$write_tasks)/control_threads)
    else if ($NODES == 40) then
       # 40 nodes, 2 threads
       setenv control_threads 2 # control forecast threads
       setenv control_proc 960  
-      setenv layout_ctl "10, 8" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($control_proc-$write_tasks)/control_threads)
+      setenv layout "10, 8" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($control_proc-$write_tasks)/control_threads)
    else if ($NODES == 80) then
       # 40 nodes, 2 threads
       setenv control_threads 2 # control forecast threads
       setenv control_proc 1920 
-      setenv layout_ctl "10, 16" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($control_proc-$write_tasks)/control_threads)
+      setenv layout "10, 16" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($control_proc-$write_tasks)/control_threads)
+   else
+      echo "processor layout for $NODES nodes not set"
+      exit 1
+   endif
+else
+   if ($NODES == 20) then
+      # 20 nodes, 2 threads
+      setenv control_threads 2 # control forecast threads
+      setenv control_proc 444   # total number of processors for control forecast
+      setenv layout "6,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+   else if ($NODES == 40) then
+      # 40 nodes, 2 threads
+      setenv control_threads 2 
+      setenv control_proc 876  
+      setenv layout"12, 6"
+   else if ($NODES == 80) then
+      # 40 nodes, 2 threads
+      setenv control_threads 2
+      setenv control_proc 1740 
+      setenv layout "12, 12" 
    else
       echo "processor layout for $NODES nodes not set"
       exit 1
@@ -69,10 +91,6 @@ endif
 
 setenv RES $RES_CTL
 echo "RES = $RES"
-setenv write_groups "$write_groups_ctl"
-echo "write_groups = $write_groups"
-setenv layout "$layout_ctl"
-echo "layout = $layout"
 setenv dt_atmos $dt_atmos_ctl
 echo "dt_atmos = $dt_atmos"
 setenv fv_sg_adj $fv_sg_adj_ctl
