@@ -16,11 +16,14 @@ date2 = sys.argv[2]
 exptname = sys.argv[3]
 dates = dateutils.daterange(date1,date2,12)
 
-fhour = 120
-var = 'z'
+fhour = int(sys.argv[4])
+var = sys.argv[5]
+level = int(sys.argv[6])
+#fhour = 120
+#var = 'z'
+#level = 500
 vargrb = var
 if var == 'z': vargrb = 'gh'
-level = 500
 res = 384  
 nlons = 360; nlats = 181
 latbound = 20 # boundary between tropics and extra-tropics
@@ -108,13 +111,13 @@ for date in dates:
     acgl = getmean(cov,coslats)/(np.sqrt(getmean(fvar,coslats))*np.sqrt(getmean(vvar,coslats)))
     acshall.append(acsh); acnhall.append(acnh)
     actrall.append(actr); acglall.append(acgl)
-    print '%s %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' %\
+    print '%s %6.2f %6.2f %6.2f %6.2f %7.3f %7.3f %7.3f %7.3f' %\
     (date,rmsnh,rmstr,rmssh,rmsgl,acnh,actr,acsh,acgl)
 rmsnh = np.asarray(rmsnhall); acnh = np.asarray(acnhall)
 rmssh = np.asarray(rmsshall); acsh = np.asarray(acshall)
 rmstr = np.asarray(rmstrall); actr = np.asarray(actrall)
 rmsgl = np.asarray(rmsglall); acgl = np.asarray(acglall)
-print '%s-%s %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' %\
+print '%s-%s %6.2f %6.2f %6.2f %6.2f %7.3f %7.3f %7.3f %7.3f' %\
 (date1,date2,rmsnh.mean(),rmstr.mean(),rmssh.mean(),rmsgl.mean(),\
  acnh.mean(),actr.mean(),acsh.mean(),acgl.mean())
 #import matplotlib.pyplot as plt

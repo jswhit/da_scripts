@@ -7,6 +7,7 @@ import time, cPickle, sys, os
 
 res = 384
 nlons = 360; nlats = 181
+zlib = True; lsd = 4 # lossy compression, 4 significant digits
 
 datapath = sys.argv[1]
 fileout = sys.argv[2]
@@ -48,10 +49,7 @@ for varname in varnames:
     # skip coordinate variables.
     if varname in ['grid_xt','grid_yt','time']: continue
     # define variable in output file.
-    #lsd = 4
-    #if varname.startswith('q'): lsd = 6
-    #varout = ncout.createVariable(varname, np.float32, ('time','latitude','longitude'),zlib=True,least_significant_digit=lsd)
-    varout = ncout.createVariable(varname, np.float32, ('time','latitude','longitude'))
+    varout = ncout.createVariable(varname, np.float32, ('time','latitude','longitude'),zlib=zlib,least_significant_digit=lsd)
     print 'processing ',varname
     # read cube data for this variable.
     cube_data = np.empty((ntimes,6,res,res),np.float32)
