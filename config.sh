@@ -111,7 +111,7 @@ export RES_CTL=384
 
 # model parameters for ensemble (rest set in $rungfs)
 if [ $RES -eq 384 ]; then
-  export enkf_threads=8 # threads for EnKF
+  export enkf_threads=12 # threads for EnKF
   export gsi_control_threads=4 # threads for GSI
   export fg_proc=96 # number of total cores allocated to each enkf fg ens member. 
   export fg_threads=1 # ens fcst threads
