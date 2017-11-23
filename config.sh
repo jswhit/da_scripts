@@ -1,7 +1,7 @@
 echo "running on $machine using $NODES nodes"
 ulimit -s unlimited
 
-export exptname=C384C384_test_iau
+export exptname=C384C192_test_iau
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia and jet.
@@ -22,10 +22,10 @@ export rungfs='run_fv3.sh' # ensemble forecast
 export recenter_anal="true" # recenter enkf analysis around GSI hybrid 4DEnVar analysis
 # recenter enkf forecasts around control forecast (needed for dual-res and IAU)
 # should be be 'false' for passive replay cycling of control forecast
-export recenter_fcst="false" 
+export recenter_fcst="true" 
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
 export controlanal='true' # use gsi hybrid (if false, pure enkf is used)
-export controlfcst='false' # if true, run dual-res setup with single high-res control
+export controlfcst='true' # if true, run dual-res setup with single high-res control
 export cleanup_fg='true'
 export cleanup_ensmean='true'
 export cleanup_anal='true'
@@ -106,7 +106,7 @@ export readin_localization=.true.
 export massbal_adjust=.false.
 
 # resolution of control and ensmemble.
-export RES=384 
+export RES=192
 export RES_CTL=384 
 
 # model parameters for ensemble (rest set in $rungfs)
