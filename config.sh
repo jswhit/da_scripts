@@ -1,7 +1,7 @@
 echo "running on $machine using $NODES nodes"
 ulimit -s unlimited
 
-export exptname=C384C192_test_iau
+export exptname=C384C384_test_iau
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia and jet.
@@ -22,10 +22,10 @@ export rungfs='run_fv3.sh' # ensemble forecast
 export recenter_anal="true" # recenter enkf analysis around GSI hybrid 4DEnVar analysis
 # recenter enkf forecasts around control forecast (needed for dual-res and IAU)
 # should be be 'false' for passive replay cycling of control forecast
-export recenter_fcst="true" 
+export recenter_fcst="false" 
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
 export controlanal='true' # use gsi hybrid (if false, pure enkf is used)
-export controlfcst='true' # if true, run dual-res setup with single high-res control
+export controlfcst='false' # if true, run dual-res setup with single high-res control
 export cleanup_fg='true'
 export cleanup_ensmean='true'
 export cleanup_anal='true'
@@ -46,6 +46,7 @@ export cleanup_observer='true' # only used if replay_controlfcst=true
 # full ensemble should be saved to HPSS (returns 0 if 
 # HPSS save should be done)
 export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
+export run_long_fcst="true"  # spawn a longer control forecast at 00 and 12 UTC
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
@@ -104,32 +105,63 @@ export obtimelsh=1.e30
 export readin_localization=.true.
 export massbal_adjust=.false.
 
-# model parameters for ensemble (rest set in $rungfs)
-export fg_proc=24 # number of total cores allocated to each enkf fg ens member. 
-export fg_threads=1 # ens fcst threads
-export write_groups=1
-export write_tasks=6 # write tasks
-export layout="3, 1" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc-$write_tasks)/fg_threads)
+# resolution of control and ensmemble.
+export RES=384 
+export RES_CTL=384 
 
-if [ $NODES -eq 20 ]; then
-# 20 nodes, 2 threads
-export control_threads=2 # control forecast threads
-export control_proc=444  
-export write_groups_ctl=1
-export layout_ctl="6, 6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($control_proc-$write_tasks)/control_threads)
-elif [ $NODES -eq 40 ]; then
-# 40 nodes, 2 threads
-export control_threads=2 # control forecast threads
-export control_proc=876  
-export write_groups_ctl=1
-export layout_ctl="12, 6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($control_proc-$write_tasks)/control_threads)
+# model parameters for ensemble (rest set in $rungfs)
+if [ $RES -eq 384 ]; then
+  export enkf_threads=8 # threads for EnKF
+  export gsi_control_threads=4 # threads for GSI
+  export fg_proc=96 # number of total cores allocated to each enkf fg ens member. 
+  export fg_threads=1 # ens fcst threads
+  export write_groups=4 # write groups
+  export write_tasks=6 # write tasks
+  export layout="3,4" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+elif [ $RES -eq 192 ]; then
+  export enkf_threads=2
+  export gsi_control_threads=2
+  export fg_proc=24 
+  export fg_threads=1 
+  export write_groups=1
+  export write_tasks=6 
+  export layout="3, 1" 
+elif [ $RES -eq 96 ]; then
+  export enkf_threads=1
+  export gsi_control_threads=1
+  export fg_proc=24
+  export fg_threads=1 
+  export write_groups=1
+  export write_tasks=6 
+  export layout="3, 1"
 else
-echo "processor layout for $NODES nodes not set"
-exit 1
+  echo "compute parameters layout for resolution C$RES not set"
+  exit 1
 fi
 
-export RES=192 
-export RES_CTL=384 
+if [ $NODES -eq 20 ]; then
+  # 20 nodes, 2 threads
+  export control_threads=2 # control forecast threads
+  export control_proc=444   # total number of processors for control forecast
+  export write_groups_ctl=1 # write groups for control forecast.
+  export layout_ctl="6,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+elif [ $NODES -eq 40 ]; then
+  # 40 nodes, 2 threads
+  export control_threads=2 
+  export control_proc=876  
+  export write_groups_ctl=1
+  export layout_ctl="12, 6"
+elif [ $NODES -eq 80 ]; then
+  # 80 nodes, 2 threads
+  export control_threads=2
+  export control_proc=1740 
+  export write_groups_ctl=1
+  export layout_ctl="12, 12" 
+else
+  echo "processor layout for $NODES nodes not set"
+  exit 1
+fi
+
 export psautco="6.0d-4,3.0d-4"
 export zhao_mic=T
 
@@ -178,10 +210,6 @@ export SKEBNORM=0
 export SKEB_NPASS=30
 export SKEB_VDOF=5
 
-# Assimilation parameters
-export enkf_threads=2 
-export gsi_control_threads=2
-
 # resolution dependent model parameters
 if [ $RES -eq 384 ]; then
    export JCAP=878 
@@ -205,7 +233,7 @@ elif [ $RES -eq 96 ]; then
    export dt_atmos=900
    export cdmbgwd="0.125,3.0"
 else
-   echo "unknown RES=${RES}"
+   echo "model parameters for ensemble resolution C$RES_CTL not set"
    exit 1
 fi
 
@@ -236,7 +264,7 @@ elif [ $RES_CTL -eq 96 ]; then
    export LONB_CTL=384  
    export LATB_CTL=192
 else
-   echo "unknown RES_CTL=${RES_CTL}"
+   echo "model parameters for control resolution C$RES_CTL not set"
    exit 1
 fi
 export FHCYC=0 # run global_cycle instead of gcycle inside model

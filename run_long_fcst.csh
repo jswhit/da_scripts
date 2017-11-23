@@ -12,6 +12,11 @@ if ($quilting == '.false.') then
       setenv control_threads 2 # control forecast threads
       setenv control_proc 960  
       setenv layout_ctl "10, 8" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($control_proc-$write_tasks)/control_threads)
+   else if ($NODES == 80) then
+      # 40 nodes, 2 threads
+      setenv control_threads 2 # control forecast threads
+      setenv control_proc 1920 
+      setenv layout_ctl "10, 16" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($control_proc-$write_tasks)/control_threads)
    else
       echo "processor layout for $NODES nodes not set"
       exit 1
@@ -29,6 +34,8 @@ setenv copy_history_files 1
 
 if ($replay_controlfcst == 'true') then
    setenv charnanal "control2"
+else if ($controlfcst == 'false') then
+   setenv charnanal "ensmean"
 else
    setenv charnanal "control"
 endif

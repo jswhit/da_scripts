@@ -189,7 +189,7 @@ else # pure enkf
 endif
 # for passive (replay) cycling of control forecast, run GSI observer
 # on control forecast background (diag files saved with 'control2' suffix)
-if ($controlfcst == 'true' && $replay_controlfcst == 'true') then
+if ($controlfcst == 'true' && $replay_controlfcst == 'true' && $replay_run_observer == "true") then
    setenv charnanal 'control2'
    echo "$analdate run gsi observer on control forecast `date`"
    csh ${enkfscripts}/run_gsiobserver.csh >&! ${current_logdir}/run_gsi_observer.out 
@@ -302,13 +302,15 @@ else
    qsub -V job_hpss.sh
 endif
 
-if ($hr == "00" || $hr == "12") then
-  cat ${machine}_preamble_longfcst run_long_fcst.sh >! job_longfcst.sh
-  if ($machine == 'wcoss') then
-      bsub -env "all" < job_longfcst.sh
-  else
-      qsub -V job_longfcst.sh
-  endif
+if ($run_long_fcst == "true") then
+   if ($hr == "00" || $hr == "12") then
+     cat ${machine}_preamble_longfcst run_long_fcst.sh >! job_longfcst.sh
+     if ($machine == 'wcoss') then
+         bsub -env "all" < job_longfcst.sh
+     else
+         qsub -V job_longfcst.sh
+     endif
+   endif
 endif
 
 endif # skip to here if fg_only = true
