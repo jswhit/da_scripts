@@ -58,6 +58,8 @@ if ($replay_controlfcst == 'true') then
    setenv charnanal "control2"
 else if ($controlfcst == 'false') then
    setenv charnanal "ensmean"
+   unsetenv skip_calc_increment
+   unsetenv skip_global_cycle
 else
    setenv charnanal "control"
 endif
