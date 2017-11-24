@@ -33,7 +33,7 @@ else
       # 40 nodes, 2 threads
       setenv control_threads 2 
       setenv control_proc 876  
-      setenv layout"12, 6"
+      setenv layout "12, 6"
    else if ($NODES == 80) then
       # 40 nodes, 2 threads
       setenv control_threads 2
