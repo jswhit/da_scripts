@@ -10,5 +10,6 @@ module load hpss
 env
 hsi ls -l $hsidir
 hsi mkdir ${hsidir}/
-cd ${datapath2}
+cd ${DATOUT}
+cd ..
 htar -cvf ${hsidir}/${analdate}_longfcst.tar longfcst
