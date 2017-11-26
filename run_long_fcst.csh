@@ -124,3 +124,8 @@ setenv SHUM 0
 echo "SKEB SPPT SHUM = $SKEB $SPPT $SHUM"
 
 sh ${enkfscripts}/${rungfs}
+
+if ($machine == 'wcoss') then
+  cd ${enkfscripts}
+  bsub -env "all" < hpss_longfcst.sh
+endif
