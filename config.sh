@@ -22,6 +22,8 @@ export rungfs='run_fv3.sh' # ensemble forecast
 export recenter_anal="true" # recenter enkf analysis around GSI hybrid 4DEnVar analysis
 # recenter enkf forecasts around control forecast.
 # should be be 'false' for passive replay cycling of control forecast
+# WARNING: don't set this to true until we have a way of recentering
+# FV3 restart files.
 export recenter_fcst="false" 
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
 export controlanal='true' # use gsi hybrid (if false, pure enkf is used)
