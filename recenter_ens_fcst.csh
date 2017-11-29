@@ -30,9 +30,9 @@ endif
 /bin/cp -f $filename_meanout $filename_meanin
 set nanal=1
 while ($nanal <= $nanals)
-   set charnanal_tmp="mem"`printf %03i $nanal`
-   set fgfiler=sfgr_${analdate}_${charfhr}_${charnanal_tmp}
-   set fgfile=sfg_${analdate}_${charfhr}_${charnanal_tmp}
+   set charnanal_ens="mem"`printf %03i $nanal`
+   set fgfiler=sfgr_${analdate}_${charfhr}_${charnanal_ens}
+   set fgfile=sfg_${analdate}_${charfhr}_${charnanal_ens}
    if ( -s $fgfiler) then
       /bin/mv -f $fgfile ${fgfile}.orig
       /bin/mv -f $fgfiler $fgfile
@@ -50,12 +50,8 @@ else
    /bin/mv -f ${filename_meanin}.orig  ${filename_meanin}
    set nanal=1
    while ($nanal <= $nanals)
-      set charnanal_tmp="mem"`printf %03i $nanal`
-      if ($iau_delthrs != -1) then
-         set fgfile=sfg_${analdate}_${charfhr}_${charnanal_tmp}
-      else
-         set fgfile=sfg_${analdate}_${charnanal_tmp}
-      endif
+      set charnanal_ens="mem"`printf %03i $nanal`
+      set fgfile=sfg_${analdate}_${charfhr}_${charnanal_ens}
       /bin/mv -f ${fgfile}.orig ${fgfile}
       @ nanal = $nanal + 1
    end
