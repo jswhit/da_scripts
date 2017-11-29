@@ -278,7 +278,7 @@ echo "files moved to fgens, fgens2 `date`"
 /bin/rm -f hostfile*
 /bin/rm -f fort*
 /bin/rm -f *log
-/bin/rm -f *lores *orig
+/bin/rm -f *lores *mem*orig
 /bin/rm -f ozinfo convinfo satinfo scaninfo anavinfo
 /bin/rm -rf hybridtmp* gsitmp* gfstmp* nodefile* machinefile*
 echo "unwanted files removed `date`"
