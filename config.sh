@@ -20,9 +20,9 @@ export rungsi='run_gsi_4densvar.sh'
 export rungfs='run_fv3.sh' # ensemble forecast
 
 export recenter_anal="true" # recenter enkf analysis around GSI hybrid 4DEnVar analysis
-# recenter enkf forecasts around control forecast (needed for dual-res and IAU)
+# recenter enkf forecasts around control forecast.
 # should be be 'false' for passive replay cycling of control forecast
-export recenter_fcst="true" 
+export recenter_fcst="false" 
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
 export controlanal='true' # use gsi hybrid (if false, pure enkf is used)
 export controlfcst='true' # if true, run dual-res setup with single high-res control
