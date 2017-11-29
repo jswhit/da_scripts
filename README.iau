@@ -1,4 +1,4 @@
-* For model (requires tic26 branch):
+* For model:
 - in model_configure:
 total_member:            1
 start_year:              ${year}
@@ -57,14 +57,4 @@ assimilation window.
 
 * Recentering:
 - The EnKF recentering script needs to be run on the analyses at the beginning, middle and end of the window.
-- For a dual-resolution run, the EnKF backgrounds at the beginning, middle and end of the window should
-  also be recentered around the control forecast so that the increments used in the IAU for each
-  ensemble member keep the ensemble close to the control forecast.
-- For a single-resolution run, there is no control forecast and the EnKF ensemble mean backgrounds are fed
-  to the GSI and no recentering of backgrounds is necessary.
-
-* The regrid_nemio utility is no longer needed.
-
-* Mods to the GSI, EnKF, anavinfo and EnKF utiltiies.
-- use /home/Jeffrey.S.Whitaker/fv3diff.out on theia for mods to apply to the EXP-enkflinhx gerrit/git branch.
-  The EXP-enkflinhx-fix branch contains the updated anavinfo file.
+- Don't do recentering of backgrounds until we have a way to also recenter restart files.
