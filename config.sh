@@ -42,6 +42,7 @@ if [ "$replay_controlfcst" == "true" ]; then
   echo "resetting recenter_fcst to false for passive replay of control forecast"
   export recenter_fcst='false'
 fi
+export replay_run_observer='true' # run observer on replay forecast
 export cleanup_observer='true' # only used if replay_controlfcst=true
 # python script checkdate.py used to check
 # YYYYMMDDHH analysis date string to see if
