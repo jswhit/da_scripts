@@ -265,6 +265,7 @@ mkdir fgens2
 /bin/mv -f mem* fgens
 /bin/mv -f sfg*mem* fgens2
 /bin/mv -f bfg*mem* fgens2
+/bin/rm -f fgens2/*fhr00* fgens2/*orig
 /bin/cp -f sfg*control fgens2
 /bin/cp -f bfg*control fgens2
 echo "files moved to fgens, fgens2 `date`"
