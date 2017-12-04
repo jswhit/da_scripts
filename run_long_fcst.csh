@@ -136,6 +136,7 @@ if ($quilting == ".true.") then
    rm $DATOUT/bfg_*
    rm $DATOUT/sfg_*
    rm $DATOUT/outpost*
+   rm $DATOUT/postgp.inp*
 endif
 
 unsetenv LSB_SUB_RES_REQ 

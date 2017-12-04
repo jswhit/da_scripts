@@ -15,7 +15,7 @@ setenv FLXIOUT $WORKDIR/bfg_${analdatep1}_fhr${charfhr}_${charnanal}.idx
 setenv PGBOUT $WORKDIR/pgrb.${analdate}.fhr${charfhr}
 setenv OUTTYP 4
 
-setenv EXECUTIL /gpfs/hps3/nco/ops/nwprod/grib_util.v1.0.3/exec
+setenv EXECUTIL /gpfs/hps/nco/ops/nwprod/grib_util.v1.0.3/exec
 setenv EMCglobal /gpfs/hps3/emc/global/noscrub/emc.glopara/svn/gfs/q3fy17_final/global_shared.v14.1.0
 setenv USHglobal  ${EMCglobal}/ush
 setenv FIXglobal  ${EMCglobal}/fix
