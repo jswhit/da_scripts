@@ -1,4 +1,4 @@
-#BSUB -W 2:30                    # wall clock time 
+#BSUB -W 3:30                    # wall clock time 
 #BSUB -o longfcst.stdout
 #BSUB -e longfcst.stderr
 #BSUB -J longfcst  

@@ -125,6 +125,20 @@ echo "SKEB SPPT SHUM = $SKEB $SPPT $SHUM"
 
 sh ${enkfscripts}/${rungfs}
 
+if ($quilting == ".true.") then
+   # now run post processor
+   setenv nprocs `expr $NODES \* $corespernode`
+   if ($nprocs > 240) then
+     setenv nprocs 240
+   endif
+   csh ${enkfscripts}/post.csh
+   # clean up: delete bfg, sfg files
+   rm $DATOUT/bfg_*
+   rm $DATOUT/sfg_*
+   rm $DATOUT/outpost*
+   rm $DATOUT/postgp.inp*
+endif
+
 unsetenv LSB_SUB_RES_REQ 
 if ($machine == 'wcoss') then
   cd ${enkfscripts}
