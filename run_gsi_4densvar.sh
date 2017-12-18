@@ -46,7 +46,6 @@ nprocs=${nprocs:-$PBS_NP}
 basedir=${HOMEGLOBAL}
 gsipath=${gsipath:-${basedir}/gsi}
 gsiexec=${gsiexec:-$gsipath/EXP-port/src/global_gsi}
-angupdatexec=${angupdatexec:- $gsipath/util/global_angupdate/global_angupdate}
 charnanal=${charnanal:-'ensmean'}
 # name just for diag files.
 charnanal2=${charnanal2:-$charnanal}
@@ -876,15 +875,58 @@ else
   loops="01 03"
 fi
 
+#corecount=0
+## number of MPI tasks for each nc_diat_cat.x
+## must be a divisor of total number of cores
+#export nprocs=`expr $corespernode \/ 2`
+#export OMP_NUM_THREADS=1 # keep at 1
+#if [ "$machine" == 'theia' ]; then
+#   HOSTFILE_FULL=$PBS_NODEFILE
+#fi
+#for loop in $loops; do
+#
+#   case $loop in
+#     01) string=ges;;
+#     03) string=anl;;
+#      *) string=$loop;;
+#   esac
+#   
+#   #  Collect diagnostic files for obs types (groups) below
+#   for type in $alldiag; do
+#       count=`ls pe*${type}_${loop}* | wc -l`
+#       if [[ $count -gt 0 ]]; then
+#          export PGM="${execdir}/nc_diag_cat.x -o ${savdir}/diag_${type}_${string}.${adate}_${charnanal2}.nc4  pe*${type}_${loop}*nc4"
+#          if [ "$machine" == 'theia' ]; then
+#             export HOSTFILE=hostfile_${corecount}
+#             /bin/rm -f $HOSTFILE
+#             n=1
+#             while [ $n -le $nprocs ]; do
+#                nn=$((n+$corecount))
+#                core=`head -$nn $HOSTFILE_FULL | tail -1`
+#                echo $core >> $HOSTFILE
+#                n=$((n+1))
+#             done
+#             echo "contents of hostfile_${corecount}..."
+#             cat $HOSTFILE
+#          fi
+#          corecount=$((corecount+$nprocs))
+#          sh ${enkfscripts}/runmpi 1> nc_diag_cat_${type}_${string}.out 2> nc_diag_cat_${type}_${string}.out &
+#          if [ $corecount -eq $cores ]; then
+#             echo "waiting... corecount=$corecount"
+#             wait
+#             corecount=0
+#          fi       
+#       fi
+#   done
+#
+#done
+#echo "Time after diagnostic loop is `date` "
+
+# run each nc_diag_cat on a separate node, concurrently
 nodecount=0
 export nprocs=$corespernode
 export OMP_NUM_THREADS=1
-if [ "$machine" == 'theia' ]; then
-   cat $HOSTFILE | uniq > nodefile
-   totnodes=`wc -l nodefile | cut -f1 -d " "`
-else
-   totnodes=$NODES  ## FIXME
-fi
+totnodes=$NODES
 for loop in $loops; do
 
    case $loop in
@@ -901,7 +943,7 @@ for loop in $loops; do
           export PGM="${execdir}/nc_diag_cat.x -o ${savdir}/diag_${type}_${string}.${adate}_${charnanal2}.nc4  pe*${type}_${loop}*nc4"
           nodecount=$((nodecount+1))
           if [ "$machine" == 'theia' ]; then
-             node=`head -$nodecount nodefile | tail -1`
+             node=`head -$nodecount $NODEFILE | tail -1`
              export HOSTFILE=hostfile_${nodecount}
              /bin/rm -f $HOSTFILE
              n=1
@@ -923,8 +965,6 @@ for loop in $loops; do
 
 done
 echo "Time after diagnostic loop is `date` "
-#/bin/rm -f $SIGANL
-#exit 1
 
 if [ ! -s $savdir/diag_conv_uv_ges.${adate}_${charnanal2}.nc4 ]; then
    exit 1
@@ -941,139 +981,12 @@ fi
 
 fi # skipcat
 
-if [[ "$SKIP_ANGUPDATE" = "YES" || "$NOSAT" = "YES" ]]; then
-   # If requested, clean up $tmpdir
-   if [[ "$CLEAN" = "YES" ]];then
-     cd $tmpdir
-     cd ../
-     /bin/rm -rf $tmpdir
-   fi
-   exit 0
-fi
-
-$nln ./satbias_angle  ./satbias_ang.in
-ls -l  ./satbias_ang.in
-cat  ./satbias_ang.in
-for type in $alldiag; do
-   if [[ -s $savdir/diag_${type}_ges.${adate}_${charnanal2}.nc4 ]]; then
-      $nln $savdir/diag_${type}_ges.${adate}_${charnanal2}.nc4  ./diag_${type}.$adate.nc4
-   fi
-done
-cat  > global_angupdate.namelist <<EOF
- &SETUP
-  jpch=2680,nstep=90,nsize=20,wgtang=0.008333333,wgtlap=0.0,
-  iuseqc=1,dtmax=1.0,
-  iyy1=${iy},imm1=${im},idd1=${id},ihh1=${ih},
-  iyy2=${iy},imm2=${im},idd2=${id},ihh2=${ih},
-  dth=06,ndat=50,
-  $SETUPANG
- /
- &OBS_INPUT
-dtype(01)='hirs2',     dplat(01)='tirosn',   dsis(01)='hirs2_tirosn',
-dtype(02)='hirs2',     dplat(02)='n06',       dsis(02)='hirs2_n06',
-dtype(03)='hirs2',     dplat(03)='n07',       dsis(03)='hirs2_n07',
-dtype(04)='hirs2',     dplat(04)='n08',       dsis(04)='hirs2_n08',
-dtype(05)='hirs2',     dplat(05)='n09',       dsis(05)='hirs2_n09',
-dtype(06)='hirs2',     dplat(06)='n10',       dsis(06)='hirs2_n10',
-dtype(07)='hirs2',     dplat(07)='n11',       dsis(07)='hirs2_n11',
-dtype(08)='hirs2',     dplat(08)='n12',       dsis(08)='hirs2_n12',
-dtype(09)='hirs2',     dplat(09)='n14',       dsis(09)='hirs2_n14',
-dtype(10)='hirs3',     dplat(10)='n15',       dsis(10)='hirs3_n15',
-dtype(11)='hirs3',     dplat(11)='n16',       dsis(11)='hirs3_n16',
-dtype(12)='hirs3',     dplat(12)='n17',       dsis(12)='hirs3_n17',
-dtype(13)='hirs4',     dplat(13)='n19',       dsis(13)='hirs4_n19',
-dtype(14)='hirs4',     dplat(14)='metop-a',   dsis(14)='hirs4_metop-a',
-dtype(15)='sndr',      dplat(15)='g08',       dsis(15)='sndr_g08',
-dtype(16)='sndr',      dplat(16)='g10',       dsis(16)='sndr_g10',
-dtype(17)='sndr',      dplat(17)='g11',       dsis(17)='sndr_g11',
-dtype(18)='sndr',      dplat(18)='g12',       dsis(18)='sndr_g12',
-dtype(19)='sndr',      dplat(19)='g13',       dsis(19)='sndr_g13',
-dtype(20)='sndr',      dplat(20)='g09',       dsis(20)='sndr_g09',
-dtype(21)='goes_img',  dplat(21)='g10',       dsis(21)='imgr_g10',
-dtype(22)='goes_img',  dplat(22)='g11',       dsis(22)='imgr_g11',
-dtype(23)='goes_img',  dplat(23)='g12',       dsis(23)='imgr_g12',
-dtype(24)='goes_img',  dplat(24)='g13',       dsis(24)='imgr_g13',
-dtype(25)='airs',      dplat(25)='aqua',      dsis(25)='airs281SUBSET_aqua',
-dtype(26)='msu',       dplat(26)='tirosn',   dsis(26)='msu_tirosn',
-dtype(27)='msu',       dplat(27)='n06',       dsis(27)='msu_n06',
-dtype(28)='msu',       dplat(28)='n07',       dsis(28)='msu_n07',
-dtype(29)='msu',       dplat(29)='n08',       dsis(29)='msu_n08',
-dtype(30)='msu',       dplat(30)='n09',       dsis(30)='msu_n09',
-dtype(31)='msu',       dplat(31)='n10',       dsis(31)='msu_n10',
-dtype(32)='msu',       dplat(32)='n11',       dsis(32)='msu_n11',
-dtype(33)='msu',       dplat(33)='n12',       dsis(33)='msu_n12',
-dtype(34)='msu',       dplat(34)='n14',       dsis(34)='msu_n14',
-dtype(35)='amsua',     dplat(35)='n15',       dsis(35)='amsua_n15',
-dtype(36)='amsua',     dplat(36)='n16',       dsis(36)='amsua_n16',
-dtype(37)='amsua',     dplat(37)='n17',       dsis(37)='amsua_n17',
-dtype(38)='amsua',     dplat(38)='n18',       dsis(38)='amsua_n18',
-dtype(39)='amsua',     dplat(39)='metop-a',   dsis(39)='amsua_metop-a',
-dtype(40)='amsua',     dplat(40)='aqua',      dsis(40)='amsua_aqua',
-dtype(41)='amsub',     dplat(41)='n15',       dsis(41)='amsub_n15',
-dtype(42)='amsub',     dplat(42)='n16',       dsis(42)='amsub_n16',
-dtype(43)='amsub',     dplat(43)='n17',       dsis(43)='amsub_n17',
-dtype(44)='mhs',       dplat(44)='n18',       dsis(44)='mhs_n18',
-dtype(45)='mhs',       dplat(45)='metop-a',   dsis(45)='mhs_metop-a',
-dtype(46)='ssmi',      dplat(46)='f08',       dsis(46)='ssmi_f08',
-dtype(47)='ssmi',      dplat(47)='f10',       dsis(47)='ssmi_f10',
-dtype(48)='ssmi',      dplat(48)='f11',       dsis(48)='ssmi_f11',
-dtype(49)='ssmi',      dplat(49)='f13',       dsis(49)='ssmi_f13',
-dtype(50)='ssmi',      dplat(50)='f14',       dsis(50)='ssmi_f14',
-dtype(51)='ssmi',      dplat(51)='f15',       dsis(51)='ssmi_f15',
-dtype(52)='amsre_low', dplat(52)='aqua',      dsis(52)='amsre_aqua',
-dtype(53)='amsre_mid', dplat(53)='aqua',      dsis(53)='amsre_aqua',
-dtype(54)='amsre_hig', dplat(54)='aqua',      dsis(54)='amsre_aqua',
-dtype(55)='ssmis_las', dplat(55)='f16',       dsis(55)='ssmis_f16',
-dtype(56)='ssmis_uas', dplat(56)='f16',       dsis(56)='ssmis_f16',
-dtype(57)='ssmis_img', dplat(57)='f16',       dsis(57)='ssmis_f16',
-dtype(58)='ssmis_env', dplat(58)='f16',       dsis(58)='ssmis_f16',
-dtype(59)='sndrd1',    dplat(59)='g12',       dsis(59)='sndrD1_g12',
-dtype(60)='sndrd2',    dplat(60)='g12',       dsis(60)='sndrD2_g12',
-dtype(61)='sndrd3',    dplat(61)='g12',       dsis(61)='sndrD3_g12',
-dtype(62)='sndrd4',    dplat(62)='g12',       dsis(62)='sndrD4_g12',
-dtype(63)='sndrd1',    dplat(63)='g11',       dsis(63)='sndrD1_g11',
-dtype(64)='sndrd2',    dplat(64)='g11',       dsis(64)='sndrD2_g11',
-dtype(65)='sndrd3',    dplat(65)='g11',       dsis(65)='sndrD3_g11',
-dtype(66)='sndrd4',    dplat(66)='g11',       dsis(66)='sndrD4_g11',
-dtype(67)='sndrd1',    dplat(67)='g13',       dsis(67)='sndrD1_g13',
-dtype(68)='sndrd2',    dplat(68)='g13',       dsis(68)='sndrD2_g13',
-dtype(69)='sndrd3',    dplat(69)='g13',       dsis(69)='sndrD3_g13',
-dtype(70)='sndrd4',    dplat(70)='g13',       dsis(70)='sndrD4_g13',
-dtype(71)='ssu',       dplat(71)='tirosn',   dsis(71)='ssu_tirosn',
-dtype(72)='ssu',       dplat(72)='n06',       dsis(72)='ssu_n06',
-dtype(73)='ssu',       dplat(73)='n07',       dsis(73)='ssu_n07',
-dtype(74)='ssu',       dplat(74)='n08',       dsis(74)='ssu_n08',
-dtype(75)='ssu',       dplat(75)='n09',       dsis(75)='ssu_n09',
-dtype(76)='ssu',       dplat(76)='n11',       dsis(76)='ssu_n11',
-dtype(77)='ssu',       dplat(77)='n14',       dsis(77)='ssu_n14',
- /
-EOF
-
-cat global_angupdate.namelist
-export PGM=$angupdatexec
-${enkfscripts}/runmpi
-rc=$?
-if [[ $rc -ne 0 ]];then
-  echo "global_angupdate failed with exit code $rc"
-  sleep 10
-  exit 1
-fi
-# Output file
-##$ncp satbias_ang.out     $savdir/satang.${adate}
-if [ -s satbias_ang.out ]; then
-   $ncp satbias_ang.out  $SATANGO
-else
-   exit 1
-fi
-
-
 # If requested, clean up $tmpdir
 if [[ "$CLEAN" = "YES" ]];then
-   cd $tmpdir
-   cd ../
-   /bin/rm -rf $tmpdir
+  cd $tmpdir
+  cd ../
+  /bin/rm -rf $tmpdir
 fi
 
-
 # End of script
-exit
+exit 0
