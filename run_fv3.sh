@@ -8,7 +8,7 @@ if [ "$machine" == 'theia' ]; then
    module load hdf5
    module load pnetcdf
    module use /scratch4/NCEPDEV/nems/noscrub/emc.nemspara/soft/modulefiles
-   module load esmf/7.1.0bs34
+   module load esmf/7.1.0bs40
    module list
 fi
 
@@ -111,6 +111,7 @@ fi
 export DIAG_TABLE=${DIAG_TABLE:-$enkfscripts/diag_table}
 /bin/cp -f $DIAG_TABLE diag_table
 /bin/cp -f $enkfscripts/nems.configure .
+/bin/rm -f PET*
 # insert correct starting time and output interval in diag_table template.
 sed -i -e "s/YYYY MM DD HH/${year} ${mon} ${day} ${hour}/g" diag_table
 sed -i -e "s/FHOUT/${FHOUT}/g" diag_table
@@ -371,7 +372,7 @@ write_tasks_per_group:   ${write_tasks}
 num_files:               2
 filename_base:           'dyn' 'phy'
 output_grid:             'gaussian_grid'
-write_nemsiofile:        .true.
+output_file:             'nemsio'
 write_nemsioflip:        .true.
 imo:                     ${LONB}
 jmo:                     ${LATB}

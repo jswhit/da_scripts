@@ -267,7 +267,7 @@ else
    lwrite4danl=.false.
 fi
 
-SETUP="reduce_diag=.true.,lwrite_peakwt=.false.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=.true.,ens_nstarthr=3,iwrtinc=-1,nhr_assimilation=6,nhr_obsbin=$FHOUT,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=.true."
+SETUP="reduce_diag=.true.,lwrite_peakwt=.true.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=.true.,ens_nstarthr=3,iwrtinc=-1,nhr_assimilation=6,nhr_obsbin=$FHOUT,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=.true."
 
 if [[ "$HXONLY" = "YES" ]]; then
    SETUP="$SETUP,miter=0,niter=1"
@@ -323,6 +323,7 @@ cat <<EOF > gsiparm.anl
    miter=2,niter(1)=50,niter(2)=150,
    niter_no_qc(1)=25,niter_no_qc(2)=0,
    write_diag(1)=.true.,write_diag(2)=.false.,write_diag(3)=.true.,
+   netcdf_diag=.true.,binary_diag=.false.,
    qoption=2,
    factqmin=0.0,factqmax=0.0,deltim=$DELTIM,
    iguess=-1,
@@ -762,16 +763,16 @@ fi
 
 # make symlinks for diag files to initialize angle dependent bias correction for new channels.
 satdiag="ssu_n14 hirs2_n14 msu_n14 sndr_g08 sndr_g09 sndr_g11 sndr_g12 sndr_g13 sndr_g08_prep sndr_g11_prep sndr_g12_prep sndr_g13_prep sndrd1_g11 sndrd2_g11 sndrd3_g11 sndrd4_g11 sndrd1_g12 sndrd2_g12 sndrd3_g12 sndrd4_g12 sndrd1_g13 sndrd2_g13 sndrd3_g13 sndrd4_g13 sndrd1_g14 sndrd2_g14 sndrd3_g14 sndrd4_g14 sndrd1_g15 sndrd2_g15 sndrd3_g15 sndrd4_g15 hirs2_n14 hirs3_n15 hirs3_n16 hirs3_n17 amsua_n15 amsua_n16 amsua_n17 amsub_n15 amsub_n16 amsub_n17 hsb_aqua airs_aqua amsua_aqua imgr_g08 imgr_g11 imgr_g12 imgr_g14 imgr_g15 gome_metop-a omi_aura mls_aura ssmi_f13 ssmi_f14 ssmi_f15 hirs4_n18 hirs4_metop-a amsua_n18 amsua_metop-a mhs_n18 mhs_metop-a amsre_low_aqua amsre_mid_aqua amsre_hig_aqua ssmis_las_f16 ssmis_uas_f16 ssmis_img_f16 ssmis_env_f16 ssmis_las_f17 ssmis_uas_f17 ssmis_img_f17 ssmis_env_f17 ssmis_las_f18 ssmis_uas_f18 ssmis_img_f18 ssmis_env_f18 ssmis_las_f19 ssmis_uas_f19 ssmis_img_f19 ssmis_env_f19 ssmis_las_f20 ssmis_uas_f20 ssmis_img_f20 ssmis_env_f20 iasi_metop-a hirs4_n19 amsua_n19 mhs_n19 seviri_m08 seviri_m09 seviri_m10 cris_npp atms_npp hirs4_metop-b amsua_metop-b mhs_metop-b iasi_metop-b gome_metop-b"
-alldiag="$satdiag pcp_ssmi_dmsp pcp_tmi_trmm conv sbuv2_n11 sbuv2_n14 sbuv2_n16 sbuv2_n17 sbuv2_n18 sbuv2_n19"
+alldiag="$satdiag pcp_ssmi_dmsp pcp_tmi_trmm conv_gps conv_t conv_q conv_uv conv_ps sbuv2_n11 sbuv2_n14 sbuv2_n16 sbuv2_n17 sbuv2_n18 sbuv2_n19"
 string='ges'
 for type in $satdiag; do
     if [[ "$cold_start_bias" = "true" ]]; then
-       if [ -s $datges/diag_${type}_${string}.${adate}_${charnanal2} ]; then
-          ln -fs $datges/diag_${type}_${string}.${adate}_${charnanal2} diag_${type}
+       if [ -s $datges/diag_${type}_${string}.${adate}_${charnanal2}.nc4 ]; then
+          ln -fs $datges/diag_${type}_${string}.${adate}_${charnanal2}.nc4 diag_${type}.nc4
        fi
     else
-       if [ -s $datgesm1/diag_${type}_${string}.${adatem1}_${charnanal2} ]; then
-          ln -fs $datgesm1/diag_${type}_${string}.${adatem1}_${charnanal2} diag_${type}
+       if [ -s $datgesm1/diag_${type}_${string}.${adatem1}_${charnanal2}.nc4 ]; then
+          ln -fs $datgesm1/diag_${type}_${string}.${adatem1}_${charnanal2}.nc4 diag_${type}.nc4
        fi
     fi
 done
@@ -875,6 +876,15 @@ else
   loops="01 03"
 fi
 
+nodecount=0
+export nprocs=$corespernode
+export OMP_NUM_THREADS=1
+if [ "$machine" == 'theia' ]; then
+   cat $HOSTFILE | uniq > nodefile
+   totnodes=`wc -l nodefile | cut -f1 -d " "`
+else
+   totnodes=$NODES  ## FIXME
+fi
 for loop in $loops; do
 
    case $loop in
@@ -887,14 +897,45 @@ for loop in $loops; do
    for type in $alldiag; do
        count=`ls pe*${type}_${loop}* | wc -l`
        if [[ $count -gt 0 ]]; then
-          cat pe*${type}_${loop}* > $savdir/diag_${type}_${string}.${adate}_${charnanal2}
+          #cat pe*${type}_${loop}* > $savdir/diag_${type}_${string}.${adate}_${charnanal2}
+          export PGM="${execdir}/nc_diag_cat.x -o ${savdir}/diag_${type}_${string}.${adate}_${charnanal2}.nc4  pe*${type}_${loop}*nc4"
+          nodecount=$((nodecount+1))
+          if [ "$machine" == 'theia' ]; then
+             node=`head -$nodecount nodefile | tail -1`
+             export HOSTFILE=hostfile_${nodecount}
+             /bin/rm -f $HOSTFILE
+             n=1
+             while [ $n -le $nprocs ]; do
+                echo $node >> $HOSTFILE
+                n=$((n+1))
+             done
+             echo "contents of hostfile_${nodecount}..."
+             cat $HOSTFILE
+          fi
+          sh ${enkfscripts}/runmpi 1> nc_diag_cat_${type}_${string}.out 2> nc_diag_cat_${type}_${string}.out &
+          if [ $nodecount -eq $totnodes ]; then
+             echo "waiting... nodecount=$nodecount"
+             wait
+             nodecount=0
+          fi       
        fi
    done
 
 done
 echo "Time after diagnostic loop is `date` "
+#/bin/rm -f $SIGANL
+#exit 1
 
-if [ ! -s $savdir/diag_conv_ges.${adate}_${charnanal2} ]; then
+if [ ! -s $savdir/diag_conv_uv_ges.${adate}_${charnanal2}.nc4 ]; then
+   exit 1
+fi
+if [ ! -s $savdir/diag_conv_t_ges.${adate}_${charnanal2}.nc4 ]; then
+   exit 1
+fi
+if [ ! -s $savdir/diag_conv_q_ges.${adate}_${charnanal2}.nc4 ]; then
+   exit 1
+fi
+if [ ! -s $savdir/diag_conv_ps_ges.${adate}_${charnanal2}.nc4 ]; then
    exit 1
 fi
 
@@ -914,8 +955,8 @@ $nln ./satbias_angle  ./satbias_ang.in
 ls -l  ./satbias_ang.in
 cat  ./satbias_ang.in
 for type in $alldiag; do
-   if [[ -s $savdir/diag_${type}_ges.${adate}_${charnanal2} ]]; then
-      $nln $savdir/diag_${type}_ges.${adate}_${charnanal2}  ./diag_${type}.$adate
+   if [[ -s $savdir/diag_${type}_ges.${adate}_${charnanal2}.nc4 ]]; then
+      $nln $savdir/diag_${type}_ges.${adate}_${charnanal2}.nc4  ./diag_${type}.$adate.nc4
    fi
 done
 cat  > global_angupdate.namelist <<EOF

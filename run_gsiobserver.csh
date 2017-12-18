@@ -18,7 +18,7 @@ setenv SFCANLm3 ${datapath2}/sfcanl_${analdate}_fhr03_${charnanal}
 setenv BIASO ${datapath2}/${PREINP}abias 
 setenv BIASO_PC ${datapath2}/${PREINP}abias_pc 
 setenv SATANGO ${datapath2}/${PREINP}satang
-set diagfile=${datapath2}/diag_conv_ges.${analdate}_${charnanal}
+set diagfile=${datapath2}/diag_conv_uv_ges.${analdate}_${charnanal}.nc4
 
 if ($cleanup_observer == "true") then
   /bin/rm -f ${datapath2}/diag*${charnanal}
@@ -85,6 +85,7 @@ if ($status != 0) then
   set exitstat=1
 else
   if ( ! -s ${diagfile} ) then
+    ls -l ${diagfile}
     echo "gsi hybrid observer did not complete sucessfully"
     set exitstat=1
   else

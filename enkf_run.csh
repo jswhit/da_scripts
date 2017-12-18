@@ -4,10 +4,10 @@ module list
 
 if ($machine == 'theia') then
   module list
-  module load intel/16.1.150
+  #module load intel/16.1.150
   #module load impi/5.1.2.150
-  module switch impi mvapich2/2.1rc1
-  module list
+  #module switch impi mvapich2/2.1rc1
+  #module list
 endif
 
 setenv nprocs `expr $cores \/ $enkf_threads`
@@ -80,7 +80,7 @@ cat <<EOF1 >! enkf.nml
   sprd_tol=$sprd_tol,paoverpb_thresh=$paoverpb_thresh,letkf_flag=$letkf_flag,
   use_qsatensmean=$use_qsatensmean,
   reducedgrid=$reducedgrid,nlevs=$LEVS,nanals=$nanals,deterministic=$deterministic,
-  npefiles=0,lobsdiag_forenkf=.true.write_spread_diag=.true.,
+  npefiles=0,lobsdiag_forenkf=.true.write_spread_diag=.true.,netcdf_diag=.true.,
   sortinc=$sortinc,univaroz=$univaroz,massbal_adjust=$massbal_adjust,nhr_anal=$iaufhrs,nhr_state=$enkfstatefhrs,
   use_gfs_nemsio=.true.,adp_anglebc=.true.,angord=4,newpc4pred=.true.,use_edges=.false.,emiss_bc=.true.,biasvar=-500,nobsl_max=$nobsl_max
  /

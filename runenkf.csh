@@ -3,10 +3,10 @@
 # no need to run GSI for observer,
 # just symlink diag files generated from GSI hybrid run.
 echo "make symlinks for diag files.."
-set diagfiles = `ls -1 ${datapath2}/diag*control`
+set diagfiles = `ls -1 ${datapath2}/diag*control.nc4`
 foreach diagfile ($diagfiles)
-  set diagfile2=`basename $diagfile "_control"`
-  ln -fs $diagfile ${datapath2}/${diagfile2}_ensmean
+  set diagfile2=`basename $diagfile "_control.nc4"`
+  ln -fs $diagfile ${datapath2}/${diagfile2}_ensmean.nc4
 end
 
 # need symlinks for satbias_angle, satbias_in, satinfo

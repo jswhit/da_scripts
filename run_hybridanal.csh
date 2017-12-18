@@ -77,7 +77,7 @@ if ($cold_start_bias == "true") then
     mkdir -p $tmpdir
     time sh ${enkfscripts}/${rungsi}
     /bin/rm -rf $tmpdir
-    if ( ! -s ${datapath2}/diag_conv_ges.${analdate}_${charnanal} ) then
+    if ( ! -s ${datapath2}/diag_conv_uv_ges.${analdate}_${charnanal}.nc4 ) then
        echo "gsi observer step failed"
        exit 1
     endif
@@ -115,7 +115,6 @@ else
     set exitstat=0
   endif
 endif
-/bin/rm -rf $tmpdir
 
 if ($exitstat == 0) then
    set alldone='yes'
@@ -131,5 +130,6 @@ if($alldone == 'no') then
 else
     #ln -fs $SIGANL ${datapath2}/sanl_${analdate}_${charnanal}
     echo "yes" >&! ${current_logdir}/run_gsi_hybrid.log
+    /bin/rm -rf $tmpdir
 endif
 exit 0
