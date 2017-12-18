@@ -1,7 +1,7 @@
 echo "running on $machine using $NODES nodes"
 ulimit -s unlimited
 
-export exptname=C384C192_test_iau
+export exptname=C384C192_test_iaunew
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia and jet.
@@ -37,7 +37,7 @@ export resubmit='true'
 # control forecast files have 'control2' suffix, instead of 'control'
 # GSI observer will be run on 'control2' forecast
 # this is for diagnostic purposes (to get GSI diagnostic files) 
-export replay_controlfcst='false'
+export replay_controlfcst='true'
 if [ "$replay_controlfcst" == "true" ]; then
   echo "resetting recenter_fcst to false for passive replay of control forecast"
   export recenter_fcst='false'
@@ -122,7 +122,7 @@ if [ $RES -eq 384 ]; then
   export write_tasks=6 # write tasks
   export layout="3,4" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
 elif [ $RES -eq 192 ]; then
-  export enkf_threads=2
+  export enkf_threads=4
   export gsi_control_threads=2
   export fg_proc=24 
   export fg_threads=1 
@@ -348,7 +348,7 @@ export saterrfact=1.0
 export deterministic=.true.
 export sortinc=.true.
                                                                     
-export nitermax=2 
+export nitermax=1 
 
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts

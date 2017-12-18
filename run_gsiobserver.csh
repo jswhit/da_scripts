@@ -4,7 +4,6 @@
 setenv CO2DIR $fixgsi
 
 # charanal is an env var set in parent script
-setenv SKIP_ANGUPDATE "YES"
 setenv SIGANL ${datapath2}/sanl_${analdate}_${charnanal}
 setenv SIGANL03 ${datapath2}/sanl_${analdate}_fhr03_${charnanal}
 setenv SIGANL04 ${datapath2}/sanl_${analdate}_fhr04_${charnanal}
