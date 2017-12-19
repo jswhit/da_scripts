@@ -20,7 +20,7 @@ setenv SATANGO ${datapath2}/${PREINP}satang
 set diagfile=${datapath2}/diag_conv_uv_ges.${analdate}_${charnanal}.nc4
 
 if ($cleanup_observer == "true") then
-  /bin/rm -f ${datapath2}/diag*${charnanal}
+  /bin/rm -f ${datapath2}/diag*${charnanal}*nc4
 endif
 
 set niter=1
