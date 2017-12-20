@@ -273,8 +273,22 @@ echo "files moved to fgens, fgens2 `date`"
 #   mkdir diagens
 #   /bin/mv -f diag_conv_ges*mem* diagens
 #endif
-# these are too big to save
-/bin/rm -f diag*cris* diag*metop* diag*airs* diag*hirs4* 
+# remove Jacobian info from diag files to save space
+set diagfiles = `ls -1 ${datapath2}/diag*control.nc4`
+if ($machine == 'wcoss') then
+   module load nco-gnu-sandybridge
+elif $($machine == 'theia') then
+   module load nco/4.7.0
+else
+   module load nco
+endif
+foreach diagfile ($diagfiles)
+  set diagfile2="${diagfile}.tmp"
+  ls -l $diagfile
+  ncks -x -v Observation_Operator_Jacobian_stind,Observation_Operator_Jacobian_endind,Observation_Operator_Jacobian_val $diagfile $diagfile2
+  /bin/mv -f $diagfile2 $diagfile # over-write the original file
+  ls -l $diagfile
+end
 
 /bin/rm -f hostfile*
 /bin/rm -f fort*

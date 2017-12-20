@@ -348,7 +348,7 @@ export saterrfact=1.0
 export deterministic=.true.
 export sortinc=.true.
                                                                     
-export nitermax=2 
+export nitermax=2
 
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
@@ -356,11 +356,11 @@ export incdate="${enkfscripts}/incdate.sh"
 
 if [ "$machine" == 'theia' ]; then
    export fv3gfspath=/scratch4/NCEPDEV/global/save/glopara/svn/fv3gfs/trunk/global_shared.v15.0.0
-   export gsipath=/scratch3/BMC/gsienkf/whitaker/gsi/branches/EXP-enkflinhx
+   export gsipath=/scratch3/BMC/gsienkf/whitaker/gsi/EXP-enkflinhx-ncdiag
    export FIXFV3=${fv3gfspath}/fix/fix_fv3
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
    export fixgsi=${gsipath}/fix
-   export fixcrtm=${fixgsi}/crtm_2.2.3
+   export fixcrtm=/scratch3/BMC/gsienkf/whitaker/gsi/branches/EXP-enkflinhx/fix/crtm_2.2.3
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
