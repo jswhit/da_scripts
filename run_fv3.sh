@@ -374,6 +374,7 @@ filename_base:           'dyn' 'phy'
 output_grid:             'gaussian_grid'
 output_file:             'nemsio'
 write_nemsioflip:        .true.
+write_fsyncflag:         .true.
 imo:                     ${LONB}
 jmo:                     ${LATB}
 nfhout:                  3
@@ -568,7 +569,7 @@ cat > input.nml <<EOF
   tau_l2v = 225.
   tau_v2l = 150.
   tau_g2v = 900.
-  rthresh = 10.e-6  
+  rthresh = 10.e-6  ! This is a key parameter for cloud water
   dw_land  = 0.16
   dw_ocean = 0.10
   ql_gen = 1.0e-3

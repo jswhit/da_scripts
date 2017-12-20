@@ -312,7 +312,7 @@ export analpertwttr=0.85
 export pseudo_rh=.true.
 export use_qsatensmean=.true.
                                                                     
-export letkf_flag=.false.
+export letkf_flag=.true.
 export nobsl_max=10000
 export sprd_tol=1.e30
 export varqc=.false.
