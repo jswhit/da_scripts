@@ -83,6 +83,7 @@ if ($cold_start_bias == "true") then
 endif
 setenv lread_obs_save ".false."
 setenv lread_obs_skip ".false."
+setenv lobsdiag_forenkf ".true."
 setenv HXONLY 'NO'
 setenv DOSFCANL 'YES'
 if ( -s $SIGANL ) then
@@ -129,6 +130,6 @@ if($alldone == 'no') then
 else
     #ln -fs $SIGANL ${datapath2}/sanl_${analdate}_${charnanal}
     echo "yes" >&! ${current_logdir}/run_gsi_hybrid.log
-    /bin/rm -rf $tmpdir
+    #/bin/rm -rf $tmpdir
 endif
 exit 0

@@ -11,15 +11,6 @@
 
 echo "Time starting at `date` "
 
-# gsi was compiled with these 
-if [ "$machine" == 'theia' ]; then
-   module list
-   module load intel/16.1.150
-   module load impi/5.1.2.150
-   #module switch impi mvapich2/2.1rc1
-   module list
-fi
-
 VERBOSE=${VERBOSE:-"YES"}
 if [[ "$VERBOSE" = "YES" ]]; then
    set -x
@@ -142,6 +133,7 @@ echo "Time before global cycle `date` "
 export JCAP_A=${JCAP_A:-$JCAP}
 export LEVS=${LEVS:-64}
 export JCAP_B=${JCAP_B:-$JCAP}
+export lobsdiag_forenkf=${lobsdiag_forenkf:-".false."}
 
 
 export NLAT=$((${LATA}+2))
@@ -266,7 +258,7 @@ else
    lwrite4danl=.false.
 fi
 
-SETUP="reduce_diag=.true.,lwrite_peakwt=.true.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=.true.,ens_nstarthr=3,iwrtinc=-1,nhr_assimilation=6,nhr_obsbin=$FHOUT,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=.true."
+SETUP="reduce_diag=.true.,lwrite_peakwt=.true.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=.true.,ens_nstarthr=3,iwrtinc=-1,nhr_assimilation=6,nhr_obsbin=$FHOUT,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=$lobsdiag_forenkf"
 
 if [[ "$HXONLY" = "YES" ]]; then
    SETUP="$SETUP,miter=0,niter=1"
@@ -941,6 +933,7 @@ for loop in $loops; do
        if [[ $count -gt 0 ]]; then
           #cat pe*${type}_${loop}* > $savdir/diag_${type}_${string}.${adate}_${charnanal2}
           export PGM="${execdir}/nc_diag_cat.x -o ${savdir}/diag_${type}_${string}.${adate}_${charnanal2}.nc4  pe*${type}_${loop}*nc4"
+          ls -l pe*${type}_${loop}*nc4
           nodecount=$((nodecount+1))
           if [ "$machine" == 'theia' ]; then
              node=`head -$nodecount $NODEFILE | tail -1`
@@ -954,7 +947,8 @@ for loop in $loops; do
              echo "contents of hostfile_${nodecount}..."
              cat $HOSTFILE
           fi
-          sh ${enkfscripts}/runmpi 1> nc_diag_cat_${type}_${string}.out 2> nc_diag_cat_${type}_${string}.out &
+          sh ${enkfscripts}/runmpi 1> ${current_logdir}/nc_diag_cat_${type}_${string}_${charnanal2}.out 2> ${current_logdir}/nc_diag_cat_${type}_${string}_${charnanal2}.err &
+          #sh ${enkfscripts}/runmpi 1> nc_diag_cat_${type}_${string}.out &
           if [ $nodecount -eq $totnodes ]; then
              echo "waiting... nodecount=$nodecount"
              wait
@@ -964,6 +958,7 @@ for loop in $loops; do
    done
 
 done
+wait
 echo "Time after diagnostic loop is `date` "
 
 if [ ! -s $savdir/diag_conv_uv_ges.${adate}_${charnanal2}.nc4 ]; then

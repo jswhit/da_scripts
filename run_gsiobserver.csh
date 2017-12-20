@@ -67,6 +67,7 @@ setenv GSATANG $fixgsi/global_satangbias.txt # not used, but needs to exist
 setenv lread_obs_save ".false."
 setenv lread_obs_skip ".false."
 setenv HXONLY 'YES'
+setenv lobsdiag_forenkf ".false."
 if ( -s ${diagfile} ) then
   echo "gsi hybrid observer already completed"
   echo "yes" >&! ${current_logdir}/run_gsi_observer.log
@@ -92,7 +93,6 @@ else
     set exitstat=0
   endif
 endif
-/bin/rm -rf $tmpdir
 
 if ($exitstat == 0) then
    set alldone='yes'
@@ -107,5 +107,6 @@ if($alldone == 'no') then
     echo "no" >&! ${current_logdir}/run_gsi_observer.log
 else
     echo "yes" >&! ${current_logdir}/run_gsi_observer.log
+    #/bin/rm -rf $tmpdir
 endif
 exit 0
