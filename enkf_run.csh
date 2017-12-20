@@ -1,14 +1,5 @@
 #!/bin/csh
 #set verbose
-module list
-
-if ($machine == 'theia') then
-  module list
-  #module load intel/16.1.150
-  #module load impi/5.1.2.150
-  #module switch impi mvapich2/2.1rc1
-  #module list
-endif
 
 setenv nprocs `expr $cores \/ $enkf_threads`
 setenv mpitaskspernode `expr $corespernode \/ $enkf_threads`
