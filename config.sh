@@ -37,12 +37,12 @@ export resubmit='true'
 # control forecast files have 'control2' suffix, instead of 'control'
 # GSI observer will be run on 'control2' forecast
 # this is for diagnostic purposes (to get GSI diagnostic files) 
-export replay_controlfcst='true'
+export replay_controlfcst='false'
 if [ "$replay_controlfcst" == "true" ]; then
   echo "resetting recenter_fcst to false for passive replay of control forecast"
   export recenter_fcst='false'
 fi
-export replay_run_observer='true' # run observer on replay forecast
+export replay_run_observer='false' # run observer on replay forecast
 export cleanup_observer='true' # only used if replay_controlfcst=true
 # python script checkdate.py used to check
 # YYYYMMDDHH analysis date string to see if
@@ -53,9 +53,9 @@ export run_long_fcst="true"  # spawn a longer control forecast at 00 and 12 UTC
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
+#export cleanup_observer='true'
 #export cleanup_controlanl='false'
 #export cleanup_anal='false'
-#export cleanup_observer='true'
 #export recenter_fcst="false"
 #export recenter_anal="false"
 #export cleanup_fg='false'
@@ -165,19 +165,27 @@ else
   exit 1
 fi
 
-export psautco="6.0d-4,3.0d-4"
-export zhao_mic=T
+export psautco="0.0008,0.0005"
+export prautco="0.00015,0.00015"
+export imp_physics=99 # zhao-carr
+#export imp_physics=11 # GFDL MP
 
-if [ $zhao_mic == "F" ]; then
+if [ $imp_physics == "99" ]; then
    export ncld=5
    export nwat=6
    export cal_pre=F
    export dnats=1
+  export do_sat_adj=".true."
+  export random_clds=".false."
+  export cnvcld=".false."
 else
    export ncld=1
    export nwat=2
    export cal_pre=T
    export dnats=0
+  export do_sat_adj=".true."
+  export random_clds=".true."
+  export cnvcld=".true."
 fi
 export k_split=1
 export n_split=6
@@ -227,7 +235,7 @@ elif [ $RES -eq 192 ]; then
    export LATB=384  
    export fv_sg_adj=900
    export dt_atmos=450
-   export cdmbgwd="0.25,2.0"
+   export cdmbgwd="0.25,2.5"
 elif [ $RES -eq 96 ]; then
    export JCAP=126 
    export LONB=384   

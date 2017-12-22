@@ -83,7 +83,6 @@ if ($cold_start_bias == "true") then
 endif
 setenv lread_obs_save ".false."
 setenv lread_obs_skip ".false."
-setenv lobsdiag_forenkf ".true."
 setenv HXONLY 'NO'
 setenv DOSFCANL 'YES'
 if ( -s $SIGANL ) then

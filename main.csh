@@ -127,19 +127,6 @@ if ($controlfcst == 'true') then
    echo "$analdate done adjusting orog/ps of control forecast on ens grid `date`"
 endif
 
-# recenter enkf forecasts around control forecast
-if ($controlfcst == 'true' && $recenter_fcst == 'true') then
-   echo "$analdate recenter enkf ensemble around control forecast `date`"
-   csh ${enkfscripts}/recenter_ens_fcst.csh >&! ${current_logdir}/recenter_ens_fcst.out 
-   set recenter_done=`cat ${current_logdir}/recenter_ens.log`
-   if ($recenter_done == 'yes') then
-     echo "$analdate recentering enkf forecasts completed successfully `date`"
-   else
-     echo "$analdate recentering enkf forecasts did not complete successfully, exiting `date`"
-     exit 1
-   endif
-endif
-
 # for pure enkf or if replay cycle used for control forecast, symlink
 # ensmean files to 'control'
 if ($controlfcst == 'false' || $replay_controlfcst == 'true') then
@@ -152,17 +139,58 @@ if ($controlfcst == 'false' || $replay_controlfcst == 'true') then
      @ fh = $fh + $FHOUT
    end
 endif
-# do hybrid control analysis or just run gsi observer for pure enkf
+
+# if ${datapathm1}/cold_start_bias exists, GSI run in 'observer' mode
+# to generate diag_rad files to initialize angle-dependent 
+# bias correction.
+if ( -f ${datapathm1}/cold_start_bias ) then
+   setenv cold_start_bias "true"
+else
+   setenv cold_start_bias "false"
+endif
+
+# run gsi observer, saving jacobian.
+setenv charnanal 'ensmean'
+setenv lobsdiag_forenkf '.true.'
+setenv skipcat "false"
+echo "$analdate run gsi observer on ${charnanal} `date`"
+csh ${enkfscripts}/run_gsiobserver.csh >&! ${current_logdir}/run_gsi_observer.out 
+# once observer has completed, check log files.
+set hybrid_done=`cat ${current_logdir}/run_gsi_observer.log`
+if ($hybrid_done == 'yes') then
+  echo "$analdate gsi observer completed successfully `date`"
+else
+  echo "$analdate gsi observer did not complete successfully, exiting `date`"
+  exit 1
+endif
+
+# run enkf analysis.
+echo "$analdate run enkf `date`"
+if ($skipcat == "true") then
+# read un-concatenated pe files (set npefiles to number of mpi tasks used by gsi observer)
+setenv npefiles `expr $cores \/ $gsi_control_threads`
+else
+setenv npefiles 0
+endif
+csh ${enkfscripts}/runenkf.csh  >>& ${current_logdir}/run_enkf.out  
+# once enkf has completed, check log files.
+set enkf_done=`cat ${current_logdir}/run_enkf.log`
+if ($enkf_done == 'yes') then
+  echo "$analdate enkf analysis completed successfully `date`"
+else
+  echo "$analdate enkf analysis did not complete successfully, exiting `date`"
+  exit 1
+endif
+
+# run nc_diag_cat on EnKF diag files??
+#sh ${enkfscripts}/nc_diag_cat.sh  >&! ${current_logdir}/nc_diag_cat_enkf.out
+
+# do hybrid control analysis
 if ($controlanal == 'true') then
-   # if ${datapathm1}/cold_start_bias exists, GSI run in 'observer' mode
-   # to generate diag_rad files to initialize angle-dependent 
-   # bias correction.
-   if ( -f ${datapathm1}/cold_start_bias ) then
-      setenv cold_start_bias "true"
-   else
-      setenv cold_start_bias "false"
-   endif
    # run control analysis
+   setenv charnanal 'control'
+   setenv lobsdiag_forenkf '.false.'
+   setenv skipcat "false"
    echo "$analdate run hybrid `date`"
    csh ${enkfscripts}/run_hybridanal.csh >&! ${current_logdir}/run_gsi_hybrid.out 
    # once hybrid has completed, check log files.
@@ -173,24 +201,14 @@ if ($controlanal == 'true') then
      echo "$analdate hybrid analysis did not complete successfully, exiting `date`"
      exit 1
    endif
-else # pure enkf
-   # just run gsi observer on ensemble mean for pure enkf experiment
-   setenv charnanal 'control'
-   echo "$analdate run gsi observer on ensemble mean `date`"
-   csh ${enkfscripts}/run_gsiobserver.csh >&! ${current_logdir}/run_gsi_observer.out 
-   # once observer has completed, check log files.
-   set hybrid_done=`cat ${current_logdir}/run_gsi_observer.log`
-   if ($hybrid_done == 'yes') then
-     echo "$analdate gsi observer completed successfully `date`"
-   else
-     echo "$analdate gsi observer did not complete successfully, exiting `date`"
-     exit 1
-   endif
 endif
-# for passive (replay) cycling of control forecast, run GSI observer
+
+# for passive (replay) cycling of control forecast, optionally run GSI observer
 # on control forecast background (diag files saved with 'control2' suffix)
 if ($controlfcst == 'true' && $replay_controlfcst == 'true' && $replay_run_observer == "true") then
    setenv charnanal 'control2'
+   setenv lobsdiag_forenkf '.false.'
+   setenv skipcat "false"
    echo "$analdate run gsi observer on control forecast `date`"
    csh ${enkfscripts}/run_gsiobserver.csh >&! ${current_logdir}/run_gsi_observer.out 
    # once observer has completed, check log files.
@@ -201,18 +219,6 @@ if ($controlfcst == 'true' && $replay_controlfcst == 'true' && $replay_run_obser
      echo "$analdate gsi observer did not complete successfully, exiting `date`"
      exit 1
    endif
-endif
-
-# do enkf analysis.
-echo "$analdate run enkf `date`"
-csh ${enkfscripts}/runenkf.csh  >>& ${current_logdir}/run_enkf.out  
-# once enkf has completed, check log files.
-set enkf_done=`cat ${current_logdir}/run_enkf.log`
-if ($enkf_done == 'yes') then
-  echo "$analdate enkf analysis completed successfully `date`"
-else
-  echo "$analdate enkf analysis did not complete successfully, exiting `date`"
-  exit 1
 endif
 
 # recenter enkf analyses around control analysis
@@ -269,26 +275,31 @@ mkdir fgens2
 /bin/cp -f sfg*control fgens2
 /bin/cp -f bfg*control fgens2
 echo "files moved to fgens, fgens2 `date`"
-#if ($npefiles == 0) then
-#   mkdir diagens
-#   /bin/mv -f diag_conv_ges*mem* diagens
+# only save conventional ensmean and control diag files.
+mkdir diagsavdir
+/bin/mv -f diag*conv*control.nc4 diag*conv*ensmean.nc4 diagsavdir
+/bin/rm -f diag*control.nc4 diag*ensmean.nc4
+/bin/rm -f diagsavdir/diag*conv_gps*
+/bin/mv -f diagsavdir/diag*nc4 .
+/bin/rm -rf diagsavdir
+
+## remove Jacobian info from diag files to save space
+## this is too slow!!
+#set diagfiles = `ls -1 ${datapath2}/diag*ensmean.nc4`
+#if ($machine == 'wcoss') then
+#   module load nco-gnu-sandybridge
+#elif $($machine == 'theia') then
+#   module load nco/4.7.0
+#else
+#   module load nco
 #endif
-# remove Jacobian info from diag files to save space
-set diagfiles = `ls -1 ${datapath2}/diag*control.nc4`
-if ($machine == 'wcoss') then
-   module load nco-gnu-sandybridge
-elif $($machine == 'theia') then
-   module load nco/4.7.0
-else
-   module load nco
-endif
-foreach diagfile ($diagfiles)
-  set diagfile2="${diagfile}.tmp"
-  ls -l $diagfile
-  ncks -x -v Observation_Operator_Jacobian_stind,Observation_Operator_Jacobian_endind,Observation_Operator_Jacobian_val $diagfile $diagfile2
-  /bin/mv -f $diagfile2 $diagfile # over-write the original file
-  ls -l $diagfile
-end
+#foreach diagfile ($diagfiles)
+#  set diagfile2="${diagfile}.tmp"
+#  ls -l $diagfile
+#  ncks -x -v Observation_Operator_Jacobian_stind,Observation_Operator_Jacobian_endind,Observation_Operator_Jacobian_val $diagfile $diagfile2
+#  /bin/mv -f $diagfile2 $diagfile # over-write the original file
+#  ls -l $diagfile
+#end
 
 /bin/rm -f hostfile*
 /bin/rm -f fort*

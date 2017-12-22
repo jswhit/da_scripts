@@ -115,7 +115,7 @@ export DIAG_TABLE=${DIAG_TABLE:-$enkfscripts/diag_table}
 # insert correct starting time and output interval in diag_table template.
 sed -i -e "s/YYYY MM DD HH/${year} ${mon} ${day} ${hour}/g" diag_table
 sed -i -e "s/FHOUT/${FHOUT}/g" diag_table
-if [ "$zhao_mic" == 'T' ]; then
+if [ "$imp_physics" == '99' ]; then
 /bin/cp -f $enkfscripts/field_table .
 else
 /bin/cp -f $enkfscripts/field_table_ncld5 field_table
@@ -485,7 +485,7 @@ cat > input.nml <<EOF
   hord_dp = ${hord_dp},
   hord_tr = 8,
   adjust_dry_mass = F,
-  consv_te = ${consv_te},
+  do_sat_adj = ${do_sat_adj:-"F"},
   consv_am = F,
   fill = T,
   dwind_2d = F,
@@ -511,7 +511,7 @@ cat > input.nml <<EOF
   use_ufo        = T
   pre_rad        = F
   ncld           = ${ncld}
-  zhao_mic       = ${zhao_mic}
+  imp_physics    = ${imp_physics}
   pdfcld         = F
   fhswr          = 3600.
   fhlwr          = 3600.
@@ -526,13 +526,13 @@ cat > input.nml <<EOF
   swhtr          = T
   cnvgwd         = T
   shal_cnv       = T
-  cal_pre        = ${cal_pre}
+  cal_pre        = ${cal_pre:-"T"}
   redrag         = T
   dspheat        = F
   hybedmf        = T
-  random_clds    = T
+  random_clds    = ${random_clds:-"T"}
   trans_trac     = T
-  cnvcld         = T
+  cnvcld         = ${cnvcld:-"T"}
   imfshalcnv     = 2
   imfdeepcnv     = 2
   prslrd0        = 0
@@ -542,6 +542,7 @@ cat > input.nml <<EOF
   nstf_name      = 0
   cdmbgwd = ${cdmbgwd}
   psautco = ${psautco}
+  prautco = ${prautco}
   iaufhrs = ${iaufhrs}
   iau_delthrs = ${iaudelthrs}
   iau_inc_files = ${iau_inc_files}

@@ -17,11 +17,23 @@ setenv SFCANLm3 ${datapath2}/sfcanl_${analdate}_fhr03_${charnanal}
 setenv BIASO ${datapath2}/${PREINP}abias 
 setenv BIASO_PC ${datapath2}/${PREINP}abias_pc 
 setenv SATANGO ${datapath2}/${PREINP}satang
-set diagfile=${datapath2}/diag_conv_uv_ges.${analdate}_${charnanal}.nc4
+if ($skipcat == 'false') then
+   set diagfile=${datapath2}/diag_conv_uv_ges.${analdate}_${charnanal}.nc4
+else
+   set diagfile=${datapath2}/gsitmp_${charnanal}/pe0000.conv_uv_01.nc4
+endif
+echo "skipcat $skipcat diagfile $diagfile"
 
 if ($cleanup_observer == "true") then
-  /bin/rm -f ${datapath2}/diag*${charnanal}*nc4
+  if ($skipcat == 'false') then
+     echo "removing diag files"
+     /bin/rm -f ${datapath2}/diag*${charnanal}*nc4
+  else
+     echo "removing ${datapath2}/gsitmp_${charnanal}"
+     /bin/rm -rf ${datapath2}/gsitmp_${charnanal}
+  endif
 endif
+ls -l $diagfile
 
 set niter=1
 set alldone='no'
@@ -67,14 +79,13 @@ setenv GSATANG $fixgsi/global_satangbias.txt # not used, but needs to exist
 setenv lread_obs_save ".false."
 setenv lread_obs_skip ".false."
 setenv HXONLY 'YES'
-setenv lobsdiag_forenkf ".false."
 if ( -s ${diagfile} ) then
   echo "gsi hybrid observer already completed"
   echo "yes" >&! ${current_logdir}/run_gsi_observer.log
   exit 0
 endif
 echo "${analdate} compute gsi hybrid observer `date`"
-setenv tmpdir $datapath2/hybridtmp$$
+setenv tmpdir $datapath2/gsitmp_${charnanal}
 /bin/rm -rf $tmpdir
 mkdir -p $tmpdir
 /bin/cp -f $datapath2/hybens_info $tmpdir
@@ -107,6 +118,8 @@ if($alldone == 'no') then
     echo "no" >&! ${current_logdir}/run_gsi_observer.log
 else
     echo "yes" >&! ${current_logdir}/run_gsi_observer.log
-    #/bin/rm -rf $tmpdir
+    if ($skipcat == "false") then
+        /bin/rm -rf $tmpdir
+    endif
 endif
 exit 0

@@ -870,7 +870,8 @@ fi
 #corecount=0
 ## number of MPI tasks for each nc_diat_cat.x
 ## must be a divisor of total number of cores
-#export nprocs=`expr $corespernode \/ 2`
+#jobspernode=4
+#export nprocs=`expr $corespernode \/ $jobspernode`
 #export OMP_NUM_THREADS=1 # keep at 1
 #if [ "$machine" == 'theia' ]; then
 #   HOSTFILE_FULL=$PBS_NODEFILE
@@ -912,7 +913,6 @@ fi
 #   done
 #
 #done
-#echo "Time after diagnostic loop is `date` "
 
 # run each nc_diag_cat on a separate node, concurrently
 nodecount=0
@@ -931,7 +931,6 @@ for loop in $loops; do
    for type in $alldiag; do
        count=`ls pe*${type}_${loop}* | wc -l`
        if [[ $count -gt 0 ]]; then
-          #cat pe*${type}_${loop}* > $savdir/diag_${type}_${string}.${adate}_${charnanal2}
           export PGM="${execdir}/nc_diag_cat.x -o ${savdir}/diag_${type}_${string}.${adate}_${charnanal2}.nc4  pe*${type}_${loop}*nc4"
           ls -l pe*${type}_${loop}*nc4
           nodecount=$((nodecount+1))
@@ -958,6 +957,7 @@ for loop in $loops; do
    done
 
 done
+
 wait
 echo "Time after diagnostic loop is `date` "
 
