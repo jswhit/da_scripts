@@ -20,11 +20,6 @@ export rungsi='run_gsi_4densvar.sh'
 export rungfs='run_fv3.sh' # ensemble forecast
 
 export recenter_anal="true" # recenter enkf analysis around GSI hybrid 4DEnVar analysis
-# recenter enkf forecasts around control forecast.
-# should be be 'false' for passive replay cycling of control forecast
-# WARNING: don't set this to true until we have a way of recentering
-# FV3 restart files.
-export recenter_fcst="false" 
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
 export controlanal='true' # use gsi hybrid (if false, pure enkf is used)
 export controlfcst='true' # if true, run dual-res setup with single high-res control
@@ -38,10 +33,6 @@ export resubmit='true'
 # GSI observer will be run on 'control2' forecast
 # this is for diagnostic purposes (to get GSI diagnostic files) 
 export replay_controlfcst='false'
-if [ "$replay_controlfcst" == "true" ]; then
-  echo "resetting recenter_fcst to false for passive replay of control forecast"
-  export recenter_fcst='false'
-fi
 export replay_run_observer='false' # run observer on replay forecast
 export cleanup_observer='true' # only used if replay_controlfcst=true
 # python script checkdate.py used to check
@@ -56,7 +47,6 @@ export run_long_fcst="true"  # spawn a longer control forecast at 00 and 12 UTC
 #export cleanup_observer='true'
 #export cleanup_controlanl='false'
 #export cleanup_anal='false'
-#export recenter_fcst="false"
 #export recenter_anal="false"
 #export cleanup_fg='false'
 #export resubmit='false'
@@ -170,22 +160,19 @@ export prautco="0.00015,0.00015"
 export imp_physics=99 # zhao-carr
 #export imp_physics=11 # GFDL MP
 
-if [ $imp_physics == "99" ]; then
+if [ $imp_physics == "11" ]; then
    export ncld=5
    export nwat=6
    export cal_pre=F
    export dnats=1
-  export do_sat_adj=".true."
-  export random_clds=".false."
-  export cnvcld=".false."
+   export do_sat_adj=".true."
+   export random_clds=".false."
+   export cnvcld=".false."
 else
    export ncld=1
    export nwat=2
    export cal_pre=T
    export dnats=0
-  export do_sat_adj=".true."
-  export random_clds=".true."
-  export cnvcld=".true."
 fi
 export k_split=1
 export n_split=6

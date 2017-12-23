@@ -129,6 +129,6 @@ if($alldone == 'no') then
 else
     #ln -fs $SIGANL ${datapath2}/sanl_${analdate}_${charnanal}
     echo "yes" >&! ${current_logdir}/run_gsi_hybrid.log
-    #/bin/rm -rf $tmpdir
+    /bin/rm -rf $tmpdir
 endif
 exit 0

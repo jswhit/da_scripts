@@ -149,7 +149,8 @@ else
    setenv cold_start_bias "false"
 endif
 
-# run gsi observer, saving jacobian.
+# run gsi observer with ens mean background, saving jacobian.
+# generated diag files used by EnKF
 setenv charnanal 'ensmean'
 setenv lobsdiag_forenkf '.true.'
 setenv skipcat "false"
@@ -182,10 +183,10 @@ else
   exit 1
 endif
 
-# run nc_diag_cat on EnKF diag files??
-#sh ${enkfscripts}/nc_diag_cat.sh  >&! ${current_logdir}/nc_diag_cat_enkf.out
-
-# do hybrid control analysis
+# do hybrid control analysis if controlanal=true
+# uses control forecast background, except if replay_controlfcst=true
+# ens mean background is used ("control" symlinked to "ensmean", control
+# forecast uses "control2")
 if ($controlanal == 'true') then
    # run control analysis
    setenv charnanal 'control'
