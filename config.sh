@@ -47,6 +47,7 @@ export run_long_fcst="true"  # spawn a longer control forecast at 00 and 12 UTC
 #export cleanup_observer='true'
 #export cleanup_controlanl='false'
 #export cleanup_anal='false'
+#export cleanup_controlanl='false'
 #export recenter_anal="false"
 #export cleanup_fg='false'
 #export resubmit='false'
