@@ -44,7 +44,7 @@ export run_long_fcst="true"  # spawn a longer control forecast at 00 and 12 UTC
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
-#export cleanup_observer='true'
+#export cleanup_observer='false'
 #export cleanup_controlanl='false'
 #export cleanup_anal='false'
 #export cleanup_controlanl='false'
