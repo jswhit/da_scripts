@@ -14,30 +14,25 @@
 # 2014-11-30  xuli  add NST_ANL
 # 2017-08-19  Gayno  updates for FV3GFS.
 #
-# Usage:  global_cycle.sh SFCGES SFCANL
-#
-#   Input script positional parameters:
-#     1             Input surface guess
-#                   defaults to $SFCGES; required
-#     2             Output surface analysis
-#                   defaults to $SFCANL, then to ${COMOUT}/sfcanl
+# Usage:  global_cycle.sh 
 #
 #   Imported Shell Variables:
-#     SFCGES        Input surface guess file
-#                   overridden by $1; required
-#     SFCANL        Output surface analysis file
-#                   overridden by $2; defaults to ${COMOUT}/sfcanl
 #     CASE          Model resolution.  Defaults to C768.
-#     TILE_NUM      The number of the cubed-sphere tile to convert surface
 #     JCAP          Spectral truncation of the global fixed climatology files
 #                   (such as albedo), which are on the old GFS gaussian grid.
-#                   Defaults to 1534
+#                   Computed from CASE by default.
 #     LATB          i-dimension of the global climatology files.  NOT the
-#                   i-dimension of the model grid. Defaults to 1536.
+#                   i-dimension of the model grid. Computed from CASE by default.
 #     LONB          j-dimension of the global climatology files. NOT the
-#                   j-dimension of the model grid. Defaults to 3072.
+#                   j-dimension of the model grid. Computed from CASE by default.
+#     BASEDIR       Root directory where all scripts and fixed files reside.
+#                   Default is /nwprod2.
+#     HOMEglobal    Directory for global_shared.  Default is 
+#                   $BASEDIR/global_shared.v15.0.0.
+#     FIXSUBDA      Sub-directory where fixed climatology files reside.
+#                   Defaults to fix/fix_am.
 #     FIXgsm        Directory for the global fixed climatology files.
-#                   Defaults to $HOMEglobal/fix
+#                   Defaults to $HOMEglobal/fix/fix_am
 #     FIXfv3        Directory for the model grid and orography netcdf
 #                   files.  Defaults to $HOMEglobal/fix/fix_fv3/${CASE}
 #     EXECgsm       Directory of the program executable.  Defaults to
@@ -69,9 +64,9 @@
 #     FNZORC        Input roughness climatology.
 #                   Defaults to igbp vegetation type-based lookup table
 #                   FNVETC must be set to igbp file:
-#                   ${FIXgsm}/global_vegtype.igbp.t$JCAP.$LONB.$LATB.rg.grb
+#                   ${FIXgsm}/global_vegtype.igbp.t$JCAP_CASE.$LONB_CASE.$LATB_CASE.rg.grb
 #     FNALBC        Input 4-component albedo climatology GRIB file.
-#                   defaults to ${FIXgsm}/global_snowfree_albedo.bosu.t$JCAP.$LONB.$LATB.rg.grb
+#                   defaults to ${FIXgsm}/global_snowfree_albedo.bosu.t$JCAP_CASE.$LONB_CASE.$LATB_CASE.rg.grb
 #     FNALBC2       Input 'facsf' and 'facwf' albedo climatology GRIB file.
 #                   Defaults to ${FIXgsm}/global_albedo4.1x1.grb
 #     FNAISC        Input sea ice climatology GRIB file.
@@ -81,11 +76,11 @@
 #     FNVEGC        Input vegetation fraction climatology GRIB file.
 #                   Defaults to ${FIXgsm}/global_vegfrac.0.144.decpercent.grb
 #     FNVETC        Input vegetation type climatology GRIB file.
-#                   Defaults to ${FIXgsm}/global_vegtype.igbp.t$JCAP.$LONB.$LATB.rg.grb
+#                   Defaults to ${FIXgsm}/global_vegtype.igbp.t$JCAP_CASE.$LONB_CASE.$LATB_CASE.rg.grb
 #     FNSOTC        Input soil type climatology GRIB file.
-#                   Defaults to ${FIXgsm}/global_soiltype.statsgo.t$JCAP.$LONB.$LATB.rg.grb
+#                   Defaults to ${FIXgsm}/global_soiltype.statsgo.t$JCAP_CASE.$LONB_CASE.$LATB_CASE.rg.grb
 #     FNSMCC        Input soil moisture climatology GRIB file.
-#                   Defaults to ${FIXgsm}/global_soilmgldas.t${JCAP}.${LONB}.${LATB}.grb
+#                   Defaults to ${FIXgsm}/global_soilmgldas.t$JCAP_CASE.$LONB_CASE.$LATB_CASE.grb
 #     FNVMNC        Input min veg frac climatology GRIB file.
 #                   Defaults to ${FIXgsm}/global_shdmin.0.144x0.144.grb
 #     FNVMXC        Input max veg frac climatology GRIB file.
@@ -93,16 +88,12 @@
 #     FNSLPC        Input slope type climatology GRIB file.
 #                   Defaults to ${FIXgsm}/global_slope.1x1.grb
 #     FNABSC        Input max snow albedo climatology GRIB file.
-#                   Defaults to ${FIXgsm}/global_mxsnoalb.uariz.t$JCAP.$LONB.$LATB.rg.grb
+#                   Defaults to ${FIXgsm}/global_mxsnoalb.uariz.t$JCAP_CASE.$LONB_CASE.$LATB_CASE.rg.grb
 #     FNMSKH        Input high resolution land mask GRIB file.  Use to set mask for
 #                   some of the input climatology fields.  This is NOT the model mask.
 #                   Defaults to ${FIXgsm}/seaice_newland.grb
-#     FNOROG        Model orography file (netcdf format)
-#                   Defaults to {FIXfv3}/${CASE}_oro_data.tile${TILE_NUM}.nc
-#     FNGRID        Model grid file (netcdf format)
-#                   Defaults to ${FIXfv3}/${CASE}_grid.tile${TILE_NUM}.nc
 #     GSI_FILE      GSI file on the gaussian grid containing NST increments.
-#                   Defaults to empty string.
+#                   Defaults to NULL (no file).
 #     FNTSFA        Input SST analysis GRIB file.
 #                   Defaults to ${COMIN}/${PREINP}sstgrb${SUFINP}
 #     FNACNA        Input sea ice analysis GRIB file.
@@ -149,10 +140,26 @@
 #                   defaults to NO
 #     use_ufo       Adjust sst and soil substrate temperature for differences
 #                   between the filtered and unfiltered terrain.  Default is true.
-#     NST_ANL       Process NST records and perform SST terrain adjustments required
-#                   when using NST model.  Default is false.
+#     DONST         Process NST records when using NST model.  Default is 'no'.
+#     ADJT_NSST_
+#     ONLY          When .true. only do the NSST update (don't call the sfcsub
+#                   component).  Default is .false. - call sfcsub and update
+#                   NSST.
 #     zsea1/zsea2   When running with NST model, this is the lower/upper bound
-#                   of depth of sea temperature.
+#                   of depth of sea temperature.  In whole mm.
+#     MAX_TASKS_CY  Normally, program should be run with a number of mpi tasks
+#                   equal to the number of cubed-sphere tiles being processed. 
+#                   However, the current parallel scripts may over-specify the
+#                   number of tasks.  Set this variable to not process
+#                   any ranks greater than max_tasks-1.  Default is '99999',
+#                   which means to process using all tasks.
+#     global_
+#     shared_ver    Version number of global shared directory.  Default is
+#                   v15.0.0.
+#     OMP_NUM_
+#     THREADS_CY    Number of omp threads to use.  Default is 1.
+#     APRUNC        Machine specific command to invoke the executable.
+#                   Default is none.
 #
 #   Exported Shell Variables:
 #     PGM           Current program name
@@ -186,15 +193,12 @@
 #                  $FNSLPC
 #                  $FNABSC
 #                  $FNMSKH
-#                  $FNOROG
 #
-#     input data : $SFCGES
-#                  $FNTSFA
+#     input data : $FNTSFA
 #                  $FNACNA
 #                  $FNSNOA
 #
-#     output data: $SFCANL
-#                  $PGMOUT
+#     output data: $PGMOUT
 #                  $PGMERR
 #
 # Remarks:
@@ -215,88 +219,79 @@
 ################################################################################
 
 #  Set environment.
-export VERBOSE=${VERBOSE:-"NO"}
+VERBOSE=${VERBOSE:-"NO"}
 if [[ "$VERBOSE" = "YES" ]] ; then
    echo $(date) EXECUTING $0 $* >&2
    set -x
 fi
 
-#  Command line arguments.
-export SFCGES=${1:-${SFCGES:?}}
-export SFCANL=${2:-${SFCANL}}
-
-export CASE=${CASE:-C768}
-export TILE_NUM=${TILE_NUM:-1}
+CASE=${CASE:-C768}
 
 #  Directories.
-export global_shared_ver=${global_shared_ver:-v15.0.0}
-export BASEDIR=${BASEDIR:-${NWROOT:-/nwprod2}}
-export HOMEglobal=${HOMEglobal:-$BASEDIR/global_shared.${global_shared_ver}}
-export EXECgsm=${EXECgsm:-$HOMEglobal/exec}
-export FIXSUBDA=${FIXSUBDA:-fix/fix_am}
-export FIXgsm=${FIXgsm:-$HOMEglobal/$FIXSUBDA}
-export FIXfv3=${FIXfv3:-$HOMEglobal/fix/fix_fv3/$CASE}
-export DATA=${DATA:-$(pwd)}
-export COMIN=${COMIN:-$(pwd)}
-export COMOUT=${COMOUT:-$(pwd)}
+global_shared_ver=${global_shared_ver:-v15.0.0}
+BASEDIR=${BASEDIR:-${NWROOT:-/nwprod2}}
+HOMEglobal=${HOMEglobal:-$BASEDIR/global_shared.${global_shared_ver}}
+EXECgsm=${EXECgsm:-$HOMEglobal/exec}
+FIXSUBDA=${FIXSUBDA:-fix/fix_am}
+FIXgsm=${FIXgsm:-$HOMEglobal/$FIXSUBDA}
+FIXfv3=${FIXfv3:-$HOMEglobal/fix/fix_fv3/$CASE}
+DATA=${DATA:-$(pwd)}
+COMIN=${COMIN:-$(pwd)}
+COMOUT=${COMOUT:-$(pwd)}
 
 #  Filenames.
-export XC=${XC}
-export PREINP=${PREINP}
-export SUFINP=${SUFINP}
-export CYCLEXEC=${CYCLEXEC:-$EXECgsm/global_cycle$XC}
+XC=${XC}
+PREINP=${PREINP}
+SUFINP=${SUFINP}
+CYCLEXEC=${CYCLEXEC:-$EXECgsm/global_cycle$XC}
 
-export CDATE=${CDATE:?}
-export FHOUR=${FHOUR:-00}
+CDATE=${CDATE:?}
+FHOUR=${FHOUR:-00}
 
 CRES=$(echo $CASE | cut -c2-)
 JCAP_CASE=$((2*CRES-2))
 LONB_CASE=$((4*CRES))
 LATB_CASE=$((2*CRES))
-export JCAP=${JCAP:-$JCAP_CASE}
-export LONB=${LONB:-$LONB_CASE}
-export LATB=${LATB:-$LATB_CASE}
-export DELTSFC=${DELTSFC:-0}
+DELTSFC=${DELTSFC:-0}
 
-export LSOIL=${LSOIL:-4}
-export FSMCL2=${FSMCL2:-60}
-export FSLPL=${FSLPL:-99999.}
-export FSOTL=${FSOTL:-99999.}
-export FVETL=${FVETL:-99999.}
-export IALB=${IALB:-1}
-export ISOT=${ISOT:-1}
-export IVEGSRC=${IVEGSRC:-1}
-export CYCLVARS=${CYCLVARS:-""}
-export use_ufo=${use_ufo:-.true.}
-export NST_ANL=${NST_ANL:-.false.}
-export zsea1=${zsea1:-0}
-export zsea2=${zsea2:-0}
+LSOIL=${LSOIL:-4}
+FSMCL2=${FSMCL2:-60}
+FSLPL=${FSLPL:-99999.}
+FSOTL=${FSOTL:-99999.}
+FVETL=${FVETL:-99999.}
+IALB=${IALB:-1}
+ISOT=${ISOT:-1}
+IVEGSRC=${IVEGSRC:-1}
+CYCLVARS=${CYCLVARS:-""}
+use_ufo=${use_ufo:-.true.}
+DONST=${DONST:-"NO"}
+ADJT_NST_ONLY=${ADJT_NST_ONLY:-.false.}
+zsea1=${zsea1:-0}
+zsea2=${zsea2:-0}
+MAX_TASKS_CY=${MAX_TASKS_CY:-99999}
 
-export FNGLAC=${FNGLAC:-${FIXgsm}/global_glacier.2x2.grb}
-export FNMXIC=${FNMXIC:-${FIXgsm}/global_maxice.2x2.grb}
-export FNTSFC=${FNTSFC:-${FIXgsm}/RTGSST.1982.2012.monthly.clim.grb}
-export FNSNOC=${FNSNOC:-${FIXgsm}/global_snoclim.1.875.grb}
-export FNZORC=${FNZORC:-igbp}
-export FNALBC=${FNALBC:-${FIXgsm}/global_snowfree_albedo.bosu.t$JCAP.$LONB.$LATB.grb}
-export FNALBC2=${FNALBC2:-${FIXgsm}/global_albedo4.1x1.grb}
-export FNAISC=${FNAISC:-${FIXgsm}/CFSR.SEAICE.1982.2012.monthly.clim.grb}
-export FNTG3C=${FNTG3C:-${FIXgsm}/global_tg3clim.2.6x1.5.grb}
-export FNVEGC=${FNVEGC:-${FIXgsm}/global_vegfrac.0.144.decpercent.grb}
-export FNVETC=${FNVETC:-${FIXgsm}/global_vegtype.igbp.t$JCAP.$LONB.$LATB.grb}
-export FNSOTC=${FNSOTC:-${FIXgsm}/global_soiltype.statsgo.t$JCAP.$LONB.$LATB.grb}
-export FNSMCC=${FNSMCC:-${FIXgsm}/global_soilmgldas.t${JCAP}.${LONB}.${LATB}.grb}
-export FNVMNC=${FNVMNC:-${FIXgsm}/global_shdmin.0.144x0.144.grb}
-export FNVMXC=${FNVMXC:-${FIXgsm}/global_shdmax.0.144x0.144.grb}
-export FNSLPC=${FNSLPC:-${FIXgsm}/global_slope.1x1.grb}
-export FNABSC=${FNABSC:-${FIXgsm}/global_mxsnoalb.uariz.t$JCAP.$LONB.$LATB.grb}
-export FNMSKH=${FNMSKH:-${FIXgsm}/seaice_newland.grb}
-export FNOROG=${FNOROG:-${FIXfv3}/${CASE}/${CASE}_oro_data.tile${TILE_NUM}.nc}
-export FNGRID=${FNGRID:-${FIXfv3}/${CASE}/${CASE}_grid.tile${TILE_NUM}.nc}
-export GSI_FILE=${GSI_FILE:-" "}
-export FNTSFA=${FNTSFA:-${COMIN}/${PREINP}sstgrb${SUFINP}}
-export FNACNA=${FNACNA:-${COMIN}/${PREINP}engicegrb${SUFINP}}
-export FNSNOA=${FNSNOA:-${COMIN}/${PREINP}snogrb${SUFINP}}
-export SFCANL=${SFCANL:-${COMIN}/${PREINP}sfcanl}
+FNGLAC=${FNGLAC:-${FIXgsm}/global_glacier.2x2.grb}
+FNMXIC=${FNMXIC:-${FIXgsm}/global_maxice.2x2.grb}
+FNTSFC=${FNTSFC:-${FIXgsm}/RTGSST.1982.2012.monthly.clim.grb}
+FNSNOC=${FNSNOC:-${FIXgsm}/global_snoclim.1.875.grb}
+FNZORC=${FNZORC:-igbp}
+FNALBC2=${FNALBC2:-${FIXgsm}/global_albedo4.1x1.grb}
+FNAISC=${FNAISC:-${FIXgsm}/CFSR.SEAICE.1982.2012.monthly.clim.grb}
+FNTG3C=${FNTG3C:-${FIXgsm}/global_tg3clim.2.6x1.5.grb}
+FNVEGC=${FNVEGC:-${FIXgsm}/global_vegfrac.0.144.decpercent.grb}
+FNALBC=${FNALBC:-${FIXgsm}/global_snowfree_albedo.bosu.t$JCAP_CASE.$LONB_CASE.$LATB_CASE.rg.grb}
+FNVETC=${FNVETC:-${FIXgsm}/global_vegtype.igbp.t$JCAP_CASE.$LONB_CASE.$LATB_CASE.rg.grb}
+FNSOTC=${FNSOTC:-${FIXgsm}/global_soiltype.statsgo.t$JCAP_CASE.$LONB_CASE.$LATB_CASE.rg.grb}
+FNSMCC=${FNSMCC:-${FIXgsm}/global_soilmgldas.t$JCAP_CASE.$LONB_CASE.$LATB_CASE.grb}
+FNABSC=${FNABSC:-${FIXgsm}/global_mxsnoalb.uariz.t$JCAP_CASE.$LONB_CASE.$LATB_CASE.rg.grb}
+FNVMNC=${FNVMNC:-${FIXgsm}/global_shdmin.0.144x0.144.grb}
+FNVMXC=${FNVMXC:-${FIXgsm}/global_shdmax.0.144x0.144.grb}
+FNSLPC=${FNSLPC:-${FIXgsm}/global_slope.1x1.grb}
+FNMSKH=${FNMSKH:-${FIXgsm}/seaice_newland.grb}
+GSI_FILE=${GSI_FILE:-"NULL"}
+FNTSFA=${FNTSFA:-${COMIN}/${PREINP}sstgrb${SUFINP}}
+FNACNA=${FNACNA:-${COMIN}/${PREINP}engicegrb${SUFINP}}
+FNSNOA=${FNSNOA:-${COMIN}/${PREINP}snogrb${SUFINP}}
 export INISCRIPT=${INISCRIPT}
 export ERRSCRIPT=${ERRSCRIPT:-'eval [[ $err = 0 ]]'}
 export LOGSCRIPT=${LOGSCRIPT}
@@ -321,13 +316,19 @@ fi
 cd $DATA||exit 99
 [[ -d $COMOUT ]]||mkdir -p $COMOUT
 
+# If the appropriate resolution fix file is not present, use the highest resolution available (T1534)
+[[ ! -f $FNALBC ]] && FNALBC="$FIXgsm/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb"
+[[ ! -f $FNVETC ]] && FNVETC="$FIXgsm/global_vegtype.igbp.t1534.3072.1536.rg.grb"
+[[ ! -f $FNSOTC ]] && FNSOTC="$FIXgsm/global_soiltype.statsgo.t1534.3072.1536.rg.grb"
+[[ ! -f $FNABSC ]] && FNABSC="$FIXgsm/global_mxsnoalb.uariz.t1534.3072.1536.rg.grb"
+[[ ! -f $FNSMCC ]] && FNSMCC="$FIXgsm/global_soilmgldas.t1534.3072.1536.grb"
+
 ################################################################################
 #  Make surface analysis
-#export PGM=$CYCLEXEC
-#export pgm=$PGM
+export PGM=$CYCLEXEC
+export pgm=$PGM
 $LOGSCRIPT
 
-rm -f $SFCANL
 iy=$(echo $CDATE|cut -c1-4)
 im=$(echo $CDATE|cut -c5-6)
 id=$(echo $CDATE|cut -c7-8)
@@ -368,24 +369,27 @@ cat << EOF > fort.35
   $CYCLVARS
  /
 EOF
- cat <<EOF > global_cycle.nml
+
+cat << EOF > fort.36
  &NAMCYC
   idim=$CRES, jdim=$CRES, lsoil=$LSOIL,
   iy=$iy, im=$im, id=$id, ih=$ih, fh=$FHOUR,
-  DELTSFC=$DELTSFC,ialb=$IALB,use_ufo=$use_ufo,NST_ANL=$NST_ANL,
-  isot=$ISOT,ivegsrc=$IVEGSRC,zsea1=$zsea1,zsea2=$zsea2
+  deltsfc=$DELTSFC,ialb=$IALB,use_ufo=$use_ufo,donst=$DONST,
+  adjt_nst_only=$ADJT_NST_ONLY,isot=$ISOT,ivegsrc=$IVEGSRC,
+  zsea1_mm=$zsea1,zsea2_mm=$zsea2,MAX_TASKS=$MAX_TASKS_CY
  /
+EOF
+
+cat << EOF > fort.37
  &NAMSFCD
-  FNBGSI="$SFCGES",
-  FNBGSO="$SFCANL",
-  FNOROG="$FNOROG",
-  FNGRID="$FNGRID",
   GSI_FILE="$GSI_FILE",
  /
 EOF
 
-#eval $APRUNCY $CYCLEXEC < global_cycle.nml
-nprocs=1 mpitaskspernode=1 OMP_NUM_THREADS=$corespernode ${enkfscripts}/runmpi
+#$APRUNCY $CYCLEXEC $REDOUT$PGMOUT $REDERR$PGMERR
+export OMP_NUM_THREADS=`expr $corespernode \/ 6`
+nprocs=6 mpitaskspernode=6 OMP_NUM_THREADS=$OMP_NUM_THREADS ${enkfscripts}/runmpi
+
 export ERR=$?
 export err=$ERR
 $ERRSCRIPT||exit 2
