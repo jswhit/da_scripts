@@ -20,6 +20,7 @@ export rungsi='run_gsi_4densvar.sh'
 export rungfs='run_fv3.sh' # ensemble forecast
 
 export recenter_anal="true" # recenter enkf analysis around GSI hybrid 4DEnVar analysis
+export recenter_fcst="false" # recenter enkf analysis around GSI hybrid 4DEnVar analysis
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
 export controlanal='true' # use gsi hybrid (if false, pure enkf is used)
 export controlfcst='true' # if true, run dual-res setup with single high-res control
@@ -27,6 +28,7 @@ export cleanup_fg='true'
 export cleanup_ensmean='true'
 export cleanup_anal='true'
 export cleanup_controlanl='true'
+export cleanup_observer='true' 
 export resubmit='true'
 # for 'passive' or 'replay' cycling of control fcst 
 # control forecast files have 'control2' suffix, instead of 'control'
@@ -34,16 +36,20 @@ export resubmit='true'
 # this is for diagnostic purposes (to get GSI diagnostic files) 
 export replay_controlfcst='false'
 export replay_run_observer='false' # run observer on replay forecast
-export cleanup_observer='true' # only used if replay_controlfcst=true
+if [ "$replay_controlfcst" == "true" ]; then
+  echo "resetting recenter_fcst to false for passive replay of control forecast"
+  export recenter_fcst='false'
+fi
 # python script checkdate.py used to check
 # YYYYMMDDHH analysis date string to see if
 # full ensemble should be saved to HPSS (returns 0 if 
 # HPSS save should be done)
 export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
-export run_long_fcst="true"  # spawn a longer control forecast at 00 and 12 UTC
+export run_long_fcst="false"  # spawn a longer control forecast at 00 and 12 UTC
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
+#export recenter_fcst="false"
 #export cleanup_observer='false'
 #export cleanup_controlanl='false'
 #export cleanup_anal='false'

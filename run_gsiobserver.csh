@@ -1,6 +1,8 @@
 #!/bin/csh
 # do hybrid observer.
 
+if ( ! $?charnanal2 ) setenv charnanal2 $charnanal
+
 setenv CO2DIR $fixgsi
 
 # charanal is an env var set in parent script
@@ -18,19 +20,19 @@ setenv BIASO ${datapath2}/${PREINP}abias
 setenv BIASO_PC ${datapath2}/${PREINP}abias_pc 
 setenv SATANGO ${datapath2}/${PREINP}satang
 if ($skipcat == 'false') then
-   set diagfile=${datapath2}/diag_conv_uv_ges.${analdate}_${charnanal}.nc4
+   set diagfile=${datapath2}/diag_conv_uv_ges.${analdate}_${charnanal2}.nc4
 else
-   set diagfile=${datapath2}/gsitmp_${charnanal}/pe0000.conv_uv_01.nc4
+   set diagfile=${datapath2}/gsitmp_${charnanal2}/pe0000.conv_uv_01.nc4
 endif
 echo "skipcat $skipcat diagfile $diagfile"
 
 if ($cleanup_observer == "true") then
   if ($skipcat == 'false') then
      echo "removing diag files"
-     /bin/rm -f ${datapath2}/diag*${charnanal}*nc4
+     /bin/rm -f ${datapath2}/diag*${charnanal2}*nc4
   else
-     echo "removing ${datapath2}/gsitmp_${charnanal}"
-     /bin/rm -rf ${datapath2}/gsitmp_${charnanal}
+     echo "removing ${datapath2}/gsitmp_${charnanal2}"
+     /bin/rm -rf ${datapath2}/gsitmp_${charnanal2}
   endif
 endif
 ls -l $diagfile
@@ -85,7 +87,7 @@ if ( -s ${diagfile} ) then
   exit 0
 endif
 echo "${analdate} compute gsi hybrid observer `date`"
-setenv tmpdir $datapath2/gsitmp_${charnanal}
+setenv tmpdir $datapath2/gsitmp_${charnanal2}
 /bin/rm -rf $tmpdir
 mkdir -p $tmpdir
 /bin/cp -f $datapath2/hybens_info $tmpdir

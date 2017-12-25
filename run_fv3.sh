@@ -8,7 +8,7 @@ if [ "$machine" == 'theia' ]; then
    module load hdf5
    module load pnetcdf
    module use /scratch4/NCEPDEV/nems/noscrub/emc.nemspara/soft/modulefiles
-   module load esmf/7.1.0bs40
+   module load esmf/7.1.0bs39
    module list
 fi
 
@@ -328,7 +328,8 @@ if [ $FHCYC -eq 0 ] && [ "$warm_start" == "T" ] && [ -z $skip_global_cycle ]; th
    # NST update
    #export DONST=T
    #export GSI_FILE=${COMIN}/dtfanl.nc
-   export PGM="${execdir}/global_cycle < global_cycle.nml"
+   #export PGM="${execdir}/global_cycle < global_cycle.nml"
+   export PGM="${execdir}/global_cycle"
    sh ${enkfscripts}/global_cycle_driver.sh
    n=1
    while [ $n -le 6 ]; do
@@ -407,7 +408,9 @@ cat > input.nml <<EOF
 &atmos_model_nml
   blocksize = 32,
   dycore_only = F,
+  fdiag = ${FHOUT}
 /
+
 &diag_manager_nml
   prepend_date = F,
 /
@@ -596,10 +599,6 @@ cat > input.nml <<EOF
   fix_negative = .true.
   icloud_f = 1
   mp_time = 150.
-/
-
-&nggps_diag_nml
-  fdiag = ${FHOUT}
 /
 
 &interpolator_nml

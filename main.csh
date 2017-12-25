@@ -127,6 +127,19 @@ if ($controlfcst == 'true') then
    echo "$analdate done adjusting orog/ps of control forecast on ens grid `date`"
 endif
 
+# recenter enkf forecasts around control forecast
+if ($controlfcst == 'true' && $recenter_fcst == 'true') then
+   echo "$analdate recenter enkf ensemble around control forecast `date`"
+   csh ${enkfscripts}/recenter_ens_fcst.csh >&! ${current_logdir}/recenter_ens_fcst.out 
+   set recenter_done=`cat ${current_logdir}/recenter_ens.log`
+   if ($recenter_done == 'yes') then
+     echo "$analdate recentering enkf forecasts completed successfully `date`"
+   else
+     echo "$analdate recentering enkf forecasts did not complete successfully, exiting `date`"
+     exit 1
+   endif
+endif
+
 # for pure enkf or if replay cycle used for control forecast, symlink
 # ensmean files to 'control'
 if ($controlfcst == 'false' || $replay_controlfcst == 'true') then
@@ -149,9 +162,14 @@ else
    setenv cold_start_bias "false"
 endif
 
-# run gsi observer with ens mean background, saving jacobian.
+# run gsi observer with ens mean for control fcst background, saving jacobian.
 # generated diag files used by EnKF
-setenv charnanal 'ensmean'
+if ($controlfcst == 'false' || $replay_controlfcst == 'true') then
+   setenv charnanal 'ensmean' # if replay_controlfcst == true use ens mean
+else
+   setenv charnanal 'control' # compute observer for control forecast
+endif
+setenv charnanal2 'ensmean'
 setenv lobsdiag_forenkf '.true.'
 setenv skipcat "false"
 echo "$analdate run gsi observer on ${charnanal} `date`"
@@ -190,6 +208,7 @@ endif
 if ($controlanal == 'true') then
    # run control analysis
    setenv charnanal 'control'
+   setenv charnanal2 'control'
    setenv lobsdiag_forenkf '.false.'
    setenv skipcat "false"
    echo "$analdate run hybrid `date`"

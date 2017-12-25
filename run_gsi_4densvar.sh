@@ -96,7 +96,7 @@ nln="/bin/ln -fs"
 
 # copy symlinks if needed.
 if [[ "$lread_obs_save" = ".false." && "$HXONLY" = "YES" ]]; then
-tmpdir_ensmean=${datges}/gsitmp_ensmean
+tmpdir_ensmean=${datges}/gsitmp_${charnanal2}
 mkdir -p $tmpdir
 for filein in ${tmpdir_ensmean}/obs_input*; do
   file=`basename ${filein}`
@@ -303,7 +303,7 @@ beta1_inv=${beta1_inv:-0.25}
 s_ens_h=${s_ens_h:-800}
 s_ens_v=${s_ens_v:-0.8}
 if [ "$HXONLY" = "NO" ] && [[ $beta1_inv < 0.999 ]]; then
-HYBRIDENSDATA="l_hyb_ens=.true.,n_ens=$nens,beta_s0=$beta1_inv,s_ens_h=$s_ens_h,s_ens_v=$s_ens_v,generate_ens=.false.,uv_hyb_ens=.true.,jcap_ens=$JCAP_ENS,nlat_ens=$NLAT_ENS,nlon_ens=$LONA_ENS,aniso_a_en=.false.,jcap_ens_test=$JCAP_ENS,readin_localization=$readin_localization,write_ens_sprd=.false.,oz_univ_static=.false.,q_hyb_ens=.false."
+HYBRIDENSDATA="l_hyb_ens=.true.,n_ens=$nens,beta_s0=$beta1_inv,s_ens_h=$s_ens_h,s_ens_v=$s_ens_v,generate_ens=.false.,uv_hyb_ens=.true.,jcap_ens=$JCAP_ENS,nlat_ens=$NLAT_ENS,nlon_ens=$LONA_ENS,aniso_a_en=.false.,jcap_ens_test=$JCAP_ENS,readin_localization=$readin_localization,write_ens_sprd=.false.,oz_univ_static=.false.,q_hyb_ens=.false.,ens_fast_read=.true."
 else
 HYBRIDENSDATA=""
 fi
