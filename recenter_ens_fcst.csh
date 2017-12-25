@@ -16,6 +16,7 @@ set filenamein=sfg_${analdate}_${charfhr}
 set filenameout=sfgr_${analdate}_${charfhr}
 
 setenv PGM "${execdir}/recentersigp.x $filenamein $filename_meanin $filename_meanout $filenameout $nanals"
+echo $PGM
 set errorcode=0
 sh ${enkfscripts}/runmpi
 if ($status != 0) set errorcode=1
@@ -26,15 +27,18 @@ if ($errorcode != 0) then
 endif
 
 # rename files.
+echo "/bin/mv -f $filename_meanin  ${filename_meanin}.orig"
 /bin/mv -f $filename_meanin  ${filename_meanin}.orig
+echo "/bin/cp -f $filename_meanout $filename_meanin"
 /bin/cp -f $filename_meanout $filename_meanin
 set nanal=1
 while ($nanal <= $nanals)
-   set charnanal_ens="mem"`printf %03i $nanal`
-   set fgfiler=sfgr_${analdate}_${charfhr}_${charnanal_ens}
-   set fgfile=sfg_${analdate}_${charfhr}_${charnanal_ens}
+   set charnanal_ensmem="mem"`printf %03i $nanal`
+   set fgfiler=sfgr_${analdate}_${charfhr}_${charnanal_ensmem}
+   set fgfile=sfg_${analdate}_${charfhr}_${charnanal_ensmem}
    if ( -s $fgfiler) then
       /bin/mv -f $fgfile ${fgfile}.orig
+      echo "/bin/mv -f $fgfiler $fgfile"
       /bin/mv -f $fgfiler $fgfile
       if ($status != 0) set errorcode=1
    endif
@@ -47,11 +51,13 @@ else
    echo "error encountered, copying original files back.."
    echo "no" >! ${current_logdir}/recenter_ens.log
    # rename files back
+   echo "/bin/mv -f ${filename_meanin}.orig  ${filename_meanin}"
    /bin/mv -f ${filename_meanin}.orig  ${filename_meanin}
    set nanal=1
    while ($nanal <= $nanals)
       set charnanal_ens="mem"`printf %03i $nanal`
       set fgfile=sfg_${analdate}_${charfhr}_${charnanal_ens}
+      echo "/bin/mv -f ${fgfile}.orig ${fgfile}"
       /bin/mv -f ${fgfile}.orig ${fgfile}
       @ nanal = $nanal + 1
    end
