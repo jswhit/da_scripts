@@ -49,7 +49,7 @@ if ( $fg_only == 'false') then
    foreach tile (tile1 tile2 tile3 tile4 tile5 tile6)
       foreach filename (fv_core.res.${tile}.nc fv_tracer.res.${tile}.nc fv_srf_wnd.res.${tile}.nc sfc_data.${tile}.nc)
          setenv PGM "nces -O `ls -1 ${datapath2}/mem*/INPUT/${filename}` ${pathout}/${filename}"
-         if ($machine != 'wcoss' && $machine != 'gaea') then
+         if ($machine == 'theia') then
             set host=`head -$ncount $NODEFILE | tail -1`
             setenv HOSTFILE ${datapath2}/hostfile_nces_${ncount}
             echo $host >! $HOSTFILE

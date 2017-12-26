@@ -81,7 +81,7 @@ setenv nprocs `expr $control_proc \/ $OMP_NUM_THREADS`
 echo "nprocs = $nprocs"
 setenv mpitaskspernode `expr $corespernode \/ $OMP_NUM_THREADS`
 echo "mpitaskspernode = $mpitaskspernode"
-if ($machine != 'wcoss') then
+if ($machine == 'theia') then
    if ($OMP_NUM_THREADS == 1) then
       setenv HOSTFILE $PBS_NODEFILE
    else

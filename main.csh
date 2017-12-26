@@ -42,7 +42,7 @@ if ($mpitaskspernode < 1) setenv mpitaskspernode 1
 setenv OMP_NUM_THREADS `expr $corespernode \/ $mpitaskspernode`
 echo "mpitaskspernode = $mpitaskspernode threads = $OMP_NUM_THREADS"
 setenv nprocs $nanals
-if ($machine != 'wcoss') then
+if ($machine == 'theia') then
     # HOSTFILE is machinefile to use for programs that require $nanals tasks.
     # if enough cores available, just one core on each node.
     # NODEFILE is machinefile containing one entry per node.
@@ -127,19 +127,6 @@ if ($controlfcst == 'true') then
    echo "$analdate done adjusting orog/ps of control forecast on ens grid `date`"
 endif
 
-# recenter enkf forecasts around control forecast
-if ($controlfcst == 'true' && $recenter_fcst == 'true') then
-   echo "$analdate recenter enkf ensemble around control forecast `date`"
-   csh ${enkfscripts}/recenter_ens_fcst.csh >&! ${current_logdir}/recenter_ens_fcst.out 
-   set recenter_done=`cat ${current_logdir}/recenter_ens.log`
-   if ($recenter_done == 'yes') then
-     echo "$analdate recentering enkf forecasts completed successfully `date`"
-   else
-     echo "$analdate recentering enkf forecasts did not complete successfully, exiting `date`"
-     exit 1
-   endif
-endif
-
 # for pure enkf or if replay cycle used for control forecast, symlink
 # ensmean files to 'control'
 if ($controlfcst == 'false' || $replay_controlfcst == 'true') then
@@ -162,13 +149,9 @@ else
    setenv cold_start_bias "false"
 endif
 
-# run gsi observer with ens mean for control fcst background, saving jacobian.
+# run gsi observer with ens mean fcst background, saving jacobian.
 # generated diag files used by EnKF
-if ($controlfcst == 'false' || $replay_controlfcst == 'true') then
-   setenv charnanal 'ensmean' # if replay_controlfcst == true use ens mean
-else
-   setenv charnanal 'control' # compute observer for control forecast
-endif
+setenv charnanal 'ensmean' 
 setenv charnanal2 'ensmean'
 setenv lobsdiag_forenkf '.true.'
 setenv skipcat "false"
@@ -186,10 +169,10 @@ endif
 # run enkf analysis.
 echo "$analdate run enkf `date`"
 if ($skipcat == "true") then
-# read un-concatenated pe files (set npefiles to number of mpi tasks used by gsi observer)
-setenv npefiles `expr $cores \/ $gsi_control_threads`
+  # read un-concatenated pe files (set npefiles to number of mpi tasks used by gsi observer)
+  setenv npefiles `expr $cores \/ $gsi_control_threads`
 else
-setenv npefiles 0
+  setenv npefiles 0
 endif
 csh ${enkfscripts}/runenkf.csh  >>& ${current_logdir}/run_enkf.out  
 # once enkf has completed, check log files.
@@ -207,10 +190,6 @@ endif
 # forecast uses "control2")
 if ($controlanal == 'true') then
    # run control analysis
-   setenv charnanal 'control'
-   setenv charnanal2 'control'
-   setenv lobsdiag_forenkf '.false.'
-   setenv skipcat "false"
    echo "$analdate run hybrid `date`"
    csh ${enkfscripts}/run_hybridanal.csh >&! ${current_logdir}/run_gsi_hybrid.out 
    # once hybrid has completed, check log files.
@@ -240,6 +219,11 @@ if ($controlfcst == 'true' && $replay_controlfcst == 'true' && $replay_run_obser
      exit 1
    endif
 endif
+
+# compute ensemble mean analyses.
+echo "$analdate starting ens mean analysis computation `date`"
+csh ${enkfscripts}/compute_ensmean_enkf.csh >&!  ${current_logdir}/compute_ensmean_anal.out
+echo "$analdate done computing ensemble mean analyses `date`"
 
 # recenter enkf analyses around control analysis
 if ($controlanal == 'true' && $recenter_anal == 'true') then
@@ -285,6 +269,7 @@ echo "clean up files `date`"
 cd $datapath2
 
 # move every member files to a temp dir.
+/bin/rm -rf fgens fgens2
 mkdir fgens
 mkdir fgens2
 /bin/rm -f mem*/*nc mem*/*txt mem*/*grb mem*/*dat 

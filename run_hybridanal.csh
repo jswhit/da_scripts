@@ -3,7 +3,19 @@
 
 setenv CO2DIR $fixgsi
 
-setenv charnanal "control"
+setenv charnanal 'control'
+setenv charnanal2 'control'
+setenv lobsdiag_forenkf '.false.'
+setenv skipcat "false"
+
+if ($machine == 'theia') then
+   if (! $?hostfilein) then
+     setenv hostfilein $PBS_NODEFILE
+     setenv NODEFILE $datapath2/nodefile_envar
+   endif
+   cat $hostfilein | uniq > $NODEFILE
+endif
+
 setenv SIGANL ${datapath2}/sanl_${analdate}_${charnanal}
 setenv SIGANL03 ${datapath2}/sanl_${analdate}_fhr03_${charnanal}
 setenv SIGANL04 ${datapath2}/sanl_${analdate}_fhr04_${charnanal}
@@ -37,14 +49,14 @@ setenv OMP_NUM_THREADS $gsi_control_threads
 setenv OMP_STACKSIZE 2048M
 setenv nprocs `expr $cores \/ $OMP_NUM_THREADS`
 setenv mpitaskspernode `expr $corespernode \/ $OMP_NUM_THREADS`
-if ($machine != 'wcoss') then
+if ($machine == 'theia') then
    setenv KMP_AFFINITY scatter
    if ($OMP_NUM_THREADS > 1) then
       setenv HOSTFILE $datapath2/machinefile_envar
       /bin/rm -f $HOSTFILE
-      awk "NR%${gsi_control_threads} == 1" ${PBS_NODEFILE} >&! $HOSTFILE
+      awk "NR%${gsi_control_threads} == 1" ${hostfilein} >&! $HOSTFILE
    else
-      setenv HOSTFILE $PBS_NODEFILE
+      setenv HOSTFILE $hostfilein
    endif
    cat $HOSTFILE
    wc -l $HOSTFILE

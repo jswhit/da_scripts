@@ -5,9 +5,11 @@ setenv nprocs `expr $cores \/ $enkf_threads`
 setenv mpitaskspernode `expr $corespernode \/ $enkf_threads`
 setenv OMP_NUM_THREADS $enkf_threads
 setenv OMP_STACKSIZE 256M
-if ($machine != 'wcoss') then
+if ($machine == 'theia') then
    if (! $?hostfilein) then
      setenv hostfilein $PBS_NODEFILE
+     setenv NODEFILE $datapath2/nodefile_enkf
+     cat $hostfilein | uniq > $NODEFILE
    endif
    setenv HOSTFILE $datapath2/machinefile_enkf
    /bin/rm -f $HOSTFILE
@@ -183,26 +185,6 @@ else
 echo "enkf update already done..."
 endif # filemissing='yes'
 
-setenv mpitaskspernode `python -c "import math; print int(math.ceil(float(${nanals})/float(${NODES})))"`
-if ($mpitaskspernode < 1) setenv mpitaskspernode 1
-setenv OMP_NUM_THREADS `expr $corespernode \/ $mpitaskspernode`
-echo "mpitaskspernode = $mpitaskspernode threads = $OMP_NUM_THREADS"
-setenv nprocs $nanals
-if ($machine != 'wcoss') then
-    # HOSTFILE is machinefile to use for programs that require $nanals tasks.
-    # if enough cores available, just one core on each node.
-    # NODEFILE is machinefile containing one entry per node.
-    setenv HOSTFILE $datapath2/machinefile_enkf
-    setenv NODEFILE $datapath2/nodefile_enkf
-    cat $hostfilein | uniq > $NODEFILE
-    if ($NODES >= $nanals) then
-      ln -fs $NODEFILE $HOSTFILE
-    else
-      # otherwise, leave as many cores empty as possible
-      awk "NR%${OMP_NUM_THREADS} == 1" ${hostfilein} >&! $HOSTFILE
-    endif
-endif
-
 # check output files again.
 set nanal=1
 set filemissing='no'
@@ -228,9 +210,5 @@ if ($filemissing == 'yes') then
 else
     echo "all output files seem OK `date`"
 endif
-
-echo "$analdate starting ens mean analysis computation `date`"
-csh ${enkfscripts}/compute_ensmean_enkf.csh >&!  ${current_logdir}/compute_ensmean_anal.out
-echo "$analdate done computing ensemble mean analyses `date`"
 
 exit 0

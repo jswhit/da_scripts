@@ -4,8 +4,8 @@ ulimit -s unlimited
 export exptname=C384C192_test_iaunew
 export cores=`expr $NODES \* $corespernode`
 
-# check that value of NODES is consistent with PBS_NP on theia and jet.
-if [ "$machine" != 'wcoss' ]; then
+# check that value of NODES is consistent with PBS_NP on theia.
+if [ "$machine" == 'theia' ]; then
    if [ $PBS_NP -ne $cores ]; then
      echo "NODES = ${NODES} PBS_NP = ${PBS_NP} cores = ${cores}"
      echo "NODES set incorrectly in preamble"
@@ -20,7 +20,6 @@ export rungsi='run_gsi_4densvar.sh'
 export rungfs='run_fv3.sh' # ensemble forecast
 
 export recenter_anal="true" # recenter enkf analysis around GSI hybrid 4DEnVar analysis
-export recenter_fcst="false" # recenter enkf analysis around GSI hybrid 4DEnVar analysis
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
 export controlanal='true' # use gsi hybrid (if false, pure enkf is used)
 export controlfcst='true' # if true, run dual-res setup with single high-res control
@@ -36,10 +35,6 @@ export resubmit='true'
 # this is for diagnostic purposes (to get GSI diagnostic files) 
 export replay_controlfcst='false'
 export replay_run_observer='false' # run observer on replay forecast
-if [ "$replay_controlfcst" == "true" ]; then
-  echo "resetting recenter_fcst to false for passive replay of control forecast"
-  export recenter_fcst='false'
-fi
 # python script checkdate.py used to check
 # YYYYMMDDHH analysis date string to see if
 # full ensemble should be saved to HPSS (returns 0 if 
@@ -49,7 +44,6 @@ export run_long_fcst="false"  # spawn a longer control forecast at 00 and 12 UTC
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
-#export recenter_fcst="false"
 #export cleanup_observer='false'
 #export cleanup_controlanl='false'
 #export cleanup_anal='false'
@@ -77,12 +71,8 @@ elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f1/unswept/${USER}/nggps
    export datadir=$basedir
    export hsidir="/2year/BMC/gsienkf/whitaker/gaea/${exptname}"
-elif [ "$machine" == 'jet' ]; then
-   export basedir=/lfs3/projects/gfsenkf/${USER}
-   export datadir=$basedir
-   export hsidir="/HFIP/gfsenkf/2year/${USER}/${exptname}"
 else
-   echo "machine must be 'wcoss', 'theia', or 'jet', got $machine"
+   echo "machine must be 'wcoss', 'theia', or 'gaea', got $machine"
    exit 1
 fi
 export datapath="${datadir}/${exptname}"
@@ -119,8 +109,8 @@ if [ $RES -eq 384 ]; then
   export write_tasks=6 # write tasks
   export layout="3,4" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
 elif [ $RES -eq 192 ]; then
-  export enkf_threads=4
-  export gsi_control_threads=2
+  export enkf_threads=3
+  export gsi_control_threads=3
   export fg_proc=24 
   export fg_threads=1 
   export write_groups=1
@@ -393,9 +383,6 @@ elif [ "$machine" == 'wcoss' ]; then
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
    export nemsioget=${execdir}/nemsio_get
-elif [ "$machine" == 'jet' ]; then
-   echo "jet not yet supported"
-   exit 1
 else
    echo "${machine} unsupported machine"
    exit 1
