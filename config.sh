@@ -318,7 +318,7 @@ if [ $controlanal == 'false' ];  then
    export numiter=4
 else
    export lupd_satbiasc=.false.
-   export numiter=1
+   export numiter=0
 fi
 # use pre-generated bias files.
 #export lupd_satbiasc=.false.

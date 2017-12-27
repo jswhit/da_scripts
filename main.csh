@@ -151,7 +151,11 @@ endif
 
 # run gsi observer with ens mean fcst background, saving jacobian.
 # generated diag files used by EnKF
-setenv charnanal 'ensmean' 
+if ($replay_controlfcst == 'true') then
+   setenv charnanal 'ensmean' 
+else
+   setenv charnanal 'control' 
+endif
 setenv charnanal2 'ensmean'
 setenv lobsdiag_forenkf '.true.'
 setenv skipcat "false"
@@ -224,6 +228,9 @@ endif
 echo "$analdate starting ens mean analysis computation `date`"
 csh ${enkfscripts}/compute_ensmean_enkf.csh >&!  ${current_logdir}/compute_ensmean_anal.out
 echo "$analdate done computing ensemble mean analyses `date`"
+
+# copy enkf fits/spread from diag*ensmean to diag*control files.
+csh ${enkfscripts}/copyenkfdata.csh >&! ${current_logdir}/copyenkfdata.out
 
 # recenter enkf analyses around control analysis
 if ($controlanal == 'true' && $recenter_anal == 'true') then
