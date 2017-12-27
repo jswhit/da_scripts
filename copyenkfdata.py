@@ -20,7 +20,7 @@ vars_to_copy = [var for var in nc_enkf.variables.keys() if 'EnKF' in var and id 
 for varname in vars_to_copy:
     print 'appending %s...' % varname
     var = nc_enkf[varname]
-    varnew = nc_hybrid.createVariable(varname, var.dtype, var.dimensions)
+    varnew = nc_hybrid.createVariable(varname, var.dtype, var.dimensions, zlib=True)
     varnew[:] = var[:]
 
 nc_enkf.close()
