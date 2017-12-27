@@ -229,8 +229,10 @@ echo "$analdate starting ens mean analysis computation `date`"
 csh ${enkfscripts}/compute_ensmean_enkf.csh >&!  ${current_logdir}/compute_ensmean_anal.out
 echo "$analdate done computing ensemble mean analyses `date`"
 
+echo "$analdate starting copy enkf fit/spread data `date`"
 # copy enkf fits/spread from diag*ensmean to diag*control files.
 csh ${enkfscripts}/copyenkfdata.csh >&! ${current_logdir}/copyenkfdata.out
+echo "$analdate done copy enkf fit/spread data `date`"
 
 # recenter enkf analyses around control analysis
 if ($controlanal == 'true' && $recenter_anal == 'true') then
