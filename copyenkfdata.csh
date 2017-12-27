@@ -2,7 +2,6 @@
 setenv nprocs 1
 setenv mpitaskspernode 1
 set nodecount=0
-module load nco/4.7.0
 foreach id ('ges' 'anl')
    set diagfiles = `ls -1 ${datapath2}/diag*${id}*control.nc4`
    foreach diagfile ($diagfiles)
@@ -19,8 +18,6 @@ foreach id ('ges' 'anl')
              echo $node >> $HOSTFILE
              @ n = $n + 1
           end
-          #echo "contents of hostfile_${nodecount}..."
-          #cat $HOSTFILE
        endif
        sh ${enkfscripts}/runmpi &
        if ($nodecount == $NODES ) then
