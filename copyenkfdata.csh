@@ -1,6 +1,6 @@
 # env vars used: datapath2, NODES, NODEFILE, enkfscripts
-setenv nprocs=1
-setenv mpitaskspernode=1
+setenv nprocs 1
+setenv mpitaskspernode 1
 set nodecount=0
 module load nco/4.7.0
 foreach id ('ges' 'anl')
