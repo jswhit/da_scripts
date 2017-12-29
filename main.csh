@@ -229,10 +229,10 @@ echo "$analdate starting ens mean analysis computation `date`"
 csh ${enkfscripts}/compute_ensmean_enkf.csh >&!  ${current_logdir}/compute_ensmean_anal.out
 echo "$analdate done computing ensemble mean analyses `date`"
 
-echo "$analdate starting copy enkf fit/spread data `date`"
+#echo "$analdate starting copy enkf fit/spread data `date`"
 # copy enkf fits/spread from diag*ensmean to diag*control files.
-csh ${enkfscripts}/copyenkfdata.csh >&! ${current_logdir}/copyenkfdata.out
-echo "$analdate done copy enkf fit/spread data `date`"
+#csh ${enkfscripts}/copyenkfdata.csh >&! ${current_logdir}/copyenkfdata.out
+#echo "$analdate done copy enkf fit/spread data `date`"
 
 # recenter enkf analyses around control analysis
 if ($controlanal == 'true' && $recenter_anal == 'true') then
@@ -289,10 +289,12 @@ mkdir fgens2
 /bin/cp -f sfg*control fgens2
 /bin/cp -f bfg*control fgens2
 echo "files moved to fgens, fgens2 `date`"
-# only save conventional ensmean and control diag files.
+# only save control and spread diag files.
+/bin/rm -rf diag*ensmean.nc4
+# only save conventional diag files
 mkdir diagsavdir
-/bin/mv -f diag*conv*control.nc4 diag*conv*ensmean.nc4 diagsavdir
-/bin/rm -f diag*control.nc4 diag*ensmean.nc4
+/bin/mv -f diag*conv*control.nc4 diag*conv*spread.nc4 diagsavdir
+/bin/rm -f diag*control.nc4 diag*ensmean*nc4
 /bin/rm -f diagsavdir/diag*conv_gps*
 /bin/mv -f diagsavdir/diag*nc4 .
 /bin/rm -rf diagsavdir
@@ -338,6 +340,8 @@ cd $homedir
 cat ${machine}_preamble_hpss hpss.sh >! job_hpss.sh
 if ($machine == 'wcoss') then
    bsub -env "all" < job_hpss.sh
+else if ($machine == 'gaea') then
+   msub -V job_hpss.sh
 else
    qsub -V job_hpss.sh
 endif
@@ -347,6 +351,8 @@ if ($run_long_fcst == "true") then
      cat ${machine}_preamble_longfcst run_long_fcst.sh >! job_longfcst.sh
      if ($machine == 'wcoss') then
          bsub -env "all" < job_longfcst.sh
+     elif ($machine == 'gaea') then
+         msub -V job_longfcst.sh
      else
          qsub -V job_longfcst.sh
      endif
@@ -372,6 +378,8 @@ if ( ${analdate} <= ${analdate_end}  && ${resubmit} == 'true') then
       cat ${machine}_preamble config.sh >! job.sh
       if ($machine == 'wcoss') then
           bsub < job.sh
+      else if ($machine == 'gaea') then
+          msub job.sh
       else
           qsub job.sh
       endif

@@ -1,7 +1,7 @@
 echo "running on $machine using $NODES nodes"
 ulimit -s unlimited
 
-export exptname=C384C192_test_iaunew
+export exptname=C384C192_test_iau
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia.
@@ -45,7 +45,6 @@ export run_long_fcst="false"  # spawn a longer control forecast at 00 and 12 UTC
 # override values from above for debugging.
 #export cleanup_ensmean='false'
 #export cleanup_observer='false'
-#export cleanup_controlanl='false'
 #export cleanup_anal='false'
 #export cleanup_controlanl='false'
 #export recenter_anal="false"
@@ -68,7 +67,7 @@ elif [ "$machine" == 'theia' ]; then
    export WGRIB=`which wgrib`
    module load nco
 elif [ "$machine" == 'gaea' ]; then
-   export basedir=/lustre/f1/unswept/${USER}/nggps
+   export basedir=/lustre/f1/unswept/${USER}/fv3_reanl
    export datadir=$basedir
    export hsidir="/2year/BMC/gsienkf/whitaker/gaea/${exptname}"
 else
@@ -99,58 +98,75 @@ export massbal_adjust=.false.
 export RES=192
 export RES_CTL=384 
 
-# model parameters for ensemble (rest set in $rungfs)
-if [ $RES -eq 384 ]; then
-  export enkf_threads=12 # threads for EnKF
-  export gsi_control_threads=4 # threads for GSI
-  export fg_proc=96 # number of total cores allocated to each enkf fg ens member. 
-  export fg_threads=1 # ens fcst threads
-  export write_groups=4 # write groups
-  export write_tasks=6 # write tasks
-  export layout="3,4" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
-elif [ $RES -eq 192 ]; then
-  export enkf_threads=3
-  export gsi_control_threads=3
-  export fg_proc=24 
-  export fg_threads=1 
-  export write_groups=1
-  export write_tasks=6 
-  export layout="3, 1" 
-elif [ $RES -eq 96 ]; then
-  export enkf_threads=1
-  export gsi_control_threads=1
-  export fg_proc=24
-  export fg_threads=1 
-  export write_groups=1
-  export write_tasks=6 
-  export layout="3, 1"
-else
-  echo "compute parameters layout for resolution C$RES not set"
-  exit 1
-fi
+# this is set in ${machine_preamble} now
 
-if [ $NODES -eq 20 ]; then
-  # 20 nodes, 2 threads
-  export control_threads=2 # control forecast threads
-  export control_proc=444   # total number of processors for control forecast
-  export write_groups_ctl=1 # write groups for control forecast.
-  export layout_ctl="6,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
-elif [ $NODES -eq 40 ]; then
-  # 40 nodes, 2 threads
-  export control_threads=2 
-  export control_proc=876  
-  export write_groups_ctl=1
-  export layout_ctl="12, 6"
-elif [ $NODES -eq 80 ]; then
-  # 80 nodes, 2 threads
-  export control_threads=2
-  export control_proc=1740 
-  export write_groups_ctl=1
-  export layout_ctl="12, 12" 
-else
-  echo "processor layout for $NODES nodes not set"
-  exit 1
-fi
+# model parameters for ensemble (rest set in $rungfs)
+#if [ $RES -eq 384 ]; then
+#  export enkf_threads=12 # threads for EnKF
+#  export gsi_control_threads=4 # threads for GSI
+#  export fg_proc=96 # number of total cores allocated to each enkf fg ens member. 
+#  export fg_threads=1 # ens fcst threads
+#  export write_groups=4 # write groups
+#  export write_tasks=6 # write tasks
+#  export layout="3,4" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+#elif [ $RES -eq 192 ]; then
+#  export enkf_threads=2
+#  export gsi_control_threads=2
+#  export fg_proc=$corespernode 
+#  export fg_threads=1 
+#  if [ $corespernode -eq 24 ]; then
+#     export write_groups=1
+#     export write_tasks=6 
+#     export layout="3, 1" 
+#  elif [ $corespernode -eq 32 ]; then
+#     export write_groups=1
+#     export write_tasks=8 
+#     export layout="2, 2" 
+#  elif [ $corespernode -eq 36 ]; then
+#     export write_groups=2
+#     export write_tasks=6 
+#     export layout="2, 2" 
+#  else
+#     echo "unknown corespernode"
+#  exit 1
+#  fi
+#elif [ $RES -eq 96 ]; then
+#  export enkf_threads=1
+#  export gsi_control_threads=1
+#  export fg_proc=24
+#  export fg_threads=1 
+#  export write_groups=1
+#  export write_tasks=6 
+#  export layout="3, 1"
+#else
+#  echo "compute parameters layout for resolution C$RES not set"
+#  exit 1
+#fi
+
+#if [ $NODES -eq 20 ]; then
+#  # 20 nodes, 2 threads
+#  #export control_threads=2 # control forecast threads
+#  #export control_proc=444   # total number of processors for control forecast
+#  export control_threads=3
+#  export control_proc=666
+#  export write_groups_ctl=1 # write groups for control forecast.
+#  export layout_ctl="6,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+#elif [ $NODES -eq 40 ]; then
+#  # 40 nodes, 2 threads
+#  export control_threads=2 
+#  export control_proc=876  
+#  export write_groups_ctl=1
+#  export layout_ctl="12, 6"
+#elif [ $NODES -eq 80 ]; then
+#  # 80 nodes, 2 threads
+#  export control_threads=2
+#  export control_proc=1740 
+#  export write_groups_ctl=1
+#  export layout_ctl="12, 12" 
+#else
+#  echo "processor layout for $NODES nodes not set"
+#  exit 1
+#fi
 
 export psautco="0.0008,0.0005"
 export prautco="0.00015,0.00015"
@@ -221,9 +237,9 @@ elif [ $RES -eq 192 ]; then
    export dt_atmos=450
    export cdmbgwd="0.25,2.5"
 elif [ $RES -eq 96 ]; then
-   export JCAP=126 
-   export LONB=384   
-   export LATB=190  
+   export JCAP=254 
+   export LONB=512   
+   export LATB=256  
    export fv_sg_adj=1800
    export dt_atmos=900
    export cdmbgwd="0.125,3.0"
@@ -340,7 +356,7 @@ export saterrfact=1.0
 export deterministic=.true.
 export sortinc=.true.
                                                                     
-export nitermax=2
+export nitermax=1
 
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
@@ -360,12 +376,12 @@ if [ "$machine" == 'theia' ]; then
    export nemsioget=${execdir}/nemsio_get
 elif [ "$machine" == 'gaea' ]; then
 # warning - these paths need to be updated on gaea
-   export FIXGLOBAL=${basedir}/fv3gfs/global_shared.v15.0.0/fix/fix_am
-   export FIXFV3=${basedir}/fv3gfs/fix_fv3
-   export gsipath=${basedir}/gsi/branches/EXP-enkflinhx
-   export gsiexec=${gsipath}/src/global_gsi
+   export fv3gfspath=${basedir}/fv3gfs/global_shared.v15.0.0
+   export FIXFV3=${fv3gfspath}/fix/fix_fv3
+   export FIXGLOBAL=${fv3gfspath}/fix/fix_am
+   export gsipath=${basedir}/ProdGSI
    export fixgsi=${gsipath}/fix
-   export fixcrtm=${fixgsi}/crtm-2.2.3
+   export fixcrtm=${fixgsi}/crtm_v2.2.3
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
