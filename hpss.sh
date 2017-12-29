@@ -1,7 +1,12 @@
-# need envars:  analdate, datapath2, hsidir, save_hpss, save_hpss_subset, POSTPROC, npefiles
+# need envars:  machine, analdate, datapath2, hsidir, save_hpss, save_hpss_subset, POSTPROC, npefiles
 
 exitstat=0
-module load hpss
+source $MODULESHOME/init/sh
+if [ $machine == "gaea" ]; then
+   module load hsi
+else
+   module load hpss
+fi
 env
 hsi ls -l $hsidir
 hsi mkdir ${hsidir}/

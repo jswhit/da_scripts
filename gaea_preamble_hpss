@@ -1,4 +1,4 @@
-#!/bin/csh
+#!/bin/sh
 #PBS -A nggps_psd
 ##PBS -A cpo_ngrr_e
 #PBS -l partition=es,size=1,walltime=6:00:00
