@@ -2,7 +2,7 @@ export OMP_NUM_THREADS=${OMP_NUM_THREADS:-1}
 [ -z "$nprocs" ] && echo "Need to set nprocs" && exit 1;
 [ -z "$machine" ] && echo "Need to set machine" && exit 1;
 [ -z "$PGM" ] && echo "Need to set PGM" && exit 1;
-if [ "$machine" == 'wcoss' ]; then
+if [ "$machine" == 'wcoss' ] || [ "$machine" == 'gaea' ] ; then
    [ -z "$mpitaskspernode" ] && echo "Need to set mpitaskspernode" && exit 1;
    echo "running aprun -n $nprocs -N $mpitaskspernode -d ${OMP_NUM_THREADS} -cc depth $PGM"
    eval aprun -n $nprocs -N $mpitaskspernode -d ${OMP_NUM_THREADS} -cc depth $PGM
@@ -13,14 +13,8 @@ elif [ "$machine" == 'theia' ]; then
    echo "running mpirun -np $nprocs -machinefile $HOSTFILE $PGM"
    echo "OMP_NUM_THREADS = $OMP_NUM_THREADS"
    eval mpirun -np $nprocs -machinefile $HOSTFILE $PGM
-elif [ "$machine" == 'jet' ]; then
-   # HOSTFILE env var must be set
-   [ -z "$HOSTFILE" ] && echo "Need to set HOSTFILE" && exit 1;
-   cat $HOSTFILE
-   echo "running mpiexec -np $nprocs -f $HOSTFILE $PGM"
-   eval mpiexec -np $nprocs -f $HOSTFILE $PGM
 else
-   echo "machine must be 'wcoss', 'theia', or 'jet', got $machine"
+   echo "machine must be 'wcoss', 'theia', or 'gaea', got $machine"
    exit 1
 fi
 echo "exiting runmpi..."
