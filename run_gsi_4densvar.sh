@@ -778,6 +778,7 @@ pwd
 ls -l
 echo "Time before GSI `date` "
 export PGM=$tmpdir/gsi.x
+export FORT_BUFFERED=TRUE
 sh ${enkfscripts}/runmpi
 rc=$?
 if [[ $rc -ne 0 ]];then
