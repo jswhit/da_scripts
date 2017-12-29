@@ -917,6 +917,7 @@ fi
 # run each nc_diag_cat on a separate node, concurrently
 nodecount=0
 export nprocs=$corespernode
+export mpitaskspernode=$nprocs
 export OMP_NUM_THREADS=1
 totnodes=$NODES
 for loop in $loops; do
