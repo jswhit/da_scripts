@@ -2,9 +2,12 @@
 
 if ($machine == 'wcoss') then
    module load nco-gnu-sandybridge
+else if ($machine == 'gaea') then
+   module load nco/4.6.4
 else
    module load nco
 endif
+module list
 setenv HOSTFILE ${datapath2}/machinesx
 
 cd ${datapath2}
