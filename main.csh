@@ -159,7 +159,7 @@ endif
 setenv charnanal2 'ensmean'
 setenv lobsdiag_forenkf '.true.'
 setenv skipcat "false"
-echo "$analdate run gsi observer on ${charnanal} `date`"
+echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
 csh ${enkfscripts}/run_gsiobserver.csh >&! ${current_logdir}/run_gsi_observer.out 
 # once observer has completed, check log files.
 set hybrid_done=`cat ${current_logdir}/run_gsi_observer.log`
@@ -210,10 +210,11 @@ endif
 # on control forecast background (diag files saved with 'control2' suffix)
 if ($controlfcst == 'true' && $replay_controlfcst == 'true' && $replay_run_observer == "true") then
    setenv charnanal 'control2'
+   setenv charnanal2 'control2'
    setenv lobsdiag_forenkf '.false.'
    setenv skipcat "false"
-   echo "$analdate run gsi observer on control forecast `date`"
-   csh ${enkfscripts}/run_gsiobserver.csh >&! ${current_logdir}/run_gsi_observer.out 
+   echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
+   csh ${enkfscripts}/run_gsiobserver.csh >&! ${current_logdir}/run_gsi_observer2.out 
    # once observer has completed, check log files.
    set hybrid_done=`cat ${current_logdir}/run_gsi_observer.log`
    if ($hybrid_done == 'yes') then
@@ -228,11 +229,6 @@ endif
 echo "$analdate starting ens mean analysis computation `date`"
 csh ${enkfscripts}/compute_ensmean_enkf.csh >&!  ${current_logdir}/compute_ensmean_anal.out
 echo "$analdate done computing ensemble mean analyses `date`"
-
-#echo "$analdate starting copy enkf fit/spread data `date`"
-# copy enkf fits/spread from diag*ensmean to diag*control files.
-#csh ${enkfscripts}/copyenkfdata.csh >&! ${current_logdir}/copyenkfdata.out
-#echo "$analdate done copy enkf fit/spread data `date`"
 
 # recenter enkf analyses around control analysis
 if ($controlanal == 'true' && $recenter_anal == 'true') then
@@ -293,29 +289,11 @@ echo "files moved to fgens, fgens2 `date`"
 /bin/rm -rf diag*ensmean.nc4
 # only save conventional diag files
 mkdir diagsavdir
-/bin/mv -f diag*conv*control.nc4 diag*conv*spread.nc4 diagsavdir
-/bin/rm -f diag*control.nc4 diag*ensmean*nc4
+/bin/mv -f diag*conv*control*nc4 diag*conv*spread*nc4 diagsavdir
+/bin/rm -f diag*control*nc4 diag*spread*nc4
 /bin/rm -f diagsavdir/diag*conv_gps*
 /bin/mv -f diagsavdir/diag*nc4 .
 /bin/rm -rf diagsavdir
-
-## remove Jacobian info from diag files to save space
-## this is too slow!!
-#set diagfiles = `ls -1 ${datapath2}/diag*ensmean.nc4`
-#if ($machine == 'wcoss') then
-#   module load nco-gnu-sandybridge
-#elif $($machine == 'theia') then
-#   module load nco/4.7.0
-#else
-#   module load nco
-#endif
-#foreach diagfile ($diagfiles)
-#  set diagfile2="${diagfile}.tmp"
-#  ls -l $diagfile
-#  ncks -x -v Observation_Operator_Jacobian_stind,Observation_Operator_Jacobian_endind,Observation_Operator_Jacobian_val $diagfile $diagfile2
-#  /bin/mv -f $diagfile2 $diagfile # over-write the original file
-#  ls -l $diagfile
-#end
 
 /bin/rm -f hostfile*
 /bin/rm -f fort*
