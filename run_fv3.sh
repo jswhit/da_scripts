@@ -7,9 +7,14 @@ if [ "$machine" == 'theia' ]; then
    module load netcdf/4.3.0
    module load hdf5
    module load pnetcdf
+   module load wgrib
    module use /scratch4/NCEPDEV/nems/noscrub/emc.nemspara/soft/modulefiles
    module load esmf/7.1.0bs39
    module list
+elif [ "$machine" == 'wcoss' ]; then
+   module load grib_util/1.0.3
+elif [ "$machine" == 'gaea' ]; then
+   export WGRIB=/lustre/f1/dev/ncep/Wesley.Ebisuzaki/bin/wgrib
 fi
 
 # workaround for error on theia
@@ -658,7 +663,7 @@ fi
 export DATOUT=${DATOUT:-$datapathp1}
 if [ "$quilting" == ".true." ]; then
    ls -l *nemsio*
-   fh=0
+   fh=$FHMIN
    while [ $fh -le $FHMAX ]; do
      fh2=`expr $fh + $FHOFFSET`
      charfhr="fhr"`printf %02i $fh`

@@ -2,10 +2,12 @@
 
 if ($machine == 'wcoss') then
    module load nco-gnu-sandybridge
+   set nces=`which nes`
 else if ($machine == 'gaea') then
-   module load nco/4.6.4
+   set nces=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/bin/nces
 else
    module load nco
+   set nces=`which nes`
 endif
 module list
 setenv HOSTFILE ${datapath2}/machinesx
@@ -51,7 +53,7 @@ if ( $fg_only == 'false') then
    set ncount=1
    foreach tile (tile1 tile2 tile3 tile4 tile5 tile6)
       foreach filename (fv_core.res.${tile}.nc fv_tracer.res.${tile}.nc fv_srf_wnd.res.${tile}.nc sfc_data.${tile}.nc)
-         setenv PGM "nces -O `ls -1 ${datapath2}/mem*/INPUT/${filename}` ${pathout}/${filename}"
+         setenv PGM "${nces} -O `ls -1 ${datapath2}/mem*/INPUT/${filename}` ${pathout}/${filename}"
          if ($machine == 'theia') then
             set host=`head -$ncount $NODEFILE | tail -1`
             setenv HOSTFILE ${datapath2}/hostfile_nces_${ncount}
@@ -59,7 +61,6 @@ if ( $fg_only == 'false') then
          endif
          echo "computing ens mean for $filename"
          sh ${enkfscripts}/runmpi &
-         #nces -O `ls -1 ${datapath2}/mem*/INPUT/${filename}` ${pathout}/${filename} &
          if ($ncount == $NODES) then
             echo "waiting for backgrounded jobs to finish..."
             wait

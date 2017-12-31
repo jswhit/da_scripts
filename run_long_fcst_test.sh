@@ -1,22 +1,27 @@
-#PBS -l nodes=20:ppn=24
-#PBS -l walltime=2:00:00
-#PBS -A gsienkf
+#!/bin/sh
+#PBS -A nggps_psd
+#PBS -l partition=c4
 ##PBS -q debug
-#PBS -N longfcst_test
-#PBS -S /bin/bash
-#PBS -o longfcst_test.stdout
-#PBS -e longfcst_test.stderr
+#PBS -q urgent
+##PBS -q batch
+#PBS -l nodes=20
+#PBS -l walltime=01:30:00
+##PBS -l walltime=00:30:00
+#PBS -N  C384_longfcst  
+#PBS -e  C384_longfcst.err
+#PBS -o  C384_longfcst.out
+#PBS -S /bin/sh
 export NODES=20
-export corespernode=24
-export machine='theia'
+export corespernode=36
+export machine='gaea'
 echo "running on $machine using $NODES nodes"
 ulimit -s unlimited
 
-#export analdate=2016011400
+export analdate=2016010712
 
 export fg_only='false'
 
-export exptname=C192C384_test_iau2b
+export exptname=C384C96_test_iau2
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia and jet.
@@ -31,35 +36,26 @@ export KMP_AFFINITY=disabled
 
 export rungfs='run_fv3.sh' # ensemble forecast
 export replay_controlfcst='true' # only used if replay_controlfcst=true
+export controlfcst='true'
  
 if [ "$machine" == 'wcoss' ]; then
    export basedir=/gpfs/hps2/esrl/gefsrr/noscrub/${USER}
    export datadir=/gpfs/hps2/ptmp/${USER}
    export hsidir="/3year/NCEPDEV/GEFSRR/${USER}/${exptname}"
-   module load hpss
-   module load grib_util/1.0.3
-   module load nco-gnu-sandybridge
 elif [ "$machine" == 'theia' ]; then
    export basedir=/scratch3/BMC/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   module load wgrib
-   export WGRIB=`which wgrib`
-   module load nco
 elif [ "$machine" == 'gaea' ]; then
-   export basedir=/lustre/f1/unswept/${USER}/nggps
+   export basedir=/lustre/f1/unswept/${USER}/fv3_reanl
    export datadir=$basedir
    export hsidir="/2year/BMC/gsienkf/whitaker/gaea/${exptname}"
-elif [ "$machine" == 'jet' ]; then
-   export basedir=/lfs3/projects/gfsenkf/${USER}
-   export datadir=$basedir
-   export hsidir="/HFIP/gfsenkf/2year/${USER}/${exptname}"
 else
    echo "machine must be 'wcoss', 'theia', or 'jet', got $machine"
    exit 1
 fi
 export datapath="${datadir}/${exptname}"
-. ${datapath}/analdate.sh
+#. ${datapath}/analdate.sh
 export datapath2="${datapath}/${analdate}"
 export ANALINC=6
 export FHOFFSET=`expr $ANALINC \/ 2`
@@ -86,33 +82,54 @@ export write_groups=1
 export write_tasks=6 # write tasks
 export layout="3, 1" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc-$write_tasks)/fg_threads)
 
-if [ $NODES -eq 20 ]; then
-# 20 nodes, 2 threads
-export control_threads=2 # control forecast threads
-export control_proc=444  
-export write_groups_ctl=1
-export layout_ctl="6, 6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($control_proc-$write_tasks)/control_threads)
-elif [ $NODES -eq 40 ]; then
-# 40 nodes, 2 threads
-export control_threads=2 # control forecast threads
-export control_proc=876  
-export write_groups_ctl=1
-export layout_ctl="12, 6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($control_proc-$write_tasks)/control_threads)
+# for control forecast
+if [ $NODES -eq 10 ]; then
+  # 20 nodes, 2 threads
+  #export control_threads=2 # control forecast threads
+  #export control_proc=444   # total number of processors for control forecast
+  export control_threads=1
+  if [ $quilting == ".true."]; then
+  export control_proc=312
+  export write_groups=4 # write groups for control forecast.
+  export layout_ctl="6,8" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  else
+  export control_proc=360
+  export layout_ctl="6,10" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  fi
+elif [ $NODES -eq 20 ]; then
+  # 20 nodes, 2 threads
+  #export control_threads=2 # control forecast threads
+  #export control_proc=444   # total number of processors for control forecast
+  if [ $quilting == ".true."]; then
+  export control_threads=3
+  export control_proc=666
+  export write_groups=1 # write groups for control forecast.
+  export layout_ctl="6,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  else
+  export control_threads=2
+  export control_proc=720
+  export layout_ctl="6,10" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  fi
 else
-echo "processor layout for $NODES nodes not set"
-exit 1
+  echo "processor layout for $NODES nodes not set"
+  exit 1
 fi
 
-export RES=192 
+export RES=96 
 export RES_CTL=384 
-export psautco="6.0d-4,3.0d-4"
-export zhao_mic=T
+export psautco="0.0008,0.0005"
+export prautco="0.00015,0.00015"
+export imp_physics=99 # zhao-carr
+#export imp_physics=11 # GFDL MP
 
-if [ $zhao_mic == "F" ]; then
+if [ $imp_physics == "11" ]; then
    export ncld=5
    export nwat=6
    export cal_pre=F
    export dnats=1
+   export do_sat_adj=".true."
+   export random_clds=".false."
+   export cnvcld=".false."
 else
    export ncld=1
    export nwat=2
@@ -213,11 +230,16 @@ if [ "$machine" == 'theia' ]; then
    export nemsioget=${execdir}/nemsio_get
 elif [ "$machine" == 'gaea' ]; then
 # warning - these paths need to be updated on gaea
-   export FIXGLOBAL=${basedir}/fv3gfs/global_shared.v15.0.0/fix/fix_am
-   export FIXFV3=${basedir}/fv3gfs/fix_fv3
+   export fv3gfspath=${basedir}/fv3gfs/global_shared.v15.0.0
+   export FIXFV3=${fv3gfspath}/fix/fix_fv3
+   export FIXGLOBAL=${fv3gfspath}/fix/fix_am
+   export gsipath=${basedir}/ProdGSI
+   export fixgsi=${gsipath}/fix
+   export fixcrtm=${fixgsi}/crtm_v2.2.3
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
+   export gsiexec=${execdir}/global_gsi
    export nemsioget=${execdir}/nemsio_get
 elif [ "$machine" == 'wcoss' ]; then
    export fv3gfspath=/gpfs/hps3/emc/global/noscrub/emc.glopara/svn/fv3gfs
@@ -240,7 +262,9 @@ export FHMAX_LONG=120
 export FHOUT=3
 export quilting=.false.
 export VERBOSE=YES
+echo "csh ${enkfscripts}/run_long_fcst.csh"
 csh ${enkfscripts}/run_long_fcst.csh
+exit
 
 export analdate=`${incdate} $analdate 12`
 echo "export analdate=${analdate}" > ${datapath}/analdate.sh

@@ -1,7 +1,7 @@
 echo "running on $machine using $NODES nodes"
 ulimit -s unlimited
 
-export exptname=C384C192_test_iau
+export exptname=C384C96_test_iau
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia.
@@ -40,7 +40,7 @@ export replay_run_observer='false' # run observer on replay forecast
 # full ensemble should be saved to HPSS (returns 0 if 
 # HPSS save should be done)
 export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
-export run_long_fcst="false"  # spawn a longer control forecast at 00 and 12 UTC
+export run_long_fcst="true"  # spawn a longer control forecast at 00 and 12 UTC
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
@@ -56,16 +56,10 @@ if [ "$machine" == 'wcoss' ]; then
    export basedir=/gpfs/hps2/esrl/gefsrr/noscrub/${USER}
    export datadir=/gpfs/hps2/ptmp/${USER}
    export hsidir="/3year/NCEPDEV/GEFSRR/${USER}/${exptname}"
-   module load hpss
-   module load grib_util/1.0.3
-   module load nco-gnu-sandybridge
 elif [ "$machine" == 'theia' ]; then
    export basedir=/scratch3/BMC/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   module load wgrib
-   export WGRIB=`which wgrib`
-   module load nco
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f1/unswept/${USER}/fv3_reanl
    export datadir=$basedir
@@ -95,7 +89,7 @@ export readin_localization=.true.
 export massbal_adjust=.false.
 
 # resolution of control and ensmemble.
-export RES=192
+export RES=96
 export RES_CTL=384 
 
 # this is set in ${machine_preamble} now
@@ -237,9 +231,9 @@ elif [ $RES -eq 192 ]; then
    export dt_atmos=450
    export cdmbgwd="0.25,2.5"
 elif [ $RES -eq 96 ]; then
-   export JCAP=254 
-   export LONB=512   
-   export LATB=256  
+   export JCAP=188 
+   export LONB=384   
+   export LATB=190  
    export fv_sg_adj=1800
    export dt_atmos=900
    export cdmbgwd="0.125,3.0"
@@ -260,8 +254,8 @@ elif [ $RES_CTL -eq 384 ]; then
    export fv_sg_adj_ctl=600
    export dt_atmos_ctl=225
    export cdmbgwd_ctl="1.0,1.2"
-   export LONB_CTL=1760
-   export LATB_CTL=880
+   export LONB_CTL=1536
+   export LATB_CTL=768
 elif [ $RES_CTL -eq 192 ]; then
    export fv_sg_adj_ctl=900
    export dt_atmos_ctl=450
