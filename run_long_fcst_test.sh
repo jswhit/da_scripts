@@ -1,27 +1,24 @@
 #!/bin/sh
 #PBS -A nggps_psd
 #PBS -l partition=c4
-##PBS -q debug
-#PBS -q urgent
-##PBS -q batch
+#PBS -q batch
 #PBS -l nodes=20
 #PBS -l walltime=01:30:00
-##PBS -l walltime=00:30:00
 #PBS -N  C384_longfcst  
 #PBS -e  C384_longfcst.err
 #PBS -o  C384_longfcst.out
 #PBS -S /bin/sh
-export NODES=20
-export corespernode=36
+export NODES=$PBS_NUM_NODES
+export corespernode=$PBS_NUM_PPN
 export machine='gaea'
 echo "running on $machine using $NODES nodes"
 ulimit -s unlimited
 
-export analdate=2016010712
+export analdate=2016010112
 
 export fg_only='false'
 
-export exptname=C384C96_test_iau2
+export exptname=C384C128_test_iau
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia and jet.
@@ -32,10 +29,9 @@ if [ "$machine" != 'wcoss' ]; then
      exit 1
    fi
 fi
-export KMP_AFFINITY=disabled
 
 export rungfs='run_fv3.sh' # ensemble forecast
-export replay_controlfcst='true' # only used if replay_controlfcst=true
+export replay_controlfcst='false' # only used if replay_controlfcst=true
 export controlfcst='true'
  
 if [ "$machine" == 'wcoss' ]; then
@@ -100,7 +96,7 @@ elif [ $NODES -eq 20 ]; then
   # 20 nodes, 2 threads
   #export control_threads=2 # control forecast threads
   #export control_proc=444   # total number of processors for control forecast
-  if [ $quilting == ".true."]; then
+  if [ $quilting == ".true." ]; then
   export control_threads=3
   export control_proc=666
   export write_groups=1 # write groups for control forecast.
@@ -115,7 +111,7 @@ else
   exit 1
 fi
 
-export RES=96 
+export RES=128 
 export RES_CTL=384 
 export psautco="0.0008,0.0005"
 export prautco="0.00015,0.00015"

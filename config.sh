@@ -1,7 +1,7 @@
 echo "running on $machine using $NODES nodes"
 ulimit -s unlimited
 
-export exptname=C384C96_test_iau
+export exptname=C384C128_test_iau
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia.
@@ -89,7 +89,7 @@ export readin_localization=.true.
 export massbal_adjust=.false.
 
 # resolution of control and ensmemble.
-export RES=96
+export RES=128
 export RES_CTL=384 
 
 # this is set in ${machine_preamble} now
@@ -230,6 +230,13 @@ elif [ $RES -eq 192 ]; then
    export fv_sg_adj=900
    export dt_atmos=450
    export cdmbgwd="0.25,2.5"
+elif [ $RES -eq 128 ]; then
+   export JCAP=254 
+   export LONB=512   
+   export LATB=256  
+   export fv_sg_adj=1500
+   export dt_atmos=720
+   export cdmbgwd="0.15,2.75"
 elif [ $RES -eq 96 ]; then
    export JCAP=188 
    export LONB=384   
@@ -371,7 +378,7 @@ if [ "$machine" == 'theia' ]; then
 elif [ "$machine" == 'gaea' ]; then
 # warning - these paths need to be updated on gaea
    export fv3gfspath=${basedir}/fv3gfs/global_shared.v15.0.0
-   export FIXFV3=${fv3gfspath}/fix/fix_fv3
+   export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
    export gsipath=${basedir}/ProdGSI
    export fixgsi=${gsipath}/fix

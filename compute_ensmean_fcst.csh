@@ -60,7 +60,8 @@ if ( $fg_only == 'false') then
             echo $host >! $HOSTFILE
          endif
          echo "computing ens mean for $filename"
-         sh ${enkfscripts}/runmpi &
+         #sh ${enkfscripts}/runmpi &
+         $PGM &
          if ($ncount == $NODES) then
             echo "waiting for backgrounded jobs to finish..."
             wait
