@@ -8,13 +8,17 @@ if [ "$machine" == 'theia' ]; then
    module load hdf5
    module load pnetcdf
    module load wgrib
+   module load nco/4.6.0
    module use /scratch4/NCEPDEV/nems/noscrub/emc.nemspara/soft/modulefiles
    module load esmf/7.1.0bs39
    module list
 elif [ "$machine" == 'wcoss' ]; then
    module load grib_util/1.0.3
+   module load nco-gnu-sandybridge
 elif [ "$machine" == 'gaea' ]; then
    export WGRIB=/lustre/f1/dev/ncep/Wesley.Ebisuzaki/bin/wgrib
+   source $MODULESHOME/init/sh
+   module load nco/4.6.4
 fi
 
 # workaround for error on theia
@@ -701,11 +705,6 @@ fi
 # also move history files if copy_history_files is set.
 if [ ! -z $copy_history_files ]; then
   #/bin/mv -f fv3_history*.nc ${DATOUT}
-  if [ "$machine" == 'theia' ]; then
-  module load nco/4.6.0
-  elif [ "$machine" == 'theia' ]; then
-  module load nco-gnu-sandybridge
-  fi
   n=1
   while [ $n -le 6 ]; do
      # lossless compression
