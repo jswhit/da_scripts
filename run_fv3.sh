@@ -19,6 +19,10 @@ elif [ "$machine" == 'gaea' ]; then
    export WGRIB=/lustre/f1/dev/ncep/Wesley.Ebisuzaki/bin/wgrib
    source $MODULESHOME/init/sh
    module load nco/4.6.4
+elif [ "$machine" == 'cori' ]; then
+   source $MODULESHOME/init/sh
+   module load craype-mic-knl
+   module list
 fi
 
 # workaround for error on theia
