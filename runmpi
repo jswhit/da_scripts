@@ -13,8 +13,19 @@ elif [ "$machine" == 'theia' ]; then
    echo "running mpirun -np $nprocs -machinefile $HOSTFILE $PGM"
    echo "OMP_NUM_THREADS = $OMP_NUM_THREADS"
    eval mpirun -np $nprocs -machinefile $HOSTFILE $PGM
+elif [ "$machine" == 'cori' ]; then
+   [ -z "$mpitaskspernode" ] && echo "Need to set mpitaskspernode" && exit 1;
+   export OMP_PROC_BIND=spread
+   export OMP_PLACES=threads
+   totcores=`expr $nprocs \* $OMP_NUM_THREADS`
+   totnodes=`python -c "import math; print int(math.ceil(float(${totcores})/${corespernode}))"`
+   count=`python -c "import math; print int(math.floor(float(${corespernode})/${mpitaskspernode}))"` 
+   #count=`python -c "import math; print 2*int(math.floor(float(${corespernode})/${mpitaskspernode}))"`  #hyperthreads
+   #srun -N $totnodes -n $nprocs -c ${count} --cpu_bind=cores check-hybrid.intel.cori|sort -nk 4 
+   echo "running srun -N $totnodes -n $nprocs -c ${count} --cpu_bind=cores $PGM"
+   eval srun -N $totnodes -n $nprocs -c ${count} --cpu_bind=cores $PGM
 else
-   echo "machine must be 'wcoss', 'theia', or 'gaea', got $machine"
+   echo "machine must be 'wcoss', 'theia', 'cori' or 'jet', got $machine"
    exit 1
 fi
 echo "exiting runmpi..."

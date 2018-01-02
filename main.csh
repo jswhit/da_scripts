@@ -320,6 +320,8 @@ if ($machine == 'wcoss') then
    bsub -env "all" < job_hpss.sh
 else if ($machine == 'gaea') then
    msub -V job_hpss.sh
+else if ($machine == 'cori') then
+   sbatch --export=ALL job_hpss.sh
 else
    qsub -V job_hpss.sh
 endif
@@ -331,6 +333,8 @@ if ($run_long_fcst == "true") then
          bsub -env "all" < job_longfcst.sh
      elif ($machine == 'gaea') then
          msub -V job_longfcst.sh
+     else if ($machine == 'cori') then
+         sbatch --export=ALL job_longfcst.sh
      else
          qsub -V job_longfcst.sh
      endif
@@ -358,6 +362,8 @@ if ( ${analdate} <= ${analdate_end}  && ${resubmit} == 'true') then
           bsub < job.sh
       else if ($machine == 'gaea') then
           msub job.sh
+      else if ($machine == 'cori') then
+          sbatch job.sh
       else
           qsub job.sh
       endif

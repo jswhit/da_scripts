@@ -1,0 +1,108 @@
+#!/bin/sh
+#SBATCH -p regular
+#SBATCH -A refcst
+#SBATCH -N 20    
+#SBATCH -t 03:00:00
+#SBATCH -J C384C128_test_iau
+#SBATCH -e C384C128_test_iau.stderr
+#SBATCH -o C384C128_test_iau.stdout
+#SBATCH -C knl,quad,cache 
+export NODES=20
+export corespernode=68
+export machine='cori'
+
+if [ $NODES -eq 15 ]; then
+  # 15 nodes, 2 threads
+  export control_threads=2 # control forecast threads
+  export control_proc=$cores
+  if [ $corespernode -eq 24 ]; then
+  if [ "$quilting" == .true. ]; then
+     export control_proc=360
+  else
+     export control_proc=288
+  fi
+  export write_groups_ctl=6 # write groups for control forecast.
+  export write_tasks_ctl=6
+  export layout_ctl="6,4" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  elif [ $corespernode -eq 32 ]; then
+  if [ "$quilting" == .true. ]; then
+     export control_proc=480
+  else
+     export control_proc=432
+  fi
+  export write_groups_ctl=4 # write groups for control forecast.
+  export write_tasks_ctl=6
+  export layout_ctl="6,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  elif [ $corespernode -eq 68 ]; then
+  export control_threads=4
+  export control_proc=960
+  export write_groups_ctl=4 # write groups for control forecast.
+  export write_tasks_ctl=6
+  export layout_ctl="6,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  fi
+elif [ $NODES -eq 20 ]; then
+  # 20 nodes, 2 threads
+  export control_threads=2 # control forecast threads
+  export control_proc=$cores
+  if [ $corespernode -eq 24 ]; then
+  export write_groups_ctl=4 # write groups for control forecast.
+  export write_tasks_ctl=6
+  export layout_ctl="6,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  elif [ $corespernode -eq 32 ]; then
+  export control_proc=624
+  export write_groups_ctl=4 # write groups for control forecast.
+  export write_tasks_ctl=6
+  export layout_ctl="8,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  elif [ $corespernode -eq 68 ]; then
+  export control_threads=4
+  export control_proc=1248
+  export write_groups_ctl=4 # write groups for control forecast.
+  export write_tasks_ctl=6
+  export layout_ctl="8,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  fi
+elif [ $NODES -eq 40 ]; then
+  # 40 nodes, 4 threads
+  export control_threads=4 # control forecast threads
+  export control_proc=$cores
+  if [ $corespernode -eq 24 ]; then
+  export write_groups_ctl=4 # write groups for control forecast.
+  export write_tasks_ctl=6
+  export layout_ctl="6,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  elif [ $corespernode -eq 32 ]; then
+  export control_proc=1248
+  export write_groups_ctl=4 # write groups for control forecast.
+  export write_tasks_ctl=6
+  export layout_ctl="8,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  elif [ $corespernode -eq 68 ]; then
+  export control_threads=8
+  export control_proc=2496
+  export write_groups_ctl=4 # write groups for control forecast.
+  export write_tasks_ctl=6
+  export layout_ctl="8,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  fi
+elif [ $NODES -eq 80 ]; then
+  # 80 nodes, 2 threads
+  export control_threads=2
+  export control_proc=1740 
+  export write_groups_ctl=1
+  export layout_ctl="12, 12" 
+else
+  echo "processor layout for $NODES nodes not set"
+  exit 1
+fi
+
+# for ensemble forecast and GSI
+export enkf_threads=4
+export gsi_control_threads=4
+
+export fg_threads=1 
+# knl
+export write_groups=3
+export write_tasks=6 
+export layout="2, 4" 
+export fg_proc=66  
+# haswell
+#export write_groups=1
+#export write_tasks=6 
+#export layout="2, 2" 
+#export fg_proc=30  
