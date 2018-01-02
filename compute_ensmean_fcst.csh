@@ -2,12 +2,12 @@
 
 if ($machine == 'wcoss') then
    module load nco-gnu-sandybridge
-   set nces=`which nes`
+   set nces=`which nces`
 else if ($machine == 'gaea') then
    set nces=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/bin/nces
 else
    module load nco
-   set nces=`which nes`
+   set nces=`which nces`
 endif
 module list
 setenv HOSTFILE ${datapath2}/machinesx
