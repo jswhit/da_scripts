@@ -361,7 +361,7 @@ export saterrfact=1.0
 export deterministic=.true.
 export sortinc=.true.
                                                                     
-export nitermax=1
+export nitermax=2
 
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
