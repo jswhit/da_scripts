@@ -285,6 +285,7 @@ mkdir fgens2
 /bin/cp -f sfg*control fgens2
 /bin/cp -f bfg*control fgens2
 echo "files moved to fgens, fgens2 `date`"
+if ( ! $?NOSAT ) then
 # only save control and spread diag files.
 /bin/rm -rf diag*ensmean.nc4
 # only save conventional diag files
@@ -294,6 +295,7 @@ mkdir diagsavdir
 /bin/rm -f diagsavdir/diag*conv_gps*
 /bin/mv -f diagsavdir/diag*nc4 .
 /bin/rm -rf diagsavdir
+endif
 
 /bin/rm -f hostfile*
 /bin/rm -f fort*
@@ -320,8 +322,6 @@ if ($machine == 'wcoss') then
    bsub -env "all" < job_hpss.sh
 else if ($machine == 'gaea') then
    msub -V job_hpss.sh
-else if ($machine == 'cori') then
-   sbatch --export=ALL job_hpss.sh
 else
    qsub -V job_hpss.sh
 endif
@@ -333,8 +333,6 @@ if ($run_long_fcst == "true") then
          bsub -env "all" < job_longfcst.sh
      elif ($machine == 'gaea') then
          msub -V job_longfcst.sh
-     else if ($machine == 'cori') then
-         sbatch --export=ALL job_longfcst.sh
      else
          qsub -V job_longfcst.sh
      endif
@@ -362,8 +360,6 @@ if ( ${analdate} <= ${analdate_end}  && ${resubmit} == 'true') then
           bsub < job.sh
       else if ($machine == 'gaea') then
           msub job.sh
-      else if ($machine == 'cori') then
-          sbatch job.sh
       else
           qsub job.sh
       endif

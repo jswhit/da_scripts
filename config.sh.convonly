@@ -29,6 +29,7 @@ export cleanup_anal='true'
 export cleanup_controlanl='true'
 export cleanup_observer='true' 
 export resubmit='true'
+export ensmean_restart='false'
 # for 'passive' or 'replay' cycling of control fcst 
 # control forecast files have 'control2' suffix, instead of 'control'
 # GSI observer will be run on 'control2' forecast
@@ -43,7 +44,7 @@ export save_hpss_subset="true" # save a subset of data each analysis time to HPS
 export run_long_fcst="false"  # spawn a longer control forecast at 00 and 12 UTC
 
 # override values from above for debugging.
-export cleanup_ensmean='false'
+#export cleanup_ensmean='false'
 #export cleanup_observer='false'
 #export cleanup_anal='false'
 #export cleanup_controlanl='false'
@@ -330,13 +331,17 @@ export zhuberleft=1.1
 export zhuberright=1.1
 
 export biasvar=-500
-export NOSAT=YES # no radiances assimilated
+export NOSAT=YES # no radiances assimilated (comment this out to get radiances)
 if [ $controlanal == 'false' ] && [ $NOSAT == "NO" ];  then
    export lupd_satbiasc=.true.
    export numiter=4
 else
    export lupd_satbiasc=.false.
-   export numiter=5
+   export numiter=1
+fi
+# iterate enkf in obspace for varqc
+if [ $varqc == ".true." ]; then
+  export numiter=5
 fi
 # use pre-generated bias files.
 #export lupd_satbiasc=.false.
