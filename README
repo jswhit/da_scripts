@@ -5,13 +5,14 @@ submit_job.sh <machine> submits config.sh (which then submits itself and hpss.sh
 All of these plus checkdates.py must live in expthome, rest in enkfscripts
 most model namelist parameters set in run_fv3*.sh, some in config.sh.
 most of GSI namelist parameters set in run_gsi_4denvar.sh, some in config.sh.
-all of EnKF namelist parameters set in config.sh.
+most of EnKF namelist parameters set in config.sh, some in enkf_run.sh.
+Resolution specific processor layout stuff for FV3 is set in <machine>_preamble.
 
-To cold start, create an initial directory in the experiment directory (i.e C96_fv3reanl/2000010100)
-touch an empty file (touch C96_fv3reanl/2000010100/cold_start_bias).  This will tell the scripts
+To cold start, create an initial directory in the experiment directory (i.e <expthome>/2000010100)
+touch an empty file (touch <expthome>/2000010100/cold_start_bias).  This will tell the scripts
 that there is no initial bias correction file.  Copy the dummy files gdas1.t00z.abias and abias_pc
-from this directory to C96_fv3reanl/2000010100.  Copy the initial conditions files to 2000010100.
-Create analdate.csh and fg_only.csh in the top level experiment directory (C96_fv3reanl).
+from this directory to <expthome>/2000010100.  Copy the initial conditions files to 2000010100.
+Create analdate.csh and fg_only.csh in the top level experiment directory (<expthome>).
 fg_only should contain "setenv fg_only true" and analdate.csh should contain
 "setenv analdate 2000010100" and "setenv analdate_end YYYYMMDDHH", where YYYYMMDDHH is the
 date you want the experiment to end.

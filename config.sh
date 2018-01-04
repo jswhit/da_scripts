@@ -29,7 +29,6 @@ export cleanup_anal='true'
 export cleanup_controlanl='true'
 export cleanup_observer='true' 
 export resubmit='true'
-export ensmean_restart='false'
 # for 'passive' or 'replay' cycling of control fcst 
 # control forecast files have 'control2' suffix, instead of 'control'
 # GSI observer will be run on 'control2' forecast
@@ -42,6 +41,8 @@ export replay_run_observer='false' # run observer on replay forecast
 # HPSS save should be done)
 export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
 export run_long_fcst="true"  # spawn a longer control forecast at 00 and 12 UTC
+export ensmean_restart='false'
+export copy_history_files=1 # save pressure level history files (and copute ens mean)
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
@@ -97,76 +98,7 @@ export massbal_adjust=.false.
 export RES=128
 export RES_CTL=384 
 
-# this is set in ${machine_preamble} now
-
-# model parameters for ensemble (rest set in $rungfs)
-#if [ $RES -eq 384 ]; then
-#  export enkf_threads=12 # threads for EnKF
-#  export gsi_control_threads=4 # threads for GSI
-#  export fg_proc=96 # number of total cores allocated to each enkf fg ens member. 
-#  export fg_threads=1 # ens fcst threads
-#  export write_groups=4 # write groups
-#  export write_tasks=6 # write tasks
-#  export layout="3,4" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
-#elif [ $RES -eq 192 ]; then
-#  export enkf_threads=2
-#  export gsi_control_threads=2
-#  export fg_proc=$corespernode 
-#  export fg_threads=1 
-#  if [ $corespernode -eq 24 ]; then
-#     export write_groups=1
-#     export write_tasks=6 
-#     export layout="3, 1" 
-#  elif [ $corespernode -eq 32 ]; then
-#     export write_groups=1
-#     export write_tasks=8 
-#     export layout="2, 2" 
-#  elif [ $corespernode -eq 36 ]; then
-#     export write_groups=2
-#     export write_tasks=6 
-#     export layout="2, 2" 
-#  else
-#     echo "unknown corespernode"
-#  exit 1
-#  fi
-#elif [ $RES -eq 96 ]; then
-#  export enkf_threads=1
-#  export gsi_control_threads=1
-#  export fg_proc=24
-#  export fg_threads=1 
-#  export write_groups=1
-#  export write_tasks=6 
-#  export layout="3, 1"
-#else
-#  echo "compute parameters layout for resolution C$RES not set"
-#  exit 1
-#fi
-
-#if [ $NODES -eq 20 ]; then
-#  # 20 nodes, 2 threads
-#  #export control_threads=2 # control forecast threads
-#  #export control_proc=444   # total number of processors for control forecast
-#  export control_threads=3
-#  export control_proc=666
-#  export write_groups_ctl=1 # write groups for control forecast.
-#  export layout_ctl="6,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
-#elif [ $NODES -eq 40 ]; then
-#  # 40 nodes, 2 threads
-#  export control_threads=2 
-#  export control_proc=876  
-#  export write_groups_ctl=1
-#  export layout_ctl="12, 6"
-#elif [ $NODES -eq 80 ]; then
-#  # 80 nodes, 2 threads
-#  export control_threads=2
-#  export control_proc=1740 
-#  export write_groups_ctl=1
-#  export layout_ctl="12, 12" 
-#else
-#  echo "processor layout for $NODES nodes not set"
-#  exit 1
-#fi
-
+# model physics parameters.
 export psautco="0.0008,0.0005"
 export prautco="0.00015,0.00015"
 export imp_physics=99 # zhao-carr
@@ -207,13 +139,14 @@ else
    export consv_te=1
 fi
 
+# stochastic physics parameters.
 export SPPT=0.8
 export SPPT_TSCALE=21600.
 export SPPT_LSCALE=500.e3
 export SHUM=0.006
 export SHUM_TSCALE=21600.
 export SHUM_LSCALE=500.e3
-export SKEB=0.5
+export SKEB=1.0
 export SKEB_TSCALE=21600.
 export SKEB_LSCALE=500.e3
 export SKEBNORM=0

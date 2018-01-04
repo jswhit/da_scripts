@@ -2,12 +2,12 @@
 
 if ($machine == 'wcoss') then
    module load nco-gnu-sandybridge
-   set nces=`which nces`
+   set nces=`which nes`
 else if ($machine == 'gaea') then
    set nces=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/bin/nces
 else
    module load nco
-   set nces=`which nces`
+   set nces=`which nes`
 endif
 module list
 setenv HOSTFILE ${datapath2}/machinesx
@@ -42,8 +42,8 @@ while ($fh <= $FHMAX)
 end
 
 # now compute ensemble mean restart files.
+if ( $ensmean_restart == 'true' && $fg_only == 'false' ) then
 if ( $cleanup_ensmean == 'true' || ( $cleanup_ensmean == 'false' && ! -s ${datapath2}/ensmean/INPUT/fv_core.res.tile1.nc ) ) then
-if ( $fg_only == 'false') then
    echo "compute ensemble mean restart files `date`"
    setenv nprocs 1
    setenv mpitaskspernode 1
@@ -76,6 +76,39 @@ if ( $fg_only == 'false') then
    /bin/cp -f ${datapath2}/mem001/INPUT/fv_core.res.nc ${pathout}
    echo "done computing ensemble mean restart files `date`"
 endif
+endif
+
+if ( $?copy_history_files ) then
+   echo "compute ensemble mean history files `date`"
+   setenv nprocs 1
+   setenv mpitaskspernode 1
+   setenv OMP_NUM_THREADS $corespernode
+   set pathout=${datapath2}/ensmean
+   mkdir -p $pathout
+   set ncount=1
+   foreach tile (tile1 tile2 tile3 tile4 tile5 tile6)
+      foreach filename (fv3_historyp.${tile}.nc)
+         setenv PGM "${nces} -4 -L 5 -O `ls -1 ${datapath2}/mem*/${filename}` ${pathout}/${filename}"
+         if ($machine == 'theia') then
+            set host=`head -$ncount $NODEFILE | tail -1`
+            setenv HOSTFILE ${datapath2}/hostfile_nces_${ncount}
+            echo $host >! $HOSTFILE
+         endif
+         echo "computing ens mean for $filename"
+         #sh ${enkfscripts}/runmpi &
+         $PGM &
+         if ($ncount == $NODES) then
+            echo "waiting for backgrounded jobs to finish..."
+            wait
+            set ncount=1
+         else
+            @ ncount = $ncount + 1
+         endif
+      end
+   end
+   wait
+   /bin/rm -f ${datapath2}/hostfile_nces*
+   echo "done computing ensemble mean history files `date`"
 endif
 
 exit 0

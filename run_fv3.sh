@@ -186,7 +186,7 @@ if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
       fi
       echo "create ${increment_file}"
       /bin/rm -f ${increment_file}
-      export "PGM=${execdir}/calc_increment.x ${analfile} ${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal} ${increment_file} F"
+      export "PGM=${execdir}/calc_increment.x ${analfile} ${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal} ${increment_file} F T"
       nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
       if [ $? -ne 0 -o ! -s ${increment_file} ]; then
          echo "problem creating ${increment_file}, stopping .."
@@ -203,7 +203,7 @@ if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
          export analfile="${datapath2}/sanl_${analdate}_${charnanal}"
       fi
    /bin/rm -f ${increment_file}
-   export "PGM=${execdir}/calc_increment.x ${analfile} ${datapath2}/sfg_${analdate}_fhr06_${charnanal} ${increment_file} F"
+   export "PGM=${execdir}/calc_increment.x ${analfile} ${datapath2}/sfg_${analdate}_fhr06_${charnanal} ${increment_file} F T"
    nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
    if [ $? -ne 0 -o ! -s ${increment_file} ]; then
       echo "problem creating ${increment_file}, stopping .."
@@ -566,7 +566,6 @@ cat > input.nml <<EOF
   prog_ccn = .false.
   do_qa = .true.
   fast_sat_adj = .true.
-  tau_l2v = 300.
   tau_l2v = 225.
   tau_v2l = 150.
   tau_g2v = 900.
@@ -645,7 +644,8 @@ cat > input.nml <<EOF
   SKEB_LSCALE=$SKEB_LSCALE, 1000.E3, 2000.E3, 2000.E3, 2000.E3,
   SKEB_VDOF=$SKEB_VDOF,
   SKEB_NPASS=$SKEB_NPASS,
-  ISEED_SPPT=$ISEED_SPPT,ISEED_SHUM=$ISEED_SHUM,ISEED_SKEB=$ISEED_SKEB
+  ISEED_SPPT=$ISEED_SPPT,ISEED_SHUM=$ISEED_SHUM,ISEED_SKEB=$ISEED_SKEB,
+  use_zmtnblck=.true.
 /
 EOF
 
@@ -708,16 +708,17 @@ fi
 
 # also move history files if copy_history_files is set.
 if [ ! -z $copy_history_files ]; then
-  #/bin/mv -f fv3_history*.nc ${DATOUT}
-  n=1
-  while [ $n -le 6 ]; do
-     # lossless compression
-     ncks -4 -L 5 -O fv3_history.tile${n}.nc ${DATOUT}/fv3_history.tile${n}.nc
-     # lossy compression
-     #ncks -4 --ppc default=5 -O fv3_history.tile${n}.nc ${DATOUT}/fv3_history.tile${n}.nc
-     /bin/rm -f fv3_history.tile${n}.nc
-     n=$((n+1))
-  done
+  /bin/mv -f fv3_historyp*.nc ${DATOUT}/${charnanal}
+  # copy with compression
+  #n=1
+  #while [ $n -le 6 ]; do
+  #   # lossless compression
+  #   ncks -4 -L 5 -O fv3_historyp.tile${n}.nc ${DATOUT}/${charnanal}/fv3_historyp.tile${n}.nc
+  #   # lossy compression
+  #   #ncks -4 --ppc default=5 -O fv3_history.tile${n}.nc ${DATOUT}/${charnanal}/fv3_history.tile${n}.nc
+  #   /bin/rm -f fv3_historyp.tile${n}.nc
+  #   n=$((n+1))
+  #done
 fi
 
 ls -l ${DATOUT}
