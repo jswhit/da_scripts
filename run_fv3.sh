@@ -708,6 +708,7 @@ fi
 
 # also move history files if copy_history_files is set.
 if [ ! -z $copy_history_files ]; then
+  mkdir -p ${DATOUT}/${charnanal}
   /bin/mv -f fv3_historyp*.nc ${DATOUT}/${charnanal}
   # copy with compression
   #n=1
