@@ -251,31 +251,17 @@ mkdir fgens2
 /bin/cp -f sfg*control fgens2
 /bin/cp -f bfg*control fgens2
 echo "files moved to fgens, fgens2 `date`"
-# only save conventional ensmean and control diag files.
+if ( ! $?NOSAT ) then
+# only save control and spread diag files.
+/bin/rm -rf diag*ensmean.nc4
+# only save conventional diag files
 mkdir diagsavdir
-/bin/mv -f diag*conv*control.nc4 diag*conv*ensmean.nc4 diagsavdir
-/bin/rm -f diag*control.nc4 diag*ensmean.nc4
+/bin/mv -f diag*conv*control*nc4 diag*conv*spread*nc4 diagsavdir
+/bin/rm -f diag*control*nc4 diag*spread*nc4
 /bin/rm -f diagsavdir/diag*conv_gps*
 /bin/mv -f diagsavdir/diag*nc4 .
 /bin/rm -rf diagsavdir
-
-## remove Jacobian info from diag files to save space
-## this is too slow!!
-#set diagfiles = `ls -1 ${datapath2}/diag*ensmean.nc4`
-#if ($machine == 'wcoss') then
-#   module load nco-gnu-sandybridge
-#elif $($machine == 'theia') then
-#   module load nco/4.7.0
-#else
-#   module load nco
-#endif
-#foreach diagfile ($diagfiles)
-#  set diagfile2="${diagfile}.tmp"
-#  ls -l $diagfile
-#  ncks -x -v Observation_Operator_Jacobian_stind,Observation_Operator_Jacobian_endind,Observation_Operator_Jacobian_val $diagfile $diagfile2
-#  /bin/mv -f $diagfile2 $diagfile # over-write the original file
-#  ls -l $diagfile
-#end
+endif
 
 /bin/rm -f hostfile*
 /bin/rm -f fort*
@@ -300,6 +286,10 @@ cd $homedir
 cat ${machine}_preamble_hpss hpss.sh >! job_hpss.sh
 if ($machine == 'wcoss') then
    bsub -env "all" < job_hpss.sh
+else if ($machine == 'gaea') then
+   msub -V job_hpss.sh
+else if ($machine == 'cori') then
+   sbatch --export=ALL job_hpss.sh
 else
    qsub -V job_hpss.sh
 endif
@@ -309,6 +299,10 @@ if ($run_long_fcst == "true") then
      cat ${machine}_preamble_longfcst run_long_fcst.sh >! job_longfcst.sh
      if ($machine == 'wcoss') then
          bsub -env "all" < job_longfcst.sh
+     else if ($machine == 'gaea') then
+         msub -V job_longfcst.sh
+     else if ($machine == 'cori') then
+         sbatch --export=ALL job_longfcst.sh
      else
          qsub -V job_longfcst.sh
      endif
@@ -334,6 +328,10 @@ if ( ${analdate} <= ${analdate_end}  && ${resubmit} == 'true') then
       cat ${machine}_preamble config.sh >! job.sh
       if ($machine == 'wcoss') then
           bsub < job.sh
+      else if ($machine == 'gaea') then
+          msub job.sh
+      else if ($machine == 'cori') then
+          sbatch job.sh
       else
           qsub job.sh
       endif
