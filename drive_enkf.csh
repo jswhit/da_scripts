@@ -37,10 +37,11 @@ endif
 # on control forecast background (diag files saved with 'control2' suffix)
 if ($controlfcst == 'true' && $replay_controlfcst == 'true' && $replay_run_observer == "true") then
    setenv charnanal 'control2'
+   setenv charnanal2 'control2'
    setenv lobsdiag_forenkf '.false.'
    setenv skipcat "false"
-   echo "$analdate run gsi observer on control forecast `date`"
-   csh ${enkfscripts}/run_gsiobserver.csh >&! ${current_logdir}/run_gsi_observer.out 
+   echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
+   csh ${enkfscripts}/run_gsiobserver.csh >&! ${current_logdir}/run_gsi_observer2.out 
    # once observer has completed, check log files.
    set hybrid_done=`cat ${current_logdir}/run_gsi_observer.log`
    if ($hybrid_done == 'yes') then
