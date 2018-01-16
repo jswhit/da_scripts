@@ -16,7 +16,7 @@ else
 /bin/cp -f sfg*control bfg*control fgens2
 endif
 /bin/mv -f sanl*grib analens # save for replay
-/bin/rm -f sanl*ensmean*
+/bin/rm -f sanl*ensmean sanl*ensmean.orig
 /bin/rm -f sanl*control
 /bin/rm -f fgens2/*fhr00* fgens2/*orig
 # delete sfg ensmean and control files if grib versions exist

@@ -3,7 +3,7 @@ YYYY MM DD HH 0 0
 
 #"fv3_history",    0,  "hours",  1,  "hours",  "time"
 #"fv3_history2d",  0,  "hours",  1,  "hours",  "time"
-"fv3_history",   FHOUT,  "hours",  1,  "hours",  "time"
+"fv3_historyp",   FHOUT,  "hours",  1,  "hours",  "time"
 
 #"gfs_dyn",     "ucomp",       "ugrd",      "fv3_history",    "all",  .false.,  "none",  2
 #"gfs_dyn",     "vcomp",       "vgrd",      "fv3_history",    "all",  .false.,  "none",  2
