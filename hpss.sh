@@ -53,17 +53,6 @@ else
    fi
 fi
 
-#if  [ $npefiles == "0" ]; then
-#hsi ls -l ${hsidir}/diag_conv_${analdate}.tar
-#if [  $? -eq 0 ] || [ $save_hpss != "true" ]; then
-#   echo "hsi diag finished, deleting data..."
-#   /bin/rm -rf diagens
-#else
-#   echo "hsi diagens failed..."
-#   exit 3
-#fi
-#fi
-
 # remove unwanted files and directories.
 cd $datapath2
 nanal=0 
@@ -81,11 +70,21 @@ while [ $nanal -le $nanals ]; do
    fi
    nanal=$[$nanal+1]
 done 
-/bin/rm -rf *ens
+/bin/rm -rf fgens
+/bin/rm -rf fgens2
 
 # now save what's left to HPSS
 if  [ $save_hpss_subset = "true" ]; then
    cd ${datapath2}
+   htar -cvf ${hsidir}/${analdate}_analens.tar analens
+   hsi ls -l ${hsidir}/${analdate}_analens.tar
+   if [  $? -eq 0 ]; then
+      echo "hsi analens done, deleting data..."
+      /bin/rm -rf analens
+   else
+      echo "hsi analens failed ${analdate}..."
+      exitstat=1
+   fi
    cd ..
    # exclude long forecast directory
    htar -cvf ${hsidir}/${analdate}_subset.tar ${analdate}/*ensmean* ${analdate}/*control* ${analdate}/*bias* 
