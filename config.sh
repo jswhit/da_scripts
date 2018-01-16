@@ -33,8 +33,8 @@ export resubmit='true'
 # control forecast files have 'control2' suffix, instead of 'control'
 # GSI observer will be run on 'control2' forecast
 # this is for diagnostic purposes (to get GSI diagnostic files) 
-export replay_controlfcst='false'
-export replay_run_observer='false' # run observer on replay forecast
+export replay_controlfcst='true'
+export replay_run_observer='true' # run observer on replay forecast
 # python script checkdate.py used to check
 # YYYYMMDDHH analysis date string to see if
 # full ensemble should be saved to HPSS (returns 0 if 
@@ -42,7 +42,7 @@ export replay_run_observer='false' # run observer on replay forecast
 export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
 export run_long_fcst="true"  # spawn a longer control forecast at 00 and 12 UTC
 export ensmean_restart='false'
-export copy_history_files=1 # save pressure level history files (and copute ens mean)
+export copy_history_files=1 # save pressure level history files (and compute ens mean)
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
@@ -101,8 +101,8 @@ export RES_CTL=384
 # model physics parameters.
 export psautco="0.0008,0.0005"
 export prautco="0.00015,0.00015"
-export imp_physics=99 # zhao-carr
-#export imp_physics=11 # GFDL MP
+#export imp_physics=99 # zhao-carr
+export imp_physics=11 # GFDL MP
 
 if [ $imp_physics == "11" ]; then
    export ncld=5
@@ -369,7 +369,7 @@ export ANAVINFO_ENKF=${ANAVINFO}
 export HYBENSINFO=${fixgsi}/global_hybens_info.l64.txt
 export CONVINFO=${fixgsi}/global_convinfo.txt
 export OZINFO=${fixgsi}/global_ozinfo.txt
-export SATINFO=${fixgsi}/global_satinfo.txt
+export SATINFO=${enkfscripts}/global_satinfo.txt
 # comment out SATINFO in main.csh
 
 # parameters for hybrid
@@ -386,4 +386,4 @@ export aircraft_bc=.true.
 
 cd $enkfscripts
 echo "run main driver script"
-csh main.csh
+csh main2.csh

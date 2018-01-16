@@ -77,6 +77,15 @@ else
    exit 1
 endif
 
+# convert sanl files to grib after recentering (save for replay)
+if ($iau_delthrs != -1) then
+   setenv PGM "${execdir}/cnvnemsp.x ${datapath2}/ sanl_${analdate}_${charfhr} ${nanals} grib"
+   sh ${enkfscripts}/runmpi
+else
+   setenv PGM "${execdir}/cnvnemsp.x ${datapath2}/ sanl_${analdate} ${nanals} grib"
+   sh ${enkfscripts}/runmpi
+endif
+
 end # next time
 popd
 

@@ -418,6 +418,11 @@ cat > input.nml <<EOF
   max_files_w = 100,
 /
 
+&mpp_io_nml
+  shuffle=1,
+  deflate_level=5,
+/
+
 &fms_nml
   clock_grain = "ROUTINE",
   domains_stack_size = 5000000,
@@ -671,7 +676,8 @@ fi
 export DATOUT=${DATOUT:-$datapathp1}
 if [ "$quilting" == ".true." ]; then
    ls -l *nemsio*
-   fh=$FHMIN
+   #fh=$FHMIN
+   fh=0
    while [ $fh -le $FHMAX ]; do
      fh2=`expr $fh + $FHOFFSET`
      charfhr="fhr"`printf %02i $fh`
