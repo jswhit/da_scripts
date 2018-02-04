@@ -302,10 +302,10 @@ export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
 
 if [ "$machine" == 'theia' ]; then
-   export fv3gfspath=/scratch4/NCEPDEV/global/save/glopara/svn/fv3gfs/trunk/global_shared.v15.0.0
-   export gsipath=/scratch3/BMC/gsienkf/whitaker/gsi/EXP-enkflinhx-ncdiag
-   export FIXFV3=${fv3gfspath}/fix/fix_fv3
+   export fv3gfspath=/scratch4/NCEPDEV/global/save/glopara/svn/fv3gfs
+   export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
+   export gsipath=/scratch3/BMC/gsienkf/whitaker/gsi/ProdGSI
    export fixgsi=${gsipath}/fix
    export fixcrtm=/scratch3/BMC/gsienkf/whitaker/gsi/branches/EXP-enkflinhx/fix/crtm_2.2.3
    export execdir=${enkfscripts}/exec_${machine}
@@ -364,12 +364,12 @@ fi
 #export OZINFO=${enkfscripts}/global_ozinfo.txt
 # set SATINFO in main.csh
 
-export ANAVINFO=${enkfscripts}/global_anavinfo.l64.txt
+export ANAVINFO=${enkfscripts}/global_anavinfo.l64.txt.clrsky
 export ANAVINFO_ENKF=${ANAVINFO}
 export HYBENSINFO=${fixgsi}/global_hybens_info.l64.txt
 export CONVINFO=${fixgsi}/global_convinfo.txt
 export OZINFO=${fixgsi}/global_ozinfo.txt
-export SATINFO=${enkfscripts}/global_satinfo.txt
+export SATINFO=${enkfscripts}/global_satinfo.txt.clrsky
 # comment out SATINFO in main.csh
 
 # parameters for hybrid
@@ -386,4 +386,4 @@ export aircraft_bc=.true.
 
 cd $enkfscripts
 echo "run main driver script"
-csh main2.csh
+csh main.csh

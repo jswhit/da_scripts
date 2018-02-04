@@ -10,7 +10,7 @@ if [ "$machine" == 'theia' ]; then
    module load wgrib
    module load nco/4.6.0
    module use /scratch4/NCEPDEV/nems/noscrub/emc.nemspara/soft/modulefiles
-   module load esmf/7.1.0bs39
+   module load esmf/7.1.0bs39_precise
    module list
 elif [ "$machine" == 'wcoss' ]; then
    module load grib_util/1.0.3
@@ -218,6 +218,7 @@ fi
 # setup model namelist
 if [ "$fg_only" == "true" ]; then
    # cold start from chgres'd GFS analyes
+   stochini=F
    warm_start=F
    make_nh=T
    externalic=T
@@ -230,6 +231,13 @@ if [ "$fg_only" == "true" ]; then
    iau_inc_files=""
 else
    # warm start from restart file with lat/lon increments ingested by the model
+   if [ -s stoch_ini ]; then
+      echo "stoch_ini available, setting stochini=T"
+      stochini=T # restart random patterns from existing file
+   else
+      echo "stoch_ini not available, setting stochini=F"
+      stochini=F
+   fi
    iaudelthrs=${iau_delthrs}
    warm_start=T
    make_nh=F
@@ -382,14 +390,14 @@ nsout:                   -1
 EOF
 cat model_configure
 
-# setup coupler.res (needed for restarts ??)
+# setup coupler.res (needed for restarts if current time != start time)
 if [ "${iau_delthrs}" != "-1" ]  && [ "${fg_only}" == "false" ]; then
    echo "     2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)" > INPUT/coupler.res
    echo "  ${year}  ${mon}  ${day}  ${hour}     0     0        Model start time:   year, month, day, hour, minute, second" >> INPUT/coupler.res
    echo "  ${year_start}  ${mon_start}  ${day_start}  ${hour_start}     0     0        Current model time: year, month, day, hour, minute, second" >> INPUT/coupler.res
    cat INPUT/coupler.res
 else
-   /bin/rm -f INPUT/coupler.res
+   /bin/rm -f INPUT/coupler.res # assume current time == start time
 fi
 
 cat > input.nml <<EOF
@@ -650,7 +658,7 @@ cat > input.nml <<EOF
   SKEB_VDOF=$SKEB_VDOF,
   SKEB_NPASS=$SKEB_NPASS,
   ISEED_SPPT=$ISEED_SPPT,ISEED_SHUM=$ISEED_SHUM,ISEED_SKEB=$ISEED_SKEB,
-  use_zmtnblck=.true.
+  use_zmtnblck=.true.,fhstoch=$FHRESTART,stochini=$stochini  
 /
 EOF
 
@@ -726,6 +734,16 @@ if [ ! -z $copy_history_files ]; then
   #   /bin/rm -f fv3_historyp.tile${n}.nc
   #   n=$((n+1))
   #done
+fi
+
+# if random pattern restart file exists for end of IAU window, copy it.
+ls -l stoch_out*
+fh=`expr $FHRESTART + $FHOFFSET \/ 2`
+charfh="F"`printf %06i $fh`
+if [ -s stoch_out.${charfh} ]; then
+  mkdir -p ${DATOUT}/${charnanal}
+  echo "copying stoch_out.${charfh} ${DATOUT}/${charnanal}/stoch_ini"
+  /bin/mv -f "stoch_out.${charfh}" ${DATOUT}/${charnanal}/stoch_ini
 fi
 
 ls -l ${DATOUT}

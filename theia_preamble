@@ -2,12 +2,11 @@
 #PBS -l walltime=3:00:00
 ##PBS -l walltime=0:30:00
 #PBS -A gsienkf
-##PBS -A hybrid   
 ##PBS -q debug
-#PBS -N C192C384_test_iau
+#PBS -N C384C192_test_iau
 #PBS -S /bin/bash
-#PBS -o C192C384_test_iau.stdout
-#PBS -e C192C384_test_iau.stderr
+#PBS -o C384C192_test_iau.stdout
+#PBS -e C384C192_test_iau.stderr
 export NODES=20
 export corespernode=24
 export machine='theia'
@@ -17,10 +16,10 @@ if [ $NODES -eq 20 ]; then
   # 20 nodes, 2 threads
   #export control_threads=2 # control forecast threads
   #export control_proc=444   # total number of processors for control forecast
-  export control_threads=2
-  export control_proc=444
-  export write_groups_ctl=1 # write groups for control forecast.
-  export layout_ctl="6,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  export control_threads=1
+  export control_proc=480
+  export write_groups_ctl=8 # write groups for control forecast.
+  export layout_ctl="12,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
 elif [ $NODES -eq 40 ]; then
   # 40 nodes, 2 threads
   export control_threads=4 
