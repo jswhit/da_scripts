@@ -382,11 +382,12 @@ else
    exit 1
 fi
 
-#export ANAVINFO=${enkfscripts}/global_anavinfo.l${LEVS}.txt
+#export ANAVINFO=${enkfscripts}/global_anavinfo.l${LEVS}.txt.clrsky
 #export ANAVINFO_ENKF=${ANAVINFO}
+# this version uses longer localization scales.
 #export HYBENSINFO=${enkfscripts}/global_hybens_info.l${LEVS}.txt
-#export CONVINFO=${fixgsi}/global_convinfo.txt
-#export OZINFO=${enkfscripts}/global_ozinfo.txt
+#export CONVINFO=${enkfscripts}/global_convinfo_oper_fix.txt
+#export OZINFO=${enkfscripts}/global_ozinfo_oper_fix.txt
 # set SATINFO in main.csh
 
 export ANAVINFO=${enkfscripts}/global_anavinfo.l64.txt.clrsky
