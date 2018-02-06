@@ -38,7 +38,7 @@ else
 fi
 
 # for ensemble forecast and GSI
-export enkf_threads=2
+export enkf_threads=3
 export gsi_control_threads=2
 export fg_proc=$corespernode 
 export fg_threads=1 

@@ -1,14 +1,3 @@
-#!/bin/sh
-#$ -j y
-#$ -cwd
-#$ -l h_rt=01:00:00
-#$ -A rtgfsenkf
-#$ -N run_gsi_hybrid
-#$ -o run_gsi_hybrid.out
-#$ -e run_gsi_hybrid.err
-#$ -pe thfip 128
-#$ -S /bin/sh
-
 echo "Time starting at `date` "
 
 VERBOSE=${VERBOSE:-"YES"}
@@ -23,6 +12,15 @@ export machine=${machine:='wcoss'}
 adate=${analdate:-2010081900}
 adatem1=${analdatem1:-2010081900}
 nens=${nanals:-80}
+
+DONST=${DONST:-"NO"}
+NST_GSI=${NST_GSI:-0}
+NSTINFO=${NSTINFO:-0}
+ZSEA1=${ZSEA1:-0}
+ZSEA2=${ZSEA2:-0}
+FAC_DTL=${FAC_DTL:-1}
+FAC_TSL=${FAC_TSL:-1}
+TZR_QC=${TZR_QC:-1}
 
 HXONLY=${HXONLY:-"NO"}
 HRLY_BKG=${HRLY_BKG:-"YES"}
@@ -308,6 +306,11 @@ else
 HYBRIDENSDATA=""
 fi
 
+NST=${NST:-""}
+if [ $NST_GSI -gt 0 ]; then
+   NST="nstinfo=$NSTINFO,fac_dtl=$FAC_DTL,fac_tsl=$FAC_TSL,zsea1=$ZSEA1,zsea2=$ZSEA2,$NST"
+fi
+
 # Create global_gsi namelist
 cat <<EOF > gsiparm.anl
  &SETUP
@@ -320,7 +323,7 @@ cat <<EOF > gsiparm.anl
    iguess=-1,
    oneobtest=.false.,retrieval=.false.,l_foto=.false.,
    use_pbl=.false.,use_compress=.true.,nsig_ext=12,gpstop=50.,
-   use_gfs_nemsio=.true.
+   use_gfs_nemsio=.true.,sfcnst_comb=.true.,
    $SETUP
  /
  &GRIDOPTS
@@ -372,7 +375,7 @@ OBS_INPUT::
    prepbufr       spd         null        spd                  0.0     0      0
    prepbufr       dw          null        dw                   0.0     0      0
    radarbufr      rw          null        rw                   0.0     0      0
-   prepbufr       sst         null        sst                  0.0     0      0
+   nsstbufr       sst         nsst        sst                  0.0     0     0
    gpsrobufr      gps_bnd     null        gps                  0.0     0      0
    ssmirrbufr     pcp_ssmi    dmsp        pcp_ssmi             0.0    -1      0
    tmirrbufr      pcp_tmi     trmm        pcp_tmi              0.0    -1      0
@@ -444,6 +447,8 @@ OBS_INPUT::
    gomebufr       gome        metop-b     gome_metop-b         0.0     2      0
    atmsbufr       atms        npp         atms_npp             0.0     1      0
    crisbufr       cris        npp         cris_npp             0.0     1      0
+   avhambufr      avhrr       metop-a     avhrr3_metop-a       0.0     1      0
+   avhpmbufr      avhrr       n18         avhrr3_n18           0.0     1      0
 ::
    $OBSINPUT
  /
@@ -469,8 +474,10 @@ OBS_INPUT::
    obhourset=0.,
    $SINGLEOB
  /
- &NST
- /
+&NST
+  nst_gsi=$NST_GSI,
+  $NST
+/
 EOF
 
 # Set fixed files
@@ -598,6 +605,9 @@ if [[ ! -s $datobs/${prefix_obs}.prepbufr ]]; then
 fi 
 
 $nln $datobs/${prefix_obs}.prepbufr           ./prepbufr
+if [[ -s $datobs/${prefix_obs}.nsstbufr ]]; then
+$nln ${datobs}/${prefix_obs}.nsstbufr ./nsstbufr
+fi
 if [[ -s $datobs/${prefix_obs}.prepbufr.acft_profiles ]]; then
 $nln $datobs/${prefix_obs}.prepbufr.acft_profiles ./prepbufr_profl
 fi
@@ -696,6 +706,12 @@ fi
 if [[ -s $datobs/${prefix_obs}.sptrmm.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.sptrmm.${suffix}   ./tmirrbufr
 fi
+if [[ -s $datobs/${prefix_obs}.avcsam.${suffix} ]]; then
+$nln $datobs/${prefix_obs}avcsam.${suffix}          avhambufr
+fi
+if [[ -s $datobs/${prefix_obs}.avcspm.${suffix} ]]; then
+$nln $datobs/${prefix_obs}avcspm.${suffix}          avhpmbufr
+fi
 fi # NOSAT
 
 # link bias correction, atmospheric and surface files
@@ -753,7 +769,7 @@ fi
 fi
 
 # make symlinks for diag files to initialize angle dependent bias correction for new channels.
-satdiag="ssu_n14 hirs2_n14 msu_n14 sndr_g08 sndr_g09 sndr_g11 sndr_g12 sndr_g13 sndr_g08_prep sndr_g11_prep sndr_g12_prep sndr_g13_prep sndrd1_g11 sndrd2_g11 sndrd3_g11 sndrd4_g11 sndrd1_g12 sndrd2_g12 sndrd3_g12 sndrd4_g12 sndrd1_g13 sndrd2_g13 sndrd3_g13 sndrd4_g13 sndrd1_g14 sndrd2_g14 sndrd3_g14 sndrd4_g14 sndrd1_g15 sndrd2_g15 sndrd3_g15 sndrd4_g15 hirs2_n14 hirs3_n15 hirs3_n16 hirs3_n17 amsua_n15 amsua_n16 amsua_n17 amsub_n15 amsub_n16 amsub_n17 hsb_aqua airs_aqua amsua_aqua imgr_g08 imgr_g11 imgr_g12 imgr_g14 imgr_g15 gome_metop-a omi_aura mls_aura ssmi_f13 ssmi_f14 ssmi_f15 hirs4_n18 hirs4_metop-a amsua_n18 amsua_metop-a mhs_n18 mhs_metop-a amsre_low_aqua amsre_mid_aqua amsre_hig_aqua ssmis_las_f16 ssmis_uas_f16 ssmis_img_f16 ssmis_env_f16 ssmis_las_f17 ssmis_uas_f17 ssmis_img_f17 ssmis_env_f17 ssmis_las_f18 ssmis_uas_f18 ssmis_img_f18 ssmis_env_f18 ssmis_las_f19 ssmis_uas_f19 ssmis_img_f19 ssmis_env_f19 ssmis_las_f20 ssmis_uas_f20 ssmis_img_f20 ssmis_env_f20 iasi_metop-a hirs4_n19 amsua_n19 mhs_n19 seviri_m08 seviri_m09 seviri_m10 cris_npp atms_npp hirs4_metop-b amsua_metop-b mhs_metop-b iasi_metop-b gome_metop-b"
+satdiag="ssu_n14 hirs2_n14 msu_n14 sndr_g08 sndr_g09 sndr_g11 sndr_g12 sndr_g13 sndr_g08_prep sndr_g11_prep sndr_g12_prep sndr_g13_prep sndrd1_g11 sndrd2_g11 sndrd3_g11 sndrd4_g11 sndrd1_g12 sndrd2_g12 sndrd3_g12 sndrd4_g12 sndrd1_g13 sndrd2_g13 sndrd3_g13 sndrd4_g13 sndrd1_g14 sndrd2_g14 sndrd3_g14 sndrd4_g14 sndrd1_g15 sndrd2_g15 sndrd3_g15 sndrd4_g15 hirs2_n14 hirs3_n15 hirs3_n16 hirs3_n17 amsua_n15 amsua_n16 amsua_n17 amsub_n15 amsub_n16 amsub_n17 hsb_aqua airs_aqua amsua_aqua imgr_g08 imgr_g11 imgr_g12 imgr_g14 imgr_g15 gome_metop-a omi_aura mls_aura ssmi_f13 ssmi_f14 ssmi_f15 hirs4_n18 hirs4_metop-a amsua_n18 amsua_metop-a mhs_n18 mhs_metop-a amsre_low_aqua amsre_mid_aqua amsre_hig_aqua ssmis_las_f16 ssmis_uas_f16 ssmis_img_f16 ssmis_env_f16 ssmis_las_f17 ssmis_uas_f17 ssmis_img_f17 ssmis_env_f17 ssmis_las_f18 ssmis_uas_f18 ssmis_img_f18 ssmis_env_f18 ssmis_las_f19 ssmis_uas_f19 ssmis_img_f19 ssmis_env_f19 ssmis_las_f20 ssmis_uas_f20 ssmis_img_f20 ssmis_env_f20 iasi_metop-a hirs4_n19 amsua_n19 mhs_n19 seviri_m08 seviri_m09 seviri_m10 cris_npp atms_npp hirs4_metop-b amsua_metop-b mhs_metop-b iasi_metop-b gome_metop-b avhrr_n18 avhrr_metop-a"
 alldiag="$satdiag pcp_ssmi_dmsp pcp_tmi_trmm conv_gps conv_t conv_q conv_uv conv_ps sbuv2_n11 sbuv2_n14 sbuv2_n16 sbuv2_n17 sbuv2_n18 sbuv2_n19"
 string='ges'
 for type in $satdiag; do
@@ -831,6 +847,9 @@ if [[ "$HXONLY" = "NO" ]]; then
       $nmv satbias_pc.out $BIASO_PC
       if [ -s aircftbias_out ]; then
       $nmv aircftbias_out $BIASOAIR
+      fi
+      if [ $DONST = "YES" ]; then
+         $nmv dtfanl $DTFANL 
       fi
   else
       exit 1

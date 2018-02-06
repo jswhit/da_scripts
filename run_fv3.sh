@@ -229,6 +229,7 @@ if [ "$fg_only" == "true" ]; then
    FHCYC=0
    iaudelthrs=-1
    iau_inc_files=""
+   NST_SPINUP=1
 else
    # warm start from restart file with lat/lon increments ingested by the model
    if [ -s stoch_ini ]; then
@@ -330,11 +331,10 @@ if [ $FHCYC -eq 0 ] && [ "$warm_start" == "T" ] && [ -z $skip_global_cycle ]; th
    export FNSNOA="${fnsnoa}"
    export FNACNA="${fnacna}"
    export CASE="C${RES}"
-   # NST update
-   #export DONST=T
-   #export GSI_FILE=${COMIN}/dtfanl.nc
-   #export PGM="${execdir}/global_cycle < global_cycle.nml"
    export PGM="${execdir}/global_cycle"
+   if [ $NST_GSI -gt 0 ]; then
+       export GSI_FILE=${datapath2}/${PREINP}dtfanl.nc
+   fi
    sh ${enkfscripts}/global_cycle_driver.sh
    n=1
    while [ $n -le 6 ]; do
@@ -351,6 +351,22 @@ if [ $FHCYC -eq 0 ] && [ "$warm_start" == "T" ] && [ -z $skip_global_cycle ]; th
    done
    /bin/rm -rf rundir*
 fi
+
+# NSST Options
+# nstf_name contains the NSST related parameters
+# nstf_name(1) : NST_MODEL (NSST Model) : 0 = OFF, 1 = ON but uncoupled, 2 = ON and coupled
+# nstf_name(2) : NST_SPINUP : 0 = OFF, 1 = ON,
+# nstf_name(3) : NST_RESV (Reserved, NSST Analysis) : 0 = OFF, 1 = ON
+# nstf_name(4) : ZSEA1 (in mm) : 0
+# nstf_name(5) : ZSEA2 (in mm) : 0
+# nst_anl      : .true. or .false., NSST analysis over lake
+NST_MODEL=${NST_MODEL:-0}
+NST_SPINUP=${NST_SPINUP:-0}
+NST_RESV=${NST_RESV-0}
+ZSEA1=${ZSEA1:-0}
+ZSEA2=${ZSEA2:-0}
+nstf_name=${nstf_name:-"$NST_MODEL,$NST_SPINUP,$NST_RESV,$ZSEA1,$ZSEA2"}
+nst_anl=${nst_anl:-".false."}
 
 cat > model_configure <<EOF
 print_esmf:              .true.
@@ -556,6 +572,8 @@ cat > input.nml <<EOF
   cdmbgwd = ${cdmbgwd}
   psautco = ${psautco}
   prautco = ${prautco}
+  nstf_name     = ${nstf_name}
+  nst_anl       = ${nst_anl}
   iaufhrs = ${iaufhrs}
   iau_delthrs = ${iaudelthrs}
   iau_inc_files = ${iau_inc_files}

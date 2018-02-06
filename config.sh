@@ -104,6 +104,27 @@ export prautco="0.00015,0.00015"
 #export imp_physics=99 # zhao-carr
 export imp_physics=11 # GFDL MP
 
+export NOSAT="NO" # if yes, no radiances assimilated
+# model NSST parameters contained within nstf_name in FV3 namelist
+# (comment out to get default - no NSST)
+# nstf_name(1) : NST_MODEL (NSST Model) : 0 = OFF, 1 = ON but uncoupled, 2 = ON and coupled
+#export DONST="YES"
+#export NST_MODEL=2
+## nstf_name(2) : NST_SPINUP : 0 = OFF, 1 = ON,
+#export NST_SPINUP=0 # (will be set to 1 if fg_only=='true')
+## nstf_name(3) : NST_RESV (Reserved, NSST Analysis) : 0 = OFF, 1 = ON
+#export NST_RESV=0
+## nstf_name(4,5) : ZSEA1, ZSEA2 the two depths to apply vertical average (bias correction)
+#export ZSEA1=0
+#export ZSEA2=0
+#export NST_GSI=3          # default 0: No NST info at all;
+#                          #         1: Input NST info but not used in GSI;
+#                          #         2: Input NST info, used in CRTM simulation, no Tr analysis
+#                          #         3: Input NST info, used in both CRTM simulation and Tr analysis
+#export NSTINFO=0          # number of elements added in obs. data array (default = 0)
+#if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
+#if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
+
 if [ $imp_physics == "11" ]; then
    export ncld=5
    export nwat=6
@@ -268,12 +289,16 @@ export zhuberleft=1.e10
 export zhuberright=1.e10
 
 export biasvar=-500
-if [ $controlanal == 'false' ];  then
+if [ $controlanal == 'false' ] && [ $NOSAT == "NO" ];  then
    export lupd_satbiasc=.true.
    export numiter=4
 else
    export lupd_satbiasc=.false.
    export numiter=0
+fi
+# iterate enkf in obspace for varqc
+if [ $varqc == ".true." ]; then
+  export numiter=5
 fi
 # use pre-generated bias files.
 #export lupd_satbiasc=.false.

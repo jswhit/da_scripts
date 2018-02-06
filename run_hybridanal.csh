@@ -29,6 +29,7 @@ setenv SFCANLm3 ${datapath2}/sfcanl_${analdate}_fhr03_${charnanal}
 setenv BIASO ${datapath2}/${PREINP}abias 
 setenv BIASO_PC ${datapath2}/${PREINP}abias_pc 
 setenv SATANGO ${datapath2}/${PREINP}satang
+setenv DTFANL ${datapath2}/${PREINP}dtfanl.nc
 
 if ($cleanup_controlanl == 'true') then
    /bin/rm -f ${SIGANL}
