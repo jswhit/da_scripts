@@ -412,4 +412,4 @@ export aircraft_bc=.true.
 
 cd $enkfscripts
 echo "run main driver script"
-csh main.csh
+csh main2.csh
