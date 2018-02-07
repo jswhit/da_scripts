@@ -315,6 +315,7 @@ else
    FHMAX_FCST=$FHMAX
    FHOFFSET=0
 fi
+FHSTOCH=`expr $FHRESTART + $FHOFFSET \/ 2`
 
 if [ $FHCYC -eq 0 ] && [ "$warm_start" == "T" ] && [ -z $skip_global_cycle ]; then
    # run global_cycle to update surface in restart file.
@@ -567,7 +568,7 @@ cat > input.nml <<EOF
   prslrd0        = 0
   ivegsrc        = 1
   isot           = 1
-  debug          = F
+  debug          = T
   nstf_name      = 0
   cdmbgwd = ${cdmbgwd}
   psautco = ${psautco}
@@ -676,7 +677,7 @@ cat > input.nml <<EOF
   SKEB_VDOF=$SKEB_VDOF,
   SKEB_NPASS=$SKEB_NPASS,
   ISEED_SPPT=$ISEED_SPPT,ISEED_SHUM=$ISEED_SHUM,ISEED_SKEB=$ISEED_SKEB,
-  use_zmtnblck=.true.,fhstoch=$FHRESTART,stochini=$stochini  
+  use_zmtnblck=.true.,fhstoch=$FHSTOCH,stochini=$stochini  
 /
 EOF
 
@@ -756,8 +757,7 @@ fi
 
 # if random pattern restart file exists for end of IAU window, copy it.
 ls -l stoch_out*
-fh=`expr $FHRESTART + $FHOFFSET \/ 2`
-charfh="F"`printf %06i $fh`
+charfh="F"`printf %06i $FHSTOCH`
 if [ -s stoch_out.${charfh} ]; then
   mkdir -p ${DATOUT}/${charnanal}
   echo "copying stoch_out.${charfh} ${DATOUT}/${charnanal}/stoch_ini"
