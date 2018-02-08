@@ -186,7 +186,7 @@ if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
       fi
       echo "create ${increment_file}"
       /bin/rm -f ${increment_file}
-      export "PGM=${execdir}/calc_increment.x ${analfile} ${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal} ${increment_file} T T $imp_physics"
+      export "PGM=${execdir}/calc_increment.x ${analfile} ${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal} ${increment_file} T T -1"
       nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
       if [ $? -ne 0 -o ! -s ${increment_file} ]; then
          echo "problem creating ${increment_file}, stopping .."
@@ -203,7 +203,7 @@ if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
          export analfile="${datapath2}/sanl_${analdate}_${charnanal}"
       fi
    /bin/rm -f ${increment_file}
-   export "PGM=${execdir}/calc_increment.x ${analfile} ${datapath2}/sfg_${analdate}_fhr06_${charnanal} ${increment_file} T T $imp_physics"
+   export "PGM=${execdir}/calc_increment.x ${analfile} ${datapath2}/sfg_${analdate}_fhr06_${charnanal} ${increment_file} T T -1"
    nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
    if [ $? -ne 0 -o ! -s ${increment_file} ]; then
       echo "problem creating ${increment_file}, stopping .."
