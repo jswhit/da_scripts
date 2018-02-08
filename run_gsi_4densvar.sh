@@ -259,6 +259,7 @@ fi
 SETUP="reduce_diag=.true.,lwrite_peakwt=.true.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=.true.,ens_nstarthr=3,iwrtinc=-1,nhr_assimilation=6,nhr_obsbin=$FHOUT,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=$lobsdiag_forenkf"
 
 if [[ "$HXONLY" = "YES" ]]; then
+   #SETUP="$SETUP,lobserver=.true.,l4dvar=.true." # can't use reduce_diag=T
    SETUP="$SETUP,miter=0,niter=1"
 fi
 STRONGOPTS="tlnmc_option=3,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"

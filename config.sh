@@ -108,22 +108,22 @@ export NOSAT="NO" # if yes, no radiances assimilated
 # model NSST parameters contained within nstf_name in FV3 namelist
 # (comment out to get default - no NSST)
 # nstf_name(1) : NST_MODEL (NSST Model) : 0 = OFF, 1 = ON but uncoupled, 2 = ON and coupled
-#export DONST="YES"
-#export NST_MODEL=2
-## nstf_name(2) : NST_SPINUP : 0 = OFF, 1 = ON,
-#export NST_SPINUP=0 # (will be set to 1 if fg_only=='true')
-## nstf_name(3) : NST_RESV (Reserved, NSST Analysis) : 0 = OFF, 1 = ON
-#export NST_RESV=0
-## nstf_name(4,5) : ZSEA1, ZSEA2 the two depths to apply vertical average (bias correction)
-#export ZSEA1=0
-#export ZSEA2=0
-#export NST_GSI=3          # default 0: No NST info at all;
-#                          #         1: Input NST info but not used in GSI;
-#                          #         2: Input NST info, used in CRTM simulation, no Tr analysis
-#                          #         3: Input NST info, used in both CRTM simulation and Tr analysis
-#export NSTINFO=0          # number of elements added in obs. data array (default = 0)
-#if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
-#if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
+export DONST="YES"
+export NST_MODEL=2
+# nstf_name(2) : NST_SPINUP : 0 = OFF, 1 = ON,
+export NST_SPINUP=0 # (will be set to 1 if fg_only=='true')
+# nstf_name(3) : NST_RESV (Reserved, NSST Analysis) : 0 = OFF, 1 = ON
+export NST_RESV=0
+# nstf_name(4,5) : ZSEA1, ZSEA2 the two depths to apply vertical average (bias correction)
+export ZSEA1=0
+export ZSEA2=0
+export NST_GSI=3          # default 0: No NST info at all;
+                          #         1: Input NST info but not used in GSI;
+                          #         2: Input NST info, used in CRTM simulation, no Tr analysis
+                          #         3: Input NST info, used in both CRTM simulation and Tr analysis
+export NSTINFO=0          # number of elements added in obs. data array (default = 0)
+if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
+if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
 
 if [ $imp_physics == "11" ]; then
    export ncld=5
@@ -382,20 +382,21 @@ else
    exit 1
 fi
 
-#export ANAVINFO=${enkfscripts}/global_anavinfo.l${LEVS}.txt.clrsky
+#export ANAVINFO=${enkfscripts}/global_anavinfo.l${LEVS}.txt
 #export ANAVINFO_ENKF=${ANAVINFO}
-# this version uses longer localization scales.
 #export HYBENSINFO=${enkfscripts}/global_hybens_info.l${LEVS}.txt
-#export CONVINFO=${enkfscripts}/global_convinfo_oper_fix.txt
-#export OZINFO=${enkfscripts}/global_ozinfo_oper_fix.txt
+#export CONVINFO=${fixgsi}/global_convinfo.txt
+#export OZINFO=${enkfscripts}/global_ozinfo.txt
 # set SATINFO in main.csh
 
-export ANAVINFO=${enkfscripts}/global_anavinfo.l64.txt.clrsky
+#export ANAVINFO=${enkfscripts}/global_anavinfo.l64.txt.clrsky
+export ANAVINFO=${enkfscripts}/global_anavinfo.l64.txt
 export ANAVINFO_ENKF=${ANAVINFO}
 export HYBENSINFO=${fixgsi}/global_hybens_info.l64.txt
 export CONVINFO=${enkfscripts}/global_convinfo_oper_fix.txt
 export OZINFO=${enkfscripts}/global_ozinfo_oper_fix.txt
-export SATINFO=${enkfscripts}/global_satinfo.txt.clrsky
+#export SATINFO=${enkfscripts}/global_satinfo.txt.clrsky
+export SATINFO=${enkfscripts}/global_satinfo.txt
 # comment out SATINFO in main.csh
 
 # parameters for hybrid
