@@ -26,11 +26,15 @@ while ($fh <= $FHMAX)
   setenv nprocs 1
   setenv mpitaskspernode 1
   if ($replay_controlfcst == 'true') then
+  if ($cleanup_ensmean == 'true' || ($cleanup_ensmean == 'false' && ! -s ${datapath}/${analdate}/sfg_${analdate}_${charfhr}_control2.grib)) then
   setenv PGM "${execdir}/cnvnems.x ${datapath2}/sfg_${analdate}_${charfhr}_control2 ${datapath2}/sfg_${analdate}_${charfhr}_control2.grib grib"
   sh ${enkfscripts}/runmpi
+  endif
   else
+  if ($cleanup_ensmean == 'true' || ($cleanup_ensmean == 'false' && ! -s ${datapath}/${analdate}/sfg_${analdate}_${charfhr}_control.grib)) then
   setenv PGM "${execdir}/cnvnems.x ${datapath2}/sfg_${analdate}_${charfhr}_control ${datapath2}/sfg_${analdate}_${charfhr}_control.grib grib"
   sh ${enkfscripts}/runmpi
+  endif
   endif
   setenv nprocs $nprocs_save
   setenv mpitaskspernode $mpitaskspernode_save
@@ -94,7 +98,7 @@ if ( $cleanup_ensmean == 'true' || ( $cleanup_ensmean == 'false' && ! -s ${datap
 endif
 endif
 
-if ( $?copy_history_files ) then
+if ( $cleanup_ensmean == 'true' && $?copy_history_files ) then
    echo "compute ensemble mean history files `date`"
    setenv nprocs 1
    setenv mpitaskspernode 1
