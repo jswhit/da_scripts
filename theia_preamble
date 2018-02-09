@@ -1,12 +1,12 @@
 #PBS -l nodes=20:ppn=24
-#PBS -l walltime=3:00:00
+#PBS -l walltime=1:30:00
 ##PBS -l walltime=0:30:00
 #PBS -A gsienkf
 ##PBS -q debug
-#PBS -N C384C192_test_iau
+#PBS -N C128C128_test_iau
 #PBS -S /bin/bash
-#PBS -o C384C192_test_iau.stdout
-#PBS -e C384C192_test_iau.stderr
+#PBS -o C128C128_test_iau.stdout
+#PBS -e C128C128_test_iau.stderr
 export NODES=20
 export corespernode=24
 export machine='theia'
@@ -38,10 +38,15 @@ else
 fi
 
 # for ensemble forecast and GSI
-export enkf_threads=3
+export enkf_threads=2
 export gsi_control_threads=2
 export fg_proc=$corespernode 
 export fg_threads=1 
-export write_groups=1
+# C192
+#export write_groups=1
+#export write_tasks=6 
+#export layout="3, 1" 
+# C128
+export write_groups=2
 export write_tasks=6 
-export layout="3, 1" 
+export layout="2, 1" 
