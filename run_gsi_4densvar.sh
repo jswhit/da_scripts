@@ -531,6 +531,7 @@ ozinfo=${OZINFO:-$fixgsi/global_ozinfo.txt}
 convinfo=${CONVINFO:-$fixgsi/global_convinfo.txt}
 errtable=$fixgsi/prepobs_errtable.global
 anavinfo=${ANAVINFO:-$fixgsi/global_anavinfo.l64.txt}
+radcloudinfo=${RADCLOUDINFO:-${fixgsi}/cloudy_radiance_info.txt}
 
 
 # Only need this file for single obs test
@@ -545,6 +546,7 @@ if [[ "$lread_obs_skip" = ".false." ]]; then
 $nln $gsiexec ./gsi.x
 
 $ncp $anavinfo ./anavinfo
+$ncp $radcloudinfo ./cloudy_radiance_info.txt
 $nln $berror   ./berror_stats
 $ncp $emiscoef_IRwater ./Nalli.IRwater.EmisCoeff.bin
 $ncp $emiscoef_IRice ./NPOESS.IRice.EmisCoeff.bin               
