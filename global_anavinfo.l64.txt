@@ -9,9 +9,9 @@ met_guess::
   tv       64       2         virtual_temperature  tv
   q        64       2         specific_humidity    sphu
   oz       64       2         ozone                ozone
-  cw       64      -1         cloud_condensate     cw
-  ql       64      -1         cloud_liquid         ql 
-  qi       64      -1         cloud_ice            qi 
+  cw       64      10         cloud_condensate     cw
+  ql       64      12         cloud_liquid         ql 
+  qi       64      12         cloud_ice            qi 
 ::
 
 state_derivatives::
