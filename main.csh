@@ -10,8 +10,10 @@ echo "nodes = $NODES"
 setenv startupenv "${datapath}/analdate.csh"
 source $startupenv
 
-# add SATINFO here (instead of submit.sh) since it depends on analysis time.
-#setenv SATINFO ${obs_datapath}/bufr_${analdate}/global_satinfo.txt
+# if SATINFO in obs dir, use it
+if ( -s ${obs_datapath}/bufr_${analdate}/global_satinfo.txt) then
+   setenv SATINFO ${obs_datapath}/bufr_${analdate}/global_satinfo.txt
+endif
 
 #------------------------------------------------------------------------
 mkdir -p $datapath
