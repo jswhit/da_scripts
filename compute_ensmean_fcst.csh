@@ -1,10 +1,12 @@
 #!/bin/csh
 
+set python=`which python`
 if ($machine == 'wcoss') then
    module load nco-gnu-sandybridge
    set nces=`which nces`
 else if ($machine == 'gaea') then
    set nces=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/bin/nces
+   set python=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/bin/python
 else
    module load nco
    set nces=`which nces`
@@ -130,5 +132,8 @@ if ( $cleanup_ensmean == 'true' && $?copy_history_files ) then
    /bin/rm -f ${datapath2}/hostfile_nces*
    echo "done computing ensemble mean history files `date`"
 endif
+# interpolate to 1x1 grid
+cd ${enkfscripts}
+$python ncinterp.py ${datapath2}/ensmean fv3_historyp_latlon.nc
 
 exit 0
