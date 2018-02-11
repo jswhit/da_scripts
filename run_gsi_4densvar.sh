@@ -713,10 +713,10 @@ if [[ -s $datobs/${prefix_obs}.sptrmm.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.sptrmm.${suffix}   ./tmirrbufr
 fi
 if [[ -s $datobs/${prefix_obs}.avcsam.${suffix} ]]; then
-$nln $datobs/${prefix_obs}avcsam.${suffix}          avhambufr
+$nln $datobs/${prefix_obs}.avcsam.${suffix}          avhambufr
 fi
 if [[ -s $datobs/${prefix_obs}.avcspm.${suffix} ]]; then
-$nln $datobs/${prefix_obs}avcspm.${suffix}          avhpmbufr
+$nln $datobs/${prefix_obs}.avcspm.${suffix}          avhpmbufr
 fi
 fi # NOSAT
 
