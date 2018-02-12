@@ -147,10 +147,10 @@ cat <<EOF1 >! enkf.nml
   sattypes_rad(67)= 'sndr_g10',      dsis(67)= 'sndr_g10',
   sattypes_rad(68)= 'sndr_g11',      dsis(68)= 'sndr_g11',
   sattypes_rad(69)= 'sndr_g12',      dsis(69)= 'sndr_g12',
-  sattypes_rad(70)= 'avhrr3_n14',    dsis(70)= 'avhrr3_n14',
-  sattypes_rad(71)= 'avhrr3_n15',    dsis(71)= 'avhrr3_n15',
-  sattypes_rad(72)= 'avhrr3_n16',    dsis(72)= 'avhrr3_n16',
-  sattypes_rad(73)= 'avhrr3_n17',    dsis(73)= 'avhrr3_n17',
+  sattypes_rad(70)= 'avhrr_n14',     dsis(70)= 'avhrr3_n14',
+  sattypes_rad(71)= 'avhrr_n15',     dsis(71)= 'avhrr3_n15',
+  sattypes_rad(72)= 'avhrr_n16',     dsis(72)= 'avhrr3_n16',
+  sattypes_rad(73)= 'avhrr_n17',     dsis(73)= 'avhrr3_n17',
   
  /
  &END
