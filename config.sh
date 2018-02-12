@@ -144,21 +144,16 @@ export n_split=6
 export hydrostatic=F
 if [ $hydrostatic == 'T' ];  then
    export fv3exec='fv3-hydro.exe'
-   export hord_mt=10
-   export hord_vt=10
-   export hord_tm=10
-   export hord_dp=-10
-   export vtdm4=0.05
    export consv_te=0
 else
    export fv3exec='fv3-nonhydro.exe'
-   export hord_mt=5
-   export hord_vt=5
-   export hord_tm=5
-   export hord_dp=-5
-   export vtdm4=0.06
    export consv_te=1
 fi
+export hord_mt=6
+export hord_vt=6
+export hord_tm=6
+export hord_dp=-6
+export vtdm4=0.02
 
 # stochastic physics parameters.
 export SPPT=0.8
