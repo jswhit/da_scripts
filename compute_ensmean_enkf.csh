@@ -1,13 +1,12 @@
 #!/bin/csh
 
-setenv HOSTFILE ${datapath2}/machinesx
+#setenv HOSTFILE $datapath2/machinesx # set in main.csh
 
 cd ${datapath2}
 
 set iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
 
 echo "compute ensemble mean analyses..."
-setenv HOSTFILE $datapath2/machinesx # set in main.csh
 
 foreach nhr_anal ( $iaufhrs2 )
 set charfhr="fhr"`printf %02i $nhr_anal`

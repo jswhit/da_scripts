@@ -625,6 +625,8 @@ $nln $datobs/${prefix_obs}.gpsro.${suffix}    ./gpsrobufr
 fi
 if [[ -s $datobs/${prefix_obs}.satwnd.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.satwnd.${suffix}      ./satwndbufr
+else
+use_prepb_satwnd=.true. # use satwinds in prepbufr file
 fi
 
 if [[ "$NOSAT" = "NO" ]]; then

@@ -194,9 +194,9 @@ else
 endif
 
 # compute ensemble mean analyses.
-echo "$analdate starting ens mean analysis computation `date`"
-csh ${enkfscripts}/compute_ensmean_enkf.csh >&!  ${current_logdir}/compute_ensmean_anal.out
-echo "$analdate done computing ensemble mean analyses `date`"
+#echo "$analdate starting ens mean analysis computation `date`"
+#csh ${enkfscripts}/compute_ensmean_enkf.csh >&!  ${current_logdir}/compute_ensmean_anal.out
+#echo "$analdate done computing ensemble mean analyses `date`"
 
 # recenter enkf analyses around control analysis
 if ($controlanal == 'true' && $recenter_anal == 'true') then
