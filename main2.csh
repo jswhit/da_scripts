@@ -39,6 +39,7 @@ setenv ANALHR $hr
 setenv datapath2 "${datapath}/${analdate}/"
 /bin/cp -f ${ANAVINFO_ENKF} ${datapath2}/anavinfo
 
+# setup node parameters used in recenter_ens_anal.csh and compute_ensmean_fcst.csh
 setenv mpitaskspernode `python -c "import math; print int(math.ceil(float(${nanals})/float(${NODES})))"`
 if ($mpitaskspernode < 1) setenv mpitaskspernode 1
 setenv OMP_NUM_THREADS `expr $corespernode \/ $mpitaskspernode`

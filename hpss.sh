@@ -92,8 +92,9 @@ if  [ $save_hpss_subset = "true" ]; then
    #/bin/rm -f ${analdate}/diag*cris* ${analdate}/diag*airs* ${analdate}/diag*iasi*
 fi
 hsi ls -l ${hsidir}/${analdate}_subset.tar
-if [  $? -eq 0 ]; then
-   echo "hsi subset failed ${analdate}..."
+exitstat=$?
+if [  $exitstat -ne 0 ]; then
+   echo "hsi subset failed ${analdate} with exit status $exitstat..."
    exit 1
 fi
 
