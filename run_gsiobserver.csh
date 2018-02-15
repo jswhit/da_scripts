@@ -14,7 +14,6 @@ endif
 setenv CO2DIR $fixgsi
 
 # charanal is an env var set in parent script
-setenv SIGANL ${datapath2}/sanl_${analdate}_${charnanal}
 setenv SIGANL03 ${datapath2}/sanl_${analdate}_fhr03_${charnanal}
 setenv SIGANL04 ${datapath2}/sanl_${analdate}_fhr04_${charnanal}
 setenv SIGANL05 ${datapath2}/sanl_${analdate}_fhr05_${charnanal}
@@ -22,8 +21,6 @@ setenv SIGANL06 ${datapath2}/sanl_${analdate}_fhr06_${charnanal}
 setenv SIGANL07 ${datapath2}/sanl_${analdate}_fhr07_${charnanal}
 setenv SIGANL08 ${datapath2}/sanl_${analdate}_fhr08_${charnanal}
 setenv SIGANL09 ${datapath2}/sanl_${analdate}_fhr09_${charnanal}
-setenv SFCANL ${datapath2}/sfcanl_${analdate}_${charnanal}
-setenv SFCANLm3 ${datapath2}/sfcanl_${analdate}_fhr03_${charnanal}
 setenv BIASO ${datapath2}/${PREINP}abias 
 setenv BIASO_PC ${datapath2}/${PREINP}abias_pc 
 setenv SATANGO ${datapath2}/${PREINP}satang

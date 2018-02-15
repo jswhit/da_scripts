@@ -227,11 +227,6 @@ if ($controlfcst == 'true' && $replay_controlfcst == 'true' && $replay_run_obser
    endif
 endif
 
-# compute ensemble mean analyses.
-echo "$analdate starting ens mean analysis computation `date`"
-csh ${enkfscripts}/compute_ensmean_enkf.csh >&!  ${current_logdir}/compute_ensmean_anal.out
-echo "$analdate done computing ensemble mean analyses `date`"
-
 # recenter enkf analyses around control analysis
 if ($controlanal == 'true' && $recenter_anal == 'true') then
    echo "$analdate recenter enkf analysis ensemble around control analysis `date`"

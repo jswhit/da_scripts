@@ -11,17 +11,10 @@ foreach nhr_anal ( $iaufhrs2 )
 set charfhr="fhr"`printf %02i $nhr_anal`
 
 echo "recenter ensemble perturbations about low resolution hybrid analysis"
-if ($iau_delthrs != -1) then
-  set filename_meanin=sanl_${analdate}_${charfhr}_ensmean
-  set filename_meanout=sanl_${analdate}_${charfhr}_${charnanal}
-  set filenamein=sanl_${analdate}_${charfhr}
-  set filenameout=sanlr_${analdate}_${charfhr}
-else
-  set filename_meanin=sanl_${analdate}_ensmean
-  set filename_meanout=sanl_${analdate}_${charnanal}
-  set filenamein=sanl_${analdate}
-  set filenameout=sanlr_${analdate}
-endif
+set filename_meanin=sanl_${analdate}_${charfhr}_ensmean
+set filename_meanout=sanl_${analdate}_${charfhr}_${charnanal}
+set filenamein=sanl_${analdate}_${charfhr}
+set filenameout=sanlr_${analdate}_${charfhr}
 
 setenv PGM "${execdir}/recentersigp.x $filenamein $filename_meanin $filename_meanout $filenameout $nanals"
 set errorcode=0
@@ -41,13 +34,8 @@ endif
 set nanal=1
 while ($nanal <= $nanals)
    set charnanal_tmp="mem"`printf %03i $nanal`
-   if ($iau_delthrs != -1) then
-      set analfiler=sanlr_${analdate}_${charfhr}_${charnanal_tmp}
-      set analfile=sanl_${analdate}_${charfhr}_${charnanal_tmp}
-   else
-      set analfiler=sanlr_${analdate}_${charnanal_tmp}
-      set analfile=sanl_${analdate}_${charnanal_tmp}
-   endif
+   set analfiler=sanlr_${analdate}_${charnanal_tmp}
+   set analfile=sanl_${analdate}_${charnanal_tmp}
    if ( -s $analfiler) then
       /bin/mv -f $analfile ${analfile}.orig
       /bin/mv -f $analfiler $analfile
@@ -66,11 +54,7 @@ else
    set nanal=1
    while ($nanal <= $nanals)
       set charnanal_tmp="mem"`printf %03i $nanal`
-      if ($iau_delthrs != -1) then
-         set analfile=sanl_${analdate}_${charfhr}_${charnanal_tmp}
-      else
-         set analfile=sanl_${analdate}_${charnanal_tmp}
-      endif
+      set analfile=sanl_${analdate}_${charfhr}_${charnanal_tmp}
       /bin/mv -f ${analfile}.orig ${analfile}
       @ nanal = $nanal + 1
    end
@@ -78,13 +62,8 @@ else
 endif
 
 # convert sanl files to grib after recentering (save for replay)
-if ($iau_delthrs != -1) then
-   setenv PGM "${execdir}/cnvnemsp.x ${datapath2}/ sanl_${analdate}_${charfhr} ${nanals} grib"
-   sh ${enkfscripts}/runmpi
-else
-   setenv PGM "${execdir}/cnvnemsp.x ${datapath2}/ sanl_${analdate} ${nanals} grib"
-   sh ${enkfscripts}/runmpi
-endif
+setenv PGM "${execdir}/cnvnemsp.x ${datapath2}/ sanl_${analdate}_${charfhr} ${nanals} grib"
+sh ${enkfscripts}/runmpi
 
 end # next time
 popd

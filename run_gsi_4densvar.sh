@@ -141,7 +141,6 @@ LONA_ENS=${LONA_ENS:-$LONA}
 export NLAT_ENS=$((${LATA_ENS}+2))
 
 
-SIGANL=${SIGANL:-$savdir/siganl.${adate}}
 SATANGO=${SATANGO:-$savdir/${RUN}.t${hha}z.satang}
 BIASO=${BIASO:-$savdir/${RUN}.t${hha}z.abias}
 BIASOAIR=${BIASOAIR:-$savdir/${RUN}.t${hha}z.abias_air}
@@ -625,8 +624,6 @@ $nln $datobs/${prefix_obs}.gpsro.${suffix}    ./gpsrobufr
 fi
 if [[ -s $datobs/${prefix_obs}.satwnd.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.satwnd.${suffix}      ./satwndbufr
-else
-use_prepb_satwnd=.true. # use satwinds in prepbufr file
 fi
 
 if [[ "$NOSAT" = "NO" ]]; then
@@ -840,10 +837,9 @@ if [[ "$HXONLY" = "NO" ]]; then
       if [ -s ./siga05 ]; then
          $nmv siga05          $SIGANL05
       fi
-      $nmv siganl          $SIGANL
-      ln -fs $SIGANL $SIGANL06
+      $nmv siganl             $SIGANL06
       if [ -s ./siga07 ]; then
-          $nmv siga07          $SIGANL07
+          $nmv siga07         $SIGANL07
       fi
       if [ -s ./siga08 ]; then
          $nmv siga08          $SIGANL08
@@ -863,17 +859,6 @@ if [[ "$HXONLY" = "NO" ]]; then
       exit 1
   fi
 fi
-#if [[ "$HXONLY" = "NO" ]]; then
-#if [ -s ./siganl ] && [ -s ./satbias_out ]; then
-#$nmv siganl          $SIGANL
-##$ncp satbias_out     $savdir/biascr.${adate}
-#$nmv satbias_out $BIASO
-##$ncp sfcf06          $savdir/sfcf06.${gdate}
-##$ncp sigf06          $savdir/sigf06.${gdate}
-#else
-#exit 1
-#fi
-#fi
 # Loop over first and last outer loops to generate innovation
 # diagnostic files for indicated observation types (groups)
 #

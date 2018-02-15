@@ -87,7 +87,7 @@ if  [ $save_hpss_subset = "true" ]; then
    fi
    cd ..
    # exclude long forecast directory
-   htar -cvf ${hsidir}/${analdate}_subset.tar ${analdate}/*ensmean* ${analdate}/*control* ${analdate}/*bias* 
+   htar -cvf ${hsidir}/${analdate}_subset.tar ${analdate}/*ensmean* ${analdate}/*control* ${analdate}/*bias* ${analdate}/logs
    # remove cris,iasi airs diag files to save more space
    #/bin/rm -f ${analdate}/diag*cris* ${analdate}/diag*airs* ${analdate}/diag*iasi*
 fi

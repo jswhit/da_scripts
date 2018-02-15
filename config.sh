@@ -1,7 +1,7 @@
 echo "running on $machine using $NODES nodes"
 ulimit -s unlimited
 
-export exptname=C128_nsst_allsky
+export exptname=C128_nsst_allsky_replay
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia.
@@ -40,7 +40,7 @@ export replay_run_observer='true' # run observer on replay forecast
 # full ensemble should be saved to HPSS (returns 0 if 
 # HPSS save should be done)
 export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
-export run_long_fcst="true"  # spawn a longer control forecast at 00 and 12 UTC
+export run_long_fcst="false"  # spawn a longer control forecast at 00 and 12 UTC
 export ensmean_restart='false'
 export copy_history_files=1 # save pressure level history files (and compute ens mean)
 
@@ -149,11 +149,32 @@ else
    export fv3exec='fv3-nonhydro.exe'
    export consv_te=1
 fi
-export hord_mt=6
-export hord_vt=6
-export hord_tm=6
-export hord_dp=-6
-export vtdm4=0.02
+if [ $hydrostatic == 'T' ];  then
+   export fv3exec='fv3-hydro.exe'
+   export hord_mt=10
+   export hord_vt=10
+   export hord_tm=10
+   export hord_dp=-10
+   export vtdm4=0.05
+   export consv_te=0
+else
+   export fv3exec='fv3-nonhydro.exe'
+   export hord_mt=5
+   export hord_vt=5
+   export hord_tm=5
+   export hord_dp=-5
+   export vtdm4=0.06
+   export consv_te=1
+fi
+# GFDL suggests this for imp_physics=11
+#export hord_mt=6
+#export hord_vt=6
+#export hord_tm=6
+#export hord_dp=-6
+#export nord=2
+#export dddmp=0.1
+#export d4_bg=0.12
+#export vtdm4=0.02
 
 # stochastic physics parameters.
 export SPPT=0.8

@@ -1,3 +1,24 @@
+# setup node parameters used in compute_ensmean_enkf.csh
+setenv mpitaskspernode `python -c "import math; print int(math.ceil(float(${nanals})/float(${NODES})))"`
+if ($mpitaskspernode < 1) setenv mpitaskspernode 1
+setenv OMP_NUM_THREADS `expr $corespernode \/ $mpitaskspernode`
+echo "mpitaskspernode = $mpitaskspernode threads = $OMP_NUM_THREADS"
+setenv nprocs $nanals
+if ($machine == 'theia') then
+    # HOSTFILE is machinefile to use for programs that require $nanals tasks.
+    # if enough cores available, just one core on each node.
+    # NODEFILE is machinefile containing one entry per node.
+    setenv HOSTFILE $datapath2/machinesx1
+    setenv NODEFILE $datapath2/nodefile1
+    cat $hostfilein | uniq > $NODEFILE
+    if ($NODES >= $nanals) then
+      ln -fs $NODEFILE $HOSTFILE
+    else
+      # otherwise, leave as many cores empty as possible
+      awk "NR%${OMP_NUM_THREADS} == 1" ${hosefilein} >&! $HOSTFILE
+    endif
+endif
+
 # run gsi observer with ens mean fcst background, saving jacobian.
 # generated diag files used by EnKF
 setenv charnanal 'ensmean' 
@@ -51,3 +72,8 @@ if ($controlfcst == 'true' && $replay_controlfcst == 'true' && $replay_run_obser
      exit 1
    endif
 endif
+
+# compute ensemble mean analyses.
+echo "$analdate starting ens mean analysis computation `date`"
+csh ${enkfscripts}/compute_ensmean_enkf.csh >&!  ${current_logdir}/compute_ensmean_anal.out
+echo "$analdate done computing ensemble mean analyses `date`"

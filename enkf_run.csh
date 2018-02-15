@@ -32,11 +32,7 @@ set nanal=1
 set filemissing='no'
 while ($nanal <= $nanals)
    set charnanal="mem"`printf %03i $nanal`
-   if ($iau_delthrs != -1) then
-      set analfile="${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}"
-   else
-      set analfile="${datapath2}/sanl_${analdate}_${charnanal}"
-   endif
+   set analfile="${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}"
    if ( ! -s $analfile) set filemissing='yes'
    @ nanal = $nanal + 1
 end
@@ -194,15 +190,7 @@ set nanal=1
 set filemissing='no'
 while ($nanal <= $nanals)
    set charnanal="mem"`printf %03i $nanal`
-   if ($#iaufhrs2 == 1 && $iau_delthrs != -1) then
-      echo "rename output file sanl_${analdate}_${charnanal} to sanl_${analdate}_${charfhr}_${charnanal}"
-      /bin/mv -f ${datapath2}/sanl_${analdate}_${charnanal} ${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}
-   endif
-   if ($iau_delthrs != -1) then
-      set analfile=${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}
-   else
-      set analfile=${datapath2}/sanl_${analdate}_${charnanal}
-   endif
+   set analfile=${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}
    if ( ! -s $analfile) set filemissing='yes'
    @ nanal = $nanal + 1
 end

@@ -16,7 +16,6 @@ if ($machine == 'theia') then
    cat $hostfilein | uniq > $NODEFILE
 endif
 
-setenv SIGANL ${datapath2}/sanl_${analdate}_${charnanal}
 setenv SIGANL03 ${datapath2}/sanl_${analdate}_fhr03_${charnanal}
 setenv SIGANL04 ${datapath2}/sanl_${analdate}_fhr04_${charnanal}
 setenv SIGANL05 ${datapath2}/sanl_${analdate}_fhr05_${charnanal}
@@ -24,21 +23,19 @@ setenv SIGANL06 ${datapath2}/sanl_${analdate}_fhr06_${charnanal}
 setenv SIGANL07 ${datapath2}/sanl_${analdate}_fhr07_${charnanal}
 setenv SIGANL08 ${datapath2}/sanl_${analdate}_fhr08_${charnanal}
 setenv SIGANL09 ${datapath2}/sanl_${analdate}_fhr09_${charnanal}
-setenv SFCANL ${datapath2}/sfcanl_${analdate}_${charnanal}
-setenv SFCANLm3 ${datapath2}/sfcanl_${analdate}_fhr03_${charnanal}
 setenv BIASO ${datapath2}/${PREINP}abias 
 setenv BIASO_PC ${datapath2}/${PREINP}abias_pc 
 setenv SATANGO ${datapath2}/${PREINP}satang
 setenv DTFANL ${datapath2}/${PREINP}dtfanl.nc
 
 if ($cleanup_controlanl == 'true') then
-   /bin/rm -f ${SIGANL}
+   /bin/rm -f ${SIGANL06}
    /bin/rm -f ${datapath2}/diag*control
 endif
 
 set niter=1
 set alldone='no'
-if ( -s $SIGANL && -s $SFCANL && -s $BIASO && -s $SATANGO) set alldone='yes'
+if ( -s $SIGANL06 && -s $BIASO && -s $SATANGO) set alldone='yes'
 
 while ($alldone == 'no' && $niter <= $nitermax)
 
@@ -84,7 +81,6 @@ if ($cold_start_bias == "true") then
     setenv lread_obs_skip ".false."
     echo "${analdate} compute gsi observer to cold start bias correction"
     setenv HXONLY 'YES'
-    setenv DOSFCANL 'NO'
     /bin/rm -rf $tmpdir
     mkdir -p $tmpdir
     time sh ${enkfscripts}/${rungsi}
@@ -97,8 +93,7 @@ endif
 setenv lread_obs_save ".false."
 setenv lread_obs_skip ".false."
 setenv HXONLY 'NO'
-setenv DOSFCANL 'YES'
-if ( -s $SIGANL ) then
+if ( -s $SIGANL06 ) then
   echo "gsi hybrid already completed"
   echo "yes" >&! ${current_logdir}/run_gsi_hybrid.log
   exit 0
@@ -119,7 +114,7 @@ if ($status != 0) then
   echo "gsi hybrid analysis did not complete sucessfully"
   set exitstat=1
 else
-  if ( ! -s $SIGANL ) then
+  if ( ! -s $SIGANL06 ) then
     echo "gsi hybrid analysis did not complete sucessfully"
     set exitstat=1
   else
@@ -140,7 +135,6 @@ if($alldone == 'no') then
     echo "Tried ${nitermax} times and to do gsi hybrid analysis and failed"
     echo "no" >&! ${current_logdir}/run_gsi_hybrid.log
 else
-    #ln -fs $SIGANL ${datapath2}/sanl_${analdate}_${charnanal}
     echo "yes" >&! ${current_logdir}/run_gsi_hybrid.log
     /bin/rm -rf $tmpdir
 endif

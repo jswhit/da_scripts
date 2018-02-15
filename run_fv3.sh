@@ -155,10 +155,10 @@ while [ $n -le 6 ]; do
  n=$((n+1))
 done
 ln -fs $FIXFV3/C${RES}/C${RES}_mosaic.nc  grid_spec.nc
-#ln -fs $FIXGLOBAL/global_o3prdlos.f77               global_o3prdlos.f77
+ln -fs $FIXGLOBAL/global_o3prdlos.f77               global_o3prdlos.f77
 # new ozone and h2o physics for stratosphere
-ln -fs $FIXGLOBAL/ozprdlos_2015_new_sbuvO3_tclm15_nuchem.f77 global_o3prdlos.f77
-ln -fs $FIXGLOBAL/global_h2o_pltc.f77 global_h2oprdlos.f77 # used if h2o_phys=T
+#ln -fs $FIXGLOBAL/ozprdlos_2015_new_sbuvO3_tclm15_nuchem.f77 global_o3prdlos.f77
+#ln -fs $FIXGLOBAL/global_h2o_pltc.f77 global_h2oprdlos.f77 # used if h2o_phys=T
 cd ..
 # co2, ozone, surface emiss and aerosol data.
 ln -fs $FIXGLOBAL/global_solarconstant_noaa_an.txt  solarconstant_noaa_an.txt
@@ -496,9 +496,9 @@ cat > input.nml <<EOF
   dnats = ${dnats},
   fv_sg_adj = ${fv_sg_adj:-600},
   d2_bg = 0.0,
-  nord = 2,
-  dddmp = 0.1,
-  d4_bg = 0.12,
+  nord = ${nord:-3},
+  dddmp = ${dddmp:-0.2},
+  d4_bg = ${d4_bg:-0.12},
   delt_max = 0.002,
   vtdm4 = ${vtdm4},
   ke_bg = 0.0,
@@ -576,7 +576,7 @@ cat > input.nml <<EOF
   cdmbgwd = ${cdmbgwd}
   psautco = ${psautco}
   prautco = ${prautco}
-  h2o_phys      = T
+  h2o_phys      = ${h2o_phys:-F}
   nstf_name     = ${nstf_name}
   nst_anl       = ${nst_anl}
   iaufhrs = ${iaufhrs}
