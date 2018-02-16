@@ -177,7 +177,6 @@ done
 if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
    cd INPUT
 
-   if [ "${iau_delthrs}" != "-1" ]; then
    iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
 # IAU - multiple increments.
    for fh in $iaufhrs2; do
@@ -196,24 +195,6 @@ if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
          exit 1
       fi
    done # do next forecast
-
-   else
-# no IAU, single increment
-   export increment_file="fv3_increment.nc"
-      if [ "$replay_controlfcst" == 'true' ] && [ "$charnanal" == 'control2' ]; then
-         export analfile="${datapath2}/sanl_${analdate}_ensmean"
-      else
-         export analfile="${datapath2}/sanl_${analdate}_${charnanal}"
-      fi
-   /bin/rm -f ${increment_file}
-   export "PGM=${execdir}/calc_increment.x ${analfile} ${datapath2}/sfg_${analdate}_fhr06_${charnanal} ${increment_file} T T -1"
-   nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
-   if [ $? -ne 0 -o ! -s ${increment_file} ]; then
-      echo "problem creating ${increment_file}, stopping .."
-      exit 1
-   fi
-
-   fi
 
    cd ..
 fi
@@ -263,7 +244,7 @@ else
       reslatlondynamics=""
       readincrement=F
    else
-      reslatlondynamics="fv3_increment.nc"
+      reslatlondynamics="fv3_increment6.nc"
       readincrement=T
       iau_inc_files=""
    fi
