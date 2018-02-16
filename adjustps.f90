@@ -253,7 +253,7 @@ program adjustps
      zmodel = rwork_2(n,2); zob = rwork_1(n,2)
      t0(n) = tv*(ps/tpress)**alpha ! eqn 4 from B&M
      preduced = ps*((t0(n) + rlapse*(zob-zmodel))/t0(n))**(1./alpha) ! eqn 1 from B&M
-     delps = ps-preduced 
+     delps(n) = ps-preduced 
      rwork_1(n,1) = rwork_2(n,1) ! save old ps 
      rwork_2(n,1) = preduced     ! new surface pressure adjusted to new orography
   enddo
