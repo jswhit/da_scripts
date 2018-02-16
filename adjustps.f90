@@ -228,7 +228,7 @@ program adjustps
      end do
   else
      do k=1,nlevs
-        ! gsi formula ("phillips vertical interpolation")
+        ! "phillips" vertical interpolation
         pressl(:,k)=((pressi(:,k)**kap1-pressi(:,k+1)**kap1)/&
                      (kap1*(pressi(:,k)-pressi(:,k+1))))**kapr
      end do

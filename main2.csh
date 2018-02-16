@@ -121,10 +121,12 @@ if ($controlfcst == 'true') then
      set charnanal='control'
    endif
    echo "$analdate adjust orog/ps of control forecast on ens grid `date`"
+   /bin/rm -f ${current_logdir}/adjustps.out
+   touch ${current_logdir}/adjustps.out
    set fh=0
    while ($fh <= $FHMAX)
      set fhr=`printf %02i $fh`
-     sh ${enkfscripts}/adjustps.sh $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} >&! ${current_logdir}/adjustps.out
+     sh ${enkfscripts}/adjustps.sh $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} >> ${current_logdir}/adjustps.out
      @ fh = $fh + $FHOUT
    end
    echo "$analdate done adjusting orog/ps of control forecast on ens grid `date`"
