@@ -34,8 +34,9 @@ program adjustps
 
   character*500 filename_1,filename_2,filename_o
   character*3 charnlev
-  integer nflds,iret,latb,lonb,nlevs,npts,k,n,nlevt
-  integer krecu,krecv,krect,krecq,krecoz,kreccwmr,nrec
+  integer iret,latb,lonb,nlevs,npts,k,n,nlevt,idsl
+  integer nrec,nrec2,latb2,lonb2,nlevs2,npts2
+  integer krect,krecq,krecu,krecv,ntrac,kq,kt,krecoz,kreccwmr,krecicmr
   real,allocatable,dimension(:,:,:) :: vcoord
   real,allocatable,dimension(:,:) ::&
   rwork_1,rwork_2,pressi,pressl,pressi_new,pressl_new
@@ -82,7 +83,7 @@ program adjustps
   call nemsio_open(gfile_1,trim(filename_1),'READ',iret=iret)
   if (iret == 0 ) then
       write(6,*)'Read nemsio ',trim(filename_1),' iret=',iret
-      call nemsio_getfilehead(gfile_1, nrec=nrec, dimx=lonb, dimy=latb, dimz=nlevs, iret=iret)
+      call nemsio_getfilehead(gfile_1, nrec=nrec, dimx=lonb, dimy=latb, dimz=nlevs, idsl=idsl,iret=iret)
       write(6,*)' lonb=',lonb,' latb=',latb,' levs=',nlevs,' nrec=',nrec
   else
       write(6,*)'***ERROR*** ',trim(filename_1),' contains unrecognized format.  ABORT'
@@ -93,16 +94,25 @@ program adjustps
      print *,'Error opening ',trim(filename_2)
      stop
   endif
+  call nemsio_getfilehead(gfile_2, nrec=nrec2, dimx=lonb2, dimy=latb2, dimz=nlevs2, iret=iret)
 
   npts=lonb*latb
-  nflds = 2 + 6*nlevs ! FIXME: generalize for GFDL MP
-  print *,'nrec,nflds',nrec,nflds
-  if (nrec .ne. nflds) then
-     print *,'number of records in file not what is expected, aborting..'
+  npts2=lonb2*latb2
+  ! assumes ps,zs are first two records, then u,v,t,q,oz,cwmr and optionally icmr
+  if (nrec > 2 + 7*nlevs) then
+     print *,'cannot handle nrec > ',2 + 7*nlevs
      stop
   endif
-  allocate(rwork_1(npts,nflds))
-  allocate(rwork_2(npts,nflds))
+  ! q, oz, then microphys tracers are last
+  krecq    = 2 + 3*nlevs + 1
+  ntrac = (nrec-(krecq-1))/nlevs
+  print *,'ntrac,nrec,idsl',ntrac,nrec,idsl
+  if (nrec .ne. nrec2 .or. npts .ne. npts2 .or. nlevs .ne. nlevs2) then
+     print *,'number of records or grid size in file not what is expected, aborting..'
+     stop
+  endif
+  allocate(rwork_1(npts,nrec))
+  allocate(rwork_2(npts,nrec))
   allocate(delz(npts))
   allocate(delps(npts))
   allocate(t0(npts))
@@ -122,16 +132,7 @@ program adjustps
   ak = vcoord(:,1,1); bk = vcoord(:,2,1)
   deallocate(vcoord)
 
-  call nemsio_readrecv(gfile_1,'pres','sfc',1,rwork_1(:,1),iret=iret)
-  if (iret /= 0) then
-     print *,'Error reading ps from ',trim(filename_1)
-     stop
-  endif
-  call nemsio_readrecv(gfile_1,'hgt','sfc',1,rwork_1(:,2),iret=iret)
-  if (iret /= 0) then
-     print *,'Error reading zs from ',trim(filename_1)
-     stop
-  endif
+  ! read ps,zs from filename_2
   call nemsio_readrecv(gfile_2,'pres','sfc',1,rwork_2(:,1),iret=iret)
   if (iret /= 0) then
      print *,'Error reading ps from ',trim(filename_2)
@@ -142,10 +143,21 @@ program adjustps
      print *,'Error reading zs from ',trim(filename_1)
      stop
   endif
-  delz = rwork_1(:,2) - rwork_2(:,2)
-  delps = rwork_1(:,1) - rwork_2(:,1)
-  print *,'min/max delz = ',minval(delz),maxval(delz)
-  print *,'min/max delps = ',minval(delps),maxval(delps)
+  ! read all fields from filename_1
+  call nemsio_readrecv(gfile_1,'pres','sfc',1,rwork_1(:,1),iret=iret)
+  if (iret /= 0) then
+     print *,'Error reading ps from ',trim(filename_1)
+     stop
+  endif
+  call nemsio_readrecv(gfile_1,'hgt','sfc',1,rwork_1(:,2),iret=iret)
+  if (iret /= 0) then
+     print *,'Error reading zs from ',trim(filename_1)
+     stop
+  endif
+  print *,minval(rwork_1(:,1)),maxval(rwork_1(:,1))
+  print *,minval(rwork_2(:,1)),maxval(rwork_2(:,1))
+  print *,minval(rwork_1(:,2)),maxval(rwork_1(:,2))
+  print *,minval(rwork_2(:,2)),maxval(rwork_2(:,2))
   do k = 1,nlevs
       krecu    = 2 + 0*nlevs + k
       krecv    = 2 + 1*nlevs + k
@@ -153,6 +165,9 @@ program adjustps
       krecq    = 2 + 3*nlevs + k
       krecoz   = 2 + 4*nlevs + k
       kreccwmr = 2 + 5*nlevs + k
+      if (nrec > 2 + 6*nlevs) then
+         krecicmr = 2 + 6*nlevs + k
+      endif
       call nemsio_readrecv(gfile_1,'ugrd', 'mid layer',k,rwork_1(:,krecu),   iret=iret)
       if (iret /= 0) then
          print *,'Error reading u from ',trim(filename_1),k
@@ -178,14 +193,25 @@ program adjustps
          print *,'Error reading o3 from ',trim(filename_1),k
          stop
       endif
-! FIXME - add support for GFDL MP extra tracers
       call nemsio_readrecv(gfile_1,'clwmr','mid layer',k,rwork_1(:,kreccwmr),iret=iret)
       if (iret /= 0) then
          print *,'Error reading cwmr from ',trim(filename_1),k
          stop
       endif
+      if (nrec > 2 + 6*nlevs) then
+      call nemsio_readrecv(gfile_1,'icmr','mid layer',k,rwork_1(:,krecicmr),iret=iret)
+      if (iret /= 0) then
+         print *,'Error reading icmr from ',trim(filename_1),k
+         stop
+      endif
+      endif
   enddo
   call nemsio_close(gfile_1,iret=iret)
+
+  delz = rwork_1(:,2) - rwork_2(:,2)
+  delps = rwork_1(:,1) - rwork_2(:,1)
+  print *,'min/max delz = ',minval(delz),maxval(delz)
+  print *,'min/max delps = ',minval(delps),maxval(delps)
   if (iret /= 0) then
      print *,'Error closing ',trim(filename_1)
      stop
@@ -195,13 +221,21 @@ program adjustps
   do k=1,nlevs+1
      pressi(:,k)=ak(k)+bk(k)*rwork_1(:,1) 
   enddo
-  do k=1,nlevs
-     ! gsi formula ("phillips vertical interpolation")
-     pressl(:,k)=((pressi(:,k)**kap1-pressi(:,k+1)**kap1)/&
-                  (kap1*(pressi(:,k)-pressi(:,k+1))))**kapr
-  end do
+  if (idsl == 2) then
+! IDSL: TYPE OF SIGMA STRUCTURE (1 FOR PHILLIPS OR 2 FOR MEAN)
+     do k=1,nlevs
+        pressl(:,k)=0.5*(pressi(:,k)+pressi(:,k+1))
+     end do
+  else
+     do k=1,nlevs
+        ! gsi formula ("phillips vertical interpolation")
+        pressl(:,k)=((pressi(:,k)**kap1-pressi(:,k+1)**kap1)/&
+                     (kap1*(pressi(:,k)-pressi(:,k+1))))**kapr
+     end do
+  endif
 
   ! adjust surface pressure.
+  ! update first two fields in output (rwork_2)
   do n=1,npts
 ! compute MAPS pressure reduction from model to station elevation
 ! See Benjamin and Miller (1990, MWR, p. 2100)
@@ -212,61 +246,54 @@ program adjustps
 ! t - virtual temp. at pressure tpress.
 ! zmodel - model orographic height.
 ! zob - station height
-     krect    = 2 + 2*nlevs + nlevt
-     krecq    = 2 + 3*nlevs + nlevt
-     tv = (1.+fv*rwork_1(n,krecq))*rwork_1(n,krect)
+     kt    = 2 + 2*nlevs + nlevt
+     kq    = 2 + 3*nlevs + nlevt
+     tv = (1.+fv*rwork_1(n,kq))*rwork_1(n,kt)
      tpress = pressl(n,nlevt); ps = rwork_1(n,1)
      zmodel = rwork_2(n,2); zob = rwork_1(n,2)
      t0(n) = tv*(ps/tpress)**alpha ! eqn 4 from B&M
      preduced = ps*((t0(n) + rlapse*(zob-zmodel))/t0(n))**(1./alpha) ! eqn 1 from B&M
-     rwork_1(n,2) = rwork_2(n,2) ! new orography
-     rwork_2(n,3) = ps-preduced
-     rwork_1(n,1) = preduced ! surface pressure adjusted to new orography
+     delps = ps-preduced 
+     rwork_1(n,1) = rwork_2(n,1) ! save old ps 
+     rwork_2(n,1) = preduced     ! new surface pressure adjusted to new orography
   enddo
   print *,'min/max effective surface t',minval(t0),maxval(t0)
-  print *,'min/max ps adjustment',minval(rwork_2(:,3)),maxval(rwork_2(:,3))
+  print *,'min/max ps adjustment',minval(delps),maxval(delps)
   delps = rwork_1(:,1) - rwork_2(:,1)
   print *,'min/max delps after adjustment = ',minval(delps),maxval(delps)
   !==> new pressure at layers and interfaces.
   do k=1,nlevs+1
-     pressi_new(:,k)=ak(k)+bk(k)*rwork_1(:,1)  ! updated ps
+     pressi_new(:,k)=ak(k)+bk(k)*rwork_2(:,1)  ! updated ps
   enddo
-  do k=1,nlevs
-     ! gsi formula ("phillips vertical interpolation")
-     pressl_new(:,k)=((pressi_new(:,k)**kap1-pressi_new(:,k+1)**kap1)/&
-                     (kap1*(pressi_new(:,k)-pressi_new(:,k+1))))**kapr
-  end do
+  if (idsl == 2) then
+     do k=1,nlevs
+        pressl_new(:,k)=0.5*(pressi_new(:,k)+pressi_new(:,k+1))
+     end do
+  else
+     do k=1,nlevs
+        pressl_new(:,k)=((pressi_new(:,k)**kap1-pressi_new(:,k+1)**kap1)/&
+                        (kap1*(pressi_new(:,k)-pressi_new(:,k+1))))**kapr
+     end do
+  endif
   gfile_o=gfile_2
   call nemsio_open(gfile_o,trim(filename_o),'WRITE',iret=iret)
   if (iret /= 0) then
      print *,'Error opening ',trim(filename_o)
      stop
   endif
-  call nemsio_writerecv(gfile_o,'pres','sfc',1,rwork_1(:,1),iret=iret)
-  if (iret /= 0) then
-     print *,'Error writing ps to ',trim(filename_o)
-     stop
-  endif
-  call nemsio_writerecv(gfile_o,'hgt','sfc',1,rwork_1(:,2),iret=iret)
-  if (iret /= 0) then
-     print *,'Error writing zs to ',trim(filename_o)
-     stop
-  endif
-! interpolate fields to new pressures.
+! interpolate fields to new pressures (update rest of rwork_2).
   krecu    = 2 + 0*nlevs + 1
   krecv    = 2 + 1*nlevs + 1
   krect    = 2 + 2*nlevs + 1
   krecq    = 2 + 3*nlevs + 1
-  krecoz   = 2 + 4*nlevs + 1
-  kreccwmr = 2 + 5*nlevs + 1
   print *,'min/max pressi diff',minval(pressi-pressi_new),maxval(pressi-pressi_new)
   print *,'min/max pressl diff',minval(pressl-pressl_new),maxval(pressl-pressl_new)
-  call vintg(npts,npts,nlevs,nlevs,3,pressl,&
+  call vintg(npts,npts,nlevs,nlevs,ntrac,pressl,&
              rwork_1(:,krecu:krecu+nlevs-1),rwork_1(:,krecv:krecv+nlevs-1),&
-             rwork_1(:,krect:krect+nlevs-1),rwork_1(:,krecq:kreccwmr+nlevs-1),&
+             rwork_1(:,krect:krect+nlevs-1),rwork_1(:,krecq:nrec),&
              pressl_new,&
              rwork_2(:,krecu:krecu+nlevs-1),rwork_2(:,krecv:krecv+nlevs-1),&
-             rwork_2(:,krect:krect+nlevs-1),rwork_2(:,krecq:kreccwmr+nlevs-1))
+             rwork_2(:,krect:krect+nlevs-1),rwork_2(:,krecq:nrec))
   print *,'min/max u diff',minval(rwork_1(:,krecu:krecu+nlevs-1)-rwork_2(:,krecu:krecu+nlevs-1)),&
                            maxval(rwork_1(:,krecu:krecu+nlevs-1)-rwork_2(:,krecu:krecu+nlevs-1))
   print *,'min/max v diff',minval(rwork_1(:,krecv:krecv+nlevs-1)-rwork_2(:,krecv:krecv+nlevs-1)),&
@@ -275,10 +302,23 @@ program adjustps
                            maxval(rwork_1(:,krect:krect+nlevs-1)-rwork_2(:,krect:krect+nlevs-1))
   print *,'min/max q diff',minval(rwork_1(:,krecq:krecq+nlevs-1)-rwork_2(:,krecq:krecq+nlevs-1)),&
                            maxval(rwork_1(:,krecq:krecq+nlevs-1)-rwork_2(:,krecq:krecq+nlevs-1))
-  print *,'min/max oz diff',minval(rwork_1(:,krecoz:krecoz+nlevs-1)-rwork_2(:,krecoz:krecoz+nlevs-1)),&
-                           maxval(rwork_1(:,krecoz:krecoz+nlevs-1)-rwork_2(:,krecoz:krecoz+nlevs-1))
-  print *,'min/max cwmr diff',minval(rwork_1(:,kreccwmr:kreccwmr+nlevs-1)-rwork_2(:,kreccwmr:kreccwmr+nlevs-1)),&
-                           maxval(rwork_1(:,kreccwmr:kreccwmr+nlevs-1)-rwork_2(:,kreccwmr:kreccwmr+nlevs-1))
+  print *,'min/max tracer diff',minval(rwork_1(:,krecq+nlevs:nrec)-rwork_2(:,krecq+nlevs:nrec)),&
+                           maxval(rwork_1(:,krecq+nlevs:nrec)-rwork_2(:,krecq+nlevs:nlevs))
+  ! write out all fields to filename_o
+  call nemsio_writerecv(gfile_o,'pres','sfc',1,rwork_2(:,1),iret=iret)
+  if (iret /= 0) then
+     print *,'Error writing ps to ',trim(filename_o)
+     stop
+  else
+     print *,'wrote ps ',k,minval(rwork_2(:,1)),maxval(rwork_2(:,1))
+  endif
+  call nemsio_writerecv(gfile_o,'hgt','sfc',1,rwork_2(:,2),iret=iret)
+  if (iret /= 0) then
+     print *,'Error writing zs to ',trim(filename_o)
+     stop
+  else
+     print *,'wrote zs ',k,minval(rwork_2(:,2)),maxval(rwork_2(:,2))
+  endif
   do k = 1,nlevs
       krecu    = 2 + 0*nlevs + k
       krecv    = 2 + 1*nlevs + k
@@ -286,35 +326,59 @@ program adjustps
       krecq    = 2 + 3*nlevs + k
       krecoz   = 2 + 4*nlevs + k
       kreccwmr = 2 + 5*nlevs + k
+      if (nrec > 2 + 6*nlevs) then
+         krecicmr = 2 + 6*nlevs + k
+      endif
       call nemsio_writerecv(gfile_o,'ugrd', 'mid layer',k,rwork_2(:,krecu),   iret=iret)
       if (iret /= 0) then
-         print *,'Error writing u to ',trim(filename_1),k
+         print *,'Error writing u to ',trim(filename_o),k
          stop
+      else
+         print *,'wrote u level ',k,minval(rwork_2(:,krecu)),maxval(rwork_2(:,krecu))
       endif
       call nemsio_writerecv(gfile_o,'vgrd', 'mid layer',k,rwork_2(:,krecv),   iret=iret)
       if (iret /= 0) then
-         print *,'Error writing v to ',trim(filename_1),k
+         print *,'Error writing v to ',trim(filename_o),k
          stop
+      else
+         print *,'wrote v level ',k,minval(rwork_2(:,krecv)),maxval(rwork_2(:,krecv))
       endif
       call nemsio_writerecv(gfile_o,'tmp',  'mid layer',k,rwork_2(:,krect),   iret=iret)
       if (iret /= 0) then
-         print *,'Error writing t to ',trim(filename_1),k
+         print *,'Error writing t to ',trim(filename_o),k
          stop
+      else
+         print *,'wrote t level ',k,minval(rwork_2(:,krect)),maxval(rwork_2(:,krect))
       endif
       call nemsio_writerecv(gfile_o,'spfh', 'mid layer',k,rwork_2(:,krecq),   iret=iret)
       if (iret /= 0) then
-         print *,'Error writing q to ',trim(filename_1),k
+         print *,'Error writing q to ',trim(filename_o),k
          stop
+      else
+         print *,'wrote q level ',k,minval(rwork_2(:,krecq)),maxval(rwork_2(:,krecq))
       endif
       call nemsio_writerecv(gfile_o,'o3mr', 'mid layer',k,rwork_2(:,krecoz),  iret=iret)
       if (iret /= 0) then
-         print *,'Error writing o3 to ',trim(filename_1),k
+         print *,'Error writing o3 to ',trim(filename_o),k
          stop
+      else
+         print *,'wrote o3 level ',k,minval(rwork_2(:,krecoz)),maxval(rwork_2(:,krecoz))
       endif
       call nemsio_writerecv(gfile_o,'clwmr','mid layer',k,rwork_2(:,kreccwmr),iret=iret)
       if (iret /= 0) then
-         print *,'Error writing cwmr to ',trim(filename_1),k
+         print *,'Error writing cwmr to ',trim(filename_o),k
          stop
+      else
+         print *,'wrote cwmr level ',k,minval(rwork_2(:,kreccwmr)),maxval(rwork_2(:,kreccwmr))
+      endif
+      if (nrec > 2 + 6*nlevs) then
+      call nemsio_writerecv(gfile_o,'icmr','mid layer',k,rwork_2(:,krecicmr),iret=iret)
+      if (iret /= 0) then
+         print *,'Error writing icmr to ',trim(filename_o),k
+         stop
+      else
+         print *,'wrote icmr level ',k,minval(rwork_2(:,krecicmr)),maxval(rwork_2(:,krecicmr))
+      endif
       endif
   enddo
   deallocate(delps,delz,t0)
@@ -385,17 +449,20 @@ END program adjustps
 !   LANGUAGE: FORTRAN
 !
 !C$$$
-      REAL P1(IX,KM1),U1(IX,KM1),V1(IX,KM1),T1(IX,KM1),Q1(IX,NT*KM1)
+      INTEGER, INTENT(IN) :: IX,KM1,KM2,NT
+      REAL, INTENT(IN) :: P1(IX,KM1),U1(IX,KM1),V1(IX,KM1),T1(IX,KM1),Q1(IX,NT*KM1)
 !    &     ,W1(IX,KM1)
-      REAL P2(IX,KM2),U2(IX,KM2),V2(IX,KM2),T2(IX,KM2),Q2(IX,NT*KM2)
+      REAL, INTENT(IN) :: P2(IX,KM2)
+      REAL, INTENT(OUT) :: U2(IX,KM2),V2(IX,KM2),T2(IX,KM2),Q2(IX,NT*KM2)
 !    &     ,W2(IX,KM2)
-      PARAMETER(DLTDZ=-6.5E-3*287.05/9.80665)
-      PARAMETER(DLPVDRT=-2.5E6/461.50)
+      REAL,  PARAMETER :: DLTDZ=-6.5E-3*287.05/9.80665
+      REAL,  PARAMETER :: DLPVDRT=-2.5E6/461.50
 
       REAL,allocatable :: Z1(:,:),Z2(:,:)
       REAL,allocatable :: C1(:,:,:),C2(:,:,:),J2(:,:,:)
       real (kind=8) timef,mbytes,print_memory
-      integer             :: ijaa
+      real dz
+      integer             :: ijaa,im,k,i,n
 !
       allocate (Z1(IM+1,KM1),Z2(IM+1,KM2))
       allocate (C1(IM+1,KM1,4+NT),C2(IM+1,KM2,4+NT),J2(IM+1,KM2,4+NT))
