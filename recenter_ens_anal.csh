@@ -34,8 +34,8 @@ endif
 set nanal=1
 while ($nanal <= $nanals)
    set charnanal_tmp="mem"`printf %03i $nanal`
-   set analfiler=sanlr_${analdate}_${charnanal_tmp}
-   set analfile=sanl_${analdate}_${charnanal_tmp}
+   set analfiler=sanlr_${analdate}_${charfhr}_${charnanal_tmp}
+   set analfile=sanl_${analdate}_${charfhr}_${charnanal_tmp}
    if ( -s $analfiler) then
       /bin/mv -f $analfile ${analfile}.orig
       /bin/mv -f $analfiler $analfile
