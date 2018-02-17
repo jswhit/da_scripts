@@ -40,6 +40,7 @@ export replay_run_observer='true' # run observer on replay forecast
 # full ensemble should be saved to HPSS (returns 0 if 
 # HPSS save should be done)
 export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
+export save_hpss="true"
 export run_long_fcst="false"  # spawn a longer control forecast at 00 and 12 UTC
 export ensmean_restart='false'
 export copy_history_files=1 # save pressure level history files (and compute ens mean)
@@ -53,6 +54,7 @@ export copy_history_files=1 # save pressure level history files (and compute ens
 #export cleanup_fg='false'
 #export resubmit='false'
 #export do_cleanup='false'
+#export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
  
 if [ "$machine" == 'wcoss' ]; then
    export basedir=/gpfs/hps2/esrl/gefsrr/noscrub/${USER}
@@ -177,13 +179,13 @@ fi
 #export vtdm4=0.02
 
 # stochastic physics parameters.
-export SPPT=0.8
+export SPPT=0.6
 export SPPT_TSCALE=21600.
 export SPPT_LSCALE=500.e3
-export SHUM=0.006
+export SHUM=0.004
 export SHUM_TSCALE=21600.
 export SHUM_LSCALE=500.e3
-export SKEB=1.0
+export SKEB=0.8
 export SKEB_TSCALE=21600.
 export SKEB_LSCALE=500.e3
 export SKEBNORM=0

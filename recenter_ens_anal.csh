@@ -40,6 +40,9 @@ while ($nanal <= $nanals)
       /bin/mv -f $analfile ${analfile}.orig
       /bin/mv -f $analfiler $analfile
       if ($status != 0) set errorcode=1
+   else
+      echo "no" >! ${current_logdir}/recenter_ens.log
+      exit 1
    endif
    @ nanal = $nanal + 1
 end

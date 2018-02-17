@@ -1,4 +1,4 @@
-# need envars:  machine, analdate, datapath2, hsidir, save_hpss, save_hpss_subset, POSTPROC, npefiles
+# need envars:  machine, analdate, datapath2, hsidir, save_hpss_full, save_hpss_subset
 
 exitstat=0
 source $MODULESHOME/init/sh
@@ -12,7 +12,7 @@ hsi ls -l $hsidir
 hsi mkdir ${hsidir}/
 cd ${datapath2}
 
-if  [ $save_hpss = "true" ]; then
+if  [ $save_hpss_full = "true" ]; then
    echo "htar fgens, fgens2"
    /bin/rm -rf gsitmp*
    /bin/rm -rf sanl*mem*
@@ -22,32 +22,26 @@ if  [ $save_hpss = "true" ]; then
    htar -cvf ${hsidir}/${analdate}_fgens2.tar * &
    cd ..
    wait
-   #if [ $npefiles = '0' ]; then
-   #   cd diagens
-   #   echo "htar diagens"
-   #   htar -cvf ${hsidir}/diag_conv_${analdate}.tar * 
-   #   cd ..
-   #fi
 else
    echo 'not saving data to hpps, just clean up...'
 fi
 
 hsi ls -l ${hsidir}/${analdate}_fgens.tar
-if [  $? -eq 0 ] || [ $save_hpss != "true" ]; then
+if [  $? -eq 0 ] || [ $save_hpss_full != "true" ]; then
    echo "hsi fgens done or not requested, deleting data..."
    /bin/rm -rf fgens
 else
-   if [ $save_hpss == 'true']; then
+   if [ $save_hpss_full == 'true']; then
       echo "hsi fgens failed ${analdate}..."
       exitstat=1
    fi
 fi
 hsi ls -l ${hsidir}/${analdate}_fgens2.tar
-if [  $? -eq 0 ] || [ $save_hpss != "true" ]; then
+if [  $? -eq 0 ] || [ $save_hpss_full != "true" ]; then
    echo "hsi fgens2 done or not requested, deleting data..."
    /bin/rm -rf fgens2
 else
-   if [ $save_hpss == 'true']; then
+   if [ $save_hpss_full == 'true']; then
       echo "hsi fgens2 failed ${analdate}..."
       exitstat=1
    fi

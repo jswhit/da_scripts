@@ -242,14 +242,15 @@ endif # do_cleanup = true
 wait # wait for backgrounded processes to finish
 
 # only save full ensemble data to hpss if checkdate.py returns 0
-# a subset will be saved if save_hpss_subset="true"
+# a subset will be saved if save_hpss_subset="true" and save_hpss="true"
 set date_check=`python ${homedir}/checkdate.py ${analdate}`
 if ($date_check == 0) then
-  setenv save_hpss "true"
+  setenv save_hpss_full "true"
 else
-  setenv save_hpss "false"
+  setenv save_hpss_full "false"
 endif
 cd $homedir
+if ( $save_hpss == "true" ) then
 cat ${machine}_preamble_hpss hpss.sh >! job_hpss.sh
 if ($machine == 'wcoss') then
    bsub -env "all" < job_hpss.sh
@@ -259,6 +260,7 @@ else if ($machine == 'cori') then
    sbatch --export=ALL job_hpss.sh
 else
    qsub -V job_hpss.sh
+endif
 endif
 
 if ($run_long_fcst == "true") then
