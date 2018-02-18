@@ -1,18 +1,18 @@
 FV3 Ensemble Member 001 Forecast
 YYYY MM DD HH 0 0
 
-"fv3_history",   FHOUT,  "hours",  1,  "hours",  "time"
+"fv3_historyp",   FHOUT,  "hours",  1,  "hours",  "time"
 
-"dynamics"  "u_plev"      "u_plev"     "fv3_history" "all" .false. "none" 2
-"dynamics"  "v_plev"      "v_plev"     "fv3_history" "all" .false. "none" 2
-"dynamics"  "h_plev"      "h_plev"     "fv3_history" "all" .false. "none" 2
-"dynamics"  "t_plev"      "t_plev"     "fv3_history" "all" .false. "none" 2
-"dynamics"  "q_plev"      "q_plev"     "fv3_history" "all" .false. "none" 2
-"dynamics"  "slp"         "slp"        "fv3_history" "all" .false. "none" 2
-"dynamics"  "pmaskv2"     "pmaskv2"    "fv3_history" "all" .false. "none" 2
-"gfs_phys" "pwat"       "pwat"      "fv3_history"   "all"  .false.  "none"  2
-"gfs_phys" "psurf"      "pressfc"   "fv3_history"  "all"  .false.  "none"  2
-"gfs_phys" "u10m"       "ugrd10m"   "fv3_history"  "all"  .false.  "none"  2
-"gfs_phys" "v10m"       "vgrd10m"   "fv3_history"  "all"  .false.  "none"  2
-"gfs_phys" "totprcp_ave"   "prate_ave"     "fv3_history"  "all"  .false.  "none"  2
-"gfs_sfc" "t2m"        "tmp2m"     "fv3_history"  "all"  .false.  "none"  2
+"dynamics"  "u_plev"      "u_plev"     "fv3_historyp" "all" .false. "none" 2
+"dynamics"  "v_plev"      "v_plev"     "fv3_historyp" "all" .false. "none" 2
+"dynamics"  "h_plev"      "h_plev"     "fv3_historyp" "all" .false. "none" 2
+"dynamics"  "t_plev"      "t_plev"     "fv3_historyp" "all" .false. "none" 2
+"dynamics"  "q_plev"      "q_plev"     "fv3_historyp" "all" .false. "none" 2
+"dynamics"  "slp"         "slp"        "fv3_historyp" "all" .false. "none" 2
+"dynamics"  "pmaskv2"     "pmaskv2"    "fv3_historyp" "all" .false. "none" 2
+"gfs_phys"  "pwat"        "pwat"       "fv3_historyp" "all" .false. "none" 2
+"gfs_phys"  "psurf"       "pressfc"    "fv3_historyp" "all" .false. "none" 2
+"gfs_phys"  "u10m"        "ugrd10m"    "fv3_historyp" "all" .false. "none" 2
+"gfs_phys"  "v10m"        "vgrd10m"    "fv3_historyp" "all" .false. "none" 2
+"gfs_phys"  "totprcp_ave" "prate_ave"  "fv3_historyp" "all" .false. "none" 2
+"gfs_sfc"   "t2m"         "tmp2m"      "fv3_historyp" "all" .false. "none" 2

@@ -3,15 +3,6 @@ echo "run_long_fcst"
 
 setenv write_tasks 6
 setenv write_groups 1
-#if ($quilting == '.false.') then
-#   echo "no nemsio files will be produced"
-#   set layoutx=`echo $layout_ctl | cut -f1 -d","`
-#   set layouty=`echo $layout_ctl | cut -f2 -d","`
-#   set control_proc=`expr $layoutx \* $layouty \* $control_threads \* 6`
-#   setenv layout $layout_ctl
-#endif
-setenv layout $layout_ctl
-
 # don't copy restart files.
 setenv dont_copy_restart 1
 # skip running calc_increment
@@ -34,13 +25,8 @@ echo "charnanal = $charnanal"
 setenv DATOUT "${datapath2}/longfcst"
 echo "DATOUT = $DATOUT"
 mkdir -p ${DATOUT}
-if ($quilting == ".false.") then
-  setenv DIAG_TABLE "${enkfscripts}/diag_table_long"
-  echo "DIAG_TABLE = $DIAG_TABLE"
-else
-  setenv DIAG_TABLE "${enkfscripts}/diag_table"
-  echo "DIAG_TABLE = $DIAG_TABLE"
-endif
+setenv DIAG_TABLE "${enkfscripts}/diag_table_long"
+echo "DIAG_TABLE = $DIAG_TABLE"
 
 setenv OMP_NUM_THREADS $control_threads
 echo "OMP_NUM_THREADS = $OMP_NUM_THREADS"
@@ -92,22 +78,22 @@ echo "SKEB SPPT SHUM = $SKEB $SPPT $SHUM"
 
 sh ${enkfscripts}/${rungfs}
 
-#if ($quilting == ".true.") then
-#   # now run post processor
-#   setenv nprocs `expr $NODES \* $corespernode`
-#   if ($nprocs > 240) then
-#     setenv nprocs 240
-#   endif
-#   csh ${enkfscripts}/post.csh
-#   # clean up: delete bfg, sfg files
-#   rm $DATOUT/bfg_*
-#   rm $DATOUT/sfg_*
-#   rm $DATOUT/outpost*
-#   rm $DATOUT/postgp.inp*
-#endif
-#
-#unsetenv LSB_SUB_RES_REQ 
-#if ($machine == 'wcoss') then
-#  cd ${enkfscripts}
-#  bsub -env "all" < hpss_longfcst.sh
-#endif
+if ($machine == 'gaea') then
+   set python=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/bin/python
+else
+   set python=`which python`
+endif
+# interpolate to 1x1 grid
+cd ${enkfscripts}
+$python ncinterp.py ${DATOUT} fv3_historyp_latlon.nc
+
+cat ${machine}_preamble_hpss hpss_longfcst.sh >! job_hpss_longfcst.sh
+if ($machine == 'wcoss') then
+   bsub -env "all" < job_hpss_longfcst.sh
+else if ($machine == 'gaea') then
+   msub -V job_hpss_longfcst.sh
+else if ($machine == 'cori') then
+   sbatch --export=ALL job_hpss_longfcst.sh
+else
+   qsub -V job_hpss_longfcst.sh
+endif
