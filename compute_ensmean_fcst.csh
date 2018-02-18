@@ -134,6 +134,6 @@ if ( $cleanup_ensmean == 'true' && $?copy_history_files ) then
 endif
 # interpolate to 1x1 grid
 cd ${enkfscripts}
-$python ncinterp.py ${datapath2}/ensmean fv3_historyp_latlon.nc
+$python ncinterp.py ${datapath2}/ensmean fv3_historyp_latlon.nc $RES
 
 exit 0

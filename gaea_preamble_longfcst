@@ -1,57 +1,18 @@
 #!/bin/sh
 #PBS -A nggps_psd
 #PBS -l partition=c4
-#PBS -q batch
-#PBS -l nodes=20:ppn=36
-#PBS -l walltime=01:30:00
+##PBS -q batch
+#PBS -q urgent
+#PBS -l nodes=6:ppn=36
+#PBS -l walltime=02:30:00
 #PBS -N C384_longfcst  
 #PBS -e C384_longfcst.err
 #PBS -o C384_longfcst.out
 #PBS -S /bin/sh
-export NODES=$PBS_NUM_NODES
+export NODES=6
 export corespernode=$PBS_NUM_PPN
 export machine='gaea'
 export quilting='.false.'
-
-# for control forecast
-if [ $NODES -eq 10 ]; then
-  # 20 nodes, 2 threads
-  #export control_threads=2 # control forecast threads
-  #export control_proc=444   # total number of processors for control forecast
-  export control_threads=1
-  if [ $quilting == ".true." ]; then
-  export control_proc=312
-  export write_groups=4 # write groups for control forecast.
-  export layout="6,8" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
-  else
-  export control_proc=360
-  export layout="6,10" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
-  fi
-elif [ $NODES -eq 20 ]; then
-  # 20 nodes, 2 threads
-  if [ $quilting == ".true." ]; then
-  export control_threads=3
-  export control_proc=666
-  export write_groups=1 # write groups for control forecast.
-  export layout_ctl="6,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
-  else
-  export control_threads=2
-  export control_proc=720
-  export layout_ctl="6,10" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
-  fi
-elif [ $NODES -eq 40 ]; then
-  # 40 nodes, 2 threads
-  export control_threads=6 
-  export control_proc=1332 
-  export write_groups=1
-  export layout="6, 6"
-elif [ $NODES -eq 80 ]; then
-  # 80 nodes, 2 threads
-  export control_threads=6
-  export control_proc=2664 
-  export write_groups=1
-  export layout="12, 12" 
-else
-  echo "processor layout for $NODES nodes not set"
-  exit 1
-fi
+export control_threads=1
+export control_proc=216
+export layout="6,6"

@@ -5,12 +5,12 @@ import time, cPickle, sys, os
 # interpolate fv3 history files to lat/lon grid.
 # assumes all variables are 3d with dimensions time, grid_yt, grid_xt
 
-res = 128
 nlons = 360; nlats = 181
 zlib = True; lsd = None # lossy compression, 4 significant digits
 
 datapath = sys.argv[1]
 fileout = sys.argv[2]
+res = int(sys.argv[3])
 
 # read in triangulation.
 picklefile = 'C%s_grid.pickle' % res
