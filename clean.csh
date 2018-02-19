@@ -18,6 +18,8 @@ endif
 /bin/mv -f sanl*grib analens # save for replay
 /bin/rm -f sanl*ensmean sanl*ensmean.orig
 /bin/rm -f sanl*control
+/bin/cp -f analens/sanl*ensmean.grib # save grib version of sanl*ensmean
+/bin/rm -f s*ensmean*nc4 # just save spread netcdf files.
 /bin/rm -f fgens2/*fhr00* fgens2/*orig
 # delete sfg ensmean and control files if grib versions exist
 if ($replay_controlfcst == 'true') then
