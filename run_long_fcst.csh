@@ -85,7 +85,7 @@ else
 endif
 # interpolate to 1x1 grid
 cd ${enkfscripts}
-$python ncinterp.py ${DATOUT} fv3_historyp_latlon.nc $RES_CTL
+$python ncinterp.py ${DATOUT}/${charnanal} fv3_historyp_latlon.nc $RES_CTL
 
 cat ${machine}_preamble_hpss hpss_longfcst.sh >! job_hpss_longfcst.sh
 if ($machine == 'wcoss') then
