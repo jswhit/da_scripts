@@ -16,3 +16,11 @@ Create analdate.csh and fg_only.csh in the top level experiment directory (<expt
 fg_only should contain "setenv fg_only true" and analdate.csh should contain
 "setenv analdate 2000010100" and "setenv analdate_end YYYYMMDDHH", where YYYYMMDDHH is the
 date you want the experiment to end.
+
+
+* to turn off allsky assimilation, in config.sh point to global_anavinfo*clrsky.
+* to turn off nst, comment out everything from DONST=YES to NSTINFO=0 in config.sh
+* to turn on long forecasts, set 'run_long_fcst=true' in config.sh
+* to turn off IAU, set iaudelthrs=-1 and iaufhrs=6 in config.sh
+* to use control forecast for forward operator in GSI (instead of ens mean), set
+  controlfcst=true and replay_controlfcst=false. 
