@@ -64,8 +64,8 @@ while ($fh <= $FHMAX)
 
 end
 
-# now compute ensemble mean restart files.
-if ( $ensmean_restart == 'true' && $fg_only == 'false' ) then
+# now compute ensemble mean restart files (only at 00UTC).
+if ( $ensmean_restart == 'true' && $fg_only == 'false' && $hr == '00') then
 if ( $cleanup_ensmean == 'true' || ( $cleanup_ensmean == 'false' && ! -s ${datapath2}/ensmean/INPUT/fv_core.res.tile1.nc ) ) then
    echo "compute ensemble mean restart files `date`"
    setenv nprocs 1
@@ -132,9 +132,10 @@ if ( $cleanup_ensmean == 'true' && $?copy_history_files ) then
    wait
    /bin/rm -f ${datapath2}/hostfile_nces*
    echo "done computing ensemble mean history files `date`"
+   # interpolate to 1x1 grid
+   cd ${enkfscripts}
+   $python ncinterp.py ${datapath2}/ensmean fv3_historyp_latlon.nc $RES
 endif
-# interpolate to 1x1 grid
-cd ${enkfscripts}
-$python ncinterp.py ${datapath2}/ensmean fv3_historyp_latlon.nc $RES
+
 
 exit 0
