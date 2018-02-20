@@ -1,5 +1,6 @@
 # need envars:  machine, analdate, datapath2, hsidir, save_hpss_full, save_hpss_subset
 
+hr=`echo $analdate | cut -c9-10`
 exitstat=0
 source $MODULESHOME/init/sh
 if [ $machine == "gaea" ]; then
@@ -89,6 +90,20 @@ if  [ $save_hpss_subset = "true" ]; then
           echo "hsi analens${nanals_replay} failed ${analdate}..."
           exitstat=1
        fi
+   fi
+   # save nanals_replay member restarts at 00UTC
+   if [ -n "$nanals_replay" ] && [ $nanals_replay -gt 0 ]; then
+   if [ -s restarts ] && [ $hr == "00" ];  then
+       htar -cvf ${hsidir}/${analdate}_restarts.tar restarts
+       hsi ls -l ${hsidir}/${analdate}_restarts.tar
+       if [  $? -eq 0 ]; then
+          echo "hsi restarts done, deleting data..."
+          /bin/rm -rf restarts
+       else
+          echo "hsi restarts failed ${analdate}..."
+          exitstat=1
+       fi
+   fi
    fi
    cd ..
    # exclude long forecast directory

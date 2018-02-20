@@ -6,7 +6,28 @@ cd $datapath2
 mkdir fgens
 mkdir fgens2
 mkdir analens
+if ($replay_controlfcst == 'true') then
+   set charnanal='control2'
+else
+   set charnanal='control'
+endif
 /bin/rm -f mem*/*nc mem*/*txt mem*/*grb mem*/*dat 
+/bin/rm -f ${charnanal}/*nc ${charnanal}/*txt ${charnanal}/*grb ${charnanal}/*dat 
+# every 00z save nanals_replay member + ens mean restarts.
+if ($nanals_replay > 0 && $ensmean_restart == 'true' && $hr == '00') then
+    mkdir restarts
+    /bin/cp -R ${charnanal} restarts
+    /bin/mv -f ensmean restarts
+    /bin/rm -f restarts/ensmean/fv3_history*nc
+    set nanal=1
+    while ($nanal <= $nanals_replay) 
+       set charmem="mem`printf %03i $nanal`"
+       /bin/cp -R ${charmem} restarts
+       /bin/rm -f restarts/${charmem}/stoch_ini
+       /bin/rm -f restarts/*/PET* restarts/*/log*
+       @ nanal = $nanal + 1
+    end
+endif
 /bin/mv -f mem* fgens
 /bin/mv -f sfg*mem* fgens2
 /bin/mv -f bfg*mem* fgens2
