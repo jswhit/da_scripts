@@ -79,6 +79,17 @@ if  [ $save_hpss_subset = "true" ]; then
       echo "hsi analens failed ${analdate}..."
       exitstat=1
    fi
+   if [ -n "$nanals_replay" ] && [ $nanals_replay -gt 0 ]; then
+       htar -cvf ${hsidir}/${analdate}_analens${nanals_replay}.tar analens${nanals_replay}
+       hsi ls -l ${hsidir}/${analdate}_analens${nanals_replay}.tar
+       if [  $? -eq 0 ]; then
+          echo "hsi analens${nanals_replay} done, deleting data..."
+          /bin/rm -rf analens${nanals_replay}
+       else
+          echo "hsi analens${nanals_replay} failed ${analdate}..."
+          exitstat=1
+       fi
+   fi
    cd ..
    # exclude long forecast directory
    htar -cvf ${hsidir}/${analdate}_subset.tar ${analdate}/*ensmean* ${analdate}/*control* ${analdate}/*bias* ${analdate}/logs

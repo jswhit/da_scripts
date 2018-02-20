@@ -35,6 +35,7 @@ export resubmit='true'
 # this is for diagnostic purposes (to get GSI diagnostic files) 
 export replay_controlfcst='true'
 export replay_run_observer='true' # run observer on replay forecast
+export replay_only='false' # replay nanals_replay members, don't run DA
 # python script checkdate.py used to check
 # YYYYMMDDHH analysis date string to see if
 # full ensemble should be saved to HPSS (returns 0 if 
@@ -124,7 +125,6 @@ export NST_GSI=3          # default 0: No NST info at all;
                           #         2: Input NST info, used in CRTM simulation, no Tr analysis
                           #         3: Input NST info, used in both CRTM simulation and Tr analysis
 export NSTINFO=0          # number of elements added in obs. data array (default = 0)
-
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
 
@@ -333,6 +333,9 @@ fi
 #export zhuberright=1.1
                                                                     
 export nanals=80                                                    
+# replay first 10 members if replay_only "true"
+# recenter nanals_replay ensemble around nanals ens mean
+export nanals_replay=10 
                                                                     
 export paoverpb_thresh=0.99  # set to 1.0 to use all the obs in serial EnKF
 export saterrfact=1.0
@@ -432,4 +435,8 @@ export aircraft_bc=.true.
 
 cd $enkfscripts
 echo "run main driver script"
+if [ $replay_only == "true" ]; then
+csh main_replay.csh
+else
 csh main2.csh
+fi
