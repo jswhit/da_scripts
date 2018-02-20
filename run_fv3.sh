@@ -155,10 +155,10 @@ while [ $n -le 6 ]; do
  n=$((n+1))
 done
 ln -fs $FIXFV3/C${RES}/C${RES}_mosaic.nc  grid_spec.nc
-ln -fs $FIXGLOBAL/global_o3prdlos.f77               global_o3prdlos.f77
+#ln -fs $FIXGLOBAL/global_o3prdlos.f77               global_o3prdlos.f77
 # new ozone and h2o physics for stratosphere
-#ln -fs $FIXGLOBAL/ozprdlos_2015_new_sbuvO3_tclm15_nuchem.f77 global_o3prdlos.f77
-#ln -fs $FIXGLOBAL/global_h2o_pltc.f77 global_h2oprdlos.f77 # used if h2o_phys=T
+ln -fs $FIXGLOBAL/ozprdlos_2015_new_sbuvO3_tclm15_nuchem.f77 global_o3prdlos.f77
+ln -fs $FIXGLOBAL/global_h2o_pltc.f77 global_h2oprdlos.f77 # used if h2o_phys=T
 cd ..
 # co2, ozone, surface emiss and aerosol data.
 ln -fs $FIXGLOBAL/global_solarconstant_noaa_an.txt  solarconstant_noaa_an.txt
@@ -557,7 +557,7 @@ cat > input.nml <<EOF
   cdmbgwd = ${cdmbgwd}
   psautco = ${psautco}
   prautco = ${prautco}
-  h2o_phys      = ${h2o_phys:-F}
+  h2o_phys      = ${h2o_phys:-T}
   nstf_name     = ${nstf_name}
   nst_anl       = ${nst_anl}
   iaufhrs = ${iaufhrs}
