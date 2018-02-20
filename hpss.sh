@@ -1,6 +1,7 @@
 # need envars:  machine, analdate, datapath2, hsidir, save_hpss_full, save_hpss_subset
 
 hr=`echo $analdate | cut -c9-10`
+analdatem1=`${incdate} $analdate -6`
 exitstat=0
 source $MODULESHOME/init/sh
 if [ $machine == "gaea" ]; then
@@ -93,9 +94,9 @@ if  [ $save_hpss_subset = "true" ]; then
    fi
    # save nanals_replay member restarts at 00UTC
    if [ -n "$nanals_replay" ] && [ $nanals_replay -gt 0 ]; then
-   if [ -s restarts ] && [ $hr == "00" ];  then
-       htar -cvf ${hsidir}/${analdate}_restarts.tar restarts
-       hsi ls -l ${hsidir}/${analdate}_restarts.tar
+   if [ -s restarts ] && [ $hr == "06" ];  then
+       htar -cvf ${hsidir}/${analdatem1}_restarts.tar restarts
+       hsi ls -l ${hsidir}/${analdatem1}_restarts.tar
        if [  $? -eq 0 ]; then
           echo "hsi restarts done, deleting data..."
           /bin/rm -rf restarts

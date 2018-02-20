@@ -13,8 +13,8 @@ else
 endif
 /bin/rm -f mem*/*nc mem*/*txt mem*/*grb mem*/*dat 
 /bin/rm -f ${charnanal}/*nc ${charnanal}/*txt ${charnanal}/*grb ${charnanal}/*dat 
-# every 00z save nanals_replay member + ens mean restarts.
-if ($nanals_replay > 0 && $ensmean_restart == 'true' && $hr == '00') then
+# every 06z save nanals_replay member + ens mean restarts.
+if ($nanals_replay > 0 && $ensmean_restart == 'true' && $hr == '06') then
     mkdir restarts
     /bin/cp -R ${charnanal} restarts
     /bin/mv -f ensmean restarts
