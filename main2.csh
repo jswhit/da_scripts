@@ -265,7 +265,6 @@ endif
 
 if ($run_long_fcst == "true") then
    if ($hr == "00") then
-#  if ($hr == "00" || $hr == "12") then
      cat ${machine}_preamble_longfcst run_long_fcst.sh >! job_longfcst.sh
      if ($machine == 'wcoss') then
          bsub -env "all" < job_longfcst.sh
