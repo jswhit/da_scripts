@@ -17,8 +17,8 @@ endif
 if ($nanals_replay > 0 && $ensmean_restart == 'true' && $hr == '06') then
     mkdir restarts
     /bin/cp -R ${charnanal} restarts
-    /bin/cp -R ensmean restarts
-    /bin/rm -f restarts/ensmean/fv3_history*nc
+    mkdir restarts/ensmean
+    /bin/mv -f ensmean/INPUT restarts/ensmean
     set nanal=1
     while ($nanal <= $nanals_replay) 
        set charmem="mem`printf %03i $nanal`"
