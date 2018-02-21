@@ -193,6 +193,11 @@ else
   exit 1
 endif
 
+# compute ensemble mean analyses.
+echo "$analdate starting ens mean analysis computation `date`"
+csh ${enkfscripts}/compute_ensmean_enkf.csh >&!  ${current_logdir}/compute_ensmean_anal.out
+echo "$analdate done computing ensemble mean analyses `date`"
+
 # do hybrid control analysis if controlanal=true
 # uses control forecast background, except if replay_controlfcst=true
 # ens mean background is used ("control" symlinked to "ensmean", control

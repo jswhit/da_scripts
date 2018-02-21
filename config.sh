@@ -61,18 +61,23 @@ if [ "$machine" == 'wcoss' ]; then
    export basedir=/gpfs/hps2/esrl/gefsrr/noscrub/${USER}
    export datadir=/gpfs/hps2/ptmp/${USER}
    export hsidir="/3year/NCEPDEV/GEFSRR/${USER}/${exptname}"
+   export obs_datapath=${basedir}/gdas1bufr
 elif [ "$machine" == 'theia' ]; then
    export basedir=/scratch3/BMC/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
+   export obs_datapath=/scratch3/BMC/gsienkf/whitaker/gdas1bufr
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f1/unswept/${USER}/fv3_reanl
    export datadir=$basedir
-   export hsidir="/2year/BMC/gsienkf/whitaker/gaea/${exptname}"
+   #export hsidir="/2year/BMC/gsienkf/whitaker/gaea/${exptname}"
+   export hsidir="/3year/NCEPDEV/GEFSRR/${USER}/${exptname}"
+   export obs_datapath=/lustre/f1/unswept/Jeffrey.S.Whitaker/gdas1bufr
 elif [ "$machine" == 'cori' ]; then
    export basedir=${SCRATCH}
    export datadir=$basedir
    export hsidir="fv3_reanl/${exptname}"
+   export obs_datapath=${basedir}/gdas1bufr
 else
    echo "machine must be 'wcoss', 'theia', 'gaea' or 'cori', got $machine"
    exit 1
@@ -152,6 +157,7 @@ else
    export fv3exec='fv3-nonhydro.exe'
    export consv_te=1
 fi
+# defaults in exglobal_fcst
 if [ $hydrostatic == 'T' ];  then
    export fv3exec='fv3-hydro.exe'
    export hord_mt=10
@@ -170,14 +176,16 @@ else
    export consv_te=1
 fi
 # GFDL suggests this for imp_physics=11
-#export hord_mt=6
-#export hord_vt=6
-#export hord_tm=6
-#export hord_dp=-6
-#export nord=2
-#export dddmp=0.1
-#export d4_bg=0.12
-#export vtdm4=0.02
+#if [ $imp_physics -eq 11 ]; then 
+#   export hord_mt=6
+#   export hord_vt=6
+#   export hord_tm=6
+#   export hord_dp=-6
+#   export nord=2
+#   export dddmp=0.1
+#   export d4_bg=0.12
+#   export vtdm4=0.02
+#fi
 
 # stochastic physics parameters.
 export SPPT=0.8
@@ -283,8 +291,6 @@ export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 
 export SMOOTHINF=35
 export npts=`expr \( $LONA \) \* \( $LATA \)`
-export obs_datapath=${basedir}/gdas1bufr
-#export obs_datapath=/gpfs/hps2/esrl/gefsrr/noscrub/cfsr_dumps
 export RUN=gdas1 # use gdas obs
 export reducedgrid=.false.
 export univaroz=.false.
