@@ -519,6 +519,7 @@ cat > input.nml <<EOF
 
 &gfs_physics_nml
   fhzero         = ${FHOUT}
+  lprecip_accu   = ${lprecip_accu:-"T"}
   ldiag3d        = F
   fhcyc          = ${FHCYC}
   nst_anl        = F
