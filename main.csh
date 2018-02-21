@@ -342,4 +342,6 @@ if ( ${analdate} <= ${analdate_end}  && ${resubmit} == 'true') then
    endif
 endif
 
+echo "$analdate all done, exiting `date`"
+
 exit 0
