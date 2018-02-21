@@ -72,7 +72,7 @@ elif [ "$machine" == 'gaea' ]; then
    export datadir=$basedir
    #export hsidir="/2year/BMC/gsienkf/whitaker/gaea/${exptname}"
    export hsidir="/3year/NCEPDEV/GEFSRR/${USER}/${exptname}"
-   export obs_datapath=/lustre/f1/unswept/Jeffrey.S.Whitaker/gdas1bufr
+   export obs_datapath=/lustre/f1/unswept/Jeffrey.S.Whitaker/fv3_reanl/gdas1bufr
 elif [ "$machine" == 'cori' ]; then
    export basedir=${SCRATCH}
    export datadir=$basedir
