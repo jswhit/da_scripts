@@ -11,8 +11,8 @@ if ($replay_controlfcst == 'true') then
 else
    set charnanal='control'
 endif
-/bin/rm -f mem*/*nc mem*/*txt mem*/*grb mem*/*dat 
-/bin/rm -f ${charnanal}/*nc ${charnanal}/*txt ${charnanal}/*grb ${charnanal}/*dat 
+/bin/rm -f mem*/*nc mem*/*txt mem*/*grb mem*/*dat mem*/co2*
+/bin/rm -f ${charnanal}/*nc ${charnanal}/*txt ${charnanal}/*grb ${charnanal}/*dat ${charnanal}/co2*
 # every 06z save nanals_replay member + ens mean restarts.
 if ($nanals_replay > 0 && $ensmean_restart == 'true' && $hr == '06') then
     mkdir restarts

@@ -183,10 +183,10 @@ fi
 export SPPT=0.8
 export SPPT_TSCALE=21600.
 export SPPT_LSCALE=500.e3
-export SHUM=0.006
+export SHUM=0.005
 export SHUM_TSCALE=21600.
 export SHUM_LSCALE=500.e3
-export SKEB=1.0
+export SKEB=0.08
 export SKEB_TSCALE=21600.
 export SKEB_LSCALE=500.e3
 export SKEBNORM=0
