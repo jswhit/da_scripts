@@ -270,7 +270,7 @@ if ($fg_only == 'false') then
 
 # cleanup
 if ($do_cleanup == 'true') then
-   csh ${enkfscripts}/clean.csh
+   csh ${enkfscripts}/clean.csh >&! ${current_logdir}/clean.out
 endif # do_cleanup = true
 
 wait # wait for backgrounded processes to finish
