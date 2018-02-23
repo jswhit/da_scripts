@@ -42,7 +42,7 @@ export replay_only='false' # replay nanals_replay members, don't run DA
 # HPSS save should be done)
 export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
 export save_hpss="true"
-export run_long_fcst="true"  # spawn a longer control forecast at 00 and 12 UTC
+export run_long_fcst="true"  # spawn a longer control forecast at 00 UTC
 export ensmean_restart='true'
 export copy_history_files=1 # save pressure level history files (and compute ens mean)
 
