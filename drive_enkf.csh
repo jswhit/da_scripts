@@ -15,7 +15,7 @@ if ($machine == 'theia') then
       ln -fs $NODEFILE $HOSTFILE
     else
       # otherwise, leave as many cores empty as possible
-      awk "NR%${OMP_NUM_THREADS} == 1" ${hosefilein} >&! $HOSTFILE
+      awk "NR%${OMP_NUM_THREADS} == 1" ${hostfilein} >&! $HOSTFILE
     endif
 endif
 
