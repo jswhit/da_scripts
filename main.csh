@@ -320,6 +320,8 @@ endif
 
 endif # skip to here if fg_only = true
 
+echo "$analdate all done"
+
 # next analdate: increment by $ANALINC
 setenv analdate `${incdate} $analdate $ANALINC`
 
@@ -346,7 +348,5 @@ if ( ${analdate} <= ${analdate_end}  && ${resubmit} == 'true') then
       endif
    endif
 endif
-
-echo "$analdate all done, exiting `date`"
 
 exit 0

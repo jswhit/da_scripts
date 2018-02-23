@@ -368,10 +368,10 @@ if [ "$machine" == 'theia' ]; then
    export nemsioget=${execdir}/nemsio_get
 elif [ "$machine" == 'gaea' ]; then
 # warning - these paths need to be updated on gaea
-   export fv3gfspath=${basedir}/fv3gfs/global_shared.v15.0.0
+   export fv3gfspath=/lustre/f1/unswept/Jeffrey.S.Whitaker/fv3_reanl/fv3gfs/global_shared.v15.0.0
    export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
-   export gsipath=${basedir}/ProdGSI
+   export gsipath=/lustre/f1/unswept/Jeffrey.S.Whitaker/fv3_reanl/ProdGSI
    export fixgsi=${gsipath}/fix
    export fixcrtm=${fixgsi}/crtm_v2.2.3
    export execdir=${enkfscripts}/exec_${machine}
