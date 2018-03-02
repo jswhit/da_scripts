@@ -35,9 +35,9 @@ for ntile in range(1,7,1):
 # get times and variable names.
 nc = ncfiles[0]
 varnames = nc.variables.keys()
-times = nc['time'][:].tolist()
+times = nc['time'][:]
 ntimes = len(times)
-plevs = nc['plev'][:].tolist()
+plevs = nc['plev'][:]
 nlevs = len(plevs)
 ntimes = len(times)
 
