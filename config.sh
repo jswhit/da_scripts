@@ -194,7 +194,7 @@ export SPPT_LSCALE=500.e3
 export SHUM=0.005
 export SHUM_TSCALE=21600.
 export SHUM_LSCALE=500.e3
-export SKEB=0.08
+export SKEB=0.8
 export SKEB_TSCALE=21600.
 export SKEB_LSCALE=500.e3
 export SKEBNORM=0
@@ -203,9 +203,9 @@ export SKEB_VDOF=5
 
 # resolution dependent model parameters
 if [ $RES -eq 384 ]; then
-   export JCAP=878 
-   export LONB=1760  
-   export LATB=880  
+   export JCAP=766 
+   export LONB=1536  
+   export LATB=768  
    export fv_sg_adj=600
    export dt_atmos=225
    export cdmbgwd="1.0,1.2"
