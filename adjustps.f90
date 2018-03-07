@@ -206,7 +206,6 @@ program adjustps
       endif
       endif
   enddo
-  call nemsio_close(gfile_1,iret=iret)
 
   delz = rwork_1(:,2) - rwork_2(:,2)
   delps = rwork_1(:,1) - rwork_2(:,1)
@@ -275,7 +274,7 @@ program adjustps
                         (kap1*(pressi_new(:,k)-pressi_new(:,k+1))))**kapr
      end do
   endif
-  gfile_o=gfile_2
+  gfile_o=gfile_1
   call nemsio_open(gfile_o,trim(filename_o),'WRITE',iret=iret)
   if (iret /= 0) then
      print *,'Error opening ',trim(filename_o)
@@ -387,6 +386,11 @@ program adjustps
   call nemsio_close(gfile_o,iret=iret)
   if (iret /= 0) then
      print *,'Error closing ',trim(filename_o)
+     stop
+  endif
+  call nemsio_close(gfile_1,iret=iret)
+  if (iret /= 0) then
+     print *,'Error closing ',trim(filename_1)
      stop
   endif
   call nemsio_close(gfile_2,iret=iret)
