@@ -131,7 +131,7 @@ export NST_GSI=3          # default 0: No NST info at all;
                           #         3: Input NST info, used in both CRTM simulation and Tr analysis
 export NSTINFO=0          # number of elements added in obs. data array (default = 0)
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
-if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
+if [ $NOSAT == "YES" ] && [ $replay_only != "true" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
 
 if [ $imp_physics == "11" ]; then
    export ncld=5
