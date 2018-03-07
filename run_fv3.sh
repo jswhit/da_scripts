@@ -16,7 +16,9 @@ elif [ "$machine" == 'wcoss' ]; then
    module load grib_util/1.0.3
    module load nco-gnu-sandybridge
 elif [ "$machine" == 'gaea' ]; then
-   export WGRIB=/lustre/f1/dev/ncep/Wesley.Ebisuzaki/bin/wgrib
+   #export WGRIB=/lustre/f1/dev/ncep/Wesley.Ebisuzaki/bin/wgrib
+   module load wgrib
+   export WGRIB=`which wgrib`
    source $MODULESHOME/init/sh
    module load nco/4.6.4
 elif [ "$machine" == 'cori' ]; then
@@ -47,7 +49,7 @@ if [ "$VERBOSE" == "YES" ]; then
  set -x
 fi
 
-if [ "$charnanal" != "control" ] && [ "$charnanal" != "ensmean" ] && [ "$charnanal" != "control2" ]; then
+if [ "$charnanal" != "cfsr" ] && [ "$charnanal" != "control" ] && [ "$charnanal" != "ensmean" ] && [ "$charnanal" != "control2" ]; then
    nmem=`echo $charnanal | cut -f3 -d"m"`
    nmem=$(( 10#$nmem )) # convert to decimal (remove leading zeros)
 else
