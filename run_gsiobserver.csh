@@ -77,10 +77,10 @@ if ( ! $?biascorrdir ) then # cycled bias correction files
     setenv GBIASAIR ${datapathm1}/${PREINPm1}abias_air
     setenv ABIAS ${datapath2}/${PREINP}abias
 else # externally specified bias correction files.
-    setenv GBIAS ${biascorrdir}/${analdate}//${PREINPm1}abias
-    setenv GBIAS_PC ${biascorrdir}/${analdate}//${PREINPm1}abias_pc
-    setenv GBIASAIR ${biascorrdir}/${analdate}//${PREINPm1}abias_air
-    setenv ABIAS ${biascorrdir}/${analdate}//${PREINPm1}abias
+    setenv GBIAS ${biascorrdir}/${analdate}//${PREINP}abias
+    setenv GBIAS_PC ${biascorrdir}/${analdate}//${PREINP}abias_pc
+    setenv GBIASAIR ${biascorrdir}/${analdate}//${PREINP}abias_air
+    setenv ABIAS ${biascorrdir}/${analdate}//${PREINP}abias
 endif
 setenv GSATANG $fixgsi/global_satangbias.txt # not used, but needs to exist
 
