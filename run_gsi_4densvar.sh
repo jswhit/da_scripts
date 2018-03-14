@@ -385,6 +385,7 @@ OBS_INPUT::
    sbuvbufr       sbuv2       n17         sbuv8_n17            0.0     0      0
    sbuvbufr       sbuv2       n18         sbuv8_n18            0.0     0      0
    sbuvbufr       sbuv2       n19         sbuv8_n19            0.0     0      0
+   hirs2bufr      hirs2       n11         hirs2_n11            0.0     1      1
    hirs2bufr      hirs2       n14         hirs2_n14            0.0     1      1
    hirs3bufr      hirs3       n15         hirs3_n15            0.0     1      1
    hirs3bufr      hirs3       n16         hirs3_n16            0.0     1      1
@@ -393,6 +394,7 @@ OBS_INPUT::
    gimgrbufr      goes_img    g11         imgr_g11             0.0     1      0
    gimgrbufr      goes_img    g12         imgr_g12             0.0     1      0
    airsbufr       airs        aqua        airs281SUBSET_aqua   0.0     1      1
+   msubufr        msu         n11         msu_n11              0.0     1      1
    msubufr        msu         n14         msu_n14              0.0     1      1
    ssubufr        ssu         n14         ssu_n14              0.0     1      1
    amsuabufr      amsua       n15         amsua_n15            0.0     1      1
