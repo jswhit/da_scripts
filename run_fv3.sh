@@ -218,11 +218,15 @@ if [ "$fg_only" == "true" ]; then
    NST_SPINUP=1
 else
    # warm start from restart file with lat/lon increments ingested by the model
-   if [ -s stoch_ini ]; then
+   if [ -s stoch_ini ] && [ $niter -eq 1 ]; then
       echo "stoch_ini available, setting stochini=T"
       stochini=T # restart random patterns from existing file
    else
+      if [ $niter -gt 1 ]; then
+      echo "re-initializing random patterns, re-running failed forecast"
+      else
       echo "stoch_ini not available, setting stochini=F"
+      fi
       stochini=F
    fi
    iaudelthrs=${iau_delthrs}

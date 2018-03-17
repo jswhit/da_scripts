@@ -14,7 +14,8 @@ source $startupenv
 if ( -s ${obs_datapath}/bufr_${analdate}/global_satinfo.txt) then
    setenv SATINFO ${obs_datapath}/bufr_${analdate}/global_satinfo.txt
 endif
-
+setenv OZINFO `csh ${enkfscripts}/pickinfo.csh ${analdate} ozinfo`
+setenv CONVINFO `csh ${enkfscripts}/pickinfo.csh ${analdate} convinfo`
 #------------------------------------------------------------------------
 mkdir -p $datapath
 
@@ -266,10 +267,16 @@ endif
 if ($run_long_fcst == "true") then
    if ($hr == "00") then
      cat ${machine}_preamble_longfcst run_long_fcst.sh >! job_longfcst.sh
+     if ($run_long_cfsr_fcst == "true") then
+         cat ${machine}_preamble_longfcst run_cfsr_fcst.sh >! job_cfsrfcst.sh
+     endif
      if ($machine == 'wcoss') then
          bsub -env "all" < job_longfcst.sh
      else if ($machine == 'gaea') then
          msub -V job_longfcst.sh
+         if ($run_long_cfsr_fcst == "true") then
+             msub -V job_cfsrfcst.sh
+         endif
      else if ($machine == 'cori') then
          sbatch --export=ALL job_longfcst.sh
      else

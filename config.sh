@@ -43,6 +43,7 @@ export replay_only='false' # replay nanals_replay members, don't run DA
 export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
 export save_hpss="true"
 export run_long_fcst="true"  # spawn a longer control forecast at 00 UTC
+export run_long_cfsr_fcst="false" # run a long fcst initialized from CFSR (only on gaea)
 export ensmean_restart='true'
 export copy_history_files=1 # save pressure level history files (and compute ens mean)
 
@@ -187,16 +188,19 @@ fi
 #   export vtdm4=0.02
 #fi
 
-# stochastic physics parameters.
-export SPPT=0.8
-export SPPT_TSCALE=21600.
-export SPPT_LSCALE=500.e3
+# 6*dx length scale
+export LSCALE=`python -c "print 10000.e3/(6.*${RES})"`
+# 6 hour time scale
+export TSCALE=21600.
+export SPPT=0.6
+export SPPT_TSCALE=$TSCALE
+export SPPT_LSCALE=$LSCALE
 export SHUM=0.005
-export SHUM_TSCALE=21600.
-export SHUM_LSCALE=500.e3
-export SKEB=0.8
-export SKEB_TSCALE=21600.
-export SKEB_LSCALE=500.e3
+export SHUM_TSCALE=$TSCALE
+export SHUM_LSCALE=$LSCALE
+export SKEB=0.7
+export SKEB_TSCALE=$TSCALE
+export SKEB_LSCALE=$LSCALE
 export SKEBNORM=0
 export SKEB_NPASS=30
 export SKEB_VDOF=5
