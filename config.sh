@@ -189,7 +189,7 @@ fi
 #fi
 
 # 6*dx length scale
-export LSCALE=`python -c "print 10000.e3/(6.*${RES})"`
+export LSCALE=`python -c "print 60000.e3/${RES}"`
 # 6 hour time scale
 export TSCALE=21600.
 export SPPT=0.6
