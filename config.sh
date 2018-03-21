@@ -1,7 +1,7 @@
 echo "running on $machine using $NODES nodes"
-ulimit -s unlimited
+## ulimit -s unlimited
 
-export exptname=C128_nsst_allsky_replay
+export exptname=C128_C384_off
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia.
@@ -42,8 +42,7 @@ export replay_only='false' # replay nanals_replay members, don't run DA
 # HPSS save should be done)
 export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
 export save_hpss="true"
-export run_long_fcst="true"  # spawn a longer control forecast at 00 UTC
-export run_long_cfsr_fcst="false" # run a long fcst initialized from CFSR (only on gaea)
+export run_long_fcst="true"  # spawn a longer control forecast at 00 and 12 UTC
 export ensmean_restart='true'
 export copy_history_files=1 # save pressure level history files (and compute ens mean)
 
@@ -69,7 +68,7 @@ elif [ "$machine" == 'theia' ]; then
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    export obs_datapath=/scratch3/BMC/gsienkf/whitaker/gdas1bufr
 elif [ "$machine" == 'gaea' ]; then
-   export basedir=/lustre/f1/unswept/${USER}/fv3_reanl
+   export basedir=/lustre/f1/${USER}
    export datadir=$basedir
    #export hsidir="/2year/BMC/gsienkf/whitaker/gaea/${exptname}"
    export hsidir="/3year/NCEPDEV/GEFSRR/${USER}/${exptname}"
@@ -117,22 +116,25 @@ export NOSAT="NO" # if yes, no radiances assimilated
 # model NSST parameters contained within nstf_name in FV3 namelist
 # (comment out to get default - no NSST)
 # nstf_name(1) : NST_MODEL (NSST Model) : 0 = OFF, 1 = ON but uncoupled, 2 = ON and coupled
-export DONST="YES"
-export NST_MODEL=2
+### export DONST="YES"
+### export NST_MODEL=2
 # nstf_name(2) : NST_SPINUP : 0 = OFF, 1 = ON,
-export NST_SPINUP=0 # (will be set to 1 if fg_only=='true')
+### export NST_SPINUP=0 # (will be set to 1 if fg_only=='true')
 # nstf_name(3) : NST_RESV (Reserved, NSST Analysis) : 0 = OFF, 1 = ON
-export NST_RESV=0
+### export NST_RESV=0
 # nstf_name(4,5) : ZSEA1, ZSEA2 the two depths to apply vertical average (bias correction)
-export ZSEA1=0
-export ZSEA2=0
-export NST_GSI=3          # default 0: No NST info at all;
+### export ZSEA1=0
+### export ZSEA2=0
+### export NSTINFO=0          # number of elements added in obs. data array (default = 0)
+### export NST_GSI=3          # default 0: No NST info at all;
                           #         1: Input NST info but not used in GSI;
                           #         2: Input NST info, used in CRTM simulation, no Tr analysis
                           #         3: Input NST info, used in both CRTM simulation and Tr analysis
-export NSTINFO=0          # number of elements added in obs. data array (default = 0)
+
+export NST_GSI=0          # No NST 
+
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
-if [ $NOSAT == "YES" ] && [ $replay_only != "true" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
+if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
 
 if [ $imp_physics == "11" ]; then
    export ncld=5
@@ -188,28 +190,26 @@ fi
 #   export vtdm4=0.02
 #fi
 
-# 6*dx length scale
-export LSCALE=`python -c "print 60000.e3/${RES}"`
-# 6 hour time scale
-export TSCALE=21600.
-export SPPT=0.6
-export SPPT_TSCALE=$TSCALE
-export SPPT_LSCALE=$LSCALE
+# stochastic physics parameters.
+export SPPT=0.0
+## export SPPT=0.8
+export SPPT_TSCALE=21600.
+export SPPT_LSCALE=500.e3
 export SHUM=0.005
-export SHUM_TSCALE=$TSCALE
-export SHUM_LSCALE=$LSCALE
-export SKEB=0.75
-export SKEB_TSCALE=$TSCALE
-export SKEB_LSCALE=$LSCALE
+export SHUM_TSCALE=21600.
+export SHUM_LSCALE=500.e3
+export SKEB=0.08
+export SKEB_TSCALE=21600.
+export SKEB_LSCALE=500.e3
 export SKEBNORM=0
 export SKEB_NPASS=30
 export SKEB_VDOF=5
 
 # resolution dependent model parameters
 if [ $RES -eq 384 ]; then
-   export JCAP=766 
-   export LONB=1536  
-   export LATB=768  
+   export JCAP=878 
+   export LONB=1760  
+   export LATB=880  
    export fv_sg_adj=600
    export dt_atmos=225
    export cdmbgwd="1.0,1.2"
@@ -354,7 +354,7 @@ export sortinc=.true.
                                                                     
 export nitermax=2
 
-export enkfscripts="${basedir}/scripts/${exptname}"
+export enkfscripts="/lustre/f1/unswept/Gary.Bates/scripts/${exptname}"
 export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
 
@@ -373,9 +373,11 @@ if [ "$machine" == 'theia' ]; then
 elif [ "$machine" == 'gaea' ]; then
 # warning - these paths need to be updated on gaea
    export fv3gfspath=/lustre/f1/unswept/Jeffrey.S.Whitaker/fv3_reanl/fv3gfs/global_shared.v15.0.0
+## export fv3gfspath=${basedir}/fv3gfs/global_shared.v15.0.0
    export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
    export gsipath=/lustre/f1/unswept/Jeffrey.S.Whitaker/fv3_reanl/ProdGSI
+## export gsipath=${basedir}/ProdGSI
    export fixgsi=${gsipath}/fix
    export fixcrtm=${fixgsi}/crtm_v2.2.3
    export execdir=${enkfscripts}/exec_${machine}

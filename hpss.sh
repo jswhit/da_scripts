@@ -24,11 +24,12 @@ if  [ $save_hpss_full = "true" ]; then
    htar -cvf ${hsidir}/${analdate}_fgens2.tar * &
    cd ..
    wait
+   hsi ls -l ${hsidir}/${analdate}_fgens.tar
+   hsi ls -l ${hsidir}/${analdate}_fgens2.tar
 else
    echo 'not saving data to hpps, just clean up...'
 fi
 
-hsi ls -l ${hsidir}/${analdate}_fgens.tar
 if [  $? -eq 0 ] || [ $save_hpss_full != "true" ]; then
    echo "hsi fgens done or not requested, deleting data..."
    /bin/rm -rf fgens
@@ -38,7 +39,6 @@ else
       exitstat=1
    fi
 fi
-hsi ls -l ${hsidir}/${analdate}_fgens2.tar
 if [  $? -eq 0 ] || [ $save_hpss_full != "true" ]; then
    echo "hsi fgens2 done or not requested, deleting data..."
    /bin/rm -rf fgens2

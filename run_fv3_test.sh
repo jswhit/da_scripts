@@ -16,11 +16,11 @@ elif [ "$machine" == 'wcoss' ]; then
    module load grib_util/1.0.3
    module load nco-gnu-sandybridge
 elif [ "$machine" == 'gaea' ]; then
-   source $MODULESHOME/init/sh
-   module load nco/4.6.4
    module load wgrib
    export WGRIB=`which wgrib`
 ##   export WGRIB=/ncrc/home1/Gary.Bates/bin/wgrib
+   source $MODULESHOME/init/sh
+   module load nco/4.6.4
 elif [ "$machine" == 'cori' ]; then
    source $MODULESHOME/init/sh
    module load craype-mic-knl
@@ -218,21 +218,13 @@ if [ "$fg_only" == "true" ]; then
    NST_SPINUP=1
 else
    # warm start from restart file with lat/lon increments ingested by the model
-   if [ $niter == 1 ] ; then
-  
-     if [ -s stoch_ini ]; then
-       echo "stoch_ini available, setting stochini=T"
-       stochini=T # restart random patterns from existing file
-     else
-       echo "stoch_ini not available, setting stochini=F"
-       stochini=F
-     fi
-  
+   if [ -s stoch_ini ]; then
+      echo "stoch_ini available, setting stochini=T"
+      stochini=T # restart random patterns from existing file
    else
-     echo "WARNING:  2nd iteration, setting stochini=F" > ${current_logdir}/stochini_fg_ens.log
-     stochini=F
+      echo "stoch_ini not available, setting stochini=F"
+      stochini=F
    fi
-   
    iaudelthrs=${iau_delthrs}
    warm_start=T
    make_nh=F
