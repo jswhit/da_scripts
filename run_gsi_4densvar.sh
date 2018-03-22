@@ -277,7 +277,11 @@ BKGVERR=""
 ANBKGERR=""
 JCOPTS=""
 #  use tcv_mod, only: init_tcps_errvals,tcp_refps,tcp_width,tcp_ermin,tcp_ermax
-OBSQC="tcp_ermax=3.0,aircraft_t_bc=$aircraft_bc,biaspredt=1000.0,upd_aircraft=$aircraft_bc" # error variance goes from tcp_ermin (when O-F=0) to tcp_ermax (when O-F=tcp_width=50)
+OBSQC="tcp_width=60.0,tcp_ermin=2.0,tcp_ermax=12.0,aircraft_t_bc=$aircraft_bc,biaspredt=1000.0,upd_aircraft=$aircraft_bc" # error variance goes from tcp_ermin (when O-F=0) to tcp_ermax (when O-F=tcp_width=50)
+# GSI defaults
+#   tcp_width=50.0_r_kind
+#   tcp_ermin=0.75_r_kind  
+#   tcp_ermax=5.0_r_kind
 OBSINPUT=""
 SUPERRAD=""
 SINGLEOB=""
