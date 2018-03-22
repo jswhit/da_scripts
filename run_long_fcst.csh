@@ -12,16 +12,6 @@ setenv skip_global_cycle 1
 # copy netcdf history files to DATOUT
 setenv copy_history_files 1
 
-if ($replay_controlfcst == 'true') then
-   setenv charnanal "control2"
-else if ($controlfcst == 'false') then
-   setenv charnanal "ensmean"
-   unsetenv skip_calc_increment
-   unsetenv skip_global_cycle
-else
-   setenv charnanal "control"
-endif
-echo "charnanal = $charnanal"
 setenv DATOUT "${datapath2}/longfcst"
 echo "DATOUT = $DATOUT"
 mkdir -p ${DATOUT}
