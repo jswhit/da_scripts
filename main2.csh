@@ -14,6 +14,8 @@ source $startupenv
 if ( -s ${obs_datapath}/bufr_${analdate}/global_satinfo.txt) then
    setenv SATINFO ${obs_datapath}/bufr_${analdate}/global_satinfo.txt
 endif
+setenv OZINFO `csh ${enkfscripts}/pickinfo.csh ${analdate} ozinfo`
+setenv CONVINFO `csh ${enkfscripts}/pickinfo.csh ${analdate} convinfo`
 
 #------------------------------------------------------------------------
 mkdir -p $datapath

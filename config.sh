@@ -207,9 +207,9 @@ export SKEB_VDOF=5
 
 # resolution dependent model parameters
 if [ $RES -eq 384 ]; then
-   export JCAP=878 
-   export LONB=1760  
-   export LATB=880  
+   export JCAP=766
+   export LONB=1536
+   export LATB=768
    export fv_sg_adj=600
    export dt_atmos=225
    export cdmbgwd="1.0,1.2"

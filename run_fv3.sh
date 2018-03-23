@@ -49,7 +49,7 @@ if [ "$VERBOSE" == "YES" ]; then
  set -x
 fi
 
-if [ "$charnanal" != "cfsr" ] &&[ "$charnanal" != "control" ] && [ "$charnanal" != "ensmean" ] && [ "$charnanal" != "control2" ]; then
+if [ "$charnanal" != "cfsr" ] && [ "$charnanal" != "control" ] && [ "$charnanal" != "ensmean" ] && [ "$charnanal" != "control2" ]; then
    nmem=`echo $charnanal | cut -f3 -d"m"`
    nmem=$(( 10#$nmem )) # convert to decimal (remove leading zeros)
 else
@@ -219,7 +219,6 @@ if [ "$fg_only" == "true" ]; then
 else
    # warm start from restart file with lat/lon increments ingested by the model
    if [ $niter == 1 ] ; then
-  
      if [ -s stoch_ini ]; then
        echo "stoch_ini available, setting stochini=T"
        stochini=T # restart random patterns from existing file
@@ -227,10 +226,13 @@ else
        echo "stoch_ini not available, setting stochini=F"
        stochini=F
      fi
-  
+   elif [ $niter == 2 ]; then
+      echo "WARNING: iteration ${niter}, setting stochini=F for ${charnanal}" > ${current_logdir}/stochini_fg_ens.log
+      stochini=F
    else
-     echo "WARNING:  2nd iteration, setting stochini=F" > ${current_logdir}/stochini_fg_ens.log
-     stochini=F
+      # last try, turn SPPT off
+      echo "WARNING: iteration ${niter}, seting SPPT=0 for ${charnanal}" > ${current_logdir}/stochini_fg_ens.log
+      SPPT=0
    fi
    
    iaudelthrs=${iau_delthrs}
@@ -529,6 +531,7 @@ cat > input.nml <<EOF
 
 &gfs_physics_nml
   fhzero         = ${FHOUT}
+  lprecip_accu   = ${lprecip_accu:-"T"}
   ldiag3d        = F
   fhcyc          = ${FHCYC}
   nst_anl        = F
