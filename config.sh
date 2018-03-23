@@ -116,22 +116,22 @@ export NOSAT="NO" # if yes, no radiances assimilated
 # model NSST parameters contained within nstf_name in FV3 namelist
 # (comment out to get default - no NSST)
 # nstf_name(1) : NST_MODEL (NSST Model) : 0 = OFF, 1 = ON but uncoupled, 2 = ON and coupled
-### export DONST="YES"
-### export NST_MODEL=2
+export DONST="YES"
+export NST_MODEL=2
 # nstf_name(2) : NST_SPINUP : 0 = OFF, 1 = ON,
-### export NST_SPINUP=0 # (will be set to 1 if fg_only=='true')
+export NST_SPINUP=0 # (will be set to 1 if fg_only=='true')
 # nstf_name(3) : NST_RESV (Reserved, NSST Analysis) : 0 = OFF, 1 = ON
-### export NST_RESV=0
+export NST_RESV=0
 # nstf_name(4,5) : ZSEA1, ZSEA2 the two depths to apply vertical average (bias correction)
-### export ZSEA1=0
-### export ZSEA2=0
-### export NSTINFO=0          # number of elements added in obs. data array (default = 0)
-### export NST_GSI=3          # default 0: No NST info at all;
+export ZSEA1=0
+export ZSEA2=0
+export NSTINFO=0          # number of elements added in obs. data array (default = 0)
+export NST_GSI=3          # default 0: No NST info at all;
                           #         1: Input NST info but not used in GSI;
                           #         2: Input NST info, used in CRTM simulation, no Tr analysis
                           #         3: Input NST info, used in both CRTM simulation and Tr analysis
 
-export NST_GSI=0          # No NST 
+#export NST_GSI=0          # No NST 
 
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
@@ -191,14 +191,14 @@ fi
 #fi
 
 # stochastic physics parameters.
-export SPPT=0.0
+export SPPT=0.6
 ## export SPPT=0.8
 export SPPT_TSCALE=21600.
 export SPPT_LSCALE=500.e3
 export SHUM=0.005
 export SHUM_TSCALE=21600.
 export SHUM_LSCALE=500.e3
-export SKEB=0.08
+export SKEB=0.75
 export SKEB_TSCALE=21600.
 export SKEB_LSCALE=500.e3
 export SKEBNORM=0
