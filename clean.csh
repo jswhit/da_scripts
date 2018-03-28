@@ -15,6 +15,7 @@ endif
 /bin/rm -f ${charnanal}/*nc ${charnanal}/*txt ${charnanal}/*grb ${charnanal}/*dat ${charnanal}/co2*
 # every 06z save nanals_replay member + ens mean restarts.
 if ($nanals_replay > 0 && $ensmean_restart == 'true' && $hr == '06') then
+    /bin/rm -rf restarts
     mkdir restarts
     /bin/cp -R ${charnanal} restarts
     mkdir restarts/ensmean

@@ -13,6 +13,9 @@ source $startupenv
 # if SATINFO in obs dir, use it
 if ( -s ${obs_datapath}/bufr_${analdate}/global_satinfo.txt) then
    setenv SATINFO ${obs_datapath}/bufr_${analdate}/global_satinfo.txt
+else
+   echo "no satinfo file !"
+   exit 1
 endif
 setenv OZINFO `csh ${enkfscripts}/pickinfo.csh ${analdate} ozinfo`
 setenv CONVINFO `csh ${enkfscripts}/pickinfo.csh ${analdate} convinfo`
@@ -268,12 +271,10 @@ endif
 if ($run_long_fcst == "true") then
    if ($hr == "00") then
      cat ${machine}_preamble_longfcst run_long_fcst.sh >! job_longfcst.sh
-     cat ${machine}_preamble_cfsrfcst run_cfsr_fcst.sh >! job_cfsrfcst.sh
      if ($machine == 'wcoss') then
          bsub -env "all" < job_longfcst.sh
      else if ($machine == 'gaea') then
          msub -V job_longfcst.sh
-         msub -V job_cfsrfcst.sh
      else if ($machine == 'cori') then
          sbatch --export=ALL job_longfcst.sh
      else

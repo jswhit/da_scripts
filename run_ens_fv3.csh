@@ -87,7 +87,7 @@ set anyfilemissing='no'
 while ($nanal <= $nanals)
     setenv charnanal  "mem`printf %03i $nanal`"
     set fhr=$FHMIN
-    set outfiles=""
+    set outfiles="${datapath}/${analdatep1}/${charnanal}/sfc_data.tile6.nc"
     while ($fhr <= $FHMAX)
        set charhr="fhr`printf %02i $fhr`"
        set outfiles = "${outfiles} ${datapath}/${analdatep1}/sfg_${analdatep1}_${charhr}_${charnanal} ${datapath}/${analdatep1}/bfg_${analdatep1}_${charhr}_${charnanal}"

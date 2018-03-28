@@ -77,6 +77,7 @@ endif
 cd ${enkfscripts}
 $python ncinterp.py ${DATOUT}/${charnanal} fv3_historyp_latlon.nc $RES_CTL
 
+if ($submit_hpss == "true") then
 cat ${machine}_preamble_hpss hpss_longfcst.sh >! job_hpss_longfcst.sh
 if ($machine == 'wcoss') then
    bsub -env "all" < job_hpss_longfcst.sh
@@ -86,4 +87,5 @@ else if ($machine == 'cori') then
    sbatch --export=ALL job_hpss_longfcst.sh
 else
    qsub -V job_hpss_longfcst.sh
+endif
 endif

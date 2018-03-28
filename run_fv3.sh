@@ -27,21 +27,6 @@ elif [ "$machine" == 'cori' ]; then
    module list
 fi
 
-# workaround for error on theia
-# 'Unable to allocate shared memory for intra-node messaging'
-if [ "$machine" == 'theia' ]; then
-   n=1
-   cat $HOSTFILE | uniq > nodes_${charnanal}
-   ncount=`wc -l nodes_${charnanal} | cut -f1 -d " "`
-   while [ $n -le $ncount ]; do
-    node=`head -$n nodes_${charnanal} | tail -1`
-    ssh -n $node "ls -l /dev/shm/*"
-    ssh -n $node "/bin/rm -rf /dev/shm/*"
-    n=$((n+1))
-   done
-   /bin/rm -f nodes_${charnanal}
-fi
-
 export VERBOSE=${VERBOSE:-"NO"}
 export quilting=${quilting:-'.true.'}
 if [ "$VERBOSE" == "YES" ]; then
@@ -123,10 +108,10 @@ if [ $? -ne 0 ]; then
   echo "cd to ${datapath2}/${charnanal} failed, stopping..."
   exit 1
 fi
+/bin/rm -f *nemsio* PET*
 export DIAG_TABLE=${DIAG_TABLE:-$enkfscripts/diag_table}
 /bin/cp -f $DIAG_TABLE diag_table
 /bin/cp -f $enkfscripts/nems.configure .
-/bin/rm -f PET*
 # insert correct starting time and output interval in diag_table template.
 sed -i -e "s/YYYY MM DD HH/${year} ${mon} ${day} ${hour}/g" diag_table
 sed -i -e "s/FHOUT/${FHOUT}/g" diag_table
@@ -733,7 +718,11 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
    for file in ${datestring}*nc; do
       file2=`echo $file | cut -f3-10 -d"."`
       /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT/$file2
-   done
+      if [ $? -ne 0 ]; then
+        echo "restart file missing..."
+        exit 1
+      fi
+      done
    cd ..
 fi
 

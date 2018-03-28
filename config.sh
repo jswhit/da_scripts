@@ -1,7 +1,7 @@
 echo "running on $machine using $NODES nodes"
 ## ulimit -s unlimited
 
-export exptname=C128_C384_off
+export exptname=2003stream   
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia.
@@ -33,8 +33,8 @@ export resubmit='true'
 # control forecast files have 'control2' suffix, instead of 'control'
 # GSI observer will be run on 'control2' forecast
 # this is for diagnostic purposes (to get GSI diagnostic files) 
-export replay_controlfcst='true'
-export replay_run_observer='true' # run observer on replay forecast
+export replay_controlfcst='false'
+export replay_run_observer='false' # run observer on replay forecast
 export replay_only='false' # replay nanals_replay members, don't run DA
 # python script checkdate.py used to check
 # YYYYMMDDHH analysis date string to see if
@@ -43,6 +43,7 @@ export replay_only='false' # replay nanals_replay members, don't run DA
 export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
 export save_hpss="true"
 export run_long_fcst="true"  # spawn a longer control forecast at 00 and 12 UTC
+export run_long_fcst_cfsr="true" # also run a long forecast from CFSR initial conditions
 export ensmean_restart='true'
 export copy_history_files=1 # save pressure level history files (and compute ens mean)
 
@@ -116,22 +117,22 @@ export NOSAT="NO" # if yes, no radiances assimilated
 # model NSST parameters contained within nstf_name in FV3 namelist
 # (comment out to get default - no NSST)
 # nstf_name(1) : NST_MODEL (NSST Model) : 0 = OFF, 1 = ON but uncoupled, 2 = ON and coupled
-export DONST="YES"
-export NST_MODEL=2
-# nstf_name(2) : NST_SPINUP : 0 = OFF, 1 = ON,
-export NST_SPINUP=0 # (will be set to 1 if fg_only=='true')
-# nstf_name(3) : NST_RESV (Reserved, NSST Analysis) : 0 = OFF, 1 = ON
-export NST_RESV=0
-# nstf_name(4,5) : ZSEA1, ZSEA2 the two depths to apply vertical average (bias correction)
-export ZSEA1=0
-export ZSEA2=0
-export NSTINFO=0          # number of elements added in obs. data array (default = 0)
-export NST_GSI=3          # default 0: No NST info at all;
+#export DONST="YES"
+#export NST_MODEL=2
+## nstf_name(2) : NST_SPINUP : 0 = OFF, 1 = ON,
+#export NST_SPINUP=0 # (will be set to 1 if fg_only=='true')
+## nstf_name(3) : NST_RESV (Reserved, NSST Analysis) : 0 = OFF, 1 = ON
+#export NST_RESV=0
+## nstf_name(4,5) : ZSEA1, ZSEA2 the two depths to apply vertical average (bias correction)
+#export ZSEA1=0
+#export ZSEA2=0
+#export NSTINFO=0          # number of elements added in obs. data array (default = 0)
+#export NST_GSI=3          # default 0: No NST info at all;
                           #         1: Input NST info but not used in GSI;
                           #         2: Input NST info, used in CRTM simulation, no Tr analysis
                           #         3: Input NST info, used in both CRTM simulation and Tr analysis
 
-#export NST_GSI=0          # No NST 
+export NST_GSI=0          # No NST 
 
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
@@ -179,26 +180,25 @@ else
    export consv_te=1
 fi
 # GFDL suggests this for imp_physics=11
-#if [ $imp_physics -eq 11 ]; then 
-#   export hord_mt=6
-#   export hord_vt=6
-#   export hord_tm=6
-#   export hord_dp=-6
-#   export nord=2
-#   export dddmp=0.1
-#   export d4_bg=0.12
-#   export vtdm4=0.02
-#fi
+if [ $imp_physics -eq 11 ]; then 
+   export hord_mt=6
+   export hord_vt=6
+   export hord_tm=6
+   export hord_dp=-6
+   export nord=2
+   export dddmp=0.1
+   export d4_bg=0.12
+   export vtdm4=0.02
+fi
 
 # stochastic physics parameters.
 export SPPT=0.6
-## export SPPT=0.8
 export SPPT_TSCALE=21600.
 export SPPT_LSCALE=500.e3
 export SHUM=0.005
 export SHUM_TSCALE=21600.
 export SHUM_LSCALE=500.e3
-export SKEB=0.75
+export SKEB=0.8
 export SKEB_TSCALE=21600.
 export SKEB_LSCALE=500.e3
 export SKEBNORM=0
@@ -352,9 +352,9 @@ export saterrfact=1.0
 export deterministic=.true.
 export sortinc=.true.
                                                                     
-export nitermax=2
+export nitermax=1
 
-export enkfscripts="/lustre/f1/unswept/Gary.Bates/scripts/${exptname}"
+export enkfscripts="/lustre/f1/unswept/${USER}/scripts/${exptname}"
 export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
 
