@@ -1,6 +1,8 @@
 #!/bin/csh
 # do hybrid observer.
 
+if ($cold_start_bias == "true") setenv NOSAT YES
+
 if ( ! $?charnanal2 ) setenv charnanal2 $charnanal
 
 if ($machine == 'theia') then
