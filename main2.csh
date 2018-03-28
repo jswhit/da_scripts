@@ -293,6 +293,7 @@ echo "setenv analdate_end ${analdate_end}" >> $startupenv
 echo "setenv fg_only false" >! $datapath/fg_only.csh
 
 cd $homedir
+echo "$analdate all done `date`"
 
 if ( ${analdate} <= ${analdate_end}  && ${resubmit} == 'true') then
    echo "current time is $analdate"
@@ -311,6 +312,5 @@ if ( ${analdate} <= ${analdate_end}  && ${resubmit} == 'true') then
       endif
    endif
 endif
-echo "$analdate all done, exiting `date`"
 
 exit 0

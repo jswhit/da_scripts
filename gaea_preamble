@@ -3,12 +3,12 @@
 #PBS -l partition=c4
 ## #PBS -q debug
 #PBS -q urgent
-#PBS -l walltime=01:25:00
+#PBS -l walltime=01:30:00
 ## #PBS -l walltime=01:30:00
 #PBS -l nodes=20
-#PBS -N C128_off_allsky 
-#PBS -e C128_off_allsky.err
-#PBS -o C128_off_allsky.out
+#PBS -N 2003stream 
+#PBS -e 2003stream.err
+#PBS -o 2003stream.out
 #PBS -S /bin/sh
 export NODES=$PBS_NUM_NODES
 export corespernode=$PBS_NUM_PPN
