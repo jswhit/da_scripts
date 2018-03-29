@@ -33,8 +33,8 @@ export resubmit='true'
 # control forecast files have 'control2' suffix, instead of 'control'
 # GSI observer will be run on 'control2' forecast
 # this is for diagnostic purposes (to get GSI diagnostic files) 
-export replay_controlfcst='false'
-export replay_run_observer='false' # run observer on replay forecast
+export replay_controlfcst='true'
+export replay_run_observer='true' # run observer on replay forecast
 export replay_only='false' # replay nanals_replay members, don't run DA
 # python script checkdate.py used to check
 # YYYYMMDDHH analysis date string to see if
