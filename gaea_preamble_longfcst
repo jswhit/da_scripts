@@ -4,7 +4,7 @@
 ##PBS -q batch
 #PBS -q urgent
 #PBS -l nodes=6:ppn=36
-#PBS -l walltime=02:30:00
+#PBS -l walltime=04:15:00
 #PBS -N C384_longfcst  
 #PBS -e C384_longfcst.err
 #PBS -o C384_longfcst.out

@@ -59,7 +59,7 @@ while ($nanal <= $nanals)
       echo "HOSTFILE = $HOSTFILE"
       cat $HOSTFILE
    endif
-   sh ${enkfscripts}/${rungfs} >&! ${current_logdir}/run_fg_${charnanal}.out &
+   sh ${enkfscripts}/${rungfs} >&! ${current_logdir}/run_fg_${charnanal}.iter${niter}.out &
    @ nhost = $nhost + $fg_proc
  else
    echo "skipping nanal = ${nanal}, output files already created"

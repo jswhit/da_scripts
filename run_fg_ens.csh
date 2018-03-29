@@ -17,10 +17,10 @@ set alldone='no'
 echo "${analdate} compute first guesses `date`"
 while ($alldone == 'no' && $niter <= $nitermax)
     if ($niter == 1) then
-    csh ${enkfscripts}/${fg_gfs} >&! ${current_logdir}/run_fg.out
+    csh ${enkfscripts}/${fg_gfs} >&! ${current_logdir}/run_fg.iter${niter}.out
     set exitstat=$status
     else
-    csh ${enkfscripts}/${fg_gfs} >>& ${current_logdir}/run_fg.out
+    csh ${enkfscripts}/${fg_gfs} >&! ${current_logdir}/run_fg.iter${niter}.out
     set exitstat=$status
     endif
     if ($exitstat == 0) then
