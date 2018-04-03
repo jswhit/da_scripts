@@ -13,6 +13,9 @@ source $startupenv
 # if SATINFO in obs dir, use it
 if ( -s ${obs_datapath}/bufr_${analdate}/global_satinfo.txt) then
    setenv SATINFO ${obs_datapath}/bufr_${analdate}/global_satinfo.txt
+else
+   echo "no satinfo file !"
+   exit 1
 endif
 setenv OZINFO `csh ${enkfscripts}/pickinfo.csh ${analdate} ozinfo`
 setenv CONVINFO `csh ${enkfscripts}/pickinfo.csh ${analdate} convinfo`
