@@ -1,9 +1,0 @@
-To define C384 ensemble ICS:
-
-1) option A:  use control for GSI background (as in current ops).  compute ensemble perturbations from restart files at end of IAU window, interpolate to C384 and add to control restart.  Continue forecast from fhr=3 without IAU. Requires saving low-res cubed sphere restart files for N members.
-
-2) option B:  use passive replay (use EnKF mean for GSI background).  Replay control forecast to 1st N low-res EnKF analyses.  Requires saving N sanl* files (low-res restarts not needed). 
-
-
-compile model without -DUSE_LARGEFILE to get compressed output
-some mods to getsigensmean, getsigensstat necessary, as well as cnvnems utility
