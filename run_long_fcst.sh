@@ -17,23 +17,5 @@ fi
 echo "charnanal = $charnanal"
 
 env
-if [ $run_long_fcst_cfsr == "true" ]; then
-   export submit_hpss=false
-else
-   export submit_hpss=true
-fi
+export submit_hpss=true
 csh ${enkfscripts}/run_long_fcst.csh
-
-if [ $run_long_fcst_cfsr == "true" ]; then
-   echo "$analdate run high-res control long fcst from CFSR initial conditions `date`"
-   
-   export charnanal="cfsr"
-   echo "charnanal = $charnanal"
-   mkdir -p ${datapath2}/${charnanal}
-   /bin/cp -f /lustre/f1/unswept/Gary.Bates/cfsr_inits/${yr}/C${RES_CTL}_${analdate}/control/* ${datapath2}/${charnanal}
-   
-   env
-   export fg_only=true
-   export submit_hpss=true
-   csh ${enkfscripts}/run_long_fcst.csh
-fi

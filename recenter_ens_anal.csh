@@ -66,24 +66,6 @@ else
    exit 1
 endif
 
-# convert sanl files to grib after recentering (save for replay)
-setenv PGM "${execdir}/cnvnemsp.x ${datapath2}/ sanl_${analdate}_${charfhr} ${nanals} grib"
-sh ${enkfscripts}/runmpi
-
-if ($nanals_replay > 0) then
-   echo "recenter replay ensemble perturbations about low resolution hybrid analysis"
-   set filename_meanin=sanl${nanals_replay}_${analdate}_${charfhr}_ensmean
-   set filename_meanout=sanl_${analdate}_${charfhr}_${charnanal}
-   set filenamein=sanl_${analdate}_${charfhr}
-   set filenameout=sanl${nanals_replay}_${analdate}_${charfhr}
-   setenv PGM "${execdir}/recentersigp.x $filenamein $filename_meanin $filename_meanout $filenameout $nanals_replay"
-   sh ${enkfscripts}/runmpi
-   # convert sanl files to grib after recentering (save for replay)
-   setenv PGM "${execdir}/cnvnemsp.x ${datapath2}/ sanl${nanals_replay}_${analdate}_${charfhr} ${nanals_replay} grib"
-   sh ${enkfscripts}/runmpi
-endif
-
-
 end # next time
 popd
 

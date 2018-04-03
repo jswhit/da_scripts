@@ -24,26 +24,6 @@ while ($fh <= $FHMAX)
 
   set charfhr="fhr`printf %02i $fh`"
 
-  # convert control forecasts to grib
-  # (do this in adjustps.sh instead)
-  #setenv nprocs_save $nprocs
-  #setenv mpitaskspernode_save $mpitaskspernode
-  #setenv nprocs 1
-  #setenv mpitaskspernode 1
-  #if ($replay_controlfcst == 'true') then
-  #if ($cleanup_ensmean == 'true' || ($cleanup_ensmean == 'false' && ! -s ${datapath}/${analdate}/sfg_${analdate}_${charfhr}_control2.grib)) then
-  #setenv PGM "${execdir}/cnvnems.x ${datapath2}/sfg_${analdate}_${charfhr}_control2 ${datapath2}/sfg_${analdate}_${charfhr}_control2.grib grib"
-  #sh ${enkfscripts}/runmpi
-  #endif
-  #else
-  #if ($cleanup_ensmean == 'true' || ($cleanup_ensmean == 'false' && ! -s ${datapath}/${analdate}/sfg_${analdate}_${charfhr}_control.grib)) then
-  #setenv PGM "${execdir}/cnvnems.x ${datapath2}/sfg_${analdate}_${charfhr}_control ${datapath2}/sfg_${analdate}_${charfhr}_control.grib grib"
-  #sh ${enkfscripts}/runmpi
-  #endif
-  #endif
-  #setenv nprocs $nprocs_save
-  #setenv mpitaskspernode $mpitaskspernode_save
-
   if ($cleanup_ensmean == 'true' || ($cleanup_ensmean == 'false' && ! -s ${datapath}/${analdate}/bfg_${analdate}_${charfhr}_ensmean)) then
       echo "running  ${execdir}/getsfcensmeanp.x ${datapath2}/ bfg_${analdate}_${charfhr}_ensmean bfg_${analdate}_${charfhr} ${nanals}"
       /bin/rm -f ${datapath2}/bfg_${analdate}_${charfhr}_ensmean

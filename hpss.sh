@@ -71,42 +71,17 @@ done
 
 # now save what's left to HPSS
 if  [ $save_hpss_subset = "true" ]; then
-   cd ${datapath2}
-   htar -cvf ${hsidir}/${analdate}_analens.tar analens
-   hsi ls -l ${hsidir}/${analdate}_analens.tar
-   if [  $? -eq 0 ]; then
-      echo "hsi analens done, deleting data..."
-      /bin/rm -rf analens
-   else
-      echo "hsi analens failed ${analdate}..."
-      exitstat=1
-   fi
-   if [ -n "$nanals_replay" ] && [ $nanals_replay -gt 0 ]; then
-       htar -cvf ${hsidir}/${analdate}_analens${nanals_replay}.tar analens${nanals_replay}
-       hsi ls -l ${hsidir}/${analdate}_analens${nanals_replay}.tar
-       if [  $? -eq 0 ]; then
-          echo "hsi analens${nanals_replay} done, deleting data..."
-          /bin/rm -rf analens${nanals_replay}
-       else
-          echo "hsi analens${nanals_replay} failed ${analdate}..."
-          exitstat=1
-       fi
-   fi
-   # save nanals_replay member restarts at 00UTC
-   if [ -n "$nanals_replay" ] && [ $nanals_replay -gt 0 ]; then
-   if [ -s restarts ] && [ $hr == "06" ];  then
-       htar -cvf ${hsidir}/${analdatem1}_restarts.tar restarts
-       hsi ls -l ${hsidir}/${analdatem1}_restarts.tar
-       if [  $? -eq 0 ]; then
-          echo "hsi restarts done, deleting data..."
-          /bin/rm -rf restarts
-       else
-          echo "hsi restarts failed ${analdate}..."
-          exitstat=1
-       fi
-   fi
-   fi
-   cd ..
+   #cd ${datapath2}
+   #htar -cvf ${hsidir}/${analdate}_analens.tar analens
+   #hsi ls -l ${hsidir}/${analdate}_analens.tar
+   #if [  $? -eq 0 ]; then
+   #   echo "hsi analens done, deleting data..."
+   #   /bin/rm -rf analens
+   #else
+   #   echo "hsi analens failed ${analdate}..."
+   #   exitstat=1
+   #fi
+   #cd ..
    # exclude long forecast directory
    htar -cvf ${hsidir}/${analdate}_subset.tar ${analdate}/gdas* ${analdate}/*ensmean* ${analdate}/*control* ${analdate}/logs
    # remove cris,iasi airs diag files to save more space

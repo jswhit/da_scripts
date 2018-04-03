@@ -25,23 +25,6 @@ if ($cleanup_ensmean == 'true' || ($cleanup_ensmean == 'false' && ! -s ${datapat
       sh ${enkfscripts}/runmpi
    endif
 endif
-# convert sanl files to grib (save for replay)
-if ($controlanal != 'true' || $recenter_anal != 'true') then # if true, do in recenter_ens_anal.csh
-   setenv PGM "${execdir}/cnvnemsp.x ${datapath2}/ sanl_${analdate}_${charfhr} ${nanals} grib"
-   sh ${enkfscripts}/runmpi
-   if ($nanals_replay > 0) then
-      echo "recenter replay ensemble perturbations about low resolution hybrid analysis"
-      set filename_meanin=sanl${nanals_replay}_${analdate}_${charfhr}_ensmean
-      set filename_meanout=sanl_${analdate}_${charfhr}_ensmean
-      set filenamein=sanl_${analdate}_${charfhr}
-      set filenameout=sanl${nanals_replay}_${analdate}_${charfhr}
-      setenv PGM "${execdir}/recentersigp.x $filenamein $filename_meanin $filename_meanout $filenameout $nanals_replay"
-      sh ${enkfscripts}/runmpi
-      # convert sanl files to grib after recentering (save for replay)
-      setenv PGM "${execdir}/cnvnemsp.x ${datapath2}/ sanl${nanals_replay}_${analdate}_${charfhr} ${nanals_replay} grib"
-      sh ${enkfscripts}/runmpi
-   endif
-endif
 
 end
 ls -l ${datapath2}/sanl_${analdate}*ensmean

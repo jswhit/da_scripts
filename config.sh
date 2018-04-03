@@ -1,7 +1,7 @@
 echo "running on $machine using $NODES nodes"
 ## ulimit -s unlimited
 
-export exptname=2003stream   
+export exptname=C384C192_test_iau
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia.
@@ -33,8 +33,8 @@ export resubmit='true'
 # control forecast files have 'control2' suffix, instead of 'control'
 # GSI observer will be run on 'control2' forecast
 # this is for diagnostic purposes (to get GSI diagnostic files) 
-export replay_controlfcst='true'
-export replay_run_observer='true' # run observer on replay forecast
+export replay_controlfcst='false'
+export replay_run_observer='false' # run observer on replay forecast
 export replay_only='false' # replay nanals_replay members, don't run DA
 # python script checkdate.py used to check
 # YYYYMMDDHH analysis date string to see if
@@ -42,8 +42,7 @@ export replay_only='false' # replay nanals_replay members, don't run DA
 # HPSS save should be done)
 export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
 export save_hpss="true"
-export run_long_fcst="true"  # spawn a longer control forecast at 00 and 12 UTC
-export run_long_fcst_cfsr="true" # also run a long forecast from CFSR initial conditions
+export run_long_fcst="true"  # spawn a longer control forecast at 00 UTC
 export ensmean_restart='true'
 export copy_history_files=1 # save pressure level history files (and compute ens mean)
 
@@ -104,7 +103,7 @@ export readin_localization=.true.
 export massbal_adjust=.false.
 
 # resolution of control and ensmemble.
-export RES=128
+export RES=192
 export RES_CTL=384 
 
 # model physics parameters.
@@ -343,9 +342,6 @@ fi
 #export zhuberright=1.1
                                                                     
 export nanals=80                                                    
-# replay first 10 members if replay_only "true"
-# recenter nanals_replay ensemble around nanals ens mean
-export nanals_replay=10 
                                                                     
 export paoverpb_thresh=0.99  # set to 1.0 to use all the obs in serial EnKF
 export saterrfact=1.0
@@ -447,8 +443,5 @@ export aircraft_bc=.true.
 
 cd $enkfscripts
 echo "run main driver script"
-if [ $replay_only == "true" ]; then
-csh main_replay.csh
-else
-csh main2.csh
-fi
+csh main.csh
+#csh main2.csh
