@@ -3,9 +3,19 @@
 
 setenv CO2DIR $fixgsi
 
-setenv charnanal "control"
-setenv SKIP_ANGUPDATE "YES"
-setenv SIGANL ${datapath2}/sanl_${analdate}_${charnanal}
+setenv charnanal 'control'
+setenv charnanal2 'control'
+setenv lobsdiag_forenkf '.false.'
+setenv skipcat "false"
+
+if ($machine == 'theia') then
+   if (! $?hostfilein) then
+     setenv hostfilein $PBS_NODEFILE
+     setenv NODEFILE $datapath2/nodefile_envar
+   endif
+   cat $hostfilein | uniq > $NODEFILE
+endif
+
 setenv SIGANL03 ${datapath2}/sanl_${analdate}_fhr03_${charnanal}
 setenv SIGANL04 ${datapath2}/sanl_${analdate}_fhr04_${charnanal}
 setenv SIGANL05 ${datapath2}/sanl_${analdate}_fhr05_${charnanal}
@@ -13,20 +23,19 @@ setenv SIGANL06 ${datapath2}/sanl_${analdate}_fhr06_${charnanal}
 setenv SIGANL07 ${datapath2}/sanl_${analdate}_fhr07_${charnanal}
 setenv SIGANL08 ${datapath2}/sanl_${analdate}_fhr08_${charnanal}
 setenv SIGANL09 ${datapath2}/sanl_${analdate}_fhr09_${charnanal}
-setenv SFCANL ${datapath2}/sfcanl_${analdate}_${charnanal}
-setenv SFCANLm3 ${datapath2}/sfcanl_${analdate}_fhr03_${charnanal}
 setenv BIASO ${datapath2}/${PREINP}abias 
 setenv BIASO_PC ${datapath2}/${PREINP}abias_pc 
 setenv SATANGO ${datapath2}/${PREINP}satang
+setenv DTFANL ${datapath2}/${PREINP}dtfanl.nc
 
 if ($cleanup_controlanl == 'true') then
-   /bin/rm -f ${SIGANL}
+   /bin/rm -f ${SIGANL06}
    /bin/rm -f ${datapath2}/diag*control
 endif
 
 set niter=1
 set alldone='no'
-if ( -s $SIGANL && -s $SFCANL && -s $BIASO && -s $SATANGO) set alldone='yes'
+if ( -s $SIGANL06 && -s $BIASO && -s $SATANGO) set alldone='yes'
 
 while ($alldone == 'no' && $niter <= $nitermax)
 
@@ -38,14 +47,14 @@ setenv OMP_NUM_THREADS $gsi_control_threads
 setenv OMP_STACKSIZE 2048M
 setenv nprocs `expr $cores \/ $OMP_NUM_THREADS`
 setenv mpitaskspernode `expr $corespernode \/ $OMP_NUM_THREADS`
-if ($machine != 'wcoss') then
+if ($machine == 'theia') then
    setenv KMP_AFFINITY scatter
    if ($OMP_NUM_THREADS > 1) then
       setenv HOSTFILE $datapath2/machinefile_envar
       /bin/rm -f $HOSTFILE
-      awk "NR%${gsi_control_threads} == 1" ${PBS_NODEFILE} >&! $HOSTFILE
+      awk "NR%${gsi_control_threads} == 1" ${hostfilein} >&! $HOSTFILE
    else
-      setenv HOSTFILE $PBS_NODEFILE
+      setenv HOSTFILE $hostfilein
    endif
    cat $HOSTFILE
    wc -l $HOSTFILE
@@ -59,10 +68,10 @@ if ( ! $?biascorrdir ) then # cycled bias correction files
     setenv GBIASAIR ${datapathm1}/${PREINPm1}abias_air
     setenv ABIAS ${datapath2}/${PREINP}abias
 else # externally specified bias correction files.
-    setenv GBIAS ${biascorrdir}/${analdate}//${PREINPm1}abias
-    setenv GBIAS_PC ${biascorrdir}/${analdate}//${PREINPm1}abias_pc
-    setenv GBIASAIR ${biascorrdir}/${analdate}//${PREINPm1}abias_air
-    setenv ABIAS ${biascorrdir}/${analdate}//${PREINPm1}abias
+    setenv GBIAS ${biascorrdir}/${analdate}//${PREINP}abias
+    setenv GBIAS_PC ${biascorrdir}/${analdate}//${PREINP}abias_pc
+    setenv GBIASAIR ${biascorrdir}/${analdate}//${PREINP}abias_air
+    setenv ABIAS ${biascorrdir}/${analdate}//${PREINP}abias
 endif
 setenv GSATANG $fixgsi/global_satangbias.txt # not used, but needs to exist
 
@@ -72,12 +81,11 @@ if ($cold_start_bias == "true") then
     setenv lread_obs_skip ".false."
     echo "${analdate} compute gsi observer to cold start bias correction"
     setenv HXONLY 'YES'
-    setenv DOSFCANL 'NO'
     /bin/rm -rf $tmpdir
     mkdir -p $tmpdir
     time sh ${enkfscripts}/${rungsi}
     /bin/rm -rf $tmpdir
-    if ( ! -s ${datapath2}/diag_conv_ges.${analdate}_${charnanal} ) then
+    if ( ! -s ${datapath2}/diag_conv_uv_ges.${analdate}_${charnanal}.nc4 ) then
        echo "gsi observer step failed"
        exit 1
     endif
@@ -85,8 +93,7 @@ endif
 setenv lread_obs_save ".false."
 setenv lread_obs_skip ".false."
 setenv HXONLY 'NO'
-setenv DOSFCANL 'YES'
-if ( -s $SIGANL ) then
+if ( -s $SIGANL06 ) then
   echo "gsi hybrid already completed"
   echo "yes" >&! ${current_logdir}/run_gsi_hybrid.log
   exit 0
@@ -107,7 +114,7 @@ if ($status != 0) then
   echo "gsi hybrid analysis did not complete sucessfully"
   set exitstat=1
 else
-  if ( ! -s $SIGANL ) then
+  if ( ! -s $SIGANL06 ) then
     echo "gsi hybrid analysis did not complete sucessfully"
     set exitstat=1
   else
@@ -115,7 +122,6 @@ else
     set exitstat=0
   endif
 endif
-/bin/rm -rf $tmpdir
 
 if ($exitstat == 0) then
    set alldone='yes'
@@ -125,28 +131,11 @@ else
 endif
 end
 
-# calculate increment file.
-setenv nprocs 1
-setenv mpitaskspernode 1
-setenv PGM ${execdir}/calc_increment.x
-mkdir -p ${datapath2}/ensmean/INPUT
-pushd ${datapath2}/ensmean/INPUT
-cat > calc-increment.input <<EOF
-&share
-debug=F
-analysis_filename="${datapath2}/sanl_${analdate}_${charnanal}"
-firstguess_filename="${datapath2}/sfg_${analdate}_fhr06_${charnanal}"
-increment_filename="fv3_increment.nc"
-/
-EOF
-sh ${enkfscripts}/runmpi
-popd
-
 if($alldone == 'no') then
     echo "Tried ${nitermax} times and to do gsi hybrid analysis and failed"
     echo "no" >&! ${current_logdir}/run_gsi_hybrid.log
 else
-    #ln -fs $SIGANL ${datapath2}/sanl_${analdate}_${charnanal}
     echo "yes" >&! ${current_logdir}/run_gsi_hybrid.log
+    /bin/rm -rf $tmpdir
 endif
 exit 0

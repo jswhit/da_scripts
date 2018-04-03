@@ -1,22 +1,15 @@
 #!/bin/csh
 #set verbose
-module list
-
-if ($machine == 'theia') then
-  module list
-  module load intel/15.1.133
-  module load impi/5.0.3.048
-  #module switch impi mvapich2/2.1rc1
-  module list
-endif
 
 setenv nprocs `expr $cores \/ $enkf_threads`
 setenv mpitaskspernode `expr $corespernode \/ $enkf_threads`
 setenv OMP_NUM_THREADS $enkf_threads
 setenv OMP_STACKSIZE 256M
-if ($machine != 'wcoss') then
+if ($machine == 'theia') then
    if (! $?hostfilein) then
      setenv hostfilein $PBS_NODEFILE
+     setenv NODEFILE $datapath2/nodefile_enkf
+     cat $hostfilein | uniq > $NODEFILE
    endif
    setenv HOSTFILE $datapath2/machinefile_enkf
    /bin/rm -f $HOSTFILE
@@ -39,11 +32,7 @@ set nanal=1
 set filemissing='no'
 while ($nanal <= $nanals)
    set charnanal="mem"`printf %03i $nanal`
-   if ($IAU == ".true.") then
-      set analfile="${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}"
-   else
-      set analfile="${datapath2}/sanl_${analdate}_${charnanal}"
-   endif
+   set analfile="${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}"
    if ( ! -s $analfile) set filemissing='yes'
    @ nanal = $nanal + 1
 end
@@ -80,9 +69,9 @@ cat <<EOF1 >! enkf.nml
   sprd_tol=$sprd_tol,paoverpb_thresh=$paoverpb_thresh,letkf_flag=$letkf_flag,
   use_qsatensmean=$use_qsatensmean,
   reducedgrid=$reducedgrid,nlevs=$LEVS,nanals=$nanals,deterministic=$deterministic,
-  npefiles=0,lobsdiag_forenkf=.true.write_spread_diag=.true.,
+  npefiles=$npefiles,lobsdiag_forenkf=.true.,write_spread_diag=.true.,netcdf_diag=.true.,
   sortinc=$sortinc,univaroz=$univaroz,massbal_adjust=$massbal_adjust,nhr_anal=$iaufhrs,nhr_state=$enkfstatefhrs,
-  use_gfs_nemsio=.true.,adp_anglebc=.true.,angord=4,newpc4pred=.true.,use_edges=.false.,emiss_bc=.true.,biasvar=-500,write_spread_diag=.true.
+  use_gfs_nemsio=.true.,adp_anglebc=.true.,angord=4,newpc4pred=.true.,use_edges=.false.,emiss_bc=.true.,biasvar=-500,nobsl_max=$nobsl_max
  /
  &satobs_enkf
   sattypes_rad(1) = 'amsua_n15',     dsis(1) = 'amsua_n15',
@@ -104,9 +93,9 @@ cat <<EOF1 >! enkf.nml
   sattypes_rad(17)= 'goes_img_g13',  dsis(17)= 'imgr_g13',
   sattypes_rad(18)= 'goes_img_g14',  dsis(18)= 'imgr_g14',
   sattypes_rad(19)= 'goes_img_g15',  dsis(19)= 'imgr_g15',
-  sattypes_rad(20)= 'avhrr3_n18',    dsis(20)= 'avhrr3_n18',
-  sattypes_rad(21)= 'avhrr3_metop-a',dsis(21)= 'avhrr3_metop-a',
-  sattypes_rad(22)= 'avhrr3_n19',    dsis(22)= 'avhrr3_n19',
+  sattypes_rad(20)= 'avhrr_n18',     dsis(20)= 'avhrr3_n18',
+  sattypes_rad(21)= 'avhrr_metop-a', dsis(21)= 'avhrr3_metop-a',
+  sattypes_rad(22)= 'avhrr_n19',     dsis(22)= 'avhrr3_n19',
   sattypes_rad(23)= 'amsre_aqua',    dsis(23)= 'amsre_aqua',
   sattypes_rad(24)= 'ssmis_f16',     dsis(24)= 'ssmis_f16',
   sattypes_rad(25)= 'ssmis_f17',     dsis(25)= 'ssmis_f17',
@@ -141,7 +130,7 @@ cat <<EOF1 >! enkf.nml
   sattypes_rad(54)= 'hirs4_metop-b', dsis(54)= 'hirs4_metop-b',
   sattypes_rad(55)= 'mhs_metop-b',   dsis(55)= 'mhs_metop-b',
   sattypes_rad(56)= 'iasi_metop-b',  dsis(56)= 'iasi616_metop-b',
-  sattypes_rad(57)= 'avhrr3_metop-b',dsis(57)= 'avhrr3_metop-b',
+  sattypes_rad(57)= 'avhrr_metop-b', dsis(57)= 'avhrr3_metop-b',
   sattypes_rad(58)= 'atms_npp',      dsis(58)= 'atms_npp',
   sattypes_rad(59)= 'cris_npp',      dsis(59)= 'cris_npp',
   sattypes_rad(60)= 'msu_n14',       dsis(60)= 'msu_n14',
@@ -154,7 +143,12 @@ cat <<EOF1 >! enkf.nml
   sattypes_rad(67)= 'sndr_g10',      dsis(67)= 'sndr_g10',
   sattypes_rad(68)= 'sndr_g11',      dsis(68)= 'sndr_g11',
   sattypes_rad(69)= 'sndr_g12',      dsis(69)= 'sndr_g12',
-  
+  sattypes_rad(70)= 'avhrr_n14',     dsis(70)= 'avhrr3_n14',
+  sattypes_rad(71)= 'avhrr_n15',     dsis(71)= 'avhrr3_n15',
+  sattypes_rad(72)= 'avhrr_n16',     dsis(72)= 'avhrr3_n16',
+  sattypes_rad(73)= 'avhrr_n17',     dsis(73)= 'avhrr3_n17',
+  sattypes_rad(74)='amsua_n16',      dsis(74)= 'amsua_n16'
+  sattypes_rad(75)='amsub_n15',      dsis(75)= 'amsub_n15',  
  /
  &END
  &ozobs_enkf
@@ -179,6 +173,7 @@ cat enkf.nml
 /bin/rm -f ${datapath2}/enkf.log
 /bin/mv -f ${current_logdir}/ensda.out ${current_logdir}/ensda.out.save
 setenv PGM $enkfbin
+echo "OMP_NUM_THREADS = $OMP_NUM_THREADS"
 sh ${enkfscripts}/runmpi >>& ${current_logdir}/ensda.out
 if ( ! -s ${datapath2}/enkf.log ) then
    echo "no enkf log file found"
@@ -191,40 +186,12 @@ else
 echo "enkf update already done..."
 endif # filemissing='yes'
 
-setenv mpitaskspernode `python -c "import math; print int(math.ceil(float(${nanals})/float(${NODES})))"`
-if ($mpitaskspernode < 1) setenv mpitaskspernode 1
-setenv OMP_NUM_THREADS `expr $corespernode \/ $mpitaskspernode`
-echo "mpitaskspernode = $mpitaskspernode threads = $OMP_NUM_THREADS"
-setenv nprocs $nanals
-if ($machine != 'wcoss') then
-    # HOSTFILE is machinefile to use for programs that require $nanals tasks.
-    # if enough cores available, just one core on each node.
-    # NODEFILE is machinefile containing one entry per node.
-    setenv HOSTFILE $datapath2/machinefile_enkf
-    setenv NODEFILE $datapath2/nodefile_enkf
-    cat $hostfilein | uniq > $NODEFILE
-    if ($NODES >= $nanals) then
-      ln -fs $NODEFILE $HOSTFILE
-    else
-      # otherwise, leave as many cores empty as possible
-      awk "NR%${OMP_NUM_THREADS} == 1" ${hostfilein} >&! $HOSTFILE
-    endif
-endif
-
-echo "$analdate starting ens mean analysis computation `date`"
-csh ${enkfscripts}/compute_ensmean_enkf.csh >&!  ${current_logdir}/compute_ensmean_anal.out
-echo "$analdate done computing ensemble mean analyses `date`"
-
 # check output files again.
 set nanal=1
 set filemissing='no'
 while ($nanal <= $nanals)
    set charnanal="mem"`printf %03i $nanal`
-   if ($IAU == ".true.") then
-      set analfile="${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}"
-   else
-      set analfile="${datapath2}/sanl_${analdate}_${charnanal}"
-   endif
+   set analfile=${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}
    if ( ! -s $analfile) set filemissing='yes'
    @ nanal = $nanal + 1
 end

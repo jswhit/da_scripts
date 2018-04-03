@@ -1,0 +1,70 @@
+#!/bin/sh
+#PBS -A nggps_psd
+#PBS -l partition=c4
+##PBS -q debug
+#PBS -q urgent
+##PBS -q batch
+#PBS -l nodes=20
+#PBS -l walltime=01:00:00
+##PBS -l walltime=00:30:00
+#PBS -N C128_convonly  
+#PBS -e C128_convonly.err
+#PBS -o C128_convonly.out
+#PBS -S /bin/sh
+export NODES=$PBS_NUM_NODES
+export corespernode=$PBS_NUM_PPN
+export machine='gaea'
+export quilting='.true.'
+
+# for control forecast
+export write_groups_ctl=1 # write groups for control forecast.
+if [ $NODES -eq 10 ]; then
+  # 20 nodes, 2 threads
+  #export control_threads=2 # control forecast threads
+  #export control_proc=444   # total number of processors for control forecast
+  export control_threads=1
+  export control_proc=312
+  export write_groups_ctl=4 # write groups for control forecast.
+  export layout_ctl="6,8" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+elif [ $NODES -eq 20 ]; then
+  # 20 nodes, 2 threads
+  #export control_threads=2 # control forecast threads
+  #export control_proc=444   # total number of processors for control forecast
+  if [ $quilting == '.true.' ]; then
+  export control_threads=3
+  export control_proc=666
+  export write_groups_ctl=1 # write groups for control forecast.
+  export layout_ctl="6,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  else
+  export control_threads=2
+  export layout_ctl="10,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  fi
+elif [ $NODES -eq 40 ]; then
+  # 40 nodes, 2 threads
+  export control_threads=6 
+  export control_proc=1332 
+  export write_groups_ctl=1
+  export layout_ctl="6, 6"
+elif [ $NODES -eq 80 ]; then
+  # 80 nodes, 2 threads
+  export control_threads=6
+  export control_proc=2664 
+  export write_groups_ctl=1
+  export layout_ctl="12, 12" 
+else
+  echo "processor layout for $NODES nodes not set"
+  exit 1
+fi
+
+# for ensemble forecast and GSI
+export enkf_threads=2
+export gsi_control_threads=2
+export fg_proc=$corespernode 
+export fg_threads=1 
+export write_groups=2
+export write_tasks=6 
+if [ $quilting == 'true' ]; then
+export layout="2, 2" 
+else
+export layout="3, 2"
+fi

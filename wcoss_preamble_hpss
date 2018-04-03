@@ -1,4 +1,4 @@
-#BSUB -W 4:00                    # wall clock time 
+#BSUB -W 6:00                    # wall clock time 
 #BSUB -o tarit.stdout          # stdout
 #BSUB -e tarit.stderr          # stderr
 #BSUB -J tarit                 # jobname

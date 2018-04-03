@@ -1,14 +1,18 @@
-#BSUB -W 4:00                    # wall clock time 
-#BSUB -o tarit_longfcst.stdout          # stdout
-#BSUB -e tarit_longfcst.stderr          # stderr
-#BSUB -J tarit                 # jobname
-#BSUB -q "dev_transfer"         # job queue 
-#BSUB -P GFS-T2O                 # project code 
-#BSUB -M 1000                    # Memory req's for serial portion
 export NODES=1
-module load hpss
+source $MODULESHOME/init/sh
+if [ $machine == "gaea" ]; then
+   module load hsi
+else
+   module load hpss
+fi
 env
 hsi ls -l $hsidir
 hsi mkdir ${hsidir}/
-cd ${datapath2}
+cd ${DATOUT}
+cd ..
 htar -cvf ${hsidir}/${analdate}_longfcst.tar longfcst
+hsi ls -l ${hsidir}/${analdate}_longfcst.tar
+if [  $? -eq 0 ]; then
+   # delete 6 tile files on disk (keep latlon files)
+  /bin/rm -f ${DATOUT}/*/fv3_historyp*tile*.nc
+fi

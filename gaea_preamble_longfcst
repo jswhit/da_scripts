@@ -1,0 +1,18 @@
+#!/bin/sh
+#PBS -A nggps_psd
+#PBS -l partition=c4
+##PBS -q batch
+#PBS -q urgent
+#PBS -l nodes=6:ppn=36
+#PBS -l walltime=04:15:00
+#PBS -N C384_longfcst  
+#PBS -e C384_longfcst.err
+#PBS -o C384_longfcst.out
+#PBS -S /bin/sh
+export NODES=6
+export corespernode=$PBS_NUM_PPN
+export machine='gaea'
+export quilting='.false.'
+export control_threads=1
+export control_proc=216
+export layout="6,6"

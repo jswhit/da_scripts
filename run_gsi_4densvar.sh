@@ -1,24 +1,4 @@
-#!/bin/sh
-#$ -j y
-#$ -cwd
-#$ -l h_rt=01:00:00
-#$ -A rtgfsenkf
-#$ -N run_gsi_hybrid
-#$ -o run_gsi_hybrid.out
-#$ -e run_gsi_hybrid.err
-#$ -pe thfip 128
-#$ -S /bin/sh
-
 echo "Time starting at `date` "
-
-# gsi was compiled with these 
-if [ "$machine" == 'theia' ]; then
-   module list
-   module load intel/15.1.133
-   module load impi/5.0.3.048
-   #module switch impi mvapich2/2.1rc1
-   module list
-fi
 
 VERBOSE=${VERBOSE:-"YES"}
 if [[ "$VERBOSE" = "YES" ]]; then
@@ -33,6 +13,15 @@ adate=${analdate:-2010081900}
 adatem1=${analdatem1:-2010081900}
 nens=${nanals:-80}
 
+DONST=${DONST:-"NO"}
+NST_GSI=${NST_GSI:-0}
+NSTINFO=${NSTINFO:-0}
+ZSEA1=${ZSEA1:-0}
+ZSEA2=${ZSEA2:-0}
+FAC_DTL=${FAC_DTL:-1}
+FAC_TSL=${FAC_TSL:-1}
+TZR_QC=${TZR_QC:-1}
+
 HXONLY=${HXONLY:-"NO"}
 HRLY_BKG=${HRLY_BKG:-"YES"}
 NOSAT=${NOSAT:-"NO"}
@@ -46,7 +35,6 @@ nprocs=${nprocs:-$PBS_NP}
 basedir=${HOMEGLOBAL}
 gsipath=${gsipath:-${basedir}/gsi}
 gsiexec=${gsiexec:-$gsipath/EXP-port/src/global_gsi}
-angupdatexec=${angupdatexec:- $gsipath/util/global_angupdate/global_angupdate}
 charnanal=${charnanal:-'ensmean'}
 # name just for diag files.
 charnanal2=${charnanal2:-$charnanal}
@@ -106,7 +94,7 @@ nln="/bin/ln -fs"
 
 # copy symlinks if needed.
 if [[ "$lread_obs_save" = ".false." && "$HXONLY" = "YES" ]]; then
-tmpdir_ensmean=${datges}/gsitmp_ensmean
+tmpdir_ensmean=${datges}/gsitmp_${charnanal2}
 mkdir -p $tmpdir
 for filein in ${tmpdir_ensmean}/obs_input*; do
   file=`basename ${filein}`
@@ -143,6 +131,7 @@ echo "Time before global cycle `date` "
 export JCAP_A=${JCAP_A:-$JCAP}
 export LEVS=${LEVS:-64}
 export JCAP_B=${JCAP_B:-$JCAP}
+export lobsdiag_forenkf=${lobsdiag_forenkf:-".false."}
 
 
 export NLAT=$((${LATA}+2))
@@ -152,7 +141,6 @@ LONA_ENS=${LONA_ENS:-$LONA}
 export NLAT_ENS=$((${LATA_ENS}+2))
 
 
-SIGANL=${SIGANL:-$savdir/siganl.${adate}}
 SATANGO=${SATANGO:-$savdir/${RUN}.t${hha}z.satang}
 BIASO=${BIASO:-$savdir/${RUN}.t${hha}z.abias}
 BIASOAIR=${BIASOAIR:-$savdir/${RUN}.t${hha}z.abias_air}
@@ -261,15 +249,16 @@ if [ $ICO -gt 0 ] ; then
    fi
 fi
 
-if [[ "$IAU" = ".true." ]]; then
+if [ "${iau_delthrs}" != "-1" ]; then
    lwrite4danl=.true.
 else
    lwrite4danl=.false.
 fi
 
-SETUP="reduce_diag=.true.,lwrite_peakwt=.false.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=.true.,ens_nstarthr=3,iwrtinc=-1,nhr_assimilation=6,nhr_obsbin=$FHOUT,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=.true."
+SETUP="reduce_diag=.true.,lwrite_peakwt=.true.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=.true.,ens_nstarthr=3,iwrtinc=-1,nhr_assimilation=6,nhr_obsbin=$FHOUT,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=$lobsdiag_forenkf"
 
 if [[ "$HXONLY" = "YES" ]]; then
+   #SETUP="$SETUP,lobserver=.true.,l4dvar=.true." # can't use reduce_diag=T
    SETUP="$SETUP,miter=0,niter=1"
 fi
 STRONGOPTS="tlnmc_option=3,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
@@ -288,7 +277,11 @@ BKGVERR=""
 ANBKGERR=""
 JCOPTS=""
 #  use tcv_mod, only: init_tcps_errvals,tcp_refps,tcp_width,tcp_ermin,tcp_ermax
-OBSQC="tcp_ermax=3.0,aircraft_t_bc=$aircraft_bc,biaspredt=1000.0,upd_aircraft=$aircraft_bc." # error variance goes from tcp_ermin (when O-F=0) to tcp_ermax (when O-F=tcp_width=50)
+OBSQC="tcp_width=60.0,tcp_ermin=2.0,tcp_ermax=12.0,aircraft_t_bc=$aircraft_bc,biaspredt=1000.0,upd_aircraft=$aircraft_bc" # error variance goes from tcp_ermin (when O-F=0) to tcp_ermax (when O-F=tcp_width=50)
+# GSI defaults
+#   tcp_width=50.0_r_kind
+#   tcp_ermin=0.75_r_kind  
+#   tcp_ermax=5.0_r_kind
 OBSINPUT=""
 SUPERRAD=""
 SINGLEOB=""
@@ -312,9 +305,14 @@ beta1_inv=${beta1_inv:-0.25}
 s_ens_h=${s_ens_h:-800}
 s_ens_v=${s_ens_v:-0.8}
 if [ "$HXONLY" = "NO" ] && [[ $beta1_inv < 0.999 ]]; then
-HYBRIDENSDATA="l_hyb_ens=.true.,n_ens=$nens,beta_s0=$beta1_inv,s_ens_h=$s_ens_h,s_ens_v=$s_ens_v,generate_ens=.false.,uv_hyb_ens=.true.,jcap_ens=$JCAP_ENS,nlat_ens=$NLAT_ENS,nlon_ens=$LONA_ENS,aniso_a_en=.false.,jcap_ens_test=$JCAP_ENS,readin_localization=$readin_localization,write_ens_sprd=.false.,oz_univ_static=.false.,q_hyb_ens=.false."
+HYBRIDENSDATA="l_hyb_ens=.true.,n_ens=$nens,beta_s0=$beta1_inv,s_ens_h=$s_ens_h,s_ens_v=$s_ens_v,generate_ens=.false.,uv_hyb_ens=.true.,jcap_ens=$JCAP_ENS,nlat_ens=$NLAT_ENS,nlon_ens=$LONA_ENS,aniso_a_en=.false.,jcap_ens_test=$JCAP_ENS,readin_localization=$readin_localization,write_ens_sprd=.false.,oz_univ_static=.false.,q_hyb_ens=.false.,ens_fast_read=.true."
 else
 HYBRIDENSDATA=""
+fi
+
+NST=${NST:-""}
+if [ $NST_GSI -gt 0 ]; then
+   NST="nstinfo=$NSTINFO,fac_dtl=$FAC_DTL,fac_tsl=$FAC_TSL,zsea1=$ZSEA1,zsea2=$ZSEA2,$NST"
 fi
 
 # Create global_gsi namelist
@@ -323,12 +321,13 @@ cat <<EOF > gsiparm.anl
    miter=2,niter(1)=50,niter(2)=150,
    niter_no_qc(1)=25,niter_no_qc(2)=0,
    write_diag(1)=.true.,write_diag(2)=.false.,write_diag(3)=.true.,
+   netcdf_diag=.true.,binary_diag=.false.,
    qoption=2,
    factqmin=0.0,factqmax=0.0,deltim=$DELTIM,
    iguess=-1,
    oneobtest=.false.,retrieval=.false.,l_foto=.false.,
    use_pbl=.false.,use_compress=.true.,nsig_ext=12,gpstop=50.,
-   use_gfs_nemsio=.true.
+   use_gfs_nemsio=.true.,sfcnst_comb=.true.,
    $SETUP
  /
  &GRIDOPTS
@@ -363,7 +362,7 @@ cat <<EOF > gsiparm.anl
  /
  /
  &OBS_INPUT
-   dmesh(1)=120.0,dmesh(2)=120.0,time_window_max=3.0,
+   dmesh(1)=145.0,dmesh(2)=150.0,time_window_max=3.0,
    $OBSINPUT
  /
 OBS_INPUT::
@@ -380,7 +379,7 @@ OBS_INPUT::
    prepbufr       spd         null        spd                  0.0     0      0
    prepbufr       dw          null        dw                   0.0     0      0
    radarbufr      rw          null        rw                   0.0     0      0
-   prepbufr       sst         null        sst                  0.0     0      0
+   nsstbufr       sst         nsst        sst                  0.0     0     0
    gpsrobufr      gps_bnd     null        gps                  0.0     0      0
    ssmirrbufr     pcp_ssmi    dmsp        pcp_ssmi             0.0    -1      0
    tmirrbufr      pcp_tmi     trmm        pcp_tmi              0.0    -1      0
@@ -390,6 +389,7 @@ OBS_INPUT::
    sbuvbufr       sbuv2       n17         sbuv8_n17            0.0     0      0
    sbuvbufr       sbuv2       n18         sbuv8_n18            0.0     0      0
    sbuvbufr       sbuv2       n19         sbuv8_n19            0.0     0      0
+   hirs2bufr      hirs2       n11         hirs2_n11            0.0     1      1
    hirs2bufr      hirs2       n14         hirs2_n14            0.0     1      1
    hirs3bufr      hirs3       n15         hirs3_n15            0.0     1      1
    hirs3bufr      hirs3       n16         hirs3_n16            0.0     1      1
@@ -398,6 +398,7 @@ OBS_INPUT::
    gimgrbufr      goes_img    g11         imgr_g11             0.0     1      0
    gimgrbufr      goes_img    g12         imgr_g12             0.0     1      0
    airsbufr       airs        aqua        airs281SUBSET_aqua   0.0     1      1
+   msubufr        msu         n11         msu_n11              0.0     1      1
    msubufr        msu         n14         msu_n14              0.0     1      1
    ssubufr        ssu         n14         ssu_n14              0.0     1      1
    amsuabufr      amsua       n15         amsua_n15            0.0     1      1
@@ -452,6 +453,11 @@ OBS_INPUT::
    gomebufr       gome        metop-b     gome_metop-b         0.0     2      0
    atmsbufr       atms        npp         atms_npp             0.0     1      0
    crisbufr       cris        npp         cris_npp             0.0     1      0
+   avhambufr      avhrr       n15         avhrr3_n15           0.0     1      0
+   avhambufr      avhrr       n17         avhrr3_n17           0.0     1      0
+   avhambufr      avhrr       metop-a     avhrr3_metop-a       0.0     1      0
+   avhpmbufr      avhrr       n16         avhrr3_n16           0.0     1      0
+   avhpmbufr      avhrr       n18         avhrr3_n18           0.0     1      0
 ::
    $OBSINPUT
  /
@@ -477,8 +483,10 @@ OBS_INPUT::
    obhourset=0.,
    $SINGLEOB
  /
- &NST
- /
+&NST
+  nst_gsi=$NST_GSI,
+  $NST
+/
 EOF
 
 # Set fixed files
@@ -531,6 +539,7 @@ ozinfo=${OZINFO:-$fixgsi/global_ozinfo.txt}
 convinfo=${CONVINFO:-$fixgsi/global_convinfo.txt}
 errtable=$fixgsi/prepobs_errtable.global
 anavinfo=${ANAVINFO:-$fixgsi/global_anavinfo.l64.txt}
+radcloudinfo=${RADCLOUDINFO:-${fixgsi}/cloudy_radiance_info.txt}
 
 
 # Only need this file for single obs test
@@ -545,6 +554,7 @@ if [[ "$lread_obs_skip" = ".false." ]]; then
 $nln $gsiexec ./gsi.x
 
 $ncp $anavinfo ./anavinfo
+$ncp $radcloudinfo ./cloudy_radiance_info.txt
 $nln $berror   ./berror_stats
 $ncp $emiscoef_IRwater ./Nalli.IRwater.EmisCoeff.bin
 $ncp $emiscoef_IRice ./NPOESS.IRice.EmisCoeff.bin               
@@ -606,6 +616,9 @@ if [[ ! -s $datobs/${prefix_obs}.prepbufr ]]; then
 fi 
 
 $nln $datobs/${prefix_obs}.prepbufr           ./prepbufr
+if [[ -s $datobs/${prefix_obs}.nsstbufr ]]; then
+$nln ${datobs}/${prefix_obs}.nsstbufr ./nsstbufr
+fi
 if [[ -s $datobs/${prefix_obs}.prepbufr.acft_profiles ]]; then
 $nln $datobs/${prefix_obs}.prepbufr.acft_profiles ./prepbufr_profl
 fi
@@ -704,6 +717,12 @@ fi
 if [[ -s $datobs/${prefix_obs}.sptrmm.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.sptrmm.${suffix}   ./tmirrbufr
 fi
+if [[ -s $datobs/${prefix_obs}.avcsam.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.avcsam.${suffix}          avhambufr
+fi
+if [[ -s $datobs/${prefix_obs}.avcspm.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.avcspm.${suffix}          avhpmbufr
+fi
 fi # NOSAT
 
 # link bias correction, atmospheric and surface files
@@ -761,24 +780,24 @@ fi
 fi
 
 # make symlinks for diag files to initialize angle dependent bias correction for new channels.
-satdiag="ssu_n14 hirs2_n14 msu_n14 sndr_g08 sndr_g09 sndr_g11 sndr_g12 sndr_g13 sndr_g08_prep sndr_g11_prep sndr_g12_prep sndr_g13_prep sndrd1_g11 sndrd2_g11 sndrd3_g11 sndrd4_g11 sndrd1_g12 sndrd2_g12 sndrd3_g12 sndrd4_g12 sndrd1_g13 sndrd2_g13 sndrd3_g13 sndrd4_g13 sndrd1_g14 sndrd2_g14 sndrd3_g14 sndrd4_g14 sndrd1_g15 sndrd2_g15 sndrd3_g15 sndrd4_g15 hirs2_n14 hirs3_n15 hirs3_n16 hirs3_n17 amsua_n15 amsua_n16 amsua_n17 amsub_n15 amsub_n16 amsub_n17 hsb_aqua airs_aqua amsua_aqua imgr_g08 imgr_g11 imgr_g12 imgr_g14 imgr_g15 gome_metop-a omi_aura mls_aura ssmi_f13 ssmi_f14 ssmi_f15 hirs4_n18 hirs4_metop-a amsua_n18 amsua_metop-a mhs_n18 mhs_metop-a amsre_low_aqua amsre_mid_aqua amsre_hig_aqua ssmis_las_f16 ssmis_uas_f16 ssmis_img_f16 ssmis_env_f16 ssmis_las_f17 ssmis_uas_f17 ssmis_img_f17 ssmis_env_f17 ssmis_las_f18 ssmis_uas_f18 ssmis_img_f18 ssmis_env_f18 ssmis_las_f19 ssmis_uas_f19 ssmis_img_f19 ssmis_env_f19 ssmis_las_f20 ssmis_uas_f20 ssmis_img_f20 ssmis_env_f20 iasi_metop-a hirs4_n19 amsua_n19 mhs_n19 seviri_m08 seviri_m09 seviri_m10 cris_npp atms_npp hirs4_metop-b amsua_metop-b mhs_metop-b iasi_metop-b gome_metop-b"
-alldiag="$satdiag pcp_ssmi_dmsp pcp_tmi_trmm conv sbuv2_n11 sbuv2_n14 sbuv2_n16 sbuv2_n17 sbuv2_n18 sbuv2_n19"
+satdiag="ssu_n14 hirs2_n14 msu_n14 sndr_g08 sndr_g09 sndr_g11 sndr_g12 sndr_g13 sndr_g08_prep sndr_g11_prep sndr_g12_prep sndr_g13_prep sndrd1_g11 sndrd2_g11 sndrd3_g11 sndrd4_g11 sndrd1_g12 sndrd2_g12 sndrd3_g12 sndrd4_g12 sndrd1_g13 sndrd2_g13 sndrd3_g13 sndrd4_g13 sndrd1_g14 sndrd2_g14 sndrd3_g14 sndrd4_g14 sndrd1_g15 sndrd2_g15 sndrd3_g15 sndrd4_g15 hirs2_n14 hirs3_n15 hirs3_n16 hirs3_n17 amsua_n15 amsua_n16 amsua_n17 amsub_n15 amsub_n16 amsub_n17 hsb_aqua airs_aqua amsua_aqua imgr_g08 imgr_g11 imgr_g12 imgr_g14 imgr_g15 gome_metop-a omi_aura mls_aura ssmi_f13 ssmi_f14 ssmi_f15 hirs4_n18 hirs4_metop-a amsua_n18 amsua_metop-a mhs_n18 mhs_metop-a amsre_low_aqua amsre_mid_aqua amsre_hig_aqua ssmis_las_f16 ssmis_uas_f16 ssmis_img_f16 ssmis_env_f16 ssmis_las_f17 ssmis_uas_f17 ssmis_img_f17 ssmis_env_f17 ssmis_las_f18 ssmis_uas_f18 ssmis_img_f18 ssmis_env_f18 ssmis_las_f19 ssmis_uas_f19 ssmis_img_f19 ssmis_env_f19 ssmis_las_f20 ssmis_uas_f20 ssmis_img_f20 ssmis_env_f20 iasi_metop-a hirs4_n19 amsua_n19 mhs_n19 seviri_m08 seviri_m09 seviri_m10 cris_npp atms_npp hirs4_metop-b amsua_metop-b mhs_metop-b iasi_metop-b gome_metop-b avhrr_n18 avhrr_metop-a avhrr_n15 avhrr_n16 avhrr_n17"
+alldiag="$satdiag pcp_ssmi_dmsp pcp_tmi_trmm conv_tcp conv_gps conv_t conv_q conv_uv conv_ps sbuv2_n11 sbuv2_n14 sbuv2_n16 sbuv2_n17 sbuv2_n18 sbuv2_n19"
 string='ges'
 for type in $satdiag; do
     if [[ "$cold_start_bias" = "true" ]]; then
-       if [ -s $datges/diag_${type}_${string}.${adate}_${charnanal2} ]; then
-          ln -fs $datges/diag_${type}_${string}.${adate}_${charnanal2} diag_${type}
+       if [ -s $datges/diag_${type}_${string}.${adate}_${charnanal2}.nc4 ]; then
+          ln -fs $datges/diag_${type}_${string}.${adate}_${charnanal2}.nc4 diag_${type}.nc4
        fi
     else
-       if [ -s $datgesm1/diag_${type}_${string}.${adatem1}_${charnanal2} ]; then
-          ln -fs $datgesm1/diag_${type}_${string}.${adatem1}_${charnanal2} diag_${type}
+       if [ -s $datgesm1/diag_${type}_${string}.${adatem1}_${charnanal2}.nc4 ]; then
+          ln -fs $datgesm1/diag_${type}_${string}.${adatem1}_${charnanal2}.nc4 diag_${type}.nc4
        fi
     fi
 done
 
 # Run gsi.
 #if [ -s ./satbias_in ] && [ -s ./satbias_angle ] && [ -s ./sfcf03 ] && [ -s ./sfcf06 ] && [ -s ./sfcf09 ] && [ -s ./sigf03 ] && [ -s ./sigf06 ] && [ -s ./sigf09 ] ; then
-if [ -s ./satbias_in ] && [ -s ./sfcf03 ] && [ -s ./sfcf06 ] && [ -s ./sfcf09 ] && [ -s ./sigf03 ] && [ -s ./sigf06 ] && [ -s ./sigf09 ] ; then
+if [[ $NOSAT == "YES" ||  -s ./satbias_in ]]  && [ -s ./sfcf03 ] && [ -s ./sfcf06 ] && [ -s ./sfcf09 ] && [ -s ./sigf03 ] && [ -s ./sigf06 ] && [ -s ./sigf09 ] ; then
 cat gsiparm.anl
 ulimit -s unlimited
 
@@ -786,6 +805,7 @@ pwd
 ls -l
 echo "Time before GSI `date` "
 export PGM=$tmpdir/gsi.x
+export FORT_BUFFERED=TRUE
 sh ${enkfscripts}/runmpi
 rc=$?
 if [[ $rc -ne 0 ]];then
@@ -823,10 +843,9 @@ if [[ "$HXONLY" = "NO" ]]; then
       if [ -s ./siga05 ]; then
          $nmv siga05          $SIGANL05
       fi
-      $nmv siganl          $SIGANL
-      ln -fs $SIGANL $SIGANL06
+      $nmv siganl             $SIGANL06
       if [ -s ./siga07 ]; then
-          $nmv siga07          $SIGANL07
+          $nmv siga07         $SIGANL07
       fi
       if [ -s ./siga08 ]; then
          $nmv siga08          $SIGANL08
@@ -839,21 +858,13 @@ if [[ "$HXONLY" = "NO" ]]; then
       if [ -s aircftbias_out ]; then
       $nmv aircftbias_out $BIASOAIR
       fi
+      if [ $DONST = "YES" ]; then
+         $nmv dtfanl $DTFANL 
+      fi
   else
       exit 1
   fi
 fi
-#if [[ "$HXONLY" = "NO" ]]; then
-#if [ -s ./siganl ] && [ -s ./satbias_out ]; then
-#$nmv siganl          $SIGANL
-##$ncp satbias_out     $savdir/biascr.${adate}
-#$nmv satbias_out $BIASO
-##$ncp sfcf06          $savdir/sfcf06.${gdate}
-##$ncp sigf06          $savdir/sigf06.${gdate}
-#else
-#exit 1
-#fi
-#fi
 # Loop over first and last outer loops to generate innovation
 # diagnostic files for indicated observation types (groups)
 #
@@ -875,6 +886,59 @@ else
   loops="01 03"
 fi
 
+#corecount=0
+## number of MPI tasks for each nc_diat_cat.x
+## must be a divisor of total number of cores
+#jobspernode=4
+#export nprocs=`expr $corespernode \/ $jobspernode`
+#export OMP_NUM_THREADS=1 # keep at 1
+#if [ "$machine" == 'theia' ]; then
+#   HOSTFILE_FULL=$PBS_NODEFILE
+#fi
+#for loop in $loops; do
+#
+#   case $loop in
+#     01) string=ges;;
+#     03) string=anl;;
+#      *) string=$loop;;
+#   esac
+#   
+#   #  Collect diagnostic files for obs types (groups) below
+#   for type in $alldiag; do
+#       count=`ls pe*${type}_${loop}* | wc -l`
+#       if [[ $count -gt 0 ]]; then
+#          export PGM="${execdir}/nc_diag_cat.x -o ${savdir}/diag_${type}_${string}.${adate}_${charnanal2}.nc4  pe*${type}_${loop}*nc4"
+#          if [ "$machine" == 'theia' ]; then
+#             export HOSTFILE=hostfile_${corecount}
+#             /bin/rm -f $HOSTFILE
+#             n=1
+#             while [ $n -le $nprocs ]; do
+#                nn=$((n+$corecount))
+#                core=`head -$nn $HOSTFILE_FULL | tail -1`
+#                echo $core >> $HOSTFILE
+#                n=$((n+1))
+#             done
+#             echo "contents of hostfile_${corecount}..."
+#             cat $HOSTFILE
+#          fi
+#          corecount=$((corecount+$nprocs))
+#          sh ${enkfscripts}/runmpi 1> nc_diag_cat_${type}_${string}.out 2> nc_diag_cat_${type}_${string}.out &
+#          if [ $corecount -eq $cores ]; then
+#             echo "waiting... corecount=$corecount"
+#             wait
+#             corecount=0
+#          fi       
+#       fi
+#   done
+#
+#done
+
+# run each nc_diag_cat on a separate node, concurrently
+nodecount=0
+export nprocs=$corespernode
+export mpitaskspernode=$nprocs
+export OMP_NUM_THREADS=1
+totnodes=$NODES
 for loop in $loops; do
 
    case $loop in
@@ -887,152 +951,63 @@ for loop in $loops; do
    for type in $alldiag; do
        count=`ls pe*${type}_${loop}* | wc -l`
        if [[ $count -gt 0 ]]; then
-          cat pe*${type}_${loop}* > $savdir/diag_${type}_${string}.${adate}_${charnanal2}
+          if [[ $count -eq 1 ]]; then
+            # just one file, no cat needed (just copy it)
+            file=`ls -1 pe*${type}_${loop}*`
+            /bin/cp -f $file ${savdir}/diag_${type}_${string}.${adate}_${charnanal2}.nc4
+          else
+            export PGM="${execdir}/nc_diag_cat.x -o ${savdir}/diag_${type}_${string}.${adate}_${charnanal2}.nc4  pe*${type}_${loop}*nc4"
+            ls -l pe*${type}_${loop}*nc4
+            nodecount=$((nodecount+1))
+            if [ "$machine" == 'theia' ]; then
+               node=`head -$nodecount $NODEFILE | tail -1`
+               export HOSTFILE=hostfile_${nodecount}
+               /bin/rm -f $HOSTFILE
+               n=1
+               while [ $n -le $nprocs ]; do
+                  echo $node >> $HOSTFILE
+                  n=$((n+1))
+               done
+               echo "contents of hostfile_${nodecount}..."
+               cat $HOSTFILE
+            fi
+            sh ${enkfscripts}/runmpi 1> ${current_logdir}/nc_diag_cat_${type}_${string}_${charnanal2}.out 2> ${current_logdir}/nc_diag_cat_${type}_${string}_${charnanal2}.err &
+            #sh ${enkfscripts}/runmpi 1> nc_diag_cat_${type}_${string}.out &
+            if [ $nodecount -eq $totnodes ]; then
+               echo "waiting... nodecount=$nodecount"
+               wait
+               nodecount=0
+            fi       
+          fi
        fi
    done
 
 done
+
+wait
 echo "Time after diagnostic loop is `date` "
 
-if [ ! -s $savdir/diag_conv_ges.${adate}_${charnanal2} ]; then
+if [ ! -s $savdir/diag_conv_uv_ges.${adate}_${charnanal2}.nc4 ]; then
+   exit 1
+fi
+if [ ! -s $savdir/diag_conv_t_ges.${adate}_${charnanal2}.nc4 ]; then
+   exit 1
+fi
+if [ ! -s $savdir/diag_conv_q_ges.${adate}_${charnanal2}.nc4 ]; then
+   exit 1
+fi
+if [ ! -s $savdir/diag_conv_ps_ges.${adate}_${charnanal2}.nc4 ]; then
    exit 1
 fi
 
 fi # skipcat
 
-if [[ "$SKIP_ANGUPDATE" = "YES" || "$NOSAT" = "YES" ]]; then
-   # If requested, clean up $tmpdir
-   if [[ "$CLEAN" = "YES" ]];then
-     cd $tmpdir
-     cd ../
-     /bin/rm -rf $tmpdir
-   fi
-   exit 0
-fi
-
-$nln ./satbias_angle  ./satbias_ang.in
-ls -l  ./satbias_ang.in
-cat  ./satbias_ang.in
-for type in $alldiag; do
-   if [[ -s $savdir/diag_${type}_ges.${adate}_${charnanal2} ]]; then
-      $nln $savdir/diag_${type}_ges.${adate}_${charnanal2}  ./diag_${type}.$adate
-   fi
-done
-cat  > global_angupdate.namelist <<EOF
- &SETUP
-  jpch=2680,nstep=90,nsize=20,wgtang=0.008333333,wgtlap=0.0,
-  iuseqc=1,dtmax=1.0,
-  iyy1=${iy},imm1=${im},idd1=${id},ihh1=${ih},
-  iyy2=${iy},imm2=${im},idd2=${id},ihh2=${ih},
-  dth=06,ndat=50,
-  $SETUPANG
- /
- &OBS_INPUT
-dtype(01)='hirs2',     dplat(01)='tirosn',   dsis(01)='hirs2_tirosn',
-dtype(02)='hirs2',     dplat(02)='n06',       dsis(02)='hirs2_n06',
-dtype(03)='hirs2',     dplat(03)='n07',       dsis(03)='hirs2_n07',
-dtype(04)='hirs2',     dplat(04)='n08',       dsis(04)='hirs2_n08',
-dtype(05)='hirs2',     dplat(05)='n09',       dsis(05)='hirs2_n09',
-dtype(06)='hirs2',     dplat(06)='n10',       dsis(06)='hirs2_n10',
-dtype(07)='hirs2',     dplat(07)='n11',       dsis(07)='hirs2_n11',
-dtype(08)='hirs2',     dplat(08)='n12',       dsis(08)='hirs2_n12',
-dtype(09)='hirs2',     dplat(09)='n14',       dsis(09)='hirs2_n14',
-dtype(10)='hirs3',     dplat(10)='n15',       dsis(10)='hirs3_n15',
-dtype(11)='hirs3',     dplat(11)='n16',       dsis(11)='hirs3_n16',
-dtype(12)='hirs3',     dplat(12)='n17',       dsis(12)='hirs3_n17',
-dtype(13)='hirs4',     dplat(13)='n19',       dsis(13)='hirs4_n19',
-dtype(14)='hirs4',     dplat(14)='metop-a',   dsis(14)='hirs4_metop-a',
-dtype(15)='sndr',      dplat(15)='g08',       dsis(15)='sndr_g08',
-dtype(16)='sndr',      dplat(16)='g10',       dsis(16)='sndr_g10',
-dtype(17)='sndr',      dplat(17)='g11',       dsis(17)='sndr_g11',
-dtype(18)='sndr',      dplat(18)='g12',       dsis(18)='sndr_g12',
-dtype(19)='sndr',      dplat(19)='g13',       dsis(19)='sndr_g13',
-dtype(20)='sndr',      dplat(20)='g09',       dsis(20)='sndr_g09',
-dtype(21)='goes_img',  dplat(21)='g10',       dsis(21)='imgr_g10',
-dtype(22)='goes_img',  dplat(22)='g11',       dsis(22)='imgr_g11',
-dtype(23)='goes_img',  dplat(23)='g12',       dsis(23)='imgr_g12',
-dtype(24)='goes_img',  dplat(24)='g13',       dsis(24)='imgr_g13',
-dtype(25)='airs',      dplat(25)='aqua',      dsis(25)='airs281SUBSET_aqua',
-dtype(26)='msu',       dplat(26)='tirosn',   dsis(26)='msu_tirosn',
-dtype(27)='msu',       dplat(27)='n06',       dsis(27)='msu_n06',
-dtype(28)='msu',       dplat(28)='n07',       dsis(28)='msu_n07',
-dtype(29)='msu',       dplat(29)='n08',       dsis(29)='msu_n08',
-dtype(30)='msu',       dplat(30)='n09',       dsis(30)='msu_n09',
-dtype(31)='msu',       dplat(31)='n10',       dsis(31)='msu_n10',
-dtype(32)='msu',       dplat(32)='n11',       dsis(32)='msu_n11',
-dtype(33)='msu',       dplat(33)='n12',       dsis(33)='msu_n12',
-dtype(34)='msu',       dplat(34)='n14',       dsis(34)='msu_n14',
-dtype(35)='amsua',     dplat(35)='n15',       dsis(35)='amsua_n15',
-dtype(36)='amsua',     dplat(36)='n16',       dsis(36)='amsua_n16',
-dtype(37)='amsua',     dplat(37)='n17',       dsis(37)='amsua_n17',
-dtype(38)='amsua',     dplat(38)='n18',       dsis(38)='amsua_n18',
-dtype(39)='amsua',     dplat(39)='metop-a',   dsis(39)='amsua_metop-a',
-dtype(40)='amsua',     dplat(40)='aqua',      dsis(40)='amsua_aqua',
-dtype(41)='amsub',     dplat(41)='n15',       dsis(41)='amsub_n15',
-dtype(42)='amsub',     dplat(42)='n16',       dsis(42)='amsub_n16',
-dtype(43)='amsub',     dplat(43)='n17',       dsis(43)='amsub_n17',
-dtype(44)='mhs',       dplat(44)='n18',       dsis(44)='mhs_n18',
-dtype(45)='mhs',       dplat(45)='metop-a',   dsis(45)='mhs_metop-a',
-dtype(46)='ssmi',      dplat(46)='f08',       dsis(46)='ssmi_f08',
-dtype(47)='ssmi',      dplat(47)='f10',       dsis(47)='ssmi_f10',
-dtype(48)='ssmi',      dplat(48)='f11',       dsis(48)='ssmi_f11',
-dtype(49)='ssmi',      dplat(49)='f13',       dsis(49)='ssmi_f13',
-dtype(50)='ssmi',      dplat(50)='f14',       dsis(50)='ssmi_f14',
-dtype(51)='ssmi',      dplat(51)='f15',       dsis(51)='ssmi_f15',
-dtype(52)='amsre_low', dplat(52)='aqua',      dsis(52)='amsre_aqua',
-dtype(53)='amsre_mid', dplat(53)='aqua',      dsis(53)='amsre_aqua',
-dtype(54)='amsre_hig', dplat(54)='aqua',      dsis(54)='amsre_aqua',
-dtype(55)='ssmis_las', dplat(55)='f16',       dsis(55)='ssmis_f16',
-dtype(56)='ssmis_uas', dplat(56)='f16',       dsis(56)='ssmis_f16',
-dtype(57)='ssmis_img', dplat(57)='f16',       dsis(57)='ssmis_f16',
-dtype(58)='ssmis_env', dplat(58)='f16',       dsis(58)='ssmis_f16',
-dtype(59)='sndrd1',    dplat(59)='g12',       dsis(59)='sndrD1_g12',
-dtype(60)='sndrd2',    dplat(60)='g12',       dsis(60)='sndrD2_g12',
-dtype(61)='sndrd3',    dplat(61)='g12',       dsis(61)='sndrD3_g12',
-dtype(62)='sndrd4',    dplat(62)='g12',       dsis(62)='sndrD4_g12',
-dtype(63)='sndrd1',    dplat(63)='g11',       dsis(63)='sndrD1_g11',
-dtype(64)='sndrd2',    dplat(64)='g11',       dsis(64)='sndrD2_g11',
-dtype(65)='sndrd3',    dplat(65)='g11',       dsis(65)='sndrD3_g11',
-dtype(66)='sndrd4',    dplat(66)='g11',       dsis(66)='sndrD4_g11',
-dtype(67)='sndrd1',    dplat(67)='g13',       dsis(67)='sndrD1_g13',
-dtype(68)='sndrd2',    dplat(68)='g13',       dsis(68)='sndrD2_g13',
-dtype(69)='sndrd3',    dplat(69)='g13',       dsis(69)='sndrD3_g13',
-dtype(70)='sndrd4',    dplat(70)='g13',       dsis(70)='sndrD4_g13',
-dtype(71)='ssu',       dplat(71)='tirosn',   dsis(71)='ssu_tirosn',
-dtype(72)='ssu',       dplat(72)='n06',       dsis(72)='ssu_n06',
-dtype(73)='ssu',       dplat(73)='n07',       dsis(73)='ssu_n07',
-dtype(74)='ssu',       dplat(74)='n08',       dsis(74)='ssu_n08',
-dtype(75)='ssu',       dplat(75)='n09',       dsis(75)='ssu_n09',
-dtype(76)='ssu',       dplat(76)='n11',       dsis(76)='ssu_n11',
-dtype(77)='ssu',       dplat(77)='n14',       dsis(77)='ssu_n14',
- /
-EOF
-
-cat global_angupdate.namelist
-export PGM=$angupdatexec
-${enkfscripts}/runmpi
-rc=$?
-if [[ $rc -ne 0 ]];then
-  echo "global_angupdate failed with exit code $rc"
-  sleep 10
-  exit 1
-fi
-# Output file
-##$ncp satbias_ang.out     $savdir/satang.${adate}
-if [ -s satbias_ang.out ]; then
-   $ncp satbias_ang.out  $SATANGO
-else
-   exit 1
-fi
-
-
 # If requested, clean up $tmpdir
 if [[ "$CLEAN" = "YES" ]];then
-   cd $tmpdir
-   cd ../
-   /bin/rm -rf $tmpdir
+  cd $tmpdir
+  cd ../
+  /bin/rm -rf $tmpdir
 fi
 
-
 # End of script
-exit
+exit 0

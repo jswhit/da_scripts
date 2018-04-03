@@ -1,0 +1,9 @@
+To run replay
+1) populate YYYMMDDHH directory with symlinks to analyses, bias correction files
+   and dtfanl.nc files.
+2) put symlink for a single sfg*ensmean file in every directory (only used to
+   get low res orography by adjustps.x).
+3) set RES_CTL and replay_only in config.sh.
+   adjust node counts processor layouts accordingly in gaea_preamble.
+3) script main_replay.csh runs adjustps.x, run_gsiobserver and forecast.
+

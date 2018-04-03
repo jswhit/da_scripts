@@ -1,12 +1,52 @@
-#PBS -l nodes=15:ppn=24
-#PBS -l walltime=1:00:00
+#PBS -l nodes=20:ppn=24
+#PBS -l walltime=1:30:00
+##PBS -l walltime=0:30:00
 #PBS -A gsienkf
-##PBS -A hybrid   
 ##PBS -q debug
-#PBS -N C96_singleres_fv3nems
+#PBS -N C128C128_test_iau
 #PBS -S /bin/bash
-#PBS -o C96_singleres_fv3nems.stdout
-#PBS -e C96_singleres_fv3nems.stderr
-export NODES=15
+#PBS -o C128C128_test_iau.stdout
+#PBS -e C128C128_test_iau.stderr
+export NODES=20
 export corespernode=24
 export machine='theia'
+
+# for control forecast
+if [ $NODES -eq 20 ]; then
+  # 20 nodes, 2 threads
+  #export control_threads=2 # control forecast threads
+  #export control_proc=444   # total number of processors for control forecast
+  export control_threads=1
+  export control_proc=480
+  export write_groups_ctl=8 # write groups for control forecast.
+  export layout_ctl="12,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+elif [ $NODES -eq 40 ]; then
+  # 40 nodes, 2 threads
+  export control_threads=4 
+  export control_proc=888  
+  export write_groups_ctl=1
+  export layout_ctl="6, 6"
+elif [ $NODES -eq 80 ]; then
+  # 80 nodes, 2 threads
+  export control_threads=8
+  export control_proc=1776 
+  export write_groups_ctl=1
+  export layout_ctl="12, 12" 
+else
+  echo "processor layout for $NODES nodes not set"
+  exit 1
+fi
+
+# for ensemble forecast and GSI
+export enkf_threads=2
+export gsi_control_threads=2
+export fg_proc=$corespernode 
+export fg_threads=1 
+# C192
+#export write_groups=1
+#export write_tasks=6 
+#export layout="3, 1" 
+# C128
+export write_groups=2
+export write_tasks=6 
+export layout="2, 1" 
