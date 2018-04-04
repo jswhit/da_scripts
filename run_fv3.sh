@@ -215,9 +215,13 @@ else
       echo "WARNING: iteration ${niter}, setting stochini=F for ${charnanal}" > ${current_logdir}/stochini_fg_ens.log
       stochini=F
    else
-      # last try, turn SPPT off
+      # last try, turn stochastic physics off
+      # reduce time step
       echo "WARNING: iteration ${niter}, seting SPPT=0 for ${charnanal}" > ${current_logdir}/stochini_fg_ens.log
       SPPT=0
+      SHUM=0
+      SKEB=0
+      dt_atmos=`python -c "print ${dt_atmos}/2"`
    fi
    
    iaudelthrs=${iau_delthrs}
@@ -516,7 +520,6 @@ cat > input.nml <<EOF
 
 &gfs_physics_nml
   fhzero         = ${FHOUT}
-  lprecip_accu   = ${lprecip_accu:-"T"}
   ldiag3d        = F
   fhcyc          = ${FHCYC}
   nst_anl        = F
