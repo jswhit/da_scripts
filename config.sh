@@ -43,7 +43,7 @@ export replay_only='false' # replay nanals_replay members, don't run DA
 export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
 export save_hpss="true"
 export run_long_fcst="true"  # spawn a longer control forecast at 00 UTC
-export ensmean_restart='true'
+export ensmean_restart='false'
 export copy_history_files=1 # save pressure level history files (and compute ens mean)
 
 # override values from above for debugging.
@@ -68,10 +68,10 @@ elif [ "$machine" == 'theia' ]; then
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    export obs_datapath=/scratch3/BMC/gsienkf/whitaker/gdas1bufr
 elif [ "$machine" == 'gaea' ]; then
-   export basedir=/lustre/f1/${USER}
-   export datadir=$basedir
-   #export hsidir="/2year/BMC/gsienkf/whitaker/gaea/${exptname}"
-   export hsidir="/3year/NCEPDEV/GEFSRR/${exptname}"
+   export basedir=/lustre/f1/unswept/${USER}
+   export datadir=/lustre/f1/${USER}
+   export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
+   #export hsidir="/3year/NCEPDEV/GEFSRR/${exptname}"
    export obs_datapath=/lustre/f1/unswept/Jeffrey.S.Whitaker/fv3_reanl/gdas1bufr
 elif [ "$machine" == 'cori' ]; then
    export basedir=${SCRATCH}
@@ -100,7 +100,6 @@ export obtimelnh=1.e30
 export obtimeltr=1.e30       
 export obtimelsh=1.e30       
 export readin_localization=.true.
-export massbal_adjust=.false.
 
 # resolution of control and ensmemble.
 export RES=192
@@ -116,22 +115,22 @@ export NOSAT="NO" # if yes, no radiances assimilated
 # model NSST parameters contained within nstf_name in FV3 namelist
 # (comment out to get default - no NSST)
 # nstf_name(1) : NST_MODEL (NSST Model) : 0 = OFF, 1 = ON but uncoupled, 2 = ON and coupled
-#export DONST="YES"
-#export NST_MODEL=2
-## nstf_name(2) : NST_SPINUP : 0 = OFF, 1 = ON,
-#export NST_SPINUP=0 # (will be set to 1 if fg_only=='true')
-## nstf_name(3) : NST_RESV (Reserved, NSST Analysis) : 0 = OFF, 1 = ON
-#export NST_RESV=0
-## nstf_name(4,5) : ZSEA1, ZSEA2 the two depths to apply vertical average (bias correction)
-#export ZSEA1=0
-#export ZSEA2=0
-#export NSTINFO=0          # number of elements added in obs. data array (default = 0)
-#export NST_GSI=3          # default 0: No NST info at all;
+export DONST="YES"
+export NST_MODEL=2
+# nstf_name(2) : NST_SPINUP : 0 = OFF, 1 = ON,
+export NST_SPINUP=0 # (will be set to 1 if fg_only=='true')
+# nstf_name(3) : NST_RESV (Reserved, NSST Analysis) : 0 = OFF, 1 = ON
+export NST_RESV=0
+# nstf_name(4,5) : ZSEA1, ZSEA2 the two depths to apply vertical average (bias correction)
+export ZSEA1=0
+export ZSEA2=0
+export NSTINFO=0          # number of elements added in obs. data array (default = 0)
+export NST_GSI=3          # default 0: No NST info at all;
                           #         1: Input NST info but not used in GSI;
                           #         2: Input NST info, used in CRTM simulation, no Tr analysis
                           #         3: Input NST info, used in both CRTM simulation and Tr analysis
 
-export NST_GSI=0          # No NST 
+#export NST_GSI=0          # No NST 
 
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
@@ -197,9 +196,9 @@ export SPPT_LSCALE=500.e3
 export SHUM=0.005
 export SHUM_TSCALE=21600.
 export SHUM_LSCALE=500.e3
-export SKEB=0.8
+export SKEB=0.65
 export SKEB_TSCALE=21600.
-export SKEB_LSCALE=500.e3
+export SKEB_LSCALE=250.e3
 export SKEBNORM=0
 export SKEB_NPASS=30
 export SKEB_VDOF=5
@@ -348,9 +347,9 @@ export saterrfact=1.0
 export deterministic=.true.
 export sortinc=.true.
                                                                     
-export nitermax=1
+export nitermax=2
 
-export enkfscripts="/lustre/f1/unswept/${USER}/scripts/${exptname}"
+export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
 
@@ -412,13 +411,6 @@ else
    exit 1
 fi
 
-#export ANAVINFO=${enkfscripts}/global_anavinfo.l${LEVS}.txt
-#export ANAVINFO_ENKF=${ANAVINFO}
-#export HYBENSINFO=${enkfscripts}/global_hybens_info.l${LEVS}.txt
-#export CONVINFO=${fixgsi}/global_convinfo.txt
-#export OZINFO=${enkfscripts}/global_ozinfo.txt
-# set SATINFO in main.csh
-
 #export ANAVINFO=${enkfscripts}/global_anavinfo.l64.txt.clrsky
 export ANAVINFO=${enkfscripts}/global_anavinfo.l64.txt
 export ANAVINFO_ENKF=${ANAVINFO}
@@ -427,7 +419,6 @@ export CONVINFO=${enkfscripts}/global_convinfo_oper_fix.txt
 export OZINFO=${enkfscripts}/global_ozinfo_oper_fix.txt
 #export SATINFO=${enkfscripts}/global_satinfo.txt.clrsky
 export SATINFO=${enkfscripts}/global_satinfo.txt
-# comment out SATINFO in main.csh
 
 # parameters for hybrid
 export beta1_inv=0.125    # 0 means all ensemble, 1 means all 3DVar.
