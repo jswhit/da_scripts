@@ -9,12 +9,12 @@ if [ $machine == "gaea" ]; then
 else
    module load hpss
 fi
-env
+#env
 hsi ls -l $hsidir
 hsi mkdir ${hsidir}/
 cd ${datapath2}
 
-if  [ $save_hpss_full = "true" ]; then
+if [ $save_hpss_full == "true" ]; then
    echo "htar fgens, fgens2"
    /bin/rm -rf gsitmp*
    /bin/rm -rf sanl*mem*
@@ -24,29 +24,30 @@ if  [ $save_hpss_full = "true" ]; then
    htar -cvf ${hsidir}/${analdate}_fgens2.tar * &
    cd ..
    wait
-   hsi ls -l ${hsidir}/${analdate}_fgens.tar
-   hsi ls -l ${hsidir}/${analdate}_fgens2.tar
 else
    echo 'not saving data to hpps, just clean up...'
 fi
 
-if [  $? -eq 0 ] || [ $save_hpss_full != "true" ]; then
-   echo "hsi fgens done or not requested, deleting data..."
+if [ $save_hpss_full == "true" ]; then
+   hsi ls -l ${hsidir}/${analdate}_fgens.tar
+   if [ $? -ne 0 ]; then
+      echo "htar fgens failed, not deleting data"
+      existat=1
+   else
+      echo "htar fgens succeeded, deleting data"
+      /bin/rm -rf fgens
+   fi
+   hsi ls -l ${hsidir}/${analdate}_fgens2.tar
+   if [ $? -ne 0 ]; then
+      echo "htar fgens2 failed, not deleting data"
+      existat=1
+   else
+      echo "htar fgens2 succeeded, deleting data"
+      /bin/rm -rf fgens2
+   fi
+else
    /bin/rm -rf fgens
-else
-   if [ $save_hpss_full == 'true']; then
-      echo "hsi fgens failed ${analdate}..."
-      exitstat=1
-   fi
-fi
-if [  $? -eq 0 ] || [ $save_hpss_full != "true" ]; then
-   echo "hsi fgens2 done or not requested, deleting data..."
    /bin/rm -rf fgens2
-else
-   if [ $save_hpss_full == 'true']; then
-      echo "hsi fgens2 failed ${analdate}..."
-      exitstat=1
-   fi
 fi
 
 # remove unwanted files and directories.
@@ -66,11 +67,9 @@ while [ $nanal -le $nanals ]; do
    fi
    nanal=$[$nanal+1]
 done 
-/bin/rm -rf fgens
-/bin/rm -rf fgens2
 
 # now save what's left to HPSS
-if  [ $save_hpss_subset = "true" ]; then
+if  [ $save_hpss_subset == "true" ]; then
    cd ${datapath2}
    htar -cvf ${hsidir}/${analdate}_analens.tar analens
    hsi ls -l ${hsidir}/${analdate}_analens.tar

@@ -5,7 +5,7 @@ if [ $machine == "gaea" ]; then
 else
    module load hpss
 fi
-env
+#env
 hsi ls -l $hsidir
 hsi mkdir ${hsidir}/
 cd ${DATOUT}
