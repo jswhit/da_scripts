@@ -352,7 +352,7 @@ export saterrfact=1.0
 export deterministic=.true.
 export sortinc=.true.
                                                                     
-export nitermax=1
+export nitermax=3
 
 export enkfscripts="/lustre/f1/unswept/${USER}/scripts/${exptname}"
 export homedir=$enkfscripts
