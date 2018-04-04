@@ -440,9 +440,6 @@ export beta1_inv=0.125    # 0 means all ensemble, 1 means all 3DVar.
 export s_ens_h=485      # a gaussian e-folding, similar to sqrt(0.15) times Gaspari-Cohn length
 export s_ens_v=-0.485   # in lnp units.
 # NOTE: most other GSI namelist variables are in ${rungsi}
-#export use_prepb_satwnd=.true.
-#export aircraft_bc=.false.
-export use_prepb_satwnd=.false.
 export aircraft_bc=.true.
 
 cd $enkfscripts
