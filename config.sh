@@ -35,7 +35,6 @@ export resubmit='true'
 # this is for diagnostic purposes (to get GSI diagnostic files) 
 export replay_controlfcst='false'
 export replay_run_observer='false' # run observer on replay forecast
-export replay_only='false' # replay nanals_replay members, don't run DA
 # python script checkdate.py used to check
 # YYYYMMDDHH analysis date string to see if
 # full ensemble should be saved to HPSS (returns 0 if 
@@ -195,8 +194,8 @@ export SPPT_TSCALE=21600.
 export SPPT_LSCALE=500.e3
 export SHUM=0.005
 export SHUM_TSCALE=21600.
-export SHUM_LSCALE=500.e3
-export SKEB=0.65
+export SHUM_LSCALE=250.e3
+export SKEB=0.6
 export SKEB_TSCALE=21600.
 export SKEB_LSCALE=250.e3
 export SKEBNORM=0

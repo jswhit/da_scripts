@@ -16,10 +16,6 @@ if ($cleanup_ensmean == 'true' || ($cleanup_ensmean == 'false' && ! -s ${datapat
    /bin/rm -f sanl_${analdate}_${charfhr}_ensmean
    setenv PGM "${execdir}/getsigensmeanp_smooth.x ${datapath2}/ sanl_${analdate}_${charfhr}_ensmean sanl_${analdate}_${charfhr} ${nanals}"
    sh ${enkfscripts}/runmpi
-   if ($nanals_replay > 0) then
-      setenv PGM "${execdir}/getsigensmeanp_smooth.x ${datapath2}/ sanl${nanals_replay}_${analdate}_${charfhr}_ensmean sanl_${analdate}_${charfhr} ${nanals_replay}"
-      sh ${enkfscripts}/runmpi
-   endif
    if ($nhr_anal == $ANALINC) then
       setenv PGM "${execdir}/getsigensstatp.x ${datapath2}/ sanl_${analdate}_${charfhr} ${nanals}"
       sh ${enkfscripts}/runmpi
