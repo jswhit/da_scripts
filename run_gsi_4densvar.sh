@@ -254,7 +254,12 @@ if [ "${iau_delthrs}" != "-1" ]; then
 else
    lwrite4danl=.false.
 fi
-
+# if satwnd bufr file exists, use it.
+if [[ -s $datobs/${prefix_obs}.satwnd.${suffix} ]]; then
+   use_prepb_satwnd=.false.
+else
+   use_prepb_satwnd=.true.
+fi
 SETUP="reduce_diag=.true.,lwrite_peakwt=.true.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=.true.,ens_nstarthr=3,iwrtinc=-1,nhr_assimilation=6,nhr_obsbin=$FHOUT,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=$lobsdiag_forenkf"
 
 if [[ "$HXONLY" = "YES" ]]; then
