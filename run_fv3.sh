@@ -218,11 +218,11 @@ else
    else
       # last try, turn stochastic physics off
       # reduce time step
-      echo "WARNING: iteration ${niter}, seting SPPT=0 for ${charnanal}" > ${current_logdir}/stochini_fg_ens.log
+      echo "WARNING: iteration ${niter}, turning off stochastic physics for ${charnanal}" > ${current_logdir}/stochini_fg_ens.log
       SPPT=0
       SHUM=0
       SKEB=0
-      dt_atmos=`python -c "print ${dt_atmos}/2"`
+      #dt_atmos=`python -c "print ${dt_atmos}/2"`
    fi
    
    iaudelthrs=${iau_delthrs}
