@@ -34,6 +34,7 @@ if [ "$VERBOSE" == "YES" ]; then
  set -x
 fi
 
+niter=${niter:-1}
 if [ "$charnanal" != "cfsr" ] && [ "$charnanal" != "control" ] && [ "$charnanal" != "ensmean" ] && [ "$charnanal" != "control2" ]; then
    nmem=`echo $charnanal | cut -f3 -d"m"`
    nmem=$(( 10#$nmem )) # convert to decimal (remove leading zeros)
