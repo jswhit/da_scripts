@@ -66,6 +66,7 @@ setenv SPPT 0
 setenv SHUM 0
 echo "SKEB SPPT SHUM = $SKEB $SPPT $SHUM"
 
+/bin/rm -f ${DATOUT}/${charnanal}/fv3*nc
 sh ${enkfscripts}/${rungfs}
 
 if ($machine == 'gaea') then

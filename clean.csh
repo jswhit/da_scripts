@@ -83,5 +83,7 @@ endif
 /bin/rm -f *lores *mem*orig
 /bin/rm -f ozinfo convinfo satinfo scaninfo anavinfo
 /bin/rm -rf hybridtmp* gsitmp* gfstmp* nodefile* machinefile*
+/bin/rm -f */PET*
+#/bin/rm -f ensmean/*tile*nc
 echo "unwanted files removed `date`"
 wait
