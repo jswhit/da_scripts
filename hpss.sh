@@ -45,7 +45,7 @@ else
 fi
 
 # save restarts at 00UTC
-#if [ $analdatem1 >= 2016010400 ] && [ -s restarts ] && [ $hr == "06" ];  then
+#if [ $analdatem1 -ge 2016010400 ] && [ -s restarts ] && [ $hr == "06" ];  then
 #   htar -cvf ${hsidir}/${analdatem1}_restarts.tar restarts
 #   hsi ls -l ${hsidir}/${analdatem1}_restarts.tar
 #   if [  $? -eq 0 ]; then

@@ -1,17 +1,19 @@
 #!/bin/csh
 
 set python=`which python`
-set nces=`which nces`
 if ($machine == 'wcoss') then
    module load nco-gnu-sandybridge
+   set nces=`which nces`
 else if ($machine == 'gaea') then
    set nces=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/bin/nces
    set python=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/bin/python
 else if ($machine == 'theia') then
    set python=/contrib/anaconda/2.3.0/bin/python
-   module load nco
+   module load nco/4.7.0
+   set nces=`which nces`
 else
    module load nco
+   set nces=`which nces`
 endif
 module list
 setenv HOSTFILE ${datapath2}/machinesx
@@ -57,7 +59,7 @@ if ( $cleanup_ensmean == 'true' || ( $cleanup_ensmean == 'false' && ! -s ${datap
    mkdir -p $pathout
    set ncount=1
    foreach tile (tile1 tile2 tile3 tile4 tile5 tile6)
-      foreach filename (fv_core.res.${tile}.nc fv_tracer.res.${tile}.nc fv_srf_wnd.res.${tile}.nc sfc_data.${tile}.nc)
+      foreach filename (fv_core.res.${tile}.nc fv_tracer.res.${tile}.nc fv_srf_wnd.res.${tile}.nc sfc_data.${tile}.nc phy_data.${tile}.nc)
          setenv PGM "${nces} -O `ls -1 ${datapath2}/mem*/INPUT/${filename}` ${pathout}/${filename}"
          if ($machine == 'theia') then
             set host=`head -$ncount $NODEFILE | tail -1`
