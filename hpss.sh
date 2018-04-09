@@ -9,7 +9,7 @@ if [ $machine == "gaea" ]; then
 else
    module load hpss
 fi
-env
+#env
 hsi ls -l $hsidir
 hsi mkdir ${hsidir}/
 cd ${datapath2}
@@ -44,8 +44,20 @@ else
    /bin/rm -rf fgens2
 fi
 
+# save restarts at 00UTC
+#if [ $analdatem1 >= 2016010400 ] && [ -s restarts ] && [ $hr == "06" ];  then
+#   htar -cvf ${hsidir}/${analdatem1}_restarts.tar restarts
+#   hsi ls -l ${hsidir}/${analdatem1}_restarts.tar
+#   if [  $? -eq 0 ]; then
+#      echo "hsi restarts done, deleting data..."
+#      /bin/rm -rf restarts
+#   else
+#      echo "hsi restarts failed ${analdate}..."
+#      exitstat=1
+#   fi
+#fi
+ 
 # remove unwanted files and directories.
-cd $datapath2
 nanal=0 
 while [ $nanal -le $nanals ]; do
    if [ $nanal -eq 0 ]; then
@@ -61,6 +73,7 @@ while [ $nanal -le $nanals ]; do
    fi
    nanal=$[$nanal+1]
 done 
+cd ..
 
 # now save what's left to HPSS
 if  [ $save_hpss_subset == "true" ]; then

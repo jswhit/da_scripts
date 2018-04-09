@@ -1,6 +1,20 @@
 echo "clean up files `date`"
 cd $datapath2
 
+# every 06z save 20 member + ens mean restarts.
+#if ($analdatem1 >= 2016010400 && $ensmean_restart == 'true' && $hr == '06') then
+#    /bin/rm -rf restarts
+#    mkdir -p restarts/ensmean
+#    /bin/mv -f ensmean/INPUT restarts/ensmean
+#    set nanal=1
+#    while ($nanal <= 20) 
+#       set charmem="mem`printf %03i $nanal`"
+#       /bin/cp -R ${charmem} restarts
+#       /bin/rm -f restarts/*/PET* restarts/*/log*
+#       @ nanal = $nanal + 1
+#    end
+#endif
+
 # move every member files to a temp dir.
 /bin/rm -rf fgens fgens2
 mkdir fgens
