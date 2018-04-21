@@ -59,11 +59,11 @@ foreach charfhr (00 03 06 09)
    endif
 end
 set charnanal='ensmean'
-foreach charfhr (00 03 06 09)
-   if ( -s ${datapath2}/sfg_${analdate}_fhr${charfhr}_${charnanal}.grib ) then
-     /bin/rm -f ${datapath2}/sfg_${analdate}_fhr${charfhr}_${charnanal}
-   endif
-end
+#foreach charfhr (00 03 06 09)
+#   if ( -s ${datapath2}/sfg_${analdate}_fhr${charfhr}_${charnanal}.grib ) then
+#     /bin/rm -f ${datapath2}/sfg_${analdate}_fhr${charfhr}_${charnanal}
+#   endif
+#end
 echo "files moved to analens, fgens, fgens2 `date`"
 if ( ! $?NOSAT ) then
 # only save control and spread diag files.
