@@ -180,6 +180,7 @@ if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
       nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
       if [ $? -ne 0 -o ! -s ${increment_file} ]; then
          echo "problem creating ${increment_file}, stopping .."
+         mail -s "${analdate} problem creating ${increment_file}" ${monitor_email} < /dev/null
          exit 1
       fi
    done # do next forecast
@@ -331,6 +332,7 @@ if [ $FHCYC -eq 0 ] && [ "$warm_start" == "T" ] && [ -z $skip_global_cycle ]; th
          /bin/mv -f ${COMOUT}/sfcanl_data.tile${n}.nc ${COMOUT}/sfc_data.tile${n}.nc
      else
          echo "global_cycle failed, exiting .."
+         mail -s "${analdate} global_cycle failed" ${monitor_email} < /dev/null
          exit 1
      fi
      ls -l ${COMOUT}/sfc_data.tile${n}.nc
@@ -681,6 +683,7 @@ echo "start running model `date`"
 sh ${enkfscripts}/runmpi
 if [ $? -ne 0 ]; then
    echo "model failed..."
+   mail -s "${analdate} model failed" ${monitor_email} < /dev/null
    exit 1
 else
    echo "done running model.. `date`"

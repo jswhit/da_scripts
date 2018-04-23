@@ -33,6 +33,7 @@ if ($hybrid_done == 'yes') then
   echo "$analdate gsi observer completed successfully `date`"
 else
   echo "$analdate gsi observer did not complete successfully, exiting `date`"
+  mail -s "$analdate gsi observer (ensmean) did not complete successfully" ${monitor_email} < /dev/null
   exit 1
 endif
 
@@ -51,6 +52,7 @@ if ($enkf_done == 'yes') then
   echo "$analdate enkf analysis completed successfully `date`"
 else
   echo "$analdate enkf analysis did not complete successfully, exiting `date`"
+  mail -s "$analdate enkf analysis did not complete successfully" ${monitor_email} < /dev/null
   exit 1
 endif
 
@@ -69,6 +71,7 @@ if ($controlfcst == 'true' && $replay_controlfcst == 'true' && $replay_run_obser
      echo "$analdate gsi observer completed successfully `date`"
    else
      echo "$analdate gsi observer did not complete successfully, exiting `date`"
+     mail -s "$analdate gsi observer (control2) did not complete successfully" ${monitor_email} < /dev/null
      exit 1
    endif
 endif

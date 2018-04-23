@@ -1,6 +1,7 @@
 echo "running on $machine using $NODES nodes"
 ## ulimit -s unlimited
 
+export monitor_email="anna.v.shlyaeva@noaa.gov"
 export exptname=2003stream   
 export cores=`expr $NODES \* $corespernode`
 
