@@ -368,7 +368,7 @@ cat <<EOF > gsiparm.anl
  /
  /
  &OBS_INPUT
-   dmesh(1)=145.0,dmesh(2)=150.0,time_window_max=3.0,
+   dmesh(1)=145.0,dmesh(2)=150.0,dmesh(3)=100.0,time_window_max=3.0,
    $OBSINPUT
  /
 OBS_INPUT::
@@ -660,10 +660,12 @@ fi
 if [[ -s $datobs/${prefix_obs}.atms.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.atms.${suffix}      ./atmsbufr
 fi
-if [[ -s $datobs/${prefix_obs}.goesnd.${suffix} ]]; then
+if [[ -s $datobs/${prefix_obs}.goesfv.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.goesfv.${suffix}   ./gsnd1bufr
+elif [[ -s $datobs/${prefix_obs}.goesnd.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.goesnd.${suffix}   ./gsnd1bufr
 fi
-if [[ -s $datobs/${prefix_obs}.goesnd.${suffix} ]]; then
+if [[ -s $datobs/${prefix_obs}.geoimr.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.geoimr.${suffix}   ./gimgrbufr
 fi
 if [[ -s $datobs/${prefix_obs}.1bamub.${suffix} ]]; then
