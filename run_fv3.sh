@@ -218,11 +218,14 @@ else
       stochini=F
    else
       # last try, turn stochastic physics off
-      # reduce time step
       echo "WARNING: iteration ${niter}, turning off stochastic physics for ${charnanal}" > ${current_logdir}/stochini_fg_ens.log
       SPPT=0
       SHUM=0
       SKEB=0
+      # set to large value so no random patterns will be output
+      # and random pattern will be reinitialized 
+      FHSTOCH=240 
+      # reduce time step
       #dt_atmos=`python -c "print ${dt_atmos}/2"`
    fi
    
@@ -302,7 +305,7 @@ else
    FHMAX_FCST=$FHMAX
    FHOFFSET=0
 fi
-FHSTOCH=`expr $FHRESTART + $FHOFFSET \/ 2`
+FHSTOCH=${FHSTOCH:-`expr $FHRESTART + $FHOFFSET \/ 2`}
 
 if [ $FHCYC -eq 0 ] && [ "$warm_start" == "T" ] && [ -z $skip_global_cycle ]; then
    # run global_cycle to update surface in restart file.
