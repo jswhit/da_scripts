@@ -24,12 +24,13 @@ ln -fs $GBIAS_PC   ${datapath2}/satbias_pc
 ln -fs $GSATANG ${datapath2}/satbias_angle
 #ln -fs ${gsipath}/fix/global_satinfo.txt ${datapath2}/satinfo
 ln -fs ${SATINFO} ${datapath2}/satinfo
-ls -l ${datapath2}/satinfo
 #ln -fs ${gsipath}/fix/global_convinfo.txt ${datapath2}/convinfo
 ln -fs ${CONVINFO} ${datapath2}/convinfo
 ln -fs ${ANAVINFO_ENKF} ${datapath2}/anavinfo
+ln -fs ${OZINFO} ${datapath2}/ozinfo
+ls -l ${datapath2}/satinfo
 ls -l ${datapath2}/convinfo
-ln -fs ${gsipath}/fix/global_ozinfo.txt ${datapath2}/ozinfo
+ls -l ${datapath2}/ozinfo
 ln -fs ${gsipath}/fix/global_scaninfo.txt ${datapath2}/scaninfo
 ln -fs ${current_logdir}/satinfo.out ${datapath2}/fort.207
 ln -fs ${current_logdir}/ozinfo.out ${datapath2}/fort.206
