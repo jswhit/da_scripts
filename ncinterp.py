@@ -9,7 +9,7 @@ nlons = 360; nlats = 181
 zlib = True; lsd = None # lossy compression, 4 significant digits
 
 datapath = sys.argv[1]
-initialdate = [d for d in datapath.split('/') if d.startswith('2')][0]
+initialdate = [d for d in datapath.split('/') if d.isdigit()][0]
 fileout = sys.argv[2]
 res = int(sys.argv[3])
 if len(sys.argv) > 4:

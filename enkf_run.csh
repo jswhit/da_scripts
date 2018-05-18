@@ -149,6 +149,7 @@ cat <<EOF1 >! enkf.nml
   sattypes_rad(73)= 'avhrr_n17',     dsis(73)= 'avhrr3_n17',
   sattypes_rad(74)='amsua_n16',      dsis(74)= 'amsua_n16'
   sattypes_rad(75)='amsub_n15',      dsis(75)= 'amsub_n15',  
+  sattypes_rad(76)='avhrr_n14',      dsis(76)= 'avhrr2_n14',
  /
  &END
  &ozobs_enkf

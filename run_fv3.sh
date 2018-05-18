@@ -143,11 +143,11 @@ while [ $n -le 6 ]; do
  n=$((n+1))
 done
 ln -fs $FIXFV3/C${RES}/C${RES}_mosaic.nc  grid_spec.nc
+cd ..
 #ln -fs $FIXGLOBAL/global_o3prdlos.f77               global_o3prdlos.f77
 # new ozone and h2o physics for stratosphere
 ln -fs $FIXGLOBAL/ozprdlos_2015_new_sbuvO3_tclm15_nuchem.f77 global_o3prdlos.f77
 ln -fs $FIXGLOBAL/global_h2o_pltc.f77 global_h2oprdlos.f77 # used if h2o_phys=T
-cd ..
 # co2, ozone, surface emiss and aerosol data.
 ln -fs $FIXGLOBAL/global_solarconstant_noaa_an.txt  solarconstant_noaa_an.txt
 ln -fs $FIXGLOBAL/global_sfc_emissivity_idx.txt     sfc_emissivity_idx.txt
@@ -180,7 +180,7 @@ if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
       nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
       if [ $? -ne 0 -o ! -s ${increment_file} ]; then
          echo "problem creating ${increment_file}, stopping .."
-         mail -s "${analdate} problem creating ${increment_file}" ${monitor_email} < /dev/null
+         #mail -s "${analdate} problem creating ${increment_file}" ${monitor_email} < /dev/null
          exit 1
       fi
    done # do next forecast
@@ -335,7 +335,7 @@ if [ $FHCYC -eq 0 ] && [ "$warm_start" == "T" ] && [ -z $skip_global_cycle ]; th
          /bin/mv -f ${COMOUT}/sfcanl_data.tile${n}.nc ${COMOUT}/sfc_data.tile${n}.nc
      else
          echo "global_cycle failed, exiting .."
-         mail -s "${analdate} global_cycle failed" ${monitor_email} < /dev/null
+         #mail -s "${analdate} global_cycle failed" ${monitor_email} < /dev/null
          exit 1
      fi
      ls -l ${COMOUT}/sfc_data.tile${n}.nc
@@ -395,6 +395,7 @@ nfhout:                  3
 nfhmax_hf:               -1
 nfhout_hf:               -1
 nsout:                   -1
+cpl:                     F
 EOF
 cat model_configure
 
@@ -495,7 +496,7 @@ cat > input.nml <<EOF
   res_latlon_dynamics=$reslatlondynamics,
   read_increment=$readincrement,
   gfs_phil = F,
-  agrid_vel_rst = F,
+  agrid_vel_rst = T,
   nggps_ic = T,
   mountain = ${mountain},
   ncep_ic = F,
@@ -671,6 +672,8 @@ cat > input.nml <<EOF
   ISEED_SPPT=$ISEED_SPPT,ISEED_SHUM=$ISEED_SHUM,ISEED_SKEB=$ISEED_SKEB,
   use_zmtnblck=.true.,fhstoch=$FHSTOCH,stochini=$stochini  
 /
+&nam_sfcperts
+/
 EOF
 
 # ftsfs = 99999 means all climo or all model, 0 means all analysis,
@@ -686,7 +689,7 @@ echo "start running model `date`"
 sh ${enkfscripts}/runmpi
 if [ $? -ne 0 ]; then
    echo "model failed..."
-   mail -s "${analdate} model failed" ${monitor_email} < /dev/null
+   #mail -s "${analdate} model failed" ${monitor_email} < /dev/null
    exit 1
 else
    echo "done running model.. `date`"
