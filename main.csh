@@ -4,6 +4,10 @@
 # allow this script to submit other scripts on WCOSS
 unsetenv LSB_SUB_RES_REQ 
 
+set idate_job=1
+
+while (${idate_job} <= ${ndates_job})
+
 source $datapath/fg_only.csh # define fg_only variable.
 echo "nodes = $NODES"
 
@@ -334,6 +338,8 @@ echo "setenv analdate_end ${analdate_end}" >> $startupenv
 echo "setenv fg_only false" >! $datapath/fg_only.csh
 
 cd $homedir
+@ idate_job = ${idate_job} + 1
+end
 
 if ( ${analdate} <= ${analdate_end}  && ${resubmit} == 'true') then
    echo "current time is $analdate"
