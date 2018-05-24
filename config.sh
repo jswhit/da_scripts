@@ -1,7 +1,8 @@
 echo "running on $machine using $NODES nodes"
 ## ulimit -s unlimited
 
-export monitor_email="anna.v.shlyaeva@noaa.gov"
+#export ndates_job=11
+export ndates_job=13
 export exptname=2003stream   
 export cores=`expr $NODES \* $corespernode`
 
@@ -134,6 +135,7 @@ export NST_GSI=3          # default 0: No NST info at all;
                           #         3: Input NST info, used in both CRTM simulation and Tr analysis
 
 #export NST_GSI=0          # No NST 
+#export DONST=NO
 
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
@@ -377,12 +379,12 @@ elif [ "$machine" == 'gaea' ]; then
 ## export fv3gfspath=${basedir}/fv3gfs/global_shared.v15.0.0
    export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
-## export gsipath=/lustre/f1/unswept/Jeffrey.S.Whitaker/fv3_reanl/ProdGSI
    export gsipath=/lustre/f1/unswept/Jeffrey.S.Whitaker/fv3_reanl/gsi/ProdGSI
+## export gsipath=/lustre/f1/unswept/Jeffrey.S.Whitaker/fv3_reanl/ProdGSI
 ## export gsipath=${basedir}/ProdGSI
    export fixgsi=${gsipath}/fix
-## export fixcrtm=${fixgsi}/crtm_v2.2.3
    export fixcrtm=/lustre/f1/unswept/Jeffrey.S.Whitaker/fv3_reanl/ProdGSI/fix/crtm_v2.2.3
+## export fixcrtm=${fixgsi}/crtm_v2.2.3
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
@@ -443,6 +445,9 @@ export beta1_inv=0.125    # 0 means all ensemble, 1 means all 3DVar.
 export s_ens_h=485      # a gaussian e-folding, similar to sqrt(0.15) times Gaspari-Cohn length
 export s_ens_v=-0.485   # in lnp units.
 # NOTE: most other GSI namelist variables are in ${rungsi}
+#export use_prepb_satwnd=.true.
+#export aircraft_bc=.false.
+export use_prepb_satwnd=.false.
 export aircraft_bc=.true.
 
 cd $enkfscripts

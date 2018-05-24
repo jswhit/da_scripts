@@ -3,13 +3,15 @@
 #PBS -l partition=c4
 ## #PBS -q debug
 #PBS -q urgent
-#PBS -l walltime=01:30:00
+#PBS -l walltime=16:00:00
 ## #PBS -l walltime=01:30:00
 #PBS -l nodes=20
 #PBS -N 2003stream 
 #PBS -e 2003stream.err
 #PBS -o 2003stream.out
 #PBS -S /bin/sh
+#PBS -m abe
+#PBS -M anna.v.shlyaeva@noaa.gov,shlyaeva@gmail.com
 export NODES=$PBS_NUM_NODES
 export corespernode=$PBS_NUM_PPN
 export machine='gaea'

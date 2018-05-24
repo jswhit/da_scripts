@@ -4,6 +4,10 @@
 # allow this script to submit other scripts on WCOSS
 unsetenv LSB_SUB_RES_REQ 
 
+set idate_job=1
+
+while (${idate_job} <= ${ndates_job})
+
 source $datapath/fg_only.csh # define fg_only variable.
 echo "nodes = $NODES"
 
@@ -15,7 +19,6 @@ if ( -s ${obs_datapath}/bufr_${analdate}/global_satinfo.txt) then
    setenv SATINFO ${obs_datapath}/bufr_${analdate}/global_satinfo.txt
 else
    echo "no satinfo file !"
-   mail -s "${analdate} no satinfo file" ${monitor_email} < /dev/null
    exit 1
 endif
 setenv OZINFO `csh ${enkfscripts}/pickinfo.csh ${analdate} ozinfo`
@@ -191,7 +194,6 @@ set enkf_done=`cat ${current_logdir}/run_enkf.log`
 if ($enkf_done == 'yes') then
   echo "$analdate enkf analysis completed successfully `date`"
 else
-  mail -s "$analdate enkf analysis did not complete successfully" ${monitor_email} < /dev/null
   echo "$analdate enkf analysis did not complete successfully, exiting `date`"
   exit 1
 endif
@@ -200,7 +202,6 @@ if ($hybrid_done == 'yes') then
   echo "$analdate hybrid analysis completed successfully `date`"
 else
   echo "$analdate hybrid analysis did not complete successfully, exiting `date`"
-  mail -s "$analdate  hybrid analysis did not complete successfully" ${monitor_email} < /dev/null
   exit 1
 endif
 
@@ -213,7 +214,6 @@ if ($controlanal == 'true' && $recenter_anal == 'true') then
      echo "$analdate recentering enkf analysis completed successfully `date`"
    else
      echo "$analdate recentering enkf analysis did not complete successfully, exiting `date`"
-     mail -s "$analdate  recentering enkf analysis did not complete successfully" ${monitor_email} < /dev/null
      exit 1
    endif
 endif
@@ -228,7 +228,6 @@ if ($controlfcst == 'true') then
       echo "$analdate high-res control first-guess completed successfully `date`"
     else
       echo "$analdate high-res control did not complete successfully, exiting `date`"
-      mail -s "$analdate high-res control did not complete successfully" ${monitor_email} < /dev/null
       exit 1
     endif
 endif
@@ -239,7 +238,6 @@ if ($ens_done == 'yes') then
   echo "$analdate enkf first-guess completed successfully `date`"
 else
   echo "$analdate enkf first-guess did not complete successfully, exiting `date`"
-  mail -s "$analdate enkf first-guess did not complete successfully" ${monitor_email} < /dev/null
   exit 1
 endif
 
@@ -300,6 +298,8 @@ echo "setenv analdate_end ${analdate_end}" >> $startupenv
 echo "setenv fg_only false" >! $datapath/fg_only.csh
 
 cd $homedir
+@ idate_job = ${idate_job} + 1
+end
 
 if ( ${analdate} <= ${analdate_end}  && ${resubmit} == 'true') then
    echo "current time is $analdate"
