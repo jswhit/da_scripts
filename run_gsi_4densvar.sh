@@ -819,7 +819,7 @@ sh ${enkfscripts}/runmpi
 rc=$?
 if [[ $rc -ne 0 ]];then
   echo "GSI failed with exit code $rc"
-  mail -s "$analdate GSI failed with exit code $rc" ${monitor_email} < /dev/null
+  #mail -s "$analdate GSI failed with exit code $rc" ${monitor_email} < /dev/null
   exit $rc
 fi
 else

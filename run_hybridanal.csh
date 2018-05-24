@@ -87,7 +87,7 @@ if ($cold_start_bias == "true") then
     /bin/rm -rf $tmpdir
     if ( ! -s ${datapath2}/diag_conv_uv_ges.${analdate}_${charnanal}.nc4 ) then
        echo "gsi observer step failed"
-       mail -s "${analdate} gsi observer step failed" ${monitor_email} < /dev/null
+       #mail -s "${analdate} gsi observer step failed" ${monitor_email} < /dev/null
        exit 1
     endif
 endif
