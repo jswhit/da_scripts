@@ -136,7 +136,8 @@ if ( $cleanup_ensmean == 'true' && $?copy_history_files ) then
    echo "done computing ensemble mean history files `date`"
    # interpolate to 1x1 grid
    cd ${enkfscripts}
-   $python ncinterp.py ${datapath2}/ensmean fv3_historyp_latlon.nc $RES $analdatem1
+   # dont wait for this to finish
+   $python ncinterp.py ${datapath2}/ensmean fv3_historyp_latlon.nc $RES $analdatem1 &
 endif
 
 
