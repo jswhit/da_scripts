@@ -91,7 +91,7 @@ if  [ $save_hpss_subset == "true" ]; then
           exitstat=1
        fi
    fi
-   # save nanals_replay member restarts at 00UTC
+   # save nanals_replay member restarts at 00UTC (end of IAU window)
    if [ -n "$nanals_replay" ] && [ $nanals_replay -gt 0 ]; then
    if [ -s restarts ] && [ $hr == "06" ];  then
        htar -cvf ${hsidir}/${analdatem1}_restarts.tar restarts
@@ -101,6 +101,20 @@ if  [ $save_hpss_subset == "true" ]; then
           /bin/rm -rf restarts
        else
           echo "hsi restarts failed ${analdate}..."
+          exitstat=1
+       fi
+   fi
+   fi
+   # save nanals_replay member restarts at 00UTC (beginning of IAU window)
+   if [ -n "$nanals_replay" ] && [ $nanals_replay -gt 0 ]; then
+   if [ -s restarts2 ] && [ $hr == "00" ];  then
+       htar -cvf ${hsidir}/${analdate}_restarts2.tar restarts2
+       hsi ls -l ${hsidir}/${analdate}_restarts2.tar
+       if [  $? -eq 0 ]; then
+          echo "hsi restarts2 done, deleting data..."
+          /bin/rm -rf restarts2
+       else
+          echo "hsi restarts2 failed ${analdate}..."
           exitstat=1
        fi
    fi

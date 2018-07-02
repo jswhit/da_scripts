@@ -36,7 +36,7 @@ echo "DataPath: ${datapath}"
 # Please do not edit the code below; it is not recommended except lines relevant to getsfcensmean.csh.
 
 env
-echo "starting the cycle"
+echo "starting the cycle (${idate_job} out of ${ndates_job})"
 
 # substringing to get yr, mon, day, hr info
 setenv yr `echo $analdate | cut -c1-4`
@@ -298,7 +298,21 @@ echo "setenv analdate_end ${analdate_end}" >> $startupenv
 echo "setenv fg_only false" >! $datapath/fg_only.csh
 
 cd $homedir
+
+# if less than 2 hours remaining, set iteration count to end value
+# so loop will terminate and job will be resubmitted
+set hours_remaining=`checkjob $PBS_JOBID | grep Reservation | cut -f5 -d" " | cut -f1 -d":"`
+set mins_remaining=`checkjob $PBS_JOBID | grep Reservation | cut -f5 -d" " | cut -f2 -d":"`
+echo "hours remaining = $hours_remaining mins remaining = $mins_remaining"
+if ($hours_remaining < 2) then
+  @ idate_job = $ndates_job
+endif
+if ($hours_remaining == 2 && $mins_remaining < 30) then
+  @ idate_job = $ndates_job
+endif
+
 @ idate_job = ${idate_job} + 1
+
 end
 
 if ( ${analdate} <= ${analdate_end}  && ${resubmit} == 'true') then

@@ -14,6 +14,7 @@ endif
 /bin/rm -f mem*/*nc mem*/*txt mem*/*grb mem*/*dat mem*/co2*
 /bin/rm -f ${charnanal}/*nc ${charnanal}/*txt ${charnanal}/*grb ${charnanal}/*dat ${charnanal}/co2*
 # every 06z save nanals_replay member + ens mean restarts.
+# these are restarts needed to extend a 3-h forecast from OOUTC
 if ($nanals_replay > 0 && $ensmean_restart == 'true' && $hr == '06') then
     /bin/rm -rf restarts
     mkdir restarts
@@ -26,6 +27,23 @@ if ($nanals_replay > 0 && $ensmean_restart == 'true' && $hr == '06') then
        /bin/cp -R ${charmem} restarts
        /bin/rm -f restarts/${charmem}/stoch_ini
        /bin/rm -f restarts/*/PET* restarts/*/log*
+       @ nanal = $nanal + 1
+    end
+endif
+# every 00z save nanals_replay member + ens mean restarts.
+# these are restarts needed to re-run the forecast from 00UTC (including the IAU)
+if ($nanals_replay > 0 && $ensmean_restart == 'true' && $hr == '00') then
+    /bin/rm -rf restarts2
+    mkdir restarts2
+    /bin/cp -R ${charnanal} restarts2
+    mkdir restarts/ensmean
+    /bin/mv -f ensmean/INPUT restarts2/ensmean
+    set nanal=1
+    while ($nanal <= $nanals_replay) 
+       set charmem="mem`printf %03i $nanal`"
+       /bin/cp -R ${charmem} restarts2
+       /bin/rm -f restarts2/${charmem}/stoch_ini
+       /bin/rm -f restarts2/*/PET* restarts/*/log*
        @ nanal = $nanal + 1
     end
 endif

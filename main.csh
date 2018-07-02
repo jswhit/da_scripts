@@ -36,7 +36,7 @@ echo "DataPath: ${datapath}"
 # Please do not edit the code below; it is not recommended except lines relevant to getsfcensmean.csh.
 
 env
-echo "starting the cycle"
+echo "starting the cycle (${idate_job} out of ${ndates_job})"
 
 # substringing to get yr, mon, day, hr info
 setenv yr `echo $analdate | cut -c1-4`
