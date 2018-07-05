@@ -69,7 +69,7 @@ cat <<EOF1 >! enkf.nml
   sprd_tol=$sprd_tol,paoverpb_thresh=$paoverpb_thresh,letkf_flag=$letkf_flag,
   use_qsatensmean=$use_qsatensmean,
   reducedgrid=$reducedgrid,nlevs=$LEVS,nanals=$nanals,deterministic=$deterministic,
-  npefiles=$npefiles,lobsdiag_forenkf=.true.,write_spread_diag=.true.,netcdf_diag=.true.,
+  npefiles=$npefiles,lobsdiag_forenkf=.true.,write_spread_diag=.true.,netcdf_diag=.true.,imp_physics=${imp_physics},
   sortinc=$sortinc,univaroz=$univaroz,nhr_anal=$iaufhrs,nhr_state=$enkfstatefhrs,
   use_gfs_nemsio=.true.,adp_anglebc=.true.,angord=4,newpc4pred=.true.,use_edges=.false.,emiss_bc=.true.,biasvar=-500,nobsl_max=$nobsl_max
  /
@@ -149,6 +149,7 @@ cat <<EOF1 >! enkf.nml
   sattypes_rad(73)= 'avhrr_n17',     dsis(73)= 'avhrr3_n17',
   sattypes_rad(74)='amsua_n16',      dsis(74)= 'amsua_n16'
   sattypes_rad(75)='amsub_n15',      dsis(75)= 'amsub_n15',  
+  sattypes_rad(76)='avhrr_n14',      dsis(76)= 'avhrr2_n14',
  /
  &END
  &ozobs_enkf
