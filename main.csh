@@ -17,6 +17,9 @@ source $startupenv
 # if SATINFO in obs dir, use it
 if ( -s ${obs_datapath}/bufr_${analdate}/global_satinfo.txt) then
    setenv SATINFO ${obs_datapath}/bufr_${analdate}/global_satinfo.txt
+   # turn off bias correction for some AMSUA channels.
+   #python ${enkfscripts}/rewrite_satinfo.py ${obs_datapath}/bufr_${analdate}/global_satinfo.txt ${datapath}/${analdate}/global_satinfo.txt
+   #setenv SATINFO ${datapath}/${analdate}/global_satinfo.txt
 else
    echo "no satinfo file !"
    exit 1
