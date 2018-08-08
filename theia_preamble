@@ -4,10 +4,10 @@
 #PBS -A gsienkf
 ##PBS -A da-cpu
 ##PBS -q debug
-#PBS -N C192C192_modloc
+#PBS -N C192C192_test
 #PBS -S /bin/bash
-#PBS -o C192C192_modloc.stdout
-#PBS -e C192C192_modloc.stderr
+#PBS -o C192C192_test.stdout
+#PBS -e C192C192_test.stderr
 export NODES=20
 export corespernode=24
 export machine='theia'
