@@ -27,10 +27,19 @@ setenv BIASO ${datapath2}/${PREINP}abias
 setenv BIASO_PC ${datapath2}/${PREINP}abias_pc 
 setenv SATANGO ${datapath2}/${PREINP}satang
 setenv DTFANL ${datapath2}/${PREINP}dtfanl.nc
+echo "NOCONV:" $NOCONV
 if ($skipcat == 'false') then
-   set diagfile=${datapath2}/diag_conv_uv_ges.${analdate}_${charnanal2}.nc4
+   if ($NOCONV == 'YES') then
+     set diagfile=${datapath2}/diag_amsua_n15_ges.${analdate}_${charnanal2}.nc4
+   else
+     set diagfile=${datapath2}/diag_conv_uv_ges.${analdate}_${charnanal2}.nc4
+   endif
 else
-   set diagfile=${datapath2}/gsitmp_${charnanal2}/pe0000.conv_uv_01.nc4
+   if ($NOCONV == 'YES') then
+     set diagfile=${datapath2}/gsitmp_${charnanal2}/pe0000.amsua_n15_01.nc4
+   else
+     set diagfile=${datapath2}/gsitmp_${charnanal2}/pe0000.conv_uv_01.nc4
+   endif
 endif
 echo "skipcat $skipcat diagfile $diagfile"
 

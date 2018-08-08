@@ -4,7 +4,7 @@
 setenv nprocs `expr $cores \/ $enkf_threads`
 setenv mpitaskspernode `expr $corespernode \/ $enkf_threads`
 setenv OMP_NUM_THREADS $enkf_threads
-setenv OMP_STACKSIZE 256M
+setenv OMP_STACKSIZE 512M
 if ($machine == 'theia') then
    if (! $?hostfilein) then
      setenv hostfilein $PBS_NODEFILE
@@ -66,12 +66,12 @@ cat <<EOF1 >! enkf.nml
   lnsigcutoffpsnh=$lnsigcutoffpsnh,lnsigcutoffpssh=$lnsigcutoffpssh,lnsigcutoffpstr=$lnsigcutoffpstr,
   simple_partition=.true.,nlons=$LONA,nlats=$LATA,smoothparm=$SMOOTHINF,
   readin_localization=$readin_localization,saterrfact=$saterrfact,numiter=$numiter,
-  sprd_tol=$sprd_tol,paoverpb_thresh=$paoverpb_thresh,letkf_flag=$letkf_flag,
-  use_qsatensmean=$use_qsatensmean,
-  reducedgrid=$reducedgrid,nlevs=$LEVS,nanals=$nanals,deterministic=$deterministic,
-  npefiles=$npefiles,lobsdiag_forenkf=.true.,write_spread_diag=.true.,netcdf_diag=.true.,imp_physics=${imp_physics},
-  sortinc=$sortinc,univaroz=$univaroz,nhr_anal=$iaufhrs,nhr_state=$enkfstatefhrs,
-  use_gfs_nemsio=.true.,adp_anglebc=.true.,angord=4,newpc4pred=.true.,use_edges=.false.,emiss_bc=.true.,biasvar=-500,nobsl_max=$nobsl_max
+  sprd_tol=$sprd_tol,paoverpb_thresh=$paoverpb_thresh,letkf_flag=$letkf_flag,denkf=$denkf,
+  use_qsatensmean=$use_qsatensmean,letkf_novlocal=$letkf_novlocal,modelspace_vloc=$modelspace_vloc,save_inflation=.false.,
+  reducedgrid=$reducedgrid,nlevs=$LEVS,nanals=$nanals,deterministic=$deterministic,imp_physics=$imp_physics,
+  npefiles=$npefiles,lobsdiag_forenkf=.true.,write_spread_diag=.true.,netcdf_diag=.true.,
+  sortinc=$sortinc,univaroz=$univaroz,nhr_anal=$iaufhrs,nhr_state=$enkfstatefhrs,getkf=$getkf,
+  use_gfs_nemsio=.true.,adp_anglebc=.true.,angord=4,newpc4pred=.true.,use_edges=.false.,emiss_bc=.true.,biasvar=-500,nobsl_max=$nobsl_max,dfs_sort=$dfs_sort
  /
  &satobs_enkf
   sattypes_rad(1) = 'amsua_n15',     dsis(1) = 'amsua_n15',
@@ -171,8 +171,12 @@ EOF1
 
 cat enkf.nml
 
+cp ${enkfscripts}/vlocal_eig.dat ${datapath2}
+
 /bin/rm -f ${datapath2}/enkf.log
 /bin/mv -f ${current_logdir}/ensda.out ${current_logdir}/ensda.out.save
+#module switch intel intel/16.1.150
+module switch impi mvapich2/2.1rc1
 setenv PGM $enkfbin
 echo "OMP_NUM_THREADS = $OMP_NUM_THREADS"
 sh ${enkfscripts}/runmpi >>& ${current_logdir}/ensda.out
@@ -180,7 +184,7 @@ if ( ! -s ${datapath2}/enkf.log ) then
    echo "no enkf log file found"
    exit 1
 endif
-
+module switch intel impi
 if ($satbiasc == '.true.')  /bin/cp -f ${datapath2}/satbias_out $ABIAS
 
 else

@@ -10,7 +10,7 @@ if [ "$machine" == 'theia' ]; then
    module load wgrib
    module load nco/4.6.0
    module use /scratch4/NCEPDEV/nems/noscrub/emc.nemspara/soft/modulefiles
-   module load esmf/7.1.0r
+   module load esmf/7.1.0rp1bs01
    module list
 elif [ "$machine" == 'wcoss' ]; then
    module load grib_util/1.0.3
@@ -142,11 +142,11 @@ while [ $n -le 6 ]; do
  n=$((n+1))
 done
 ln -fs $FIXFV3/C${RES}/C${RES}_mosaic.nc  grid_spec.nc
+cd ..
 #ln -fs $FIXGLOBAL/global_o3prdlos.f77               global_o3prdlos.f77
 # new ozone and h2o physics for stratosphere
 ln -fs $FIXGLOBAL/ozprdlos_2015_new_sbuvO3_tclm15_nuchem.f77 global_o3prdlos.f77
 ln -fs $FIXGLOBAL/global_h2o_pltc.f77 global_h2oprdlos.f77 # used if h2o_phys=T
-cd ..
 # co2, ozone, surface emiss and aerosol data.
 ln -fs $FIXGLOBAL/global_solarconstant_noaa_an.txt  solarconstant_noaa_an.txt
 ln -fs $FIXGLOBAL/global_sfc_emissivity_idx.txt     sfc_emissivity_idx.txt
@@ -215,9 +215,13 @@ else
       echo "WARNING: iteration ${niter}, setting stochini=F for ${charnanal}" > ${current_logdir}/stochini_fg_ens.log
       stochini=F
    else
-      # last try, turn SPPT off
+      # last try, turn stochastic physics off
       echo "WARNING: iteration ${niter}, seting SPPT=0 for ${charnanal}" > ${current_logdir}/stochini_fg_ens.log
       SPPT=0
+      SKEB=0
+      SHUM=0
+      # reduce model time step
+      #dt_atmos=`python -c "print ${dt_atmos}/2"`
    fi
    
    iaudelthrs=${iau_delthrs}
@@ -365,6 +369,7 @@ RUN_CONTINUE:            F
 ENS_SPS:                 F
 dt_atmos:                ${dt_atmos} 
 calendar:                'julian'
+cpl:                     F
 memuse_verbose:          F
 atmos_nthreads:          ${OMP_NUM_THREADS}
 use_hyper_thread:        F
@@ -542,7 +547,7 @@ cat > input.nml <<EOF
   dspheat        = F
   hybedmf        = T
   random_clds    = ${random_clds:-"T"}
-  trans_trac     = T
+  trans_trac     = F
   cnvcld         = ${cnvcld:-"T"}
   imfshalcnv     = 2
   imfdeepcnv     = 2
@@ -659,9 +664,17 @@ cat > input.nml <<EOF
   SKEB_VDOF=$SKEB_VDOF,
   SKEB_NPASS=$SKEB_NPASS,
   ISEED_SPPT=$ISEED_SPPT,ISEED_SHUM=$ISEED_SHUM,ISEED_SKEB=$ISEED_SKEB,
-  use_zmtnblck=.true.,fhstoch=$FHSTOCH,stochini=$stochini  
+  use_zmtnblck=.true.,fhstoch=$FHSTOCH,stochini=$stochini
+/
+
+&nam_sfcperts
 /
 EOF
+# RNDA=$RNDA, -999, -999, -999, -999,
+# RNDA_TAU=$RNDA_TSCALE, -999, -999, -999, -999,
+# RNDA_LSCALE=$RNDA_LSCALE, -999, -999, -999, -999,
+# RNDA_VDOF=$RNDA_VDOF,RNDA_SIGTOP1=0.15, RNDA_SIGTOP2=0.075,
+# RNDA_PERTVORTFLUX=$RNDA_PERTVORTFLUX,
 
 # ftsfs = 99999 means all climo or all model, 0 means all analysis,
 # 90 mean relax to climo

@@ -31,8 +31,6 @@ endif
 # rename files.
 /bin/mv -f $filename_meanin  ${filename_meanin}.orig
 /bin/cp -f $filename_meanout $filename_meanin
-/bin/mv -f $filename_meanin.grib  ${filename_meanin}.grib.orig
-/bin/cp -f $filename_meanout.grib $filename_meanin.grib
 set nanal=1
 while ($nanal <= $nanals)
    set charnanal_tmp="mem"`printf %03i $nanal`

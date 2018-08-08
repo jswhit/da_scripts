@@ -1,12 +1,13 @@
 #PBS -l nodes=20:ppn=24
-#PBS -l walltime=2:30:00
+#PBS -l walltime=4:00:00
 ##PBS -l walltime=0:30:00
 #PBS -A gsienkf
+##PBS -A da-cpu
 ##PBS -q debug
-#PBS -N C384C128_test_iau
+#PBS -N C192C192_modloc
 #PBS -S /bin/bash
-#PBS -o C384C128_test_iau.stdout
-#PBS -e C384C128_test_iau.stderr
+#PBS -o C192C192_modloc.stdout
+#PBS -e C192C192_modloc.stderr
 export NODES=20
 export corespernode=24
 export machine='theia'
@@ -42,7 +43,7 @@ export fg_proc=$corespernode
 export fg_threads=1 
 # C192
 export enkf_threads=3
-export gsi_control_threads=3
+export gsi_control_threads=2
 export write_groups=1
 export write_tasks=6 
 export layout="3, 1" 
