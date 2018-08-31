@@ -254,6 +254,9 @@ if [ "${iau_delthrs}" != "-1" ]; then
 else
    lwrite4danl=.false.
 fi
+if [[ $beta1_inv > 0.999 ]]; then
+   lwrite4danl=.false.
+fi
 # if satwnd bufr file exists, use it.
 if [[ -s $datobs/${prefix_obs}.satwnd.${suffix} ]]; then
    use_prepb_satwnd=.false.
@@ -273,7 +276,7 @@ if [[ "$HXONLY" = "YES" ]]; then
    STRONGOPTS="tlnmc_option=0,nstrong=0,nvmodes_keep=0,baldiag_full=.false.,baldiag_inc=.false.,"
 fi
 if [[ $beta1_inv > 0.999 ]]; then
-   STRONGOPTS="tlnmc_option=1,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
+   STRONGOPTS="tlnmc_option=1,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5"
 fi
 GRIDOPTS=""
 BKGVERR=""

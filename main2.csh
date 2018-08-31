@@ -176,6 +176,10 @@ csh ${enkfscripts}/drive_enkf.csh >&! ${current_logdir}/drive_enkf.out &
 if ($machine == 'theia') then
   setenv hostfilein ${datapath2}/hostfile2
 endif
+setenv charnanal 'control'
+setenv charnanal2 'control'
+setenv lobsdiag_forenkf '.false.'
+setenv skipcat "false"
 echo "$analdate run hybrid `date`"
 csh ${enkfscripts}/run_hybridanal.csh >&! ${current_logdir}/run_gsi_hybrid.out  &
 wait

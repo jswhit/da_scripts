@@ -156,27 +156,6 @@ else
    setenv cold_start_bias "false"
 endif
 
-# run gsi observer with ens mean fcst background, saving jacobian.
-# generated diag files used by EnKF
-#if ($replay_controlfcst == 'true') then
-#   setenv charnanal 'ensmean' 
-#else
-#   setenv charnanal 'control' 
-#endif
-#setenv charnanal2 'ensmean'
-#setenv lobsdiag_forenkf '.true.'
-#setenv skipcat "false"
-#echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
-#csh ${enkfscripts}/run_gsiobserver.csh >&! ${current_logdir}/run_gsi_observer.out 
-## once observer has completed, check log files.
-#set hybrid_done=`cat ${current_logdir}/run_gsi_observer.log`
-#if ($hybrid_done == 'yes') then
-#  echo "$analdate gsi observer completed successfully `date`"
-#else
-#  echo "$analdate gsi observer did not complete successfully, exiting `date`"
-#  exit 1
-#endif
-
 # do hybrid control analysis if controlanal=true
 # uses control forecast background, except if replay_controlfcst=true
 # ens mean background is used ("control" symlinked to "ensmean", control
@@ -225,24 +204,6 @@ endif
 echo "$analdate starting ens mean analysis computation `date`"
 csh ${enkfscripts}/compute_ensmean_enkf.csh >&!  ${current_logdir}/compute_ensmean_anal.out
 echo "$analdate done computing ensemble mean analyses `date`"
-
-# do hybrid control analysis if controlanal=true
-# uses control forecast background, except if replay_controlfcst=true
-# ens mean background is used ("control" symlinked to "ensmean", control
-# forecast uses "control2")
-#if ($controlanal == 'true') then
-#   # run control analysis
-#   echo "$analdate run hybrid `date`"
-#   csh ${enkfscripts}/run_hybridanal.csh >&! ${current_logdir}/run_gsi_hybrid.out 
-#   # once hybrid has completed, check log files.
-#   set hybrid_done=`cat ${current_logdir}/run_gsi_hybrid.log`
-#   if ($hybrid_done == 'yes') then
-#     echo "$analdate hybrid analysis completed successfully `date`"
-#   else
-#     echo "$analdate hybrid analysis did not complete successfully, exiting `date`"
-#     exit 1
-#   endif
-#endif
 
 # blend 3DVar and EnKF increments, recompute mean analysis, then recenter about this new mean
 if ($cleanup_anal == 'true' && $controlanal == 'true' && $recenter_anal == 'true') then

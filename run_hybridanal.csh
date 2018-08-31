@@ -3,10 +3,10 @@
 
 setenv CO2DIR $fixgsi
 
-setenv charnanal 'control'
-setenv charnanal2 'control'
-setenv lobsdiag_forenkf '.false.'
-setenv skipcat "false"
+#setenv charnanal 'control'
+#setenv charnanal2 'control'
+#setenv lobsdiag_forenkf '.false.'
+#setenv skipcat "false"
 
 if ($machine == 'theia') then
    if (! $?hostfilein) then
