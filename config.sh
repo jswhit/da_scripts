@@ -442,6 +442,11 @@ export s_ens_v=-0.582   # in lnp units.
 export aircraft_bc=.true.
 export use_prepb_satwnd=.false.
 
+# parameters for hybrid gain
+#export beta1_inv=1.   # 0 means all ensemble, 1 means all 3DVar.
+#export alpha=250 # percentage of 3dvar increment (*10)
+#export beta=1000 # percentage of enkf increment (*10)
+
 cd $enkfscripts
 echo "run main driver script"
 csh main.csh
