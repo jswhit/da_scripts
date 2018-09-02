@@ -170,14 +170,14 @@ if ($controlanal == 'true') then
    setenv lobsdiag_forenkf '.true.' # save jacobian in diag files for EnKF
    setenv skipcat "false"
    # run control analysis
-   echo "$analdate run hybrid `date`"
+   echo "$analdate run 3DVar `date`"
    csh ${enkfscripts}/run_hybridanal.csh >&! ${current_logdir}/run_gsi_hybrid.out 
    # once hybrid has completed, check log files.
    set hybrid_done=`cat ${current_logdir}/run_gsi_hybrid.log`
    if ($hybrid_done == 'yes') then
-     echo "$analdate hybrid analysis completed successfully `date`"
+     echo "$analdate 3DVar analysis completed successfully `date`"
    else
-     echo "$analdate hybrid analysis did not complete successfully, exiting `date`"
+     echo "$analdate 3DVar analysis did not complete successfully, exiting `date`"
      exit 1
    endif
 endif
