@@ -23,6 +23,7 @@ export recenter_anal="true" # recenter enkf analysis around GSI hybrid 4DEnVar a
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
 export controlanal='true' # use gsi hybrid (if false, pure enkf is used)
 export controlfcst='false' # if true, run dual-res setup with single high-res control
+export hybgain='true' # hybrid gain 3DVar/EnKF
 export cleanup_fg='true'
 export cleanup_ensmean='true'
 export cleanup_anal='true'
@@ -42,7 +43,7 @@ export replay_run_observer='false' # run observer on replay forecast
 export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
 export save_hpss="true"
 export run_long_fcst="false"  # spawn a longer control forecast at 00 UTC
-export ensmean_restart='true'
+export ensmean_restart='false'
 export copy_history_files=1 # save pressure level history files (and compute ens mean)
 
 # override values from above for debugging.
@@ -443,11 +444,17 @@ export aircraft_bc=.true.
 export use_prepb_satwnd=.false.
 
 # parameters for hybrid gain
-#export beta1_inv=1.   # 0 means all ensemble, 1 means all 3DVar.
-#export alpha=250 # percentage of 3dvar increment (*10)
-#export beta=1000 # percentage of enkf increment (*10)
+if [ $hybgain == "true" ]; then
+   export beta1_inv=1.   # 0 means all ensemble, 1 means all 3DVar.
+   export alpha=250 # percentage of 3dvar increment (*10)
+   export beta=1000 # percentage of enkf increment (*10)
+fi
 
 cd $enkfscripts
 echo "run main driver script"
-csh main.csh
-#csh main2.csh
+if [ $hybgain == "true" ]; then
+   csh main_hybgain.csh
+else
+   csh main.csh
+   #csh main2.csh
+fi
