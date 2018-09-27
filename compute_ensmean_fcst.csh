@@ -101,6 +101,39 @@ if ( $cleanup_ensmean == 'true' || ( $cleanup_ensmean == 'false' && ! -s ${datap
    /bin/cp -f ${datapath2}/mem001/INPUT/fv_core.res.nc ${pathout}
    echo "done computing ensemble mean restart files `date`"
 endif
+#if ( $cleanup_ensmean == 'true' && $hr == '00' || ( $cleanup_ensmean == 'false' && $hr == '00' && ! -s ${datapath2}/ensmean/INPUT2/fv_core.res.tile1.nc ) ) then
+#   echo "compute ensemble mean restart files 2 `date`"
+#   setenv nprocs 1
+#   setenv mpitaskspernode 1
+#   setenv OMP_NUM_THREADS $corespernode
+#   set pathout=${datapath2}/ensmean/INPUT2
+#   mkdir -p $pathout
+#   set ncount=1
+#   foreach tile (tile1 tile2 tile3 tile4 tile5 tile6)
+#      foreach filename (fv_core.res.${tile}.nc fv_tracer.res.${tile}.nc fv_srf_wnd.res.${tile}.nc sfc_data.${tile}.nc)
+#         setenv PGM "${nces} -O `ls -1 ${datapath2}/mem*/INPUT2/${filename}` ${pathout}/${filename}"
+#         if ($machine == 'theia') then
+#            set host=`head -$ncount $NODEFILE | tail -1`
+#            setenv HOSTFILE ${datapath2}/hostfile_nces_${ncount}
+#            echo $host >! $HOSTFILE
+#         endif
+#         echo "computing ens mean for $filename"
+#         #sh ${enkfscripts}/runmpi &
+#         $PGM &
+#         if ($ncount == $NODES) then
+#            echo "waiting for backgrounded jobs to finish..."
+#            wait
+#            set ncount=1
+#         else
+#            @ ncount = $ncount + 1
+#         endif
+#      end
+#   end
+#   wait
+#   /bin/rm -f ${datapath2}/hostfile_nces*
+#   /bin/cp -f ${datapath2}/mem001/INPUT2/fv_core.res.nc ${pathout}
+#   echo "done computing ensemble mean restart files 2 `date`"
+#endif
 endif
 
 if ( $cleanup_ensmean == 'true' && $?copy_history_files ) then

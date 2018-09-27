@@ -36,8 +36,9 @@ if ($nanals_replay > 0 && $ensmean_restart == 'true' && $hr == '00') then
     /bin/rm -rf restarts2
     mkdir restarts2
     /bin/cp -R ${charnanal} restarts2
-    mkdir restarts/ensmean
+    mkdir restarts2/ensmean
     /bin/mv -f ensmean/INPUT restarts2/ensmean
+    #/bin/mv -f ensmean/INPUT2 restarts2/ensmean
     set nanal=1
     while ($nanal <= $nanals_replay) 
        set charmem="mem`printf %03i $nanal`"
@@ -66,16 +67,17 @@ endif
 /bin/rm -f s*ensmean*nc4 # just save spread netcdf files.
 /bin/rm -f fgens2/*fhr00* fgens2/*orig
 # delete sfg ensmean and control files if grib versions exist
-if ($replay_controlfcst == 'true') then
- set charnanal='control2'
-else
- set charnanal='control'
-endif
-foreach charfhr (00 03 06 09)
-   if ( -s ${datapath2}/sfg_${analdate}_fhr${charfhr}_${charnanal}.grib ) then
-     /bin/rm -f ${datapath2}/sfg_${analdate}_fhr${charfhr}_${charnanal}
-   endif
-end
+# --- Sep 2018: Now saving sfg control2 files for NCEP's postprocessing
+## if ($replay_controlfcst == 'true') then
+##  set charnanal='control2'
+## else
+##  set charnanal='control'
+## endif
+## foreach charfhr (00 03 06 09)
+##    if ( -s ${datapath2}/sfg_${analdate}_fhr${charfhr}_${charnanal}.grib ) then
+##      /bin/rm -f ${datapath2}/sfg_${analdate}_fhr${charfhr}_${charnanal}
+##    endif
+## end
 set charnanal='ensmean'
 #foreach charfhr (00 03 06 09)
 #   if ( -s ${datapath2}/sfg_${analdate}_fhr${charfhr}_${charnanal}.grib ) then

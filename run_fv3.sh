@@ -75,6 +75,11 @@ if [ "${iau_delthrs}" != "-1" ]  && [ "${fg_only}" == "false" ]; then
    export monnext=`echo $analdatep1m3 |cut -c 5-6`
    export daynext=`echo $analdatep1m3 |cut -c 7-8`
    export hrnext=`echo $analdatep1m3 |cut -c 9-10`
+   # middle of next analysis window
+   export yrnexta=`echo $analdatep1 |cut -c 1-4`
+   export monnexta=`echo $analdatep1 |cut -c 5-6`
+   export daynexta=`echo $analdatep1 |cut -c 7-8`
+   export hrnexta=`echo $analdatep1 |cut -c 9-10`
 else
    # if no IAU, start date is middle of window
    export year=`echo $analdate |cut -c 1-4`
@@ -93,12 +98,22 @@ else
       export monnext=`echo $analdatep1m3 |cut -c 5-6`
       export daynext=`echo $analdatep1m3 |cut -c 7-8`
       export hrnext=`echo $analdatep1m3 |cut -c 9-10`
+      # middle of next analysis window
+      export yrnexta=`echo $analdatep1 |cut -c 1-4`
+      export monnexta=`echo $analdatep1 |cut -c 5-6`
+      export daynexta=`echo $analdatep1 |cut -c 7-8`
+      export hrnexta=`echo $analdatep1 |cut -c 9-10`
    else
-      # end of next analysis window
+      # midlle of next analysis window
       export yrnext=`echo $analdatep1 |cut -c 1-4`
       export monnext=`echo $analdatep1 |cut -c 5-6`
       export daynext=`echo $analdatep1 |cut -c 7-8`
       export hrnext=`echo $analdatep1 |cut -c 9-10`
+      # same as above
+      export yrnexta=`echo $analdatep1 |cut -c 1-4`
+      export monnexta=`echo $analdatep1 |cut -c 5-6`
+      export daynexta=`echo $analdatep1 |cut -c 7-8`
+      export hrnexta=`echo $analdatep1 |cut -c 9-10`
    fi
 fi
 
@@ -291,13 +306,16 @@ fi
 
 ls -l 
 
-export FHRESTART=${FHRESTART:-$ANALINC}
+#export FHRESTART=${FHRESTART:-$ANALINC}
+export FHRESTART=${FHRESTART:-`expr $ANALINC \/ 2`}
+export FHSTOCH=${FHSTOCH:-`expr $ANALINC + $FHOFFSET \/ 2`}
 if [ "${iau_delthrs}" != "-1" ]; then
    FHOFFSET=$ANALINC
    FHMAX_FCST=`expr $FHMAX + $FHOFFSET`
    #FHMAX_FCST=`expr $FHMAX + $ANALINC \/ 2`
    if [ "${fg_only}" == "true" ]; then
-      FHRESTART=`expr $ANALINC \/ 2`
+      #FHRESTART=`expr $ANALINC \/ 2`
+      export FHSTOCH=${FHSTOCH:-`expr $ANALINC \/ 2 + $FHOFFSET \/ 2`}
       FHMAX_FCST=$FHMAX
       FHOFFSET=0
    fi
@@ -305,9 +323,9 @@ else
    FHMAX_FCST=$FHMAX
    FHOFFSET=0
 fi
-FHSTOCH=${FHSTOCH:-`expr $FHRESTART + $FHOFFSET \/ 2`}
+#FHSTOCH=${FHSTOCH:-`expr $FHRESTART + $FHOFFSET \/ 2`}
 
-if [ $FHCYC -eq 0 ] && [ "$warm_start" == "T" ] && [ -z $skip_global_cycle ]; then
+if [ "$warm_start" == "T" ] && [ -z $skip_global_cycle ]; then
    # run global_cycle to update surface in restart file.
    export BASE_GSM=${fv3gfspath}
    export FIXfv3=$FIXFV3
@@ -358,7 +376,12 @@ NST_RESV=${NST_RESV-0}
 ZSEA1=${ZSEA1:-0}
 ZSEA2=${ZSEA2:-0}
 nstf_name=${nstf_name:-"$NST_MODEL,$NST_SPINUP,$NST_RESV,$ZSEA1,$ZSEA2"}
-nst_anl=${nst_anl:-".false."}
+nst_anl=${nst_anl:-".true."}
+if [ $NST_GSI -gt 0 ] && [ $FHCYC -gt 0]; then
+   fntsfa='        ' # no input file, use GSI foundation temp
+   fnsnoa='        '
+   fnacna='        '
+fi
 
 cat > model_configure <<EOF
 print_esmf:              .true.
@@ -529,7 +552,6 @@ cat > input.nml <<EOF
   fhzero         = ${FHOUT}
   ldiag3d        = F
   fhcyc          = ${FHCYC}
-  nst_anl        = F
   use_ufo        = T
   pre_rad        = F
   ncld           = ${ncld}
@@ -652,7 +674,20 @@ cat > input.nml <<EOF
   fsmcl(2) = 60,
   fsmcl(3) = 60,
   fsmcl(4) = 60,
-  fsnol=99999,
+  FTSFS = 90,
+  FAISL = 99999,
+  FAISS = 99999,
+  FSNOL = 99999,
+  FSNOS = 99999,
+  FSICL = 99999,
+  FSICS = 99999,
+  FTSFL = 99999,
+  FVETL = 99999,
+  FSOTL = 99999,
+  FvmnL = 99999,
+  FvmxL = 99999,
+  FSLPL = 99999,
+  FABSL = 99999,
 /
 
 &fv_grid_nml
@@ -726,7 +761,6 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
    /bin/rm -rf ${datapathp1}/${charnanal}/RESTART ${datapathp1}/${charnanal}/INPUT
    mkdir -p ${datapathp1}/${charnanal}/INPUT
    cd RESTART
-   ls -l
    datestring="${yrnext}${monnext}${daynext}.${hrnext}0000."
    for file in ${datestring}*nc; do
       file2=`echo $file | cut -f3-10 -d"."`
@@ -735,7 +769,20 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
         echo "restart file missing..."
         exit 1
       fi
-      done
+   done
+   # also copy restarts for middle of window if IAU on
+   #if [ "${iau_delthrs}" != "-1" ] ; then
+   #   datestring="${yrnexta}${monnexta}${daynexta}.${hrnexta}0000."
+   #   mkdir -p ${datapathp1}/${charnanal}/INPUT2
+   #   for file in ${datestring}*nc; do
+   #      file2=`echo $file | cut -f3-10 -d"."`
+   #      /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT2/$file2
+   #      if [ $? -ne 0 ]; then
+   #        echo "restart file missing..."
+   #        exit 1
+   #      fi
+   #   done
+   #fi
    cd ..
 fi
 

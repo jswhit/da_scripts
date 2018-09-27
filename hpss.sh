@@ -32,6 +32,7 @@ if [ $save_hpss_full == "true" ]; then
    hsi ls -l ${hsidir}/${analdate}_fgens.tar
    if [ $? -ne 0 ]; then
       echo "htar fgens failed, not deleting data"
+      mail -s "${analdate} fgens htar failed" Gary.Bates@noaa.gov < /dev/null
       existat=1
    else
       echo "htar fgens succeeded, deleting data"
@@ -40,6 +41,7 @@ if [ $save_hpss_full == "true" ]; then
    hsi ls -l ${hsidir}/${analdate}_fgens2.tar
    if [ $? -ne 0 ]; then
       echo "htar fgens2 failed, not deleting data"
+      mail -s "${analdate} fgens2 htar failed" Gary.Bates@noaa.gov < /dev/null
       existat=1
    else
       echo "htar fgens2 succeeded, deleting data"
@@ -78,6 +80,7 @@ if  [ $save_hpss_subset == "true" ]; then
       /bin/rm -rf analens
    else
       echo "hsi analens failed ${analdate}..."
+      mail -s "${analdate} analens htar failed" Gary.Bates@noaa.gov < /dev/null
       exitstat=1
    fi
    if [ -n "$nanals_replay" ] && [ $nanals_replay -gt 0 ]; then
@@ -88,6 +91,7 @@ if  [ $save_hpss_subset == "true" ]; then
           /bin/rm -rf analens${nanals_replay}
        else
           echo "hsi analens${nanals_replay} failed ${analdate}..."
+          mail -s "${analdate} analens${nanals_replay} htar failed" Gary.Bates@noaa.gov < /dev/null
           exitstat=1
        fi
    fi
@@ -101,6 +105,7 @@ if  [ $save_hpss_subset == "true" ]; then
           /bin/rm -rf restarts
        else
           echo "hsi restarts failed ${analdate}..."
+          mail -s "${analdate} restarts htar failed" Gary.Bates@noaa.gov < /dev/null
           exitstat=1
        fi
    fi
@@ -115,6 +120,7 @@ if  [ $save_hpss_subset == "true" ]; then
           /bin/rm -rf restarts2
        else
           echo "hsi restarts2 failed ${analdate}..."
+          mail -s "${analdate} restarts2 htar failed" Gary.Bates@noaa.gov < /dev/null
           exitstat=1
        fi
    fi
@@ -129,6 +135,7 @@ hsi ls -l ${hsidir}/${analdate}_subset.tar
 exitstat=$?
 if [  $exitstat -ne 0 ]; then
    echo "hsi subset failed ${analdate} with exit status $exitstat..."
+   mail -s "${analdate} subset htar failed" Gary.Bates@noaa.gov < /dev/null
    exit 1
 fi
 
