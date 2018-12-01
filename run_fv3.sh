@@ -11,6 +11,7 @@ if [ "$machine" == 'theia' ]; then
    module load nco/4.6.0
    module use /scratch4/NCEPDEV/nems/noscrub/emc.nemspara/soft/modulefiles
    module load esmf/7.1.0rp1bs01
+   export WGRIB=`which wgrib`
    module list
 elif [ "$machine" == 'wcoss' ]; then
    module load grib_util/1.0.3
