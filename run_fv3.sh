@@ -524,7 +524,6 @@ cat > input.nml <<EOF
   fhzero         = ${FHOUT}
   ldiag3d        = F
   fhcyc          = ${FHCYC}
-  nst_anl        = F
   use_ufo        = T
   pre_rad        = F
   ncld           = ${ncld}
@@ -563,6 +562,7 @@ cat > input.nml <<EOF
   h2o_phys      = ${h2o_phys:-T}
   nstf_name     = ${nstf_name}
   nst_anl       = ${nst_anl}
+  iau_filter_weights = ${iau_filter_weights}
   iaufhrs = ${iaufhrs}
   iau_delthrs = ${iaudelthrs}
   iau_inc_files = ${iau_inc_files}
