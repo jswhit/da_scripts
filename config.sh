@@ -1,7 +1,7 @@
 echo "running on $machine using $NODES nodes"
 ## ulimit -s unlimited
 
-export exptname=C128C128_hybgain
+export exptname=C192C192_hybgain
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia.
@@ -84,9 +84,9 @@ else
 fi
 export datapath="${datadir}/${exptname}"
 export logdir="${datadir}/logs/${exptname}"
-export corrlengthnh=1200
-export corrlengthtr=1200
-export corrlengthsh=1200
+export corrlengthnh=1250
+export corrlengthtr=1250
+export corrlengthsh=1250
 export lnsigcutoffnh=1.5
 export lnsigcutofftr=1.5
 export lnsigcutoffsh=1.5
@@ -102,7 +102,7 @@ export obtimelsh=1.e30
 export readin_localization=.false.
 
 # resolution of control and ensmemble.
-export RES=128
+export RES=192
 export RES_CTL=384 
 
 # model physics parameters.
