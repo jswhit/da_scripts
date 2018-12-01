@@ -197,7 +197,7 @@ export SPPT_LSCALE=500.e3
 export SHUM=0.005
 export SHUM_TSCALE=21600.
 export SHUM_LSCALE=500.e3
-export SKEB=0.75
+export SKEB=0.3
 export SKEB_TSCALE=21600.
 export SKEB_LSCALE=500.e3
 export SKEBNORM=0
@@ -308,9 +308,12 @@ export iassim_order=0
 
 export covinflatemax=1.e2
 export covinflatemin=1.0                                            
-export analpertwtnh=0.85
-export analpertwtsh=0.85
-export analpertwttr=0.85
+export analpertwtnh=0.9
+export analpertwtsh=0.9
+export analpertwttr=0.9
+export analpertwtnh_rtpp=0.4
+export analpertwtsh_rtpp=0.4
+export analpertwttr_rtpp=0.4
 export pseudo_rh=.true.
 export use_qsatensmean=.true.
                                                                     
