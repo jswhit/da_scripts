@@ -1,0 +1,13 @@
+C384 ensemble update with model-space localization
+C384 3DVar, with ens mean background single outer loop
+hybrid gain blending of increments (20% 3DVar + 100% ensemble)
+C768 control forecast 'replayed' to hybrid-gain ens mean increment ('control2')
+3-hourly backgrounds
+3-hourly 4DIAU (no filter weights)
+no SKEB, SPPT=0.5, SHUM=0.005 - 500km/6-h random patterns
+bugfix applied to random patter generator
+
+* what is impact of adding SKEB?
+* what is impact of IAU?
+* what is impact of hourly backgrounds?
+* impact of larger, lower res ensemble?
