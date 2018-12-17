@@ -1,7 +1,12 @@
 echo "running on $machine using $NODES nodes"
 ## ulimit -s unlimited
 
-export exptname=C192C192_hybgain
+# resolution of control and ensmemble.
+export RES=384
+export RES_CTL=768 
+#export RES=192
+#export RES_CTL=384 
+export exptname="C${RES}C${RES_CTL}_hybgain"
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia.
@@ -22,8 +27,7 @@ export rungfs='run_fv3.sh' # ensemble forecast
 export recenter_anal="true" # recenter enkf analysis around GSI hybrid 4DEnVar analysis
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
 export controlanal='true' # use gsi hybrid (if false, pure enkf is used)
-export controlfcst='false' # if true, run dual-res setup with single high-res control
-export hybgain='true' # hybrid gain 3DVar/EnKF
+export controlfcst='true' # if true, run dual-res setup with single high-res control
 export cleanup_fg='true'
 export cleanup_ensmean='true'
 export cleanup_anal='true'
@@ -34,8 +38,8 @@ export resubmit='true'
 # control forecast files have 'control2' suffix, instead of 'control'
 # GSI observer will be run on 'control2' forecast
 # this is for diagnostic purposes (to get GSI diagnostic files) 
-export replay_controlfcst='false'
-export replay_run_observer='false' # run observer on replay forecast
+export replay_controlfcst='true'
+export replay_run_observer='true' # run observer on replay forecast
 # python script checkdate.py used to check
 # YYYYMMDDHH analysis date string to see if
 # full ensemble should be saved to HPSS (returns 0 if 
@@ -44,7 +48,7 @@ export save_hpss_subset="true" # save a subset of data each analysis time to HPS
 export save_hpss="true"
 export run_long_fcst="false"  # spawn a longer control forecast at 00 UTC
 export ensmean_restart='false'
-export copy_history_files=1 # save pressure level history files (and compute ens mean)
+#export copy_history_files=1 # save pressure level history files (and compute ens mean)
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
@@ -84,9 +88,9 @@ else
 fi
 export datapath="${datadir}/${exptname}"
 export logdir="${datadir}/logs/${exptname}"
-export corrlengthnh=1250
-export corrlengthtr=1250
-export corrlengthsh=1250
+export corrlengthnh=1500
+export corrlengthtr=1500
+export corrlengthsh=1500
 export lnsigcutoffnh=1.5
 export lnsigcutofftr=1.5
 export lnsigcutoffsh=1.5
@@ -99,11 +103,7 @@ export lnsigcutoffsatsh=1.5
 export obtimelnh=1.e30       
 export obtimeltr=1.e30       
 export obtimelsh=1.e30       
-export readin_localization=.false.
-
-# resolution of control and ensmemble.
-export RES=192
-export RES_CTL=384 
+export readin_localization=.true.
 
 # model physics parameters.
 export psautco="0.0008,0.0005"
@@ -151,7 +151,9 @@ else
    export dnats=0
 fi
 export k_split=1
-export n_split=6
+export n_split=8
+export fv_sg_adj=450
+export fv_sg_adj_ctl=$fv_sg_adj
 export hydrostatic=F
 if [ $hydrostatic == 'T' ];  then
    export fv3exec='fv3-hydro.exe'
@@ -191,51 +193,43 @@ if [ $imp_physics -eq 11 ]; then
 fi
 
 # stochastic physics parameters.
-export SPPT=0.6
+export SPPT=0.5
 export SPPT_TSCALE=21600.
 export SPPT_LSCALE=500.e3
 export SHUM=0.005
 export SHUM_TSCALE=21600.
 export SHUM_LSCALE=500.e3
-export SKEB=0.3
+export SKEB=0.0
 export SKEB_TSCALE=21600.
-export SKEB_LSCALE=500.e3
+export SKEB_LSCALE=250.e3
 export SKEBNORM=0
 export SKEB_NPASS=30
 export SKEB_VDOF=5
-export RNDA=0.0
-export RNDA_VDOF=0
-export RNDA_LSCALE=250.
-export RNDA_TSCALE=21600.
-export RNDA_PERTVORTFLUX=T
 
 # resolution dependent model parameters
 if [ $RES -eq 384 ]; then
    export JCAP=766
    export LONB=1536
    export LATB=768
-   export fv_sg_adj=600
-   export dt_atmos=225
+   #export dt_atmos=225 # for n_split=6
+   export dt_atmos=300
    export cdmbgwd="1.0,1.2"
 elif [ $RES -eq 192 ]; then
    export JCAP=382 
    export LONB=768   
    export LATB=384  
-   export fv_sg_adj=900
    export dt_atmos=450
    export cdmbgwd="0.2,2.5"
 elif [ $RES -eq 128 ]; then
    export JCAP=254 
    export LONB=512   
    export LATB=256  
-   export fv_sg_adj=1500
    export dt_atmos=720
    export cdmbgwd="0.15,2.75"
 elif [ $RES -eq 96 ]; then
    export JCAP=188 
    export LONB=384   
    export LATB=190  
-   export fv_sg_adj=1800
    export dt_atmos=900
    export cdmbgwd="0.125,3.0"
 else
@@ -244,27 +238,24 @@ else
 fi
 
 if [ $RES_CTL -eq 768 ]; then
-   export fv_sg_adj_ctl=600
-   export dt_atmos_ctl=120
    export cdmbgwd_ctl="3.5,0.25"
-   export psautco_ctl="0.0008,0.0005"
-   export prautco_ctl="0.00015,0.00015"
    export LONB_CTL=3072
    export LATB_CTL=1536
+   export k_split_ctl=2
+   export n_split_ctl=6
+   export dt_atmos_ctl=225
+   #export dt_atmos_ctl=112.5
 elif [ $RES_CTL -eq 384 ]; then
-   export fv_sg_adj_ctl=600
    export dt_atmos_ctl=225
    export cdmbgwd_ctl="1.0,1.2"
    export LONB_CTL=1536
    export LATB_CTL=768
 elif [ $RES_CTL -eq 192 ]; then
-   export fv_sg_adj_ctl=900
    export dt_atmos_ctl=450
    export cdmbgwd_ctl="0.25,2.0"
    export LONB_CTL=768  
    export LATB_CTL=384
 elif [ $RES_CTL -eq 96 ]; then
-   export fv_sg_adj_ctl=1800
    export dt_atmos_ctl=900
    export cdmbgwd_ctl="0.125,3.0"
    export LONB_CTL=384  
@@ -288,7 +279,6 @@ FHMAXP1=`expr $FHMAX + 1`
 export enkfstatefhrs=`python -c "print range(${FHMIN},${FHMAXP1},${FHOUT})" | cut -f2 -d"[" | cut -f1 -d"]"`
 export iaufhrs="3,6,9"
 export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
-export iau_filter_weights=T
 # dump increment in one time step (for debugging)
 #export iaufhrs="6"
 #export iau_delthrs=0.25
@@ -301,19 +291,19 @@ export iau_filter_weights=T
 export SMOOTHINF=35
 export npts=`expr \( $LONA \) \* \( $LATA \)`
 export RUN=gdas1 # use gdas obs
-export reducedgrid=.false.
+export reducedgrid=.true.
 export univaroz=.false.
 
 export iassim_order=0
 
 export covinflatemax=1.e2
 export covinflatemin=1.0                                            
-export analpertwtnh=0.9
-export analpertwtsh=0.9
-export analpertwttr=0.9
-export analpertwtnh_rtpp=0.4
-export analpertwtsh_rtpp=0.4
-export analpertwttr_rtpp=0.4
+export analpertwtnh=0.85
+export analpertwtsh=0.85
+export analpertwttr=0.85
+export analpertwtnh_rtpp=0.0
+export analpertwtsh_rtpp=0.0
+export analpertwttr_rtpp=0.0
 export pseudo_rh=.true.
 export use_qsatensmean=.true.
                                                                     
@@ -324,7 +314,6 @@ export modelspace_vloc=.true.
 export letkf_novlocal=.true.
 export dfs_sort=.false.
 export nobsl_max=10000
-#export nobsl_max=5000
 export sprd_tol=1.e30
 export varqc=.false.
 export huber=.false.
@@ -436,29 +425,16 @@ export OZINFO=${enkfscripts}/global_ozinfo_oper_fix.txt
 #export SATINFO=${enkfscripts}/global_satinfo.txt.clrsky
 export SATINFO=${enkfscripts}/global_satinfo.txt
 
-# parameters for hybrid
-#export beta1_inv=0.0    # 0 means all ensemble, 1 means all 3DVar.
-export beta1_inv=0.125    # 0 means all ensemble, 1 means all 3DVar.
-#export beta1_inv=0 # non-hybrid, pure ensemble
-# these are only used if readin_localization=F
-export s_ens_h=485      # a gaussian e-folding, similar to sqrt(0.15) times Gaspari-Cohn length
-export s_ens_v=-0.582   # in lnp units.
+# parameters for hybrid gain
+export beta1_inv=1.   # 0 means all ensemble, 1 means all 3DVar.
+export alpha=200 # percentage of 3dvar increment (*10)
+export beta=1000 # percentage of enkf increment (*10)
+
 # NOTE: most other GSI namelist variables are in ${rungsi}
 export aircraft_bc=.true.
 export use_prepb_satwnd=.false.
 
-# parameters for hybrid gain
-if [ $hybgain == "true" ]; then
-   export beta1_inv=1.   # 0 means all ensemble, 1 means all 3DVar.
-   export alpha=250 # percentage of 3dvar increment (*10)
-   export beta=1000 # percentage of enkf increment (*10)
-fi
-
 cd $enkfscripts
 echo "run main driver script"
-if [ $hybgain == "true" ]; then
-   csh main_hybgain.csh
-else
-   csh main.csh
-   #csh main2.csh
-fi
+csh main_hybgain.csh
+#csh main2.csh

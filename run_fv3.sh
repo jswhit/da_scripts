@@ -11,8 +11,8 @@ if [ "$machine" == 'theia' ]; then
    module load nco/4.6.0
    module use /scratch4/NCEPDEV/nems/noscrub/emc.nemspara/soft/modulefiles
    module load esmf/7.1.0rp1bs01
-   export WGRIB=`which wgrib`
    module list
+   export WGRIB=`which wgrib`
 elif [ "$machine" == 'wcoss' ]; then
    module load grib_util/1.0.3
    module load nco-gnu-sandybridge
@@ -437,7 +437,7 @@ cat > input.nml <<EOF
 
 &fms_nml
   clock_grain = "ROUTINE",
-  domains_stack_size = 5000000,
+  domains_stack_size = 3000000,
   print_memory_usage = F,
 /
 
@@ -521,9 +521,11 @@ cat > input.nml <<EOF
 /
 
 &gfs_physics_nml
+  iccn           = F
   fhzero         = ${FHOUT}
   ldiag3d        = F
   fhcyc          = ${FHCYC}
+  nst_anl        = T
   use_ufo        = T
   pre_rad        = F
   ncld           = ${ncld}
@@ -562,7 +564,7 @@ cat > input.nml <<EOF
   h2o_phys      = ${h2o_phys:-T}
   nstf_name     = ${nstf_name}
   nst_anl       = ${nst_anl}
-  iau_filter_weights = ${iau_filter_weights}
+  iau_filter_increments = F
   iaufhrs = ${iaufhrs}
   iau_delthrs = ${iaudelthrs}
   iau_inc_files = ${iau_inc_files}
@@ -647,7 +649,8 @@ cat > input.nml <<EOF
   fsmcl(2) = 60,
   fsmcl(3) = 60,
   fsmcl(4) = 60,
-  fsnol=99999,
+  fsnol    = 99999,
+  ftsfs    = 90,
 /
 
 &fv_grid_nml

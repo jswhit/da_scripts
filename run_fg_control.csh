@@ -12,6 +12,7 @@ echo "DATOUT = $DATOUT"
 mkdir -p ${DATOUT}
 
 setenv OMP_NUM_THREADS $control_threads
+setenv OMP_STACKSIZE 2048m
 echo "OMP_NUM_THREADS = $OMP_NUM_THREADS"
 setenv nprocs `expr $control_proc \/ $OMP_NUM_THREADS`
 echo "nprocs = $nprocs"
@@ -46,6 +47,12 @@ endif
 if ($?prautco_ctl) then
 setenv prautco "$psautco_ctl"
 echo "prautco = $psautco"
+endif
+if ($?k_split_ctl) then
+setenv k_split "${k_split_ctl}"
+endif
+if ($?n_split_ctl) then
+setenv n_split "${n_split_ctl}"
 endif
 setenv fg_proc $nprocs
 echo "fg_proc = $fg_proc"

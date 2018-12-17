@@ -90,14 +90,18 @@ if  [ $save_hpss_subset == "true" ]; then
    #cd ..
    # exclude long forecast directory
    htar -cvf ${hsidir}/${analdate}_subset.tar ${analdate}/gdas* ${analdate}/*ensmean* ${analdate}/*control* ${analdate}/logs
-   # remove cris,iasi airs diag files to save more space
-   #/bin/rm -f ${analdate}/diag*cris* ${analdate}/diag*airs* ${analdate}/diag*iasi*
 fi
 hsi ls -l ${hsidir}/${analdate}_subset.tar
 exitstat=$?
 if [  $exitstat -ne 0 ]; then
    echo "hsi subset failed ${analdate} with exit status $exitstat..."
    exit 1
+else
+   # remove files to save space
+   cd ${analdate}
+   /bin/rm -f diag*cris* diag*airs* diag*iasi*
+   /bin/rm -rf control control2 ensmean
+   /bin/rm -f *fhr03* *fhr09*
 fi
 
 exit $exitstat

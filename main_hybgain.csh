@@ -1,5 +1,5 @@
 # main driver script
-# single resolution hybrid using jacobian in the EnKF
+# single resolution hybrid gain 3DVar/EnKF using jacobian in the EnKF
 
 # allow this script to submit other scripts on WCOSS
 unsetenv LSB_SUB_RES_REQ 
@@ -161,11 +161,7 @@ endif
 # ens mean background is used ("control" symlinked to "ensmean", control
 # forecast uses "control2")
 if ($controlanal == 'true') then
-   if ($replay_controlfcst == 'true') then
-      setenv charnanal 'ensmean' 
-   else
-      setenv charnanal 'control' 
-   endif
+   setenv charnanal 'control' 
    setenv charnanal2 'ensmean'
    setenv lobsdiag_forenkf '.true.' # save jacobian in diag files for EnKF
    setenv skipcat "false"

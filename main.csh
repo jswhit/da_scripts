@@ -200,10 +200,6 @@ endif
 # ens mean background is used ("control" symlinked to "ensmean", control
 # forecast uses "control2")
 if ($controlanal == 'true') then
-   setenv charnanal 'control'
-   setenv charnanal2 'control'
-   setenv lobsdiag_forenkf '.false.'
-   setenv skipcat "false"
    # run control analysis
    echo "$analdate run hybrid `date`"
    csh ${enkfscripts}/run_hybridanal.csh >&! ${current_logdir}/run_gsi_hybrid.out 

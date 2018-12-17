@@ -20,10 +20,10 @@ if ($machine == 'theia') then
    endif
    # only one task on root node
    # (root node has to hold two copies of ob space ensemble for LETKF)
-   #if ($mpitaskspernode > 1) then
-   #   sed -i "2,${mpitaskspernode}d" $HOSTFILE
-   #   setenv nprocs `wc -l $HOSTFILE | cut -f1 -d" "`
-   #endif
+   if ($mpitaskspernode > 1) then
+      sed -i "2,${mpitaskspernode}d" $HOSTFILE
+      setenv nprocs `wc -l $HOSTFILE | cut -f1 -d" "`
+   endif
    echo "${nprocs} cores"
    cat $HOSTFILE
    wc -l $HOSTFILE
@@ -182,7 +182,8 @@ cp ${enkfscripts}/vlocal_eig.dat ${datapath2}
 
 /bin/rm -f ${datapath2}/enkf.log
 /bin/mv -f ${current_logdir}/ensda.out ${current_logdir}/ensda.out.save
-#module switch impi mvapich2/2.1rc1
+#module switch intel intel/16.1.150
+module switch impi mvapich2/2.1rc1
 setenv PGM $enkfbin
 echo "OMP_NUM_THREADS = $OMP_NUM_THREADS"
 sh ${enkfscripts}/runmpi >>& ${current_logdir}/ensda.out
@@ -190,7 +191,7 @@ if ( ! -s ${datapath2}/enkf.log ) then
    echo "no enkf log file found"
    exit 1
 endif
-#module switch mvapich2/2.1rc1 impi
+module switch intel impi
 if ($satbiasc == '.true.')  /bin/cp -f ${datapath2}/satbias_out $ABIAS
 
 else

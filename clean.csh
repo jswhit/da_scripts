@@ -56,6 +56,8 @@ if ( ! $?NOSAT ) then
 #/bin/mv -f diagsavdir/diag*nc4 .
 #/bin/rm -rf diagsavdir
 endif
+# delete these to save space
+#/bin/rm -f diag*cris* diag*airs* diag*iasi*
 
 /bin/rm -f hostfile*
 /bin/rm -f fort*

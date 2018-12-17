@@ -2,16 +2,9 @@
 
 # need symlinks for satbias_angle, satbias_in, satinfo
 if ( ! $?biascorrdir ) then # cycled bias correction files
-    if ($hybgain == "true") then
-       # use bias correction files updated by 3DVar (3DVar run before EnKF).
-       setenv GBIAS ${datapath2}/${PREINP}abias
-       setenv GBIAS_PC ${datapath2}/${PREINP}abias_pc
-       setenv GBIASAIR ${datapath2}/${PREINP}abias_air
-    else 
-       setenv GBIAS ${datapathm1}/${PREINPm1}abias
-       setenv GBIAS_PC ${datapathm1}/${PREINPm1}abias_pc
-       setenv GBIASAIR ${datapathm1}/${PREINPm1}abias_air
-    endif
+    setenv GBIAS ${datapathm1}/${PREINPm1}abias
+    setenv GBIAS_PC ${datapathm1}/${PREINPm1}abias_pc
+    setenv GBIASAIR ${datapathm1}/${PREINPm1}abias_air
     if ($cold_start_bias == "true") then
       setenv GBIAS ${datapath2}/${PREINP}abias
       setenv GBIAS_PC ${datapath2}/${PREINP}abias_pc
