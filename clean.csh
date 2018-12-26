@@ -39,10 +39,14 @@ endif
 #/bin/mv -f sanl_*mem* analens # save analysis ensemble
 #echo "files moved to analens `date`"
 /bin/rm -f sanl_*mem* # don't save analysis ensemble
+/bin/rm -f s*ensmean*nc4 # just save spread netcdf files.
 
+nemsio2nc4.py -n sanl_${analdate}_fhr06_ensmean
+nemsio2nc4.py -n sanl_${analdate}_fhr06_ensmean.orig
+nemsio2nc4.py -n sfg_${analdate}_fhr06_ensmean
+nemsio2nc4.py -n sanl_${analdate}_fhr06_control
 /bin/rm -f sanl*ensmean sanl*ensmean*orig
 /bin/rm -f sanl*control 
-/bin/rm -f s*ensmean*nc4 # just save spread netcdf files.
 /bin/rm -f fgens2/*fhr00* fgens2/*orig
 echo "files moved to fgens, fgens2 `date`"
 if ( ! $?NOSAT ) then
