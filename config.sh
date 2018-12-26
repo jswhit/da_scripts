@@ -150,7 +150,7 @@ else
    export dnats=0
 fi
 export k_split=1
-export n_split=8
+export n_split=6
 export fv_sg_adj=450
 export fv_sg_adj_ctl=$fv_sg_adj
 export hydrostatic=F
@@ -210,8 +210,7 @@ if [ $RES -eq 384 ]; then
    export JCAP=766
    export LONB=1536
    export LATB=768
-   #export dt_atmos=225 # for n_split=6
-   export dt_atmos=300
+   export dt_atmos=225 # for n_split=6
    export cdmbgwd="1.0,1.2"
 elif [ $RES -eq 192 ]; then
    export JCAP=382 
