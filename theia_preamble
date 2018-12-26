@@ -1,14 +1,14 @@
-#PBS -l nodes=80:ppn=24
-#PBS -l walltime=8:00:00
+#PBS -l nodes=40:ppn=24
+#PBS -l walltime=4:00:00
 ##PBS -l walltime=0:30:00
 #PBS -A gsienkf
 ##PBS -A da-cpu
 ##PBS -q debug
-#PBS -N C384C768_hybgain
+#PBS -N C192C384_hybgain250
 #PBS -S /bin/bash
-#PBS -o C384C768_hybgain.stdout
-#PBS -e C384C768_hybgain.stderr
-export NODES=80
+#PBS -o C192C384_hybgain250.stdout
+#PBS -e C192C384_hybgain250.stderr
+export NODES=40
 export corespernode=24
 export machine='theia'
 
@@ -39,20 +39,21 @@ else
 fi
 
 # for ensemble forecast and GSI
-export fg_proc=`expr 4 \* $corespernode`
+#export fg_proc=`expr 4 \* $corespernode`
+export fg_proc=$corespernode
 export fg_threads=1 
 # C384
-export enkf_threads=6
-export gsi_control_threads=6
-export write_groups=4
-export write_tasks=6 
-export layout="3, 4" 
-# C192
 #export enkf_threads=6
-#export gsi_control_threads=2
-#export write_groups=1
+#export gsi_control_threads=6
+#export write_groups=4
 #export write_tasks=6 
-#export layout="3, 1" 
+#export layout="3, 4" 
+# C192
+export enkf_threads=6
+export gsi_control_threads=3
+export write_groups=1
+export write_tasks=6 
+export layout="3, 1" 
 # C128
 #export enkf_threads=2
 #export gsi_control_threads=2

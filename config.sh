@@ -2,11 +2,10 @@ echo "running on $machine using $NODES nodes"
 ## ulimit -s unlimited
 
 # resolution of control and ensmemble.
-export RES=384
-export RES_CTL=768 
-#export RES=192
-#export RES_CTL=384 
-export exptname="C${RES}C${RES_CTL}_hybgain"
+export RES=192
+export RES_CTL=384 
+export alpha=250 # percentage of 3dvar increment (*10)
+export exptname="C${RES}C${RES_CTL}_hybgain${alpha}"
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia.
@@ -199,9 +198,9 @@ export SPPT_LSCALE=500.e3
 export SHUM=0.005
 export SHUM_TSCALE=21600.
 export SHUM_LSCALE=500.e3
-export SKEB=0.0
+export SKEB=0.3
 export SKEB_TSCALE=21600.
-export SKEB_LSCALE=250.e3
+export SKEB_LSCALE=500.e3
 export SKEBNORM=0
 export SKEB_NPASS=30
 export SKEB_VDOF=5
@@ -427,7 +426,6 @@ export SATINFO=${enkfscripts}/global_satinfo.txt
 
 # parameters for hybrid gain
 export beta1_inv=1.   # 0 means all ensemble, 1 means all 3DVar.
-export alpha=200 # percentage of 3dvar increment (*10)
 export beta=1000 # percentage of enkf increment (*10)
 
 # NOTE: most other GSI namelist variables are in ${rungsi}
@@ -436,5 +434,8 @@ export use_prepb_satwnd=.false.
 
 cd $enkfscripts
 echo "run main driver script"
-csh main_hybgain.csh
-#csh main2.csh
+if ($alpha != '0') then
+   csh main_hybgain.csh
+else
+   csh main.csh
+endif
