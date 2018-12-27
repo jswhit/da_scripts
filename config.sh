@@ -4,7 +4,8 @@ echo "running on $machine using $NODES nodes"
 # resolution of control and ensmemble.
 export RES=192
 export RES_CTL=384 
-export alpha=250 # percentage of 3dvar increment (*10)
+export alpha=500 # percentage of 3dvar increment (*10)
+export hybgain='true' # set to true for hybrid gain 3DVar/EnKF
 export exptname="C${RES}C${RES_CTL}_hybgain${alpha}"
 export cores=`expr $NODES \* $corespernode`
 
@@ -424,7 +425,11 @@ export OZINFO=${enkfscripts}/global_ozinfo_oper_fix.txt
 export SATINFO=${enkfscripts}/global_satinfo.txt
 
 # parameters for hybrid gain
-export beta1_inv=1.   # 0 means all ensemble, 1 means all 3DVar.
+if [ $hybgain == "true" ]; then
+   export beta1_inv=1.000
+else
+   export beta1_inv=0.125   # 0 means all ensemble, 1 means all 3DVar.
+fi
 export beta=1000 # percentage of enkf increment (*10)
 
 # NOTE: most other GSI namelist variables are in ${rungsi}
@@ -433,8 +438,4 @@ export use_prepb_satwnd=.false.
 
 cd $enkfscripts
 echo "run main driver script"
-if [ $alpha -gt 0 ]; then
-   csh main_hybgain.csh
-else
-   csh main.csh
-fi
+csh main.csh

@@ -113,8 +113,8 @@ echo "$analdate starting ens mean computation `date`"
 csh ${enkfscripts}/compute_ensmean_fcst.csh >&!  ${current_logdir}/compute_ensmean_fcst.out
 echo "$analdate done computing ensemble mean `date`"
 
-# change orography in high-res control forecast nemsio file so it matches enkf ensemble, adjust
-# surface pressure accordingly.
+# change orography in high-res control forecast nemsio file so it matches enkf ensemble,
+# adjust surface pressure accordingly.
 if ($controlfcst == 'true') then
    if ($replay_controlfcst == 'true') then
      # sfg*control2 only used to compute IAU forcing
@@ -246,14 +246,26 @@ echo "$analdate done computing ensemble mean analyses `date`"
 
 # recenter enkf analyses around control analysis
 if ($controlanal == 'true' && $recenter_anal == 'true') then
-   echo "$analdate recenter enkf analysis ensemble around control analysis `date`"
-   csh ${enkfscripts}/recenter_ens_anal.csh >&! ${current_logdir}/recenter_ens_anal.out 
-   set recenter_done=`cat ${current_logdir}/recenter_ens.log`
-   if ($recenter_done == 'yes') then
-     echo "$analdate recentering enkf analysis completed successfully `date`"
+   if ($hybgain == 'true') then
+      echo "$analdate blend enkf and 3dvar increments `date`"
+      csh ${enkfscripts}/blendinc.csh >&! ${current_logdir}/blendinc.out 
+      set blendinc_done=`cat ${current_logdir}/blendinc.log`
+      if ($blendinc_done == 'yes') then
+        echo "$analdate increment blending/recentering completed successfully `date`"
+      else
+        echo "$analdate increment blending/recentering did not complete successfully, exiting `date`"
+        exit 1
+      endif
    else
-     echo "$analdate recentering enkf analysis did not complete successfully, exiting `date`"
-     exit 1
+      echo "$analdate recenter enkf analysis ensemble around control analysis `date`"
+      csh ${enkfscripts}/recenter_ens_anal.csh >&! ${current_logdir}/recenter_ens_anal.out 
+      set recenter_done=`cat ${current_logdir}/recenter_ens.log`
+      if ($recenter_done == 'yes') then
+        echo "$analdate recentering enkf analysis completed successfully `date`"
+      else
+        echo "$analdate recentering enkf analysis did not complete successfully, exiting `date`"
+        exit 1
+      endif
    endif
 endif
 
