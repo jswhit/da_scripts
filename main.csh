@@ -161,31 +161,22 @@ endif
 # uses control forecast background, except if replay_controlfcst=true
 # ens mean background is used ("control" symlinked to "ensmean", control
 # forecast uses "control2")
-if ($controlanal == 'true' && ($replay_controlfcst == 'true' || $controlfcst == 'false')) then
-   # use ensmean mean background if no control forecast is run, or 
-   # control forecast is replayed to ens mean increment
-   setenv charnanal 'control'
-   setenv charnanal2 'ensmean'
-   setenv lobsdiag_forenkf '.true.'
-   setenv skipcat "false"
-   # run control analysis
-   echo "$analdate run hybrid `date`"
-   csh ${enkfscripts}/run_hybridanal.csh >&! ${current_logdir}/run_gsi_hybrid.out 
-   # once hybrid has completed, check log files.
-   set hybrid_done=`cat ${current_logdir}/run_gsi_hybrid.log`
-   if ($hybrid_done == 'yes') then
-     echo "$analdate hybrid analysis completed successfully `date`"
+if ($controlanal == 'true') then
+   if ($replay_controlfcst == 'true' || $controlfcst == 'false') then
+      # use ensmean mean background if no control forecast is run, or 
+      # control forecast is replayed to ens mean increment
+      setenv charnanal 'control'
+      setenv charnanal2 'ensmean'
+      setenv lobsdiag_forenkf '.true.'
+      setenv skipcat "false"
    else
-     echo "$analdate hybrid analysis did not complete successfully, exiting `date`"
-     exit 1
+      # use control forecast background if control forecast is run, and it is
+      # not begin replayed to ensemble mean increment.
+      setenv charnanal 'control'
+      setenv charnanal2 'control'
+      setenv lobsdiag_forenkf '.false.'
+      setenv skipcat "false"
    endif
-else if ($controlanal == 'true' && ($replay_controlfcst != 'true' && $controlfcst == 'true')) then
-   # use control forecast background if control forecast is run, and it is
-   # not begin replayed to ensemble mean increment.
-   setenv charnanal 'control'
-   setenv charnanal2 'control'
-   setenv lobsdiag_forenkf '.false.'
-   setenv skipcat "false"
    # run control analysis
    echo "$analdate run hybrid `date`"
    csh ${enkfscripts}/run_hybridanal.csh >&! ${current_logdir}/run_gsi_hybrid.out 
@@ -198,11 +189,6 @@ else if ($controlanal == 'true' && ($replay_controlfcst != 'true' && $controlfcs
      exit 1
    endif
 else
-   # should never be here if controlanal = 'true'
-   if ($controlanal == "true") then
-      echo "logic error: replay_controlfcst = ${replay_controlfcst} and controlfcst = ${controlfcst}"
-      exit 1
-   endif
    # run gsi observer with ens mean fcst background, saving jacobian.
    # generated diag files used by EnKF. No control analysis.
    setenv charnanal 'control' 
