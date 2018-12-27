@@ -296,9 +296,9 @@ export iassim_order=0
 
 export covinflatemax=1.e2
 export covinflatemin=1.0                                            
-export analpertwtnh=0.85
-export analpertwtsh=0.85
-export analpertwttr=0.85
+export analpertwtnh=0.75
+export analpertwtsh=0.75
+export analpertwttr=0.75
 export analpertwtnh_rtpp=0.0
 export analpertwtsh_rtpp=0.0
 export analpertwttr_rtpp=0.0
@@ -433,8 +433,8 @@ export use_prepb_satwnd=.false.
 
 cd $enkfscripts
 echo "run main driver script"
-if ($alpha != '0') then
+if [ $alpha -gt 0 ]; then
    csh main_hybgain.csh
 else
    csh main.csh
-endif
+fi

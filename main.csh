@@ -118,6 +118,7 @@ echo "$analdate done computing ensemble mean `date`"
 if ($controlfcst == 'true') then
    if ($replay_controlfcst == 'true') then
      # sfg*control2 only used to compute IAU forcing
+     # and for gsi observer diagnostic calculation
      set charnanal='control2'
    else
      set charnanal='control'
@@ -156,25 +157,68 @@ else
    setenv cold_start_bias "false"
 endif
 
-# run gsi observer with ens mean fcst background, saving jacobian.
-# generated diag files used by EnKF
-if ($replay_controlfcst == 'true') then
-   setenv charnanal 'ensmean' 
+# do hybrid control analysis if controlanal=true
+# uses control forecast background, except if replay_controlfcst=true
+# ens mean background is used ("control" symlinked to "ensmean", control
+# forecast uses "control2")
+if ($controlanal == 'true' && ($replay_controlfcst == 'true' || $controlfcst == 'false')) then
+   # use ensmean mean background if no control forecast is run, or 
+   # control forecast is replayed to ens mean increment
+   setenv charnanal 'control'
+   setenv charnanal2 'ensmean'
+   setenv lobsdiag_forenkf '.true.'
+   setenv skipcat "false"
+   # run control analysis
+   echo "$analdate run hybrid `date`"
+   csh ${enkfscripts}/run_hybridanal.csh >&! ${current_logdir}/run_gsi_hybrid.out 
+   # once hybrid has completed, check log files.
+   set hybrid_done=`cat ${current_logdir}/run_gsi_hybrid.log`
+   if ($hybrid_done == 'yes') then
+     echo "$analdate hybrid analysis completed successfully `date`"
+   else
+     echo "$analdate hybrid analysis did not complete successfully, exiting `date`"
+     exit 1
+   endif
+else if ($controlanal == 'true' && ($replay_controlfcst != 'true' && $controlfcst == 'true')) then
+   # use control forecast background if control forecast is run, and it is
+   # not begin replayed to ensemble mean increment.
+   setenv charnanal 'control'
+   setenv charnanal2 'control'
+   setenv lobsdiag_forenkf '.false.'
+   setenv skipcat "false"
+   # run control analysis
+   echo "$analdate run hybrid `date`"
+   csh ${enkfscripts}/run_hybridanal.csh >&! ${current_logdir}/run_gsi_hybrid.out 
+   # once hybrid has completed, check log files.
+   set hybrid_done=`cat ${current_logdir}/run_gsi_hybrid.log`
+   if ($hybrid_done == 'yes') then
+     echo "$analdate hybrid analysis completed successfully `date`"
+   else
+     echo "$analdate hybrid analysis did not complete successfully, exiting `date`"
+     exit 1
+   endif
 else
+   # should never be here if controlanal = 'true'
+   if ($controlanal == "true") then
+      echo "logic error: replay_controlfcst = ${replay_controlfcst} and controlfcst = ${controlfcst}"
+      exit 1
+   endif
+   # run gsi observer with ens mean fcst background, saving jacobian.
+   # generated diag files used by EnKF. No control analysis.
    setenv charnanal 'control' 
-endif
-setenv charnanal2 'ensmean'
-setenv lobsdiag_forenkf '.true.'
-setenv skipcat "false"
-echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
-csh ${enkfscripts}/run_gsiobserver.csh >&! ${current_logdir}/run_gsi_observer.out 
-# once observer has completed, check log files.
-set hybrid_done=`cat ${current_logdir}/run_gsi_observer.log`
-if ($hybrid_done == 'yes') then
-  echo "$analdate gsi observer completed successfully `date`"
-else
-  echo "$analdate gsi observer did not complete successfully, exiting `date`"
-  exit 1
+   setenv charnanal2 'ensmean'
+   setenv lobsdiag_forenkf '.true.'
+   setenv skipcat "false"
+   echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
+   csh ${enkfscripts}/run_gsiobserver.csh >&! ${current_logdir}/run_gsi_observer.out 
+   # once observer has completed, check log files.
+   set hybrid_done=`cat ${current_logdir}/run_gsi_observer.log`
+   if ($hybrid_done == 'yes') then
+     echo "$analdate gsi observer completed successfully `date`"
+   else
+     echo "$analdate gsi observer did not complete successfully, exiting `date`"
+     exit 1
+   endif
 endif
 
 # run enkf analysis.
@@ -195,24 +239,20 @@ else
   exit 1
 endif
 
-# do hybrid control analysis if controlanal=true
-# uses control forecast background, except if replay_controlfcst=true
-# ens mean background is used ("control" symlinked to "ensmean", control
-# forecast uses "control2")
-if ($controlanal == 'true') then
-   setenv charnanal 'control'
-   setenv charnanal2 'control'
-   setenv lobsdiag_forenkf '.false.'
-   setenv skipcat "false"
-   # run control analysis
-   echo "$analdate run hybrid `date`"
-   csh ${enkfscripts}/run_hybridanal.csh >&! ${current_logdir}/run_gsi_hybrid.out 
-   # once hybrid has completed, check log files.
-   set hybrid_done=`cat ${current_logdir}/run_gsi_hybrid.log`
-   if ($hybrid_done == 'yes') then
-     echo "$analdate hybrid analysis completed successfully `date`"
+# compute ensemble mean analyses.
+echo "$analdate starting ens mean analysis computation `date`"
+csh ${enkfscripts}/compute_ensmean_enkf.csh >&!  ${current_logdir}/compute_ensmean_anal.out
+echo "$analdate done computing ensemble mean analyses `date`"
+
+# recenter enkf analyses around control analysis
+if ($controlanal == 'true' && $recenter_anal == 'true') then
+   echo "$analdate recenter enkf analysis ensemble around control analysis `date`"
+   csh ${enkfscripts}/recenter_ens_anal.csh >&! ${current_logdir}/recenter_ens_anal.out 
+   set recenter_done=`cat ${current_logdir}/recenter_ens.log`
+   if ($recenter_done == 'yes') then
+     echo "$analdate recentering enkf analysis completed successfully `date`"
    else
-     echo "$analdate hybrid analysis did not complete successfully, exiting `date`"
+     echo "$analdate recentering enkf analysis did not complete successfully, exiting `date`"
      exit 1
    endif
 endif
@@ -232,24 +272,6 @@ if ($controlfcst == 'true' && $replay_controlfcst == 'true' && $replay_run_obser
      echo "$analdate gsi observer completed successfully `date`"
    else
      echo "$analdate gsi observer did not complete successfully, exiting `date`"
-     exit 1
-   endif
-endif
-
-# compute ensemble mean analyses.
-echo "$analdate starting ens mean analysis computation `date`"
-csh ${enkfscripts}/compute_ensmean_enkf.csh >&!  ${current_logdir}/compute_ensmean_anal.out
-echo "$analdate done computing ensemble mean analyses `date`"
-
-# recenter enkf analyses around control analysis
-if ($controlanal == 'true' && $recenter_anal == 'true') then
-   echo "$analdate recenter enkf analysis ensemble around control analysis `date`"
-   csh ${enkfscripts}/recenter_ens_anal.csh >&! ${current_logdir}/recenter_ens_anal.out 
-   set recenter_done=`cat ${current_logdir}/recenter_ens.log`
-   if ($recenter_done == 'yes') then
-     echo "$analdate recentering enkf analysis completed successfully `date`"
-   else
-     echo "$analdate recentering enkf analysis did not complete successfully, exiting `date`"
      exit 1
    endif
 endif
