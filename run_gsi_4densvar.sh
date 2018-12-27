@@ -263,7 +263,7 @@ if [[ -s $datobs/${prefix_obs}.satwnd.${suffix} ]]; then
 else
    use_prepb_satwnd=.true.
 fi
-SETUP="reduce_diag=.true.,lwrite_peakwt=.true.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=.true.,ens_nstarthr=3,iwrtinc=-1,nhr_assimilation=6,nhr_obsbin=$FHOUT,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=$lobsdiag_forenkf,lwrite_predterms=.true."
+SETUP="reduce_diag=.true.,lwrite_peakwt=.true.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=.true.,ens_nstarthr=3,iwrtinc=-1,nhr_assimilation=6,nhr_obsbin=$FHOUT,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=$lobsdiag_forenkf,lwrite_predterms=.true.,thin4d=.true."
 
 if [[ "$HXONLY" = "YES" ]]; then
    #SETUP="$SETUP,lobserver=.true.,l4dvar=.true." # can't use reduce_diag=T
@@ -275,8 +275,11 @@ STRONGOPTS="tlnmc_option=3,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1
 if [[ "$HXONLY" = "YES" ]]; then
    STRONGOPTS="tlnmc_option=0,nstrong=0,nvmodes_keep=0,baldiag_full=.false.,baldiag_inc=.false.,"
 fi
-if [[ $beta1_inv > 0.999 ]]; then
+if [[ $beta1_inv > 0.999 ]]; then # 3dvar or hybrid gain
    STRONGOPTS="tlnmc_option=1,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5"
+   SETUP="$SETUP,miter=1,niter(1)=150,niter(2)=0"
+else
+   SETUP="$SETUP,miter=2,niter(1)=50,niter(2)=150"
 fi
 GRIDOPTS=""
 BKGVERR=""
@@ -311,7 +314,7 @@ beta1_inv=${beta1_inv:-0.25}
 s_ens_h=${s_ens_h:-800}
 s_ens_v=${s_ens_v:-0.8}
 if [ "$HXONLY" = "NO" ] && [[ $beta1_inv < 0.999 ]]; then
-HYBRIDENSDATA="l_hyb_ens=.true.,n_ens=$nens,beta_s0=$beta1_inv,s_ens_h=$s_ens_h,s_ens_v=$s_ens_v,generate_ens=.false.,uv_hyb_ens=.true.,jcap_ens=$JCAP_ENS,nlat_ens=$NLAT_ENS,nlon_ens=$LONA_ENS,aniso_a_en=.false.,jcap_ens_test=$JCAP_ENS,readin_localization=$readin_localization,write_ens_sprd=.false.,oz_univ_static=.false.,q_hyb_ens=.false.,ens_fast_read=.true."
+HYBRIDENSDATA="l_hyb_ens=.true.,n_ens=$nens,beta_s0=$beta1_inv,s_ens_h=$s_ens_h,s_ens_v=$s_ens_v,generate_ens=.false.,uv_hyb_ens=.true.,jcap_ens=$JCAP_ENS,nlat_ens=$NLAT_ENS,nlon_ens=$LONA_ENS,aniso_a_en=.false.,jcap_ens_test=$JCAP_ENS,readin_localization=$readin_localization,write_ens_sprd=.false.,oz_univ_static=.false.,q_hyb_ens=.false.,ens_fast_read=.true.,readin_beta=.true."
 else
 HYBRIDENSDATA=""
 fi
@@ -324,7 +327,6 @@ fi
 # Create global_gsi namelist
 cat <<EOF > gsiparm.anl
  &SETUP
-   miter=1,niter(1)=150,niter(2)=0,
    niter_no_qc(1)=25,niter_no_qc(2)=0,
    write_diag(1)=.true.,write_diag(2)=.false.,write_diag(3)=.true.,
    netcdf_diag=.true.,binary_diag=.false.,
@@ -333,7 +335,7 @@ cat <<EOF > gsiparm.anl
    iguess=-1,
    oneobtest=.false.,retrieval=.false.,l_foto=.false.,
    use_pbl=.false.,use_compress=.true.,nsig_ext=12,gpstop=50.,
-   use_gfs_nemsio=.true.,sfcnst_comb=.true.,imp_physics=${imp_physics}
+   use_gfs_nemsio=.true.,sfcnst_comb=.true.,imp_physics=${imp_physics},
    $SETUP
  /
  &GRIDOPTS
