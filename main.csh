@@ -177,15 +177,20 @@ if ($controlanal == 'true') then
       setenv lobsdiag_forenkf '.false.'
       setenv skipcat "false"
    endif
-   # run control analysis
-   echo "$analdate run hybrid `date`"
+   if ($hybgain == 'true') then
+      set type='3DVar'
+   else
+      set type='hybrid 4DEnVar'
+   endif
+   # run Var analysis
+   echo "$analdate run $type `date`"
    csh ${enkfscripts}/run_hybridanal.csh >&! ${current_logdir}/run_gsi_hybrid.out 
    # once hybrid has completed, check log files.
    set hybrid_done=`cat ${current_logdir}/run_gsi_hybrid.log`
    if ($hybrid_done == 'yes') then
-     echo "$analdate hybrid analysis completed successfully `date`"
+     echo "$analdate $type analysis completed successfully `date`"
    else
-     echo "$analdate hybrid analysis did not complete successfully, exiting `date`"
+     echo "$analdate $type analysis did not complete successfully, exiting `date`"
      exit 1
    endif
 else
