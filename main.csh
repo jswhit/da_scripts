@@ -237,7 +237,7 @@ echo "$analdate done computing ensemble mean analyses `date`"
 
 # recenter enkf analyses around control analysis
 if ($controlanal == 'true' && $recenter_anal == 'true') then
-   if ($hybgain == 'true') then
+   if ($hybgain == 'true' && $alpha > 0) then
       echo "$analdate blend enkf and 3dvar increments `date`"
       csh ${enkfscripts}/blendinc.csh >&! ${current_logdir}/blendinc.out 
       set blendinc_done=`cat ${current_logdir}/blendinc.log`
