@@ -4,7 +4,10 @@ echo "running on $machine using $NODES nodes"
 # resolution of control and ensmemble.
 export RES=192
 export RES_CTL=384 
-export alpha=500 # percentage of 3dvar increment (*10)
+# Penney 2014 Hybrid Gain algorithm with beta_1=1.0
+# beta_2=alpha and beta_3=0 in eqn 6 
+# (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
+export alpha=500 # percentage of 3dvar increment (beta_2*1000)
 export hybgain='true' # set to true for hybrid gain 3DVar/EnKF
 export exptname="C${RES}C${RES_CTL}_hybgain${alpha}"
 export cores=`expr $NODES \* $corespernode`
