@@ -269,17 +269,20 @@ if [[ "$HXONLY" = "YES" ]]; then
    #SETUP="$SETUP,lobserver=.true.,l4dvar=.true." # can't use reduce_diag=T
    SETUP="$SETUP,miter=0,niter=1"
 fi
-STRONGOPTS="tlnmc_option=3,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
-# no strong bal constraint
-#STRONGOPTS="tlnmc_option=0,nstrong=0,nvmodes_keep=0,baldiag_full=.false.,baldiag_inc=.false.,"
-if [[ "$HXONLY" = "YES" ]]; then
-   STRONGOPTS="tlnmc_option=0,nstrong=0,nvmodes_keep=0,baldiag_full=.false.,baldiag_inc=.false.,"
-fi
-if [[ $beta1_inv > 0.999 ]]; then # 3dvar or hybrid gain
-   STRONGOPTS="tlnmc_option=1,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5"
-   SETUP="$SETUP,miter=1,niter(1)=150,niter(2)=0"
+if [[ "$HXONLY" != "YES" ]]; then
+   if [[ $beta1_inv > 0.999 ]]; then # 3dvar or hybrid gain
+      STRONGOPTS="tlnmc_option=1,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5"
+      SETUP="$SETUP,miter=1,niter(1)=150,niter(2)=0"
+   else # envar
+      STRONGOPTS="tlnmc_option=3,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
+      # balance constraint on 3dvar part of envar increment
+      #STRONGOPTS="tlnmc_option=4,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
+      # no strong bal constraint
+      #STRONGOPTS="tlnmc_option=0,nstrong=0,nvmodes_keep=0,baldiag_full=.false.,baldiag_inc=.false.,"
+      SETUP="$SETUP,miter=2,niter(1)=50,niter(2)=150"
+   fi
 else
-   SETUP="$SETUP,miter=2,niter(1)=50,niter(2)=150"
+   STRONGOPTS="tlnmc_option=0,nstrong=0,nvmodes_keep=0,baldiag_full=.false.,baldiag_inc=.false.,"
 fi
 GRIDOPTS=""
 BKGVERR=""
