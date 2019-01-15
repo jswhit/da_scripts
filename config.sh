@@ -9,7 +9,7 @@ export RES_CTL=384
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
 export alpha=500 # percentage of 3dvar increment (beta_2*1000)
 export hybgain='true' # set to true for hybrid gain 3DVar/EnKF
-export exptname="C${RES}C${RES_CTL}_hybgain${alpha}"
+export exptname="C${RES}C${RES_CTL}_hybgain"
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia.
@@ -75,7 +75,7 @@ elif [ "$machine" == 'theia' ]; then
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    export obs_datapath=/scratch3/BMC/gsienkf/whitaker/gdas1bufr
 elif [ "$machine" == 'gaea' ]; then
-   export basedir=/lustre/f1/unswept/${USER}
+   export basedir=/lustre/f1/unswept/${USER}/fv3_reanl
    export datadir=/lustre/f1/${USER}
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    #export hsidir="/3year/NCEPDEV/GEFSRR/${exptname}"
@@ -354,7 +354,7 @@ export saterrfact=1.0
 export deterministic=.true.
 export sortinc=.true.
                                                                     
-export nitermax=2
+export nitermax=1
 
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
@@ -373,15 +373,13 @@ if [ "$machine" == 'theia' ]; then
    export gsiexec=${execdir}/global_gsi
    export nemsioget=${execdir}/nemsio_get
 elif [ "$machine" == 'gaea' ]; then
-# warning - these paths need to be updated on gaea
-   export fv3gfspath=/lustre/f1/unswept/Jeffrey.S.Whitaker/fv3_reanl/fv3gfs/global_shared.v15.0.0
-## export fv3gfspath=${basedir}/fv3gfs/global_shared.v15.0.0
-   export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
-   export FIXGLOBAL=${fv3gfspath}/fix/fix_am
+   export fv3gfspath=/lustre/f1/pdata/ncep_shared/fv3/fix-fv3gfs/
+   export FIXFV3=${fv3gfspath}/fix_fv3_gmted2010
+   export FIXGLOBAL=${fv3gfspath}/fix_am
    export gsipath=/lustre/f1/unswept/Jeffrey.S.Whitaker/fv3_reanl/ProdGSI
-## export gsipath=${basedir}/ProdGSI
    export fixgsi=${gsipath}/fix
-   export fixcrtm=${fixgsi}/crtm_v2.2.3
+   export fixcrtm=/lustre/f1/pdata/ncep_shared/NCEPLIBS/lib/crtm/v2.2.5/fix
+   #export fixcrtm=${fixgsi}/crtm_v2.2.3
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
