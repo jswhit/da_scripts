@@ -115,7 +115,7 @@ echo "$analdate done computing ensemble mean `date`"
 
 # change orography in high-res control forecast nemsio file so it matches enkf ensemble,
 # adjust surface pressure accordingly.
-if ($controlfcst == 'true') then
+if ($controlfcst == 'true' && $cleanup_ensmean == 'true') then
    if ($replay_controlfcst == 'true') then
      # sfg*control2 only used to compute IAU forcing
      # and for gsi observer diagnostic calculation

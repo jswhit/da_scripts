@@ -1,16 +1,16 @@
 #!/bin/sh
-#PBS -A nggps_psd
-##PBS -A cpo_ngrr_e
+##PBS -A nggps_psd
+#PBS -A cpo_ngrr_e
 #PBS -l partition=c4
-#PBS -q debug
+##PBS -q debug
 ##PBS -q urgent
-##PBS -q batch
-##PBS -l walltime=02:30:00
-#PBS -l walltime=00:30:00
-#PBS -l nodes=20
-#PBS -N C384C192_test_iau 
-#PBS -e C384C192_test_iau.err
-#PBS -o C384C192_test_iau.out
+#PBS -q batch
+#PBS -l walltime=02:30:00
+##PBS -l walltime=00:30:00
+#PBS -l nodes=40
+#PBS -N C192C384_hybgain 
+#PBS -e C192C384_hybgain.err
+#PBS -o C192C384_hybgain.out
 #PBS -S /bin/sh
 export NODES=$PBS_NUM_NODES
 export corespernode=$PBS_NUM_PPN
@@ -33,7 +33,7 @@ elif [ $NODES -eq 20 ]; then
   export control_proc=666
   export write_groups_ctl=1 # write groups for control forecast.
   export layout_ctl="6,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
-elif [ $NODES -eq 40 ]; then
+elif [ $NODES -eq 40 ] || [ $NODES -eq 41 ]; then
   # 40 nodes, 2 threads
   export control_threads=6 
   export control_proc=1332 
@@ -51,7 +51,7 @@ else
 fi
 
 # for ensemble forecast and GSI
-export enkf_threads=3
+export enkf_threads=12
 export gsi_control_threads=3
 export fg_proc=$corespernode 
 export fg_threads=1 

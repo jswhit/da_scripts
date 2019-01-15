@@ -9,7 +9,14 @@ echo "compute 3dvar increment"
 set SIGF=sfg_${analdate}_fhr06_control
 set SIGA=sanl_${analdate}_fhr06_control
 set SIGO=svarinc_${analdate}_control
-${execdir}/makeinc_nemsio.x $SIGA $SIGF $SIGO
+set nprocs_save=$nprocs
+set mpitaskspernode_save=$mpitaskspernode
+set threads_save=$OMP_NUM_THREADS
+setenv nprocs 1
+setenv mpitaskspernode 1
+setenv OMP_NUM_THREADS 1
+setenv PGM "${execdir}/makeinc_nemsio.x $SIGA $SIGF $SIGO"
+sh ${enkfscripts}/runmpi
 if ($status == 0) then
    echo "yes" >! ${current_logdir}/blendinc.log
 else
@@ -27,7 +34,11 @@ echo "compute enkf mean increment for ${charfhr}"
 set SIGF=sfg_${analdate}_${charfhr}_ensmean
 set SIGA=sanl_${analdate}_${charfhr}_ensmean
 set SIGO=senkfinc_${analdate}_${charfhr}_ensmean
-${execdir}/makeinc_nemsio.x $SIGA $SIGF $SIGO 
+setenv nprocs 1
+setenv mpitaskspernode 1
+setenv OMP_NUM_THREADS 1
+setenv PGM "${execdir}/makeinc_nemsio.x $SIGA $SIGF $SIGO"
+sh ${enkfscripts}/runmpi
 if ($status == 0) then
    echo "yes" >! ${current_logdir}/blendinc.log
 else
@@ -42,7 +53,12 @@ set filenamein=sfg_${analdate}_${charfhr}_ensmean
 set filename_inc1=svarinc_${analdate}_control
 set filename_inc2=senkfinc_${analdate}_${charfhr}_ensmean
 set filenameout=sanl_${analdate}_${charfhr}_ensmean
-${execdir}/blendinc_nemsio.x $filenamein $filename_inc1 $filename_inc2 $filenameout $alpha $beta 
+setenv nprocs 1
+setenv mpitaskspernode 1
+setenv OMP_NUM_THREADS 1
+setenv PGM "${execdir}/blendinc_nemsio.x $filenamein $filename_inc1 $filename_inc2 $filenameout $alpha $beta"
+sh ${enkfscripts}/runmpi
+
 if ($status == 0) then
    echo "yes" >! ${current_logdir}/blendinc.log
 else
@@ -70,6 +86,9 @@ set filename_meanout=sanl_${analdate}_${charfhr}_ensmean
 set filenamein=sanl_${analdate}_${charfhr}
 set filenameout=sanlr_${analdate}_${charfhr}
 
+setenv nprocs $nprocs_save
+setenv mpitaskspernode $mpitaskspernode_save
+setenv OMP_NUM_THREADS $threads_save
 setenv PGM "${execdir}/recentersigp.x $filenamein $filename_meanin $filename_meanout $filenameout $nanals"
 set errorcode=0
 sh ${enkfscripts}/runmpi

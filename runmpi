@@ -4,8 +4,8 @@ export OMP_NUM_THREADS=${OMP_NUM_THREADS:-1}
 [ -z "$PGM" ] && echo "Need to set PGM" && exit 1;
 if [ "$machine" == 'wcoss' ] || [ "$machine" == 'gaea' ] ; then
    [ -z "$mpitaskspernode" ] && echo "Need to set mpitaskspernode" && exit 1;
-   echo "running aprun -n $nprocs -N $mpitaskspernode -d ${OMP_NUM_THREADS} -cc depth $PGM"
-   eval aprun -n $nprocs -N $mpitaskspernode -d ${OMP_NUM_THREADS} -cc depth $PGM
+   echo "running aprun -n $nprocs -N $mpitaskspernode -d ${OMP_NUM_THREADS} --cc depth $PGM"
+   eval aprun -n $nprocs -N $mpitaskspernode -d ${OMP_NUM_THREADS} --cc depth $PGM
 elif [ "$machine" == 'theia' ]; then
    # HOSTFILE env var must be set
    [ -z "$HOSTFILE" ] && echo "Need to set HOSTFILE" && exit 1;

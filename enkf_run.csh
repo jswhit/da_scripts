@@ -186,7 +186,15 @@ cp ${enkfscripts}/vlocal_eig.dat ${datapath2}
 module switch impi mvapich2/2.1rc1
 setenv PGM $enkfbin
 echo "OMP_NUM_THREADS = $OMP_NUM_THREADS"
-sh ${enkfscripts}/runmpi >>& ${current_logdir}/ensda.out
+
+if ( $machine == 'gaea' || $machine == 'wcoss' ) then
+   # run with single task on root node using aprun
+   @ cores2 = $cores - $corespernode 
+   setenv nprocs `expr $cores2 \/ $enkf_threads`
+   aprun -n 1 -N 1 -d ${OMP_NUM_THREADS} --cc depth $PGM : -n $nprocs -N $mpitaskspernode -d ${OMP_NUM_THREADS} --cc depth $PGM >&! ${current_logdir}/ensda.out
+else
+   sh ${enkfscripts}/runmpi >>& ${current_logdir}/ensda.out
+endif
 if ( ! -s ${datapath2}/enkf.log ) then
    echo "no enkf log file found"
    exit 1
