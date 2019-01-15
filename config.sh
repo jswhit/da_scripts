@@ -373,9 +373,10 @@ if [ "$machine" == 'theia' ]; then
    export gsiexec=${execdir}/global_gsi
    export nemsioget=${execdir}/nemsio_get
 elif [ "$machine" == 'gaea' ]; then
-   export fv3gfspath=/lustre/f1/pdata/ncep_shared/fv3/fix-fv3gfs/
-   export FIXFV3=${fv3gfspath}/fix_fv3_gmted2010
-   export FIXGLOBAL=${fv3gfspath}/fix_am
+   #export fv3gfspath=/lustre/f1/pdata/ncep_shared/fv3/fix-fv3gfs/
+   export fv3gfspath=/lustre/f1/unswept/Jeffrey.S.Whitaker/fv3_reanl/fv3gfs/global_shared.v15.0.0
+   export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
+   export FIXGLOBAL=${fv3gfspath}/fix/fix_am
    export gsipath=/lustre/f1/unswept/Jeffrey.S.Whitaker/fv3_reanl/ProdGSI
    export fixgsi=${gsipath}/fix
    export fixcrtm=/lustre/f1/pdata/ncep_shared/NCEPLIBS/lib/crtm/v2.2.5/fix
