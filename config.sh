@@ -307,11 +307,11 @@ export analpertwtnh_rtpp=0.0
 export analpertwtsh_rtpp=0.0
 export analpertwttr_rtpp=0.0
 export pseudo_rh=.true.
-export use_qsatensmean=.true.
                                                                     
 export letkf_flag=.true.
 export denkf=.true.
 export getkf=.true.
+export getkf_inflation=.false.
 export modelspace_vloc=.true.
 export letkf_novlocal=.true.
 export dfs_sort=.false.

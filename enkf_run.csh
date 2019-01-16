@@ -74,11 +74,11 @@ cat <<EOF1 >! enkf.nml
   simple_partition=.true.,nlons=$LONA,nlats=$LATA,smoothparm=$SMOOTHINF,
   readin_localization=$readin_localization,saterrfact=$saterrfact,numiter=$numiter,
   sprd_tol=$sprd_tol,paoverpb_thresh=$paoverpb_thresh,letkf_flag=$letkf_flag,denkf=$denkf,
-  use_qsatensmean=$use_qsatensmean,letkf_novlocal=$letkf_novlocal,modelspace_vloc=$modelspace_vloc,save_inflation=.false.,
+  getkf_inflation=$getkf_inflation,letkf_novlocal=$letkf_novlocal,modelspace_vloc=$modelspace_vloc,save_inflation=.false.,
   reducedgrid=$reducedgrid,nlevs=$LEVS,nanals=$nanals,deterministic=$deterministic,imp_physics=$imp_physics,
   npefiles=$npefiles,lobsdiag_forenkf=.true.,write_spread_diag=.true.,netcdf_diag=.true.,
   sortinc=$sortinc,univaroz=$univaroz,nhr_anal=$iaufhrs,nhr_state=$enkfstatefhrs,getkf=$getkf,
-  use_gfs_nemsio=.true.,adp_anglebc=.true.,angord=4,newpc4pred=.true.,use_edges=.false.,emiss_bc=.true.,biasvar=-500,nobsl_max=$nobsl_max,dfs_sort=$dfs_sort
+  use_gfs_nemsio=.true.,adp_anglebc=.true.,angord=4,newpc4pred=.true.,use_edges=.false.,emiss_bc=.true.,biasvar=-500,nobsl_max=$nobsl_max,dfs_sort=$dfs_sort,letkf_use_kdtree=.true.
  /
  &satobs_enkf
   sattypes_rad(1) = 'amsua_n15',     dsis(1) = 'amsua_n15',
@@ -189,7 +189,6 @@ echo "OMP_NUM_THREADS = $OMP_NUM_THREADS"
 
 if ( $machine == 'gaea' || $machine == 'wcoss' ) then
    # run with single task on root node using aprun
-   # on theia, the hostfile is used to achieve this.
    @ cores2 = $cores - $corespernode 
    setenv nprocs `expr $cores2 \/ $enkf_threads`
    aprun -n 1 -N 1 -d ${OMP_NUM_THREADS} --cc depth $PGM : -n $nprocs -N $mpitaskspernode -d ${OMP_NUM_THREADS} --cc depth $PGM >&! ${current_logdir}/ensda.out
