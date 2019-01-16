@@ -189,6 +189,7 @@ echo "OMP_NUM_THREADS = $OMP_NUM_THREADS"
 
 if ( $machine == 'gaea' || $machine == 'wcoss' ) then
    # run with single task on root node using aprun
+   # on theia, the hostfile is used to achieve this.
    @ cores2 = $cores - $corespernode 
    setenv nprocs `expr $cores2 \/ $enkf_threads`
    aprun -n 1 -N 1 -d ${OMP_NUM_THREADS} --cc depth $PGM : -n $nprocs -N $mpitaskspernode -d ${OMP_NUM_THREADS} --cc depth $PGM >&! ${current_logdir}/ensda.out
