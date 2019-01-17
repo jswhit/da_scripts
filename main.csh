@@ -3,9 +3,13 @@
 
 # allow this script to submit other scripts on WCOSS
 unsetenv LSB_SUB_RES_REQ 
+echo "nodes = $NODES"
+
+set idate_job=1
+
+while (${idate_job} <= ${ndates_job})
 
 source $datapath/fg_only.csh # define fg_only variable.
-echo "nodes = $NODES"
 
 setenv startupenv "${datapath}/analdate.csh"
 source $startupenv
@@ -29,7 +33,7 @@ echo "DataPath: ${datapath}"
 # Please do not edit the code below; it is not recommended except lines relevant to getsfcensmean.csh.
 
 env
-echo "starting the cycle"
+echo "starting the cycle (${idate_job} out of ${ndates_job})"
 
 # substringing to get yr, mon, day, hr info
 setenv yr `echo $analdate | cut -c1-4`
@@ -41,7 +45,7 @@ setenv ANALHR $hr
 setenv datapath2 "${datapath}/${analdate}/"
 /bin/cp -f ${ANAVINFO_ENKF} ${datapath2}/anavinfo
 
-# setup node parameters used in recenter_ens_anal.csh and compute_ensmean_fcst.csh
+# setup node parameters used in blendinc.csh, recenter_ens_anal.csh and compute_ensmean_fcst.csh
 setenv mpitaskspernode `python -c "import math; print int(math.ceil(float(${nanals})/float(${NODES})))"`
 if ($mpitaskspernode < 1) setenv mpitaskspernode 1
 setenv OMP_NUM_THREADS `expr $corespernode \/ $mpitaskspernode`
@@ -126,12 +130,14 @@ if ($controlfcst == 'true' && $cleanup_ensmean == 'true') then
    echo "$analdate adjust orog/ps of control forecast on ens grid `date`"
    /bin/rm -f ${current_logdir}/adjustps.out
    touch ${current_logdir}/adjustps.out
-   set fh=0
+   set fh=$FHMIN
    while ($fh <= $FHMAX)
      set fhr=`printf %02i $fh`
-     sh ${enkfscripts}/adjustps.sh $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} >&! ${current_logdir}/adjustps.out
+     # run concurrently, wait
+     sh ${enkfscripts}/adjustps.sh $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} >&! ${current_logdir}/adjustps_${fhr}.out &
      @ fh = $fh + $FHOUT
    end
+   wait
    echo "$analdate done adjusting orog/ps of control forecast on ens grid `date`"
 endif
 
@@ -139,7 +145,7 @@ endif
 # ensmean files to 'control'
 if ($controlfcst == 'false' || $replay_controlfcst == 'true') then
    # single res hybrid, just symlink ensmean to control (no separate control forecast)
-   set fh=0
+   set fh=$FHMIN
    while ($fh <= $FHMAX)
      set fhr=`printf %02i $fh`
      ln -fs $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_control
@@ -356,7 +362,17 @@ echo "setenv analdate_end ${analdate_end}" >> $startupenv
 echo "setenv fg_only false" >! $datapath/fg_only.csh
 
 cd $homedir
+
 echo "$analdate all done `date`"
+
+if ( ${analdate} <= ${analdate_end} ) then
+  @ idate_job = ${idate_job} + 1
+else
+  @ idate_job = $ndates_job
+endif
+
+end # next analysis time
+
 
 if ( ${analdate} <= ${analdate_end}  && ${resubmit} == 'true') then
    echo "current time is $analdate"

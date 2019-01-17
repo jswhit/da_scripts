@@ -35,6 +35,7 @@ if [ "$VERBOSE" == "YES" ]; then
  set -x
 fi
 
+niter=${niter:-1}
 if [ "$charnanal" != "control" ] && [ "$charnanal" != "ensmean" ] && [ "$charnanal" != "control2" ]; then
    nmem=`echo $charnanal | cut -f3 -d"m"`
    nmem=$(( 10#$nmem )) # convert to decimal (remove leading zeros)
@@ -221,6 +222,9 @@ else
       SPPT=0
       SKEB=0
       SHUM=0
+      # set to large value so no random patterns will be output
+      # and random pattern will be reinitialized
+      FHSTOCH=240
       # reduce model time step
       #dt_atmos=`python -c "print ${dt_atmos}/2"`
    fi
@@ -287,13 +291,13 @@ fi
 
 ls -l 
 
-export FHRESTART=${FHRESTART:-$ANALINC}
+export FHRESTART=${FHRESTART:-`expr $ANALINC \/ 2`}
+export FHSTOCH=${FHSTOCH:-`expr $ANALINC + $FHOFFSET \/ 2`}
 if [ "${iau_delthrs}" != "-1" ]; then
    FHOFFSET=$ANALINC
    FHMAX_FCST=`expr $FHMAX + $FHOFFSET`
-   #FHMAX_FCST=`expr $FHMAX + $ANALINC \/ 2`
    if [ "${fg_only}" == "true" ]; then
-      FHRESTART=`expr $ANALINC \/ 2`
+      export FHSTOCH=${FHSTOCH:-`expr $ANALINC \/ 2 + $FHOFFSET \/ 2`}
       FHMAX_FCST=$FHMAX
       FHOFFSET=0
    fi
@@ -301,9 +305,8 @@ else
    FHMAX_FCST=$FHMAX
    FHOFFSET=0
 fi
-FHSTOCH=`expr $FHRESTART + $FHOFFSET \/ 2`
 
-if [ $FHCYC -eq 0 ] && [ "$warm_start" == "T" ] && [ -z $skip_global_cycle ]; then
+if [ "$warm_start" == "T" ] && [ -z $skip_global_cycle ]; then
    # run global_cycle to update surface in restart file.
    export BASE_GSM=${fv3gfspath}
    export FIXfv3=$FIXFV3
@@ -353,7 +356,12 @@ NST_RESV=${NST_RESV-0}
 ZSEA1=${ZSEA1:-0}
 ZSEA2=${ZSEA2:-0}
 nstf_name=${nstf_name:-"$NST_MODEL,$NST_SPINUP,$NST_RESV,$ZSEA1,$ZSEA2"}
-nst_anl=${nst_anl:-".false."}
+nst_anl=${nst_anl:-".true."}
+if [ $NST_GSI -gt 0 ] && [ $FHCYC -gt 0]; then
+   fntsfa='        ' # no input file, use GSI foundation temp
+   fnsnoa='        '
+   fnacna='        '
+fi
 
 cat > model_configure <<EOF
 print_esmf:              .true.
@@ -525,7 +533,7 @@ cat > input.nml <<EOF
   fhzero         = ${FHOUT}
   ldiag3d        = F
   fhcyc          = ${FHCYC}
-  nst_anl        = T
+  nst_anl        = ${nst_anl}
   use_ufo        = T
   pre_rad        = F
   ncld           = ${ncld}
@@ -649,8 +657,20 @@ cat > input.nml <<EOF
   fsmcl(2) = 60,
   fsmcl(3) = 60,
   fsmcl(4) = 60,
-  fsnol    = 99999,
-  ftsfs    = 90,
+  FTSFS = 90,
+  FAISL = 99999,
+  FAISS = 99999,
+  FSNOL = 99999,
+  FSNOS = 99999,
+  FSICL = 99999,
+  FSICS = 99999,
+  FTSFL = 99999,
+  FVETL = 99999,
+  FSOTL = 99999,
+  FvmnL = 99999,
+  FvmxL = 99999,
+  FSLPL = 99999,
+  FABSL = 99999,
 /
 
 &fv_grid_nml
@@ -674,11 +694,6 @@ cat > input.nml <<EOF
 &nam_sfcperts
 /
 EOF
-# RNDA=$RNDA, -999, -999, -999, -999,
-# RNDA_TAU=$RNDA_TSCALE, -999, -999, -999, -999,
-# RNDA_LSCALE=$RNDA_LSCALE, -999, -999, -999, -999,
-# RNDA_VDOF=$RNDA_VDOF,RNDA_SIGTOP1=0.15, RNDA_SIGTOP2=0.075,
-# RNDA_PERTVORTFLUX=$RNDA_PERTVORTFLUX,
 
 # ftsfs = 99999 means all climo or all model, 0 means all analysis,
 # 90 mean relax to climo
@@ -702,8 +717,7 @@ fi
 export DATOUT=${DATOUT:-$datapathp1}
 if [ "$quilting" == ".true." ]; then
    ls -l *nemsio*
-   #fh=$FHMIN
-   fh=0
+   fh=$FHMIN
    while [ $fh -le $FHMAX ]; do
      fh2=`expr $fh + $FHOFFSET`
      charfhr="fhr"`printf %02i $fh`

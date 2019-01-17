@@ -20,8 +20,7 @@ setenv HOSTFILE ${datapath2}/machinesx
 
 cd ${datapath2}
 
-#set fh=${FHMIN}
-set fh=0
+set fh=${FHMIN}
 while ($fh <= $FHMAX)
 
   set charfhr="fhr`printf %02i $fh`"

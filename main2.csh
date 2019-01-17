@@ -126,7 +126,7 @@ if ($controlfcst == 'true') then
    echo "$analdate adjust orog/ps of control forecast on ens grid `date`"
    /bin/rm -f ${current_logdir}/adjustps.out
    touch ${current_logdir}/adjustps.out
-   set fh=0
+   set fh=$FHMIN
    while ($fh <= $FHMAX)
      set fhr=`printf %02i $fh`
      sh ${enkfscripts}/adjustps.sh $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} >&! ${current_logdir}/adjustps.out
