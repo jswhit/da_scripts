@@ -291,17 +291,19 @@ fi
 
 ls -l 
 
-export FHRESTART=${FHRESTART:-`expr $ANALINC \/ 2`}
-export FHSTOCH=${FHSTOCH:-`expr $ANALINC + $FHOFFSET \/ 2`}
+FHRESTART=${FHRESTART:-$ANALINC}
 if [ "${iau_delthrs}" != "-1" ]; then
    FHOFFSET=$ANALINC
    FHMAX_FCST=`expr $FHMAX + $FHOFFSET`
+   FHSTOCH=`expr $FHRESTART + $FHOFFSET \/ 2`
    if [ "${fg_only}" == "true" ]; then
-      export FHSTOCH=${FHSTOCH:-`expr $ANALINC \/ 2 + $FHOFFSET \/ 2`}
+      FHSTOCH=${FHSTOCH:-`expr $ANALINC \/ 2 + $FHOFFSET \/ 2`}
+      FHRESTART=`expr $ANALINC \/ 2`
       FHMAX_FCST=$FHMAX
       FHOFFSET=0
    fi
 else
+   FHSTOCH=$FHRESTART
    FHMAX_FCST=$FHMAX
    FHOFFSET=0
 fi
