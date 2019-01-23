@@ -40,7 +40,7 @@ plevs = nc['plev'][:]
 nlevs = len(plevs)
 ntimes = len(times)
 
-ncout = Dataset('%s/%s' % (datapath,fileout) ,'w',format='NETCDF4_CLASSIC')
+ncout = Dataset(fileout ,'w',format='NETCDF4_CLASSIC')
 # define dimensions, coordinate vars in output file
 latd = ncout.createDimension('latitude',nlats)
 lats = ncout.createVariable('latitude',np.float32,'latitude')

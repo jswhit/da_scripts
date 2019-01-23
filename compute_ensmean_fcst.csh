@@ -84,7 +84,7 @@ if ( $cleanup_ensmean == 'true' || ( $cleanup_ensmean == 'false' && ! -s ${datap
 endif
 endif
 
-if ( $cleanup_ensmean == 'true' && $?copy_history_files ) then
+if ( $controlfcst == 'false' && $cleanup_ensmean == 'true' && $?copy_history_files ) then
    echo "compute ensemble mean history files `date`"
    setenv nprocs 1
    setenv mpitaskspernode 1
@@ -117,8 +117,19 @@ if ( $cleanup_ensmean == 'true' && $?copy_history_files ) then
    echo "done computing ensemble mean history files `date`"
    # interpolate to 1x1 grid
    cd ${enkfscripts}
-   $python ncinterp.py ${datapath2}/ensmean fv3_historyp_latlon.nc $RES $analdatem1
+   $python ncinterp.py ${datapath2}/ensmean ${datapathm2}/fv3ensmean_historyp_${analdatem1}_latlon.nc $RES $analdatem1
 endif
 
+if ($cleanup_ensmean == 'true' && $controlfcst == 'true' && $?copy_history_files) then
+   echo "interpolate pressure level history files from control forecast `date`"
+   # interpolate to 1x1 grid
+   cd ${enkfscripts}
+   if ($replay_controlfcst == 'true') then
+     set charnanal='control2'
+   else
+     set charnanal='control'
+   endif
+   $python ncinterp.py ${datapath2}/${charnanal} ${datapathm1}/fv3${charnanal}_historyp_${analdatem1}_latlon.nc $RES $analdatem1
+endif
 
 exit 0

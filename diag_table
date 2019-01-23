@@ -27,15 +27,15 @@ YYYY MM DD HH 0 0
 "gfs_dyn",     "hs",          "hgtsfc",    "fv3_history",    "all",  .false.,  "none",  2
 
 # pressure level data on cubed sphere grid
-#"dynamics"  "u_plev"      "u_plev"        "fv3_historyp" "all" .false. "none" 2
-#"dynamics"  "v_plev"      "v_plev"        "fv3_historyp" "all" .false. "none" 2
-#"dynamics"  "h_plev"      "h_plev"        "fv3_historyp" "all" .false. "none" 2
-#"dynamics"  "t_plev"      "t_plev"        "fv3_historyp" "all" .false. "none" 2
-#"dynamics"  "q_plev"      "q_plev"        "fv3_historyp" "all" .false. "none" 2
+"dynamics"  "u_plev"      "u_plev"        "fv3_historyp" "all" .false. "none" 2
+"dynamics"  "v_plev"      "v_plev"        "fv3_historyp" "all" .false. "none" 2
+"dynamics"  "h_plev"      "h_plev"        "fv3_historyp" "all" .false. "none" 2
+"dynamics"  "t_plev"      "t_plev"        "fv3_historyp" "all" .false. "none" 2
+"dynamics"  "q_plev"      "q_plev"        "fv3_historyp" "all" .false. "none" 2
 ##"dynamics"  "omg_plev"    "omg_plev"      "fv3_historyp" "all" .false. "none" 2
-#"dynamics"  "slp"      "slp"        "fv3_historyp" "all" .false. "none" 2
+"dynamics"  "slp"      "slp"        "fv3_historyp" "all" .false. "none" 2
 #### mask for underground points
-#"dynamics"  "pmaskv2"   "pmaskv2"   "fv3_historyp" "all" .false. "none" 2
+"dynamics"  "pmaskv2"   "pmaskv2"   "fv3_historyp" "all" .false. "none" 2
 
 "gfs_phys",  "ALBDO_ave",      "albdo_ave",     "fv3_history2d",         "all",  .false.,  "none",  2
 "gfs_phys",  "cnvprcp_ave",       "cprat_ave",     "fv3_history2d",         "all",  .false.,  "none",  2

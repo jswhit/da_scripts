@@ -52,7 +52,7 @@ export save_hpss_subset="true" # save a subset of data each analysis time to HPS
 export save_hpss="true"
 export run_long_fcst="false"  # spawn a longer control forecast at 00 UTC
 export ensmean_restart='false'
-#export copy_history_files=1 # save pressure level history files (and compute ens mean)
+export copy_history_files=1 # save pressure level history files (and compute ens mean)
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
