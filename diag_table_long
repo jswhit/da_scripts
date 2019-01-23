@@ -12,7 +12,8 @@ YYYY MM DD HH 0 0
 "dynamics"  "pmaskv2"     "pmaskv2"    "fv3_historyp" "all" .false. "none" 2
 "gfs_phys"  "pwat"        "pwat"       "fv3_historyp" "all" .false. "none" 2
 "gfs_phys"  "psurf"       "pressfc"    "fv3_historyp" "all" .false. "none" 2
+"gfs_sfc"   "t2m"         "tmp2m"      "fv3_historyp" "all" .false. "none" 2
 "gfs_phys"  "u10m"        "ugrd10m"    "fv3_historyp" "all" .false. "none" 2
 "gfs_phys"  "v10m"        "vgrd10m"    "fv3_historyp" "all" .false. "none" 2
 "gfs_phys"  "totprcp_ave" "prate_ave"  "fv3_historyp" "all" .false. "none" 2
-"gfs_sfc"   "t2m"         "tmp2m"      "fv3_historyp" "all" .false. "none" 2
+"gfs_phys"  "totprcpb_ave" "prateb_ave"  "fv3_historyp" "all" .false. "none" 2
