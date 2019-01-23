@@ -1,7 +1,7 @@
 echo "running on $machine using $NODES nodes"
 ## ulimit -s unlimited
 
-export ndates_job=8 # number of DA cycles to run in one job submission
+export ndates_job=10 # number of DA cycles to run in one job submission
 # resolution of control and ensmemble.
 export RES=192
 export RES_CTL=384 
@@ -310,7 +310,7 @@ export analpertwttr_rtpp=0.0
 export pseudo_rh=.true.
                                                                     
 export letkf_flag=.true.
-export denkf=.false.
+export denkf=.true.
 export getkf=.true.
 export getkf_inflation=.false.
 export modelspace_vloc=.true.
