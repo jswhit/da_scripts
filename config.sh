@@ -277,6 +277,7 @@ export ANALINC=6
 export LEVS=64
 export FHMIN=3
 export FHMAX=9
+export FHMAX_LONG=120 # if run_long_fcst="true" long fcst run at 00UTC
 export FHOUT=3
 FHMAXP1=`expr $FHMAX + 1`
 export enkfstatefhrs=`python -c "print range(${FHMIN},${FHMAXP1},${FHOUT})" | cut -f2 -d"[" | cut -f1 -d"]"`

@@ -1,6 +1,4 @@
 echo "$analdate run high-res control long fcst `date`"
-export FHMAX_LONG=120
-export FHOUT=3
 export VERBOSE=YES
 
 if [ $replay_controlfcst == 'true' ] 
@@ -19,5 +17,4 @@ echo "charnanal = $charnanal"
 export control_proc=$control_proc_noquilt
 
 env
-export submit_hpss=true
 csh ${enkfscripts}/run_long_fcst.csh
