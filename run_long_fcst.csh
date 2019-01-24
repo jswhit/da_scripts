@@ -1,11 +1,5 @@
 echo "run_long_fcst"
 # run high-res long forecast
-if ($machine == 'gaea') then
-   set python=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/bin/python
-   setenv PYTHONPATH /ncrc/home2/Jeffrey.S.Whitaker/anaconda2/lib/python2.7/site-packages
-else if ($machine == 'theia') then
-   set python=/contrib/anaconda/2.3.0/bin/python
-endif
 
 setenv write_tasks 6
 setenv write_groups 1

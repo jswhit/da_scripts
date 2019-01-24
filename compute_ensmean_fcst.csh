@@ -1,15 +1,11 @@
 #!/bin/csh
 
-set python=`which python`
 if ($machine == 'wcoss') then
    module load nco-gnu-sandybridge
    set nces=`which nces`
 else if ($machine == 'gaea') then
    set nces=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/bin/nces
-   set python=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/bin/python
-   setenv PYTHONPATH /ncrc/home2/Jeffrey.S.Whitaker/anaconda2/lib/python2.7/site-packages
 else if ($machine == 'theia') then
-   set python=/contrib/anaconda/2.3.0/bin/python
    module load nco/4.7.0
    set nces=`which nces`
 else
@@ -118,20 +114,9 @@ if ( $controlfcst == 'false' && $cleanup_ensmean == 'true' && $?copy_history_fil
    echo "done computing ensemble mean history files `date`"
    # interpolate to 1x1 grid
    cd ${enkfscripts}
-   $python ncinterp.py ${datapath2}/ensmean ${datapathm2}/fv3ensmean_historyp_${analdatem1}_latlon.nc $RES $analdatem1
+   $python ncinterp.py ${datapath2}/ensmean ${datapath2}/fv3ensmean_historyp_${analdatem1}_latlon.nc $RES $analdatem1
 endif
 
-if ($cleanup_ensmean == 'true' && $controlfcst == 'true' && $?copy_history_files) then
-   # interpolate to 1x1 grid
-   cd ${enkfscripts}
-   if ($replay_controlfcst == 'true') then
-     set charnanal='control2'
-   else
-     set charnanal='control'
-   endif
-   echo "interpolate pressure level history files from ${charnanal} forecast to 1x1 deg grid`date`"
-   $python ncinterp.py ${datapath2}/${charnanal} ${datapathm1}/fv3${charnanal}_historyp_${analdatem1}_latlon.nc $RES_CTL $analdatem1
-endif
 echo "all done `date`"
 
 exit 0

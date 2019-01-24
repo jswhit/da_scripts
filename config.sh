@@ -277,7 +277,6 @@ export ANALINC=6
 export LEVS=64
 export FHMIN=3
 export FHMAX=9
-export FHMAX_LONG=120 # if run_long_fcst="true" long fcst run at 00UTC
 export FHOUT=3
 FHMAXP1=`expr $FHMAX + 1`
 export enkfstatefhrs=`python -c "print range(${FHMIN},${FHMAXP1},${FHOUT})" | cut -f2 -d"[" | cut -f1 -d"]"`
@@ -363,6 +362,7 @@ export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
 
 if [ "$machine" == 'theia' ]; then
+   export python=/contrib/anaconda/2.3.0/bin/python
    export fv3gfspath=/scratch4/NCEPDEV/global/save/glopara/svn/fv3gfs
    export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
@@ -375,6 +375,8 @@ if [ "$machine" == 'theia' ]; then
    export gsiexec=${execdir}/global_gsi
    export nemsioget=${execdir}/nemsio_get
 elif [ "$machine" == 'gaea' ]; then
+   export python=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/bin/python
+   export PYTHONPATH=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/lib/python2.7/site-packages
    #export fv3gfspath=/lustre/f1/pdata/ncep_shared/fv3/fix-fv3gfs/
    export fv3gfspath=/lustre/f1/unswept/Jeffrey.S.Whitaker/fv3_reanl/fv3gfs/global_shared.v15.0.0
    export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
@@ -389,6 +391,7 @@ elif [ "$machine" == 'gaea' ]; then
    export gsiexec=${execdir}/global_gsi
    export nemsioget=${execdir}/nemsio_get
 elif [ "$machine" == 'wcoss' ]; then
+   export python=`which python`
    export fv3gfspath=/gpfs/hps3/emc/global/noscrub/emc.glopara/svn/fv3gfs
    export gsipath=/gpfs/hps2/esrl/gefsrr/noscrub/Jeffrey.S.Whitaker/gsi/ProdGSI
    export FIXFV3=${fv3gfspath}/fix_fv3
@@ -401,6 +404,7 @@ elif [ "$machine" == 'wcoss' ]; then
    export gsiexec=${execdir}/global_gsi
    export nemsioget=${execdir}/nemsio_get
 elif [ "$machine" == 'cori' ]; then
+   export python=`which python`
    #export fv3gfspath=/project/projectdirs/refcst/whitaker/fv3_reanl/fv3gfs/global_shared.v15.0.0
    export fv3gfspath=$SCRATCH/global_shared.v15.0.0
    #export gsipath=/project/projectdirs/refcst/whitaker/fv3_reanl/ProdGSI
