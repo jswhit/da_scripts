@@ -25,6 +25,7 @@ elif [ $NODES -eq 40 ]; then
   # 40 nodes, 4 threads
   export control_threads=4 
   export control_proc=960  
+  export control_proc_noquilt=864  
   export write_groups_ctl=4
   export layout_ctl="6, 6"
 elif [ $NODES -eq 80 ]; then
