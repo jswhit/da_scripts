@@ -85,9 +85,10 @@ $python ncinterp.py ${DATOUT}/${charnanal} ${datapath2}/fv3long${charnanal}_hist
 if ($status == 0) then
    /bin/rm -rf ${DATOUT} 
    echo "yes" >&! ${current_logdir}/run_long_fcst.log
+   echo "all done `date`"
    exit 0
 else
    echo "no" >&! ${current_logdir}/run_long_fcst.log
+   echo "failed `date`"
    exit 1
 endif
-echo "all done `date`"
