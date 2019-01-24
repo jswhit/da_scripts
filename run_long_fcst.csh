@@ -1,5 +1,11 @@
 echo "run_long_fcst"
 # run high-res long forecast
+if ($machine == 'gaea') then
+   set python=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/bin/python
+   setenv PYTHONPATH /ncrc/home2/Jeffrey.S.Whitaker/anaconda2/lib/python2.7/site-packages
+else if ($machine == 'theia') then
+   set python=/contrib/anaconda/2.3.0/bin/python
+endif
 
 setenv write_tasks 6
 setenv write_groups 1
@@ -11,6 +17,8 @@ setenv skip_calc_increment 1
 setenv skip_global_cycle 1
 # copy netcdf history files to DATOUT
 setenv copy_history_files 1
+# turn off quilting (no nemsio files output)
+setenv quilting ".false."
 
 setenv DATOUT "${datapath2}/longfcst"
 echo "DATOUT = $DATOUT"
@@ -52,6 +60,8 @@ echo "prautco = $psautco"
 endif
 setenv fg_proc $nprocs
 echo "fg_proc = $fg_proc"
+setenv layout "$layout_ctl"
+echo "layout = $layout"
 setenv FHMAX $FHMAX_LONG
 echo "FHMAX = $FHMAX"
 setenv FHRESTART $FHMAX
@@ -68,24 +78,16 @@ echo "SKEB SPPT SHUM = $SKEB $SPPT $SHUM"
 
 sh ${enkfscripts}/${rungfs}
 
-if ($machine == 'gaea') then
-   set python=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/bin/python
-else
-   set python=`which python`
-endif
-# interpolate to 1x1 grid
+# interpolate pressure level history files to 1x1 grid
+echo "interpolate pressure level history files to 1x1 deg grid`date`"
 cd ${enkfscripts}
-$python ncinterp.py ${DATOUT}/${charnanal} fv3_historyp_latlon.nc $RES_CTL
-
-if ($submit_hpss == "true") then
-cat ${machine}_preamble_hpss hpss_longfcst.sh >! job_hpss_longfcst.sh
-if ($machine == 'wcoss') then
-   bsub -env "all" < job_hpss_longfcst.sh
-else if ($machine == 'gaea') then
-   msub -V job_hpss_longfcst.sh
-else if ($machine == 'cori') then
-   sbatch --export=ALL job_hpss_longfcst.sh
+$python ncinterp.py ${DATOUT}/${charnanal} ${datapath2}/fv3long${charnanal}_historyp_${analdate}_latlon.nc $RES_CTL ${analdate}
+if ($status == 0) then
+   /bin/rm -rf ${DATOUT} 
+   echo "yes" >&! ${current_logdir}/run_long_fcst.log
+   exit 0
 else
-   qsub -V job_hpss_longfcst.sh
+   echo "no" >&! ${current_logdir}/run_long_fcst.log
+   exit 1
 endif
-endif
+echo "all done `date`"

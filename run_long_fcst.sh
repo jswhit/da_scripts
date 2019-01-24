@@ -16,6 +16,8 @@ else
 fi
 echo "charnanal = $charnanal"
 
+export control_proc=$control_proc_noquilt
+
 env
 export submit_hpss=true
 csh ${enkfscripts}/run_long_fcst.csh

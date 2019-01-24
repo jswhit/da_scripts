@@ -292,6 +292,17 @@ if ($controlfcst == 'true') then
       echo "$analdate high-res control did not complete successfully, exiting `date`"
       exit 1
     endif
+    # run longer forecast at 00UTC
+    if ($hr == '00' && $run_long_fcst == "true") then
+       echo "$analdate run high-res control long forecast `date`"
+       sh ${enkfscripts}/run_long_fcst.sh  >&! ${current_logdir}/run_long_fcst.out  
+       set control_done=`cat ${current_logdir}/run_long_fcst.log`
+       if ($control_done == 'yes') then
+         echo "$analdate high-res control long forecast completed successfully `date`"
+       else
+         echo "$analdate high-res control long forecast did not complete successfully `date`"
+       endif
+    endif
 endif
 echo "$analdate run enkf ens first guess `date`"
 csh ${enkfscripts}/run_fg_ens.csh  >>& ${current_logdir}/run_fg_ens.out  
@@ -334,21 +345,21 @@ else
 endif
 endif
 
-if ($run_long_fcst == "true") then
-   if ($hr == "00") then
-   #if ($hr == "00" || $hr == "12") then
-     cat ${machine}_preamble_longfcst run_long_fcst.sh >! job_longfcst.sh
-     if ($machine == 'wcoss') then
-         bsub -env "all" < job_longfcst.sh
-     else if ($machine == 'gaea') then
-         msub -V job_longfcst.sh
-     else if ($machine == 'cori') then
-         sbatch --export=ALL job_longfcst.sh
-     else
-         qsub -V job_longfcst.sh
-     endif
-   endif
-endif
+#if ($run_long_fcst == "true") then
+#   if ($hr == "00") then
+#   #if ($hr == "00" || $hr == "12") then
+#     cat ${machine}_preamble_longfcst run_long_fcst.sh >! job_longfcst.sh
+#     if ($machine == 'wcoss') then
+#         bsub -env "all" < job_longfcst.sh
+#     else if ($machine == 'gaea') then
+#         msub -V job_longfcst.sh
+#     else if ($machine == 'cori') then
+#         sbatch --export=ALL job_longfcst.sh
+#     else
+#         qsub -V job_longfcst.sh
+#     endif
+#   endif
+#endif
 
 endif # skip to here if fg_only = true
 
