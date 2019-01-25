@@ -117,7 +117,7 @@ end
 if ( ! -s ${datapath2}/fv3${charnanal}_historyp_${analdate}_latlon.nc && $controlfcst == 'true' && $?copy_history_files) then
    # interpolate to 1x1 grid
    cd ${enkfscripts}
-   echo "interpolate pressure level history files from ${charnanal} forecast to 1x1 deg grid`date`"
+   echo "interpolate pressure level history files from ${charnanal} forecast to 1x1 deg grid `date`"
    $python ncinterp.py ${datapathp1}/${charnanal} ${datapath2}/fv3${charnanal}_historyp_${analdate}_latlon.nc $RES_CTL $analdate
 endif
 echo "all done `date`"

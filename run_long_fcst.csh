@@ -73,7 +73,7 @@ echo "SKEB SPPT SHUM = $SKEB $SPPT $SHUM"
 sh ${enkfscripts}/${rungfs}
 
 # interpolate pressure level history files to 1x1 grid
-echo "interpolate pressure level history files to 1x1 deg grid`date`"
+echo "interpolate pressure level history files to 1x1 deg grid `date`"
 cd ${enkfscripts}
 $python ncinterp.py ${DATOUT}/${charnanal} ${datapath2}/fv3long${charnanal}_historyp_${analdate}_latlon.nc $RES_CTL ${analdate}
 if ($status == 0) then
