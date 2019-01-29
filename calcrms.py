@@ -4,7 +4,7 @@ import sys, os
 import dateutils
 import pygrib
 
-# using native cubed-sphere history files.
+# compute rms and anomaly correlation using interpolated cubed-sphere pressure-level history files.
 
 def getmean(diff,coslats):
     meancoslats = coslats.mean()
