@@ -379,7 +379,7 @@ echo "$analdate all done `date`"
 if ( ${analdate} <= ${analdate_end} ) then
   @ idate_job = ${idate_job} + 1
 else
-  @ idate_job = $ndates_job
+  @ idate_job = $ndates_job + 1
 endif
 
 end # next analysis time
