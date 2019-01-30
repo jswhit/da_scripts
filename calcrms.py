@@ -15,9 +15,9 @@ expt2 = sys.argv[2]
 date1 = sys.argv[3]
 date2 = sys.argv[4]
 
-fhour = 120 
-var = 'z'
-level = 500 
+fhour = 72 
+var = 't'
+level = 850 
 
 vargrb = var
 varnc = '%s_plev' % var
@@ -81,7 +81,8 @@ for date in dates:
     if int(nc['time'][ntime]) != fhour:
        raise ValueError('incorrect forecast time')
     fcst_data1 = nc[varnc][ntime,nlev,...]
-    pmask1 = nc['pmaskv2'][ntime,...]
+    #pmask1 = nc['pmaskv2'][ntime,...]
+    pmask1 = nc['pressfc'][ntime,...]/100.
     nc.close()
     if fhour > 9:
         fcstfile = '%s/%s/fv3longcontrol2_historyp_%s_latlon.nc'% (datapath2,date,date)
@@ -91,7 +92,8 @@ for date in dates:
     if int(nc['time'][ntime]) != fhour:
        raise ValueError('incorrect forecast time')
     fcst_data2 = nc[varnc][ntime,nlev,...]
-    pmask2 = nc['pmaskv2'][ntime,...]
+    #pmask2 = nc['pmaskv2'][ntime,...]
+    pmask2 = nc['pressfc'][ntime,...]/100.
     nc.close()
     #print date,verif_data.shape,verif_data.min(),verif_data.max(),\
     #           fcst_data1.shape,fcst_data1.min(),fcst_data1.max(),\
