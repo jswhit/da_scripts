@@ -335,10 +335,10 @@ cat <<EOF > gsiparm.anl
    netcdf_diag=.true.,binary_diag=.false.,
    qoption=2,
    factqmin=0.0,factqmax=0.0,deltim=$DELTIM,
-   iguess=-1,
+   tzr_qc=1,iguess=-1,
    oneobtest=.false.,retrieval=.false.,l_foto=.false.,
    use_pbl=.false.,use_compress=.true.,nsig_ext=12,gpstop=50.,
-   use_gfs_nemsio=.true.,sfcnst_comb=.true.,imp_physics=${imp_physics},
+   use_gfs_nemsio=.true.,sfcnst_comb=.true.,cwoption=3,imp_physics=${imp_physics},
    $SETUP
  /
  &GRIDOPTS
@@ -368,8 +368,8 @@ cat <<EOF > gsiparm.anl
    $STRONGOPTS
  /
  &OBSQC
-   dfact=0.75,dfact1=3.0,noiqc=.true.,oberrflg=.true.,c_varqc=0.02,
-   use_poq7=.true.,qc_noirjaco3_pole=.true.,
+   dfact=0.75,dfact1=3.0,noiqc=.true.,oberrflg=.false.,c_varqc=0.02,
+   use_poq7=.true.,qc_noirjaco3_pole=.true.,vqc=.true.,
    $OBSQC
  /
  /
