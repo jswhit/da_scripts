@@ -308,7 +308,7 @@ if ($controlfcst == 'true') then
        else
          echo "$analdate high-res control long forecast did not complete successfully `date`"
        endif
-       ln -fs $datapath2/fv3longcontrol2_historyp_2016010600_latlon.nc $datapath2/fv3control2_historyp_2016010600_latlon.nc
+       ln -fs $datapath2/fv3longcontrol2_historyp_${analdate}_latlon.nc $datapath2/fv3control2_historyp_${analdate}_latlon.nc
     endif
 endif
 #echo "$analdate run enkf ens first guess `date`"

@@ -293,7 +293,7 @@ if ($controlfcst == 'true') then
       exit 1
     endif
     # run longer forecast at 00UTC
-    if ($hr == '00' && $run_long_fcst == "true") then
+    if ($fg_only != "true" && $hr == '00' && $run_long_fcst == "true") then
        echo "$analdate run high-res control long forecast `date`"
        sh ${enkfscripts}/run_long_fcst.sh  >&! ${current_logdir}/run_long_fcst.out  
        set control_done=`cat ${current_logdir}/run_long_fcst.log`
