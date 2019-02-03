@@ -15,9 +15,9 @@ expt2 = sys.argv[2]
 date1 = sys.argv[3]
 date2 = sys.argv[4]
 
-fhour = 72 
-var = 't'
-level = 850 
+fhour = 6
+var = 'z'
+level = 500 
 
 vargrb = var
 varnc = '%s_plev' % var
@@ -35,6 +35,8 @@ if fhour > 9:
     dates = dateutils.daterange(date1,date2,24)
 else:
     dates = dateutils.daterange(date1,date2,6)
+#dates.remove('2016011300')
+#dates.remove('2016010912')
 ntime = None; fcsterrspect1 = None; fcsterrspect2 = None
 rmsnhall1=[];rmsshall1=[];rmstrall1=[];rmsglall1=[]
 acnhall1=[];acshall1=[];actrall1=[];acglall1=[]
@@ -60,10 +62,6 @@ for date in dates:
         fcstfile = '%s/%s/fv3control2_historyp_%s_latlon.nc'% (datapath1,date,date)
     nc = Dataset(fcstfile)
     if ntime is None:
-        times = nc['time'][:].tolist()
-        levels = nc['plev'][:].tolist()
-        ntime = times.index(fhour)
-        nlev = levels.index(level)
         lons = nc['longitude'][:]; lats = nc['latitude'][:]
         latslist = lats.tolist()
         latnh = latslist.index(latbound)
@@ -78,22 +76,30 @@ for date in dates:
         coslatsnh = coslats[latnh+1:,:]
         coslatstr = coslats[latsh:latnh+1,:]
         nlons = len(lons); nlats = len(lats)
+    times = nc['time'][:].tolist()
+    levels = nc['plev'][:].tolist()
+    ntime = times.index(fhour)
+    nlev = levels.index(level)
     if int(nc['time'][ntime]) != fhour:
        raise ValueError('incorrect forecast time')
     fcst_data1 = nc[varnc][ntime,nlev,...]
-    #pmask1 = nc['pmaskv2'][ntime,...]
-    pmask1 = nc['pressfc'][ntime,...]/100.
+    pmask1 = nc['pmaskv2'][ntime,...]
+    #pmask1 = nc['pressfc'][ntime,...]/100.
     nc.close()
     if fhour > 9:
         fcstfile = '%s/%s/fv3longcontrol2_historyp_%s_latlon.nc'% (datapath2,date,date)
     else:
         fcstfile = '%s/%s/fv3control2_historyp_%s_latlon.nc'% (datapath2,date,date)
     nc = Dataset(fcstfile)
+    times = nc['time'][:].tolist()
+    levels = nc['plev'][:].tolist()
+    ntime = times.index(fhour)
+    nlev = levels.index(level)
     if int(nc['time'][ntime]) != fhour:
        raise ValueError('incorrect forecast time')
     fcst_data2 = nc[varnc][ntime,nlev,...]
-    #pmask2 = nc['pmaskv2'][ntime,...]
-    pmask2 = nc['pressfc'][ntime,...]/100.
+    pmask2 = nc['pmaskv2'][ntime,...]
+    #pmask2 = nc['pressfc'][ntime,...]/100.
     nc.close()
     #print date,verif_data.shape,verif_data.min(),verif_data.max(),\
     #           fcst_data1.shape,fcst_data1.min(),fcst_data1.max(),\
