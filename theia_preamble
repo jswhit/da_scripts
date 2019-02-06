@@ -4,10 +4,10 @@
 #PBS -A gsienkf
 ##PBS -A da-cpu
 ##PBS -q debug
-#PBS -N C192C384_hybgain250
+#PBS -N C192C384_hybgain
 #PBS -S /bin/bash
-#PBS -o C192C384_hybgain250.stdout
-#PBS -e C192C384_hybgain250.stderr
+#PBS -o C192C384_hybgain.stdout
+#PBS -e C192C384_hybgain.stderr
 export NODES=40
 export corespernode=24
 export machine='theia'
