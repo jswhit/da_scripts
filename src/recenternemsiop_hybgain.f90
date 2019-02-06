@@ -90,9 +90,11 @@ program recenternemsiop_hybgain
      if (iret == 0 ) then
         write(6,*)'Read nemsio ',trim(filename_fg),' iret=',iret
         call nemsio_getfilehead(gfile_fg, nrec=nrec, dimx=nlons, dimy=nlats, dimz=nlevs, iret=iret)
-        write(6,*)' nlons=',nlons,' nlats=',nlats,' nlevs=',nlevs,' nrec=',nrec
+        if (mype == 0) write(6,*)' nlons=',nlons,' nlats=',nlats,' nlevs=',nlevs,' nrec=',nrec
      else
-        write(6,*)'***ERROR*** ',trim(filename_fg),' contains unrecognized format.  ABORT'
+        write(6,*) 'error opening ',trim(filename_fg)
+        call MPI_Abort(MPI_COMM_WORLD,98,iret)
+        stop
      endif
 
      ! readin in 3dvar, enkf analyses, plus ens mean background, blend
