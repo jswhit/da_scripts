@@ -24,7 +24,7 @@ program adjustps
 !
 !$$$
 
-  use nemsio_module, only:  nemsio_init,nemsio_open,nemsio_close
+  use nemsio_module, only:  nemsio_init,nemsio_open,nemsio_close,nemsio_charkind
   use nemsio_module, only:  nemsio_gfile,nemsio_getfilehead,nemsio_readrec,&
        nemsio_writerec,nemsio_readrecv,nemsio_writerecv,nemsio_getrechead
 
@@ -36,13 +36,16 @@ program adjustps
   character*3 charnlev
   integer iret,latb,lonb,nlevs,npts,k,n,nlevt,idsl
   integer nrec,nrec2,latb2,lonb2,nlevs2,npts2
-  integer krect,krecq,krecu,krecv,ntrac,kq,kt,krecoz,kreccwmr,krecicmr
+  integer krecdp,ndpres,krect,krecq,krecu,krecv,ntrac,kq,kt,krecoz,kreccwmr,krecicmr
   real,allocatable,dimension(:,:,:) :: vcoord
   real,allocatable,dimension(:,:) ::&
   rwork_1,rwork_2,pressi,pressl,pressi_new,pressl_new
   real,allocatable,dimension(:) :: delz,delps,ak,bk,t0
+  character(len=nemsio_charkind),allocatable,dimension(:) :: recnam
+  character(len=nemsio_charkind) field
   real tpress,tv,kap1,kapr,rd,cp,grav,rlapse,alpha,ps,preduced,zob,zmodel,rv,fv
   type(nemsio_gfile) :: gfile_1,gfile_2,gfile_o
+  logical ldpres 
 
 ! constants.
   grav = 9.8066
@@ -88,6 +91,21 @@ program adjustps
   else
       write(6,*)'***ERROR*** ',trim(filename_1),' contains unrecognized format.  ABORT'
   endif
+  ! is dpres in the file?
+  allocate(recnam(nrec))
+  call nemsio_getfilehead(gfile_1,recname=recnam,iret=iret)
+  ldpres = .false.
+  ndpres = 0
+  field = 'dpres'
+  do n=1,nrec
+     !print *,n,trim(field),' ',trim(recnam(n))
+     if (trim(field) == trim(recnam(n))) then
+        ldpres = .true.
+        ndpres = 1
+        exit
+     endif
+  enddo
+  print *,'ldpres = ',ldpres
 
   call nemsio_open(gfile_2,trim(filename_2),'READ',iret=iret)
   if (iret /= 0) then
@@ -98,13 +116,13 @@ program adjustps
 
   npts=lonb*latb
   npts2=lonb2*latb2
-  ! assumes ps,zs are first two records, then u,v,t,q,oz,cwmr and optionally icmr
-  if (nrec > 2 + 7*nlevs) then
+  ! assumes ps,zs are first two records, then u,v,t,optionally dpres,q,oz,cwmr and optionally icmr
+  if (nrec > 2 + (7+ndpres)*nlevs) then
      print *,'cannot handle nrec > ',2 + 7*nlevs
      stop
   endif
-  ! q, oz, then microphys tracers are last
-  krecq    = 2 + 3*nlevs + 1
+  ! q, oz, then microphys tracers are last (after u,v,T,dpres)
+  krecq    = 2 + (3+ndpres)*nlevs + 1
   ntrac = (nrec-(krecq-1))/nlevs
   print *,'ntrac,nrec,idsl',ntrac,nrec,idsl
   if (nrec .ne. nrec2 .or. npts .ne. npts2 .or. nlevs .ne. nlevs2) then
@@ -162,11 +180,12 @@ program adjustps
       krecu    = 2 + 0*nlevs + k
       krecv    = 2 + 1*nlevs + k
       krect    = 2 + 2*nlevs + k
-      krecq    = 2 + 3*nlevs + k
-      krecoz   = 2 + 4*nlevs + k
-      kreccwmr = 2 + 5*nlevs + k
-      if (nrec > 2 + 6*nlevs) then
-         krecicmr = 2 + 6*nlevs + k
+      krecdp   = 2 + 3*nlevs + k
+      krecq    = 2 + (3+ndpres)*nlevs + k
+      krecoz   = 2 + (4+ndpres)*nlevs + k
+      kreccwmr = 2 + (5+ndpres)*nlevs + k
+      if (nrec > 2 + (6+ndpres)*nlevs) then
+         krecicmr = 2 + (6+ndpres)*nlevs + k
       endif
       call nemsio_readrecv(gfile_1,'ugrd', 'mid layer',k,rwork_1(:,krecu),   iret=iret)
       if (iret /= 0) then
@@ -182,6 +201,14 @@ program adjustps
       if (iret /= 0) then
          print *,'Error reading t from ',trim(filename_1),k
          stop
+      endif
+      if (ldpres) then
+         call nemsio_readrecv(gfile_1,'dpres',  'mid layer',k,rwork_1(:,krecdp),   iret=iret)
+         if (iret /= 0) then
+            print *,'Error reading dpres from ',trim(filename_1),k
+            stop
+         endif
+         !print *,k,minval(rwork_1(:,krecdp)),maxval(rwork_1(:,krecdp))
       endif
       call nemsio_readrecv(gfile_1,'spfh', 'mid layer',k,rwork_1(:,krecq),   iret=iret)
       if (iret /= 0) then
@@ -246,7 +273,7 @@ program adjustps
 ! zmodel - model orographic height.
 ! zob - station height
      kt    = 2 + 2*nlevs + nlevt
-     kq    = 2 + 3*nlevs + nlevt
+     kq    = 2 + (3+ndpres)*nlevs + nlevt
      tv = (1.+fv*rwork_1(n,kq))*rwork_1(n,kt)
      tpress = pressl(n,nlevt); ps = rwork_1(n,1)
      zmodel = rwork_2(n,2); zob = rwork_1(n,2)
@@ -284,7 +311,7 @@ program adjustps
   krecu    = 2 + 0*nlevs + 1
   krecv    = 2 + 1*nlevs + 1
   krect    = 2 + 2*nlevs + 1
-  krecq    = 2 + 3*nlevs + 1
+  krecq    = 2 + (3+ndpres)*nlevs + 1
   print *,'min/max pressi diff',minval(pressi-pressi_new),maxval(pressi-pressi_new)
   print *,'min/max pressl diff',minval(pressl-pressl_new),maxval(pressl-pressl_new)
   call vintg(npts,npts,nlevs,nlevs,ntrac,pressl,&
@@ -322,11 +349,17 @@ program adjustps
       krecu    = 2 + 0*nlevs + k
       krecv    = 2 + 1*nlevs + k
       krect    = 2 + 2*nlevs + k
-      krecq    = 2 + 3*nlevs + k
-      krecoz   = 2 + 4*nlevs + k
-      kreccwmr = 2 + 5*nlevs + k
-      if (nrec > 2 + 6*nlevs) then
-         krecicmr = 2 + 6*nlevs + k
+      if (ldpres) then
+         ndpres = 1
+         krecdp = 2 + 3*nlevs + k
+      else
+         ndpres = 0
+      endif
+      krecq    = 2 + (3+ndpres)*nlevs + k
+      krecoz   = 2 + (4+ndpres)*nlevs + k
+      kreccwmr = 2 + (5+ndpres)*nlevs + k
+      if (nrec > 2 + (6+ndpres)*nlevs) then
+         krecicmr = 2 + (6+ndpres)*nlevs + k
       endif
       call nemsio_writerecv(gfile_o,'ugrd', 'mid layer',k,rwork_2(:,krecu),   iret=iret)
       if (iret /= 0) then
@@ -348,6 +381,16 @@ program adjustps
          stop
       else
          print *,'wrote t level ',k,minval(rwork_2(:,krect)),maxval(rwork_2(:,krect))
+      endif
+      if (ldpres) then
+         rwork_2(:,krecdp) = pressi_new(:,k)-pressi_new(:,k+1)
+         call nemsio_writerecv(gfile_o,'dpres',  'mid layer',k,rwork_2(:,krecdp),   iret=iret)
+         if (iret /= 0) then
+            print *,'Error writing dpres to ',trim(filename_o),k
+            stop
+         else
+            print *,'wrote dpres level ',k,minval(rwork_2(:,krecdp)),maxval(rwork_2(:,krecdp))
+         endif
       endif
       call nemsio_writerecv(gfile_o,'spfh', 'mid layer',k,rwork_2(:,krecq),   iret=iret)
       if (iret /= 0) then
@@ -473,8 +516,8 @@ END program adjustps
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  COMPUTE LOG PRESSURE INTERPOLATING COORDINATE
 !  AND COPY INPUT WIND, TEMPERATURE, HUMIDITY AND OTHER TRACERS
-!$OMP PARALLEL DO DEFAULT(SHARED)
-!$OMP+ PRIVATE(K,I)
+!!$OMP PARALLEL DO DEFAULT(SHARED)
+!!$OMP+ PRIVATE(K,I)
       !print *,minval(u1),maxval(u1)
       !print *,minval(t1),maxval(t1)
       DO K=1,KM1
@@ -487,7 +530,7 @@ END program adjustps
           C1(I,K,5) =  Q1(I,K)
         ENDDO
       ENDDO
-!$OMP END PARALLEL DO
+!!$OMP END PARALLEL DO
       DO N=2,NT
         DO K=1,KM1
           DO I=1,IM
@@ -497,14 +540,14 @@ END program adjustps
       ENDDO
 !      print *,' p2=',p2(1,:)
 !      print *,' im=',im,' km2=',km2,' ix=',ix,'nt=',nt
-!$OMP PARALLEL DO DEFAULT(SHARED)
-!$OMP+ PRIVATE(K,I)
+!!$OMP PARALLEL DO DEFAULT(SHARED)
+!!$OMP+ PRIVATE(K,I)
       DO K=1,KM2
         DO I=1,IM
           Z2(I,K) = -LOG(P2(I,K))
         ENDDO
       ENDDO
-!$OMP END PARALLEL DO
+!!$OMP END PARALLEL DO
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  PERFORM LAGRANGIAN ONE-DIMENSIONAL INTERPOLATION
 !  THAT IS 4TH-ORDER IN INTERIOR, 2ND-ORDER IN OUTSIDE INTERVALS
@@ -622,9 +665,9 @@ END program adjustps
 !  BUT WITHIN THE TWO EDGE INTERVALS INTERPOLATE LINEARLY.
 !  KEEP THE OUTPUT FIELDS CONSTANT OUTSIDE THE INPUT DOMAIN.
 
-!$OMP PARALLEL DO DEFAULT(PRIVATE) SHARED(IM,IXZ1,IXQ1,IXZ2)
-!$OMP+ SHARED(IXQ2,NM,NXQ1,NXQ2,KM1,KXZ1,KXQ1,Z1,Q1,KM2,KXZ2)
-!$OMP+ SHARED(KXQ2,Z2,Q2,J2,K1S)
+!!$OMP PARALLEL DO DEFAULT(PRIVATE) SHARED(IM,IXZ1,IXQ1,IXZ2)
+!!$OMP+ SHARED(IXQ2,NM,NXQ1,NXQ2,KM1,KXZ1,KXQ1,Z1,Q1,KM2,KXZ2)
+!!$OMP+ SHARED(KXQ2,Z2,Q2,J2,K1S)
 
       DO K2=1,KM2
         DO I=1,IM
@@ -728,7 +771,7 @@ END program adjustps
           ENDDO
         ENDDO
       ENDDO
-!$OMP END PARALLEL DO
+!!$OMP END PARALLEL DO
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       END
 !-----------------------------------------------------------------------
