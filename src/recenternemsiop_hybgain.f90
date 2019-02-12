@@ -88,7 +88,7 @@ program recenternemsiop_hybgain
      call nemsio_init(iret=iret)
      call nemsio_open(gfile_fg,trim(filename_fg),'READ',iret=iret)
      if (iret == 0 ) then
-        write(6,*)'Read nemsio ',trim(filename_fg),' iret=',iret
+        if (mype == 0) write(6,*)'Read nemsio ',trim(filename_fg),' iret=',iret
         call nemsio_getfilehead(gfile_fg, nrec=nrec, dimx=nlons, dimy=nlats, dimz=nlevs, iret=iret)
         if (mype == 0) write(6,*)' nlons=',nlons,' nlats=',nlats,' nlevs=',nlevs,' nrec=',nrec
      else

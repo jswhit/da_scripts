@@ -138,6 +138,10 @@ if ($controlfcst == 'true' && $cleanup_ensmean == 'true') then
      @ fh = $fh + $FHOUT
    end
    wait
+   if ($status != 0) then
+      echo "adjustps step failed, exiting...."
+      exit 1
+   endif
    echo "$analdate done adjusting orog/ps of control forecast on ens grid `date`"
 endif
 
@@ -238,15 +242,17 @@ endif
 
 # recenter enkf analyses around control analysis
 if ($controlanal == 'true' && $recenter_anal == 'true') then
-   if ($hybgain == 'true' && $alpha > 0) then
-      echo "$analdate blend enkf and 3dvar increments `date`"
-      csh ${enkfscripts}/blendinc.csh >&! ${current_logdir}/blendinc.out 
-      set blendinc_done=`cat ${current_logdir}/blendinc.log`
-      if ($blendinc_done == 'yes') then
-        echo "$analdate increment blending/recentering completed successfully `date`"
-      else
-        echo "$analdate increment blending/recentering did not complete successfully, exiting `date`"
-        exit 1
+   if ($hybgain == 'true') then
+      if ($alpha > 0) then
+         echo "$analdate blend enkf and 3dvar increments `date`"
+         csh ${enkfscripts}/blendinc.csh >&! ${current_logdir}/blendinc.out 
+         set blendinc_done=`cat ${current_logdir}/blendinc.log`
+         if ($blendinc_done == 'yes') then
+           echo "$analdate increment blending/recentering completed successfully `date`"
+         else
+           echo "$analdate increment blending/recentering did not complete successfully, exiting `date`"
+           exit 1
+         endif
       endif
    else
       echo "$analdate recenter enkf analysis ensemble around control analysis `date`"
