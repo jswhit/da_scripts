@@ -177,7 +177,7 @@ if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
       fi
       echo "create ${increment_file}"
       /bin/rm -f ${increment_file}
-      export "PGM=${execdir}/calc_increment.x ${analfile} ${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal} ${increment_file} T T -1"
+      export "PGM=${execdir}/calc_increment_nemsio.x ${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal} ${analfile} ${increment_file} T F"
       nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
       if [ $? -ne 0 -o ! -s ${increment_file} ]; then
          echo "problem creating ${increment_file}, stopping .."
