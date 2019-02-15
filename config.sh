@@ -440,6 +440,7 @@ else
    export beta1_inv=0.125   # 0 means all ensemble, 1 means all 3DVar.
 fi
 export beta=1000 # percentage of enkf increment (*10)
+export readin_beta=.false.
 
 # NOTE: most other GSI namelist variables are in ${rungsi}
 export aircraft_bc=.true.
