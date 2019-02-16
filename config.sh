@@ -9,6 +9,7 @@ export RES_CTL=384
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
 export alpha=500 # percentage of 3dvar increment (beta_2*1000)
+export beta=1000 # percentage of enkf increment (*10)
 export hybgain='true' # set to true for hybrid gain 3DVar/EnKF
 export exptname="C${RES}C${RES_CTL}_hybgain"
 export cores=`expr $NODES \* $corespernode`
@@ -436,11 +437,11 @@ export SATINFO=${enkfscripts}/global_satinfo.txt
 # parameters for hybrid gain
 if [ $hybgain == "true" ]; then
    export beta1_inv=1.000
+   export readin_beta=.false.
 else
    export beta1_inv=0.125   # 0 means all ensemble, 1 means all 3DVar.
+   export readin_beta=.true.
 fi
-export beta=1000 # percentage of enkf increment (*10)
-export readin_beta=.false.
 
 # NOTE: most other GSI namelist variables are in ${rungsi}
 export aircraft_bc=.true.
