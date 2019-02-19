@@ -442,6 +442,8 @@ else
    export beta1_inv=0.125   # 0 means all ensemble, 1 means all 3DVar.
    export readin_beta=.true.
 fi
+export s_ens_h=350.
+export s_ens_v=-0.582
 
 # NOTE: most other GSI namelist variables are in ${rungsi}
 export aircraft_bc=.true.
