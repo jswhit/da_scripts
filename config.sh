@@ -445,8 +445,8 @@ fi
 # change the next line to .true. to read in from hybens_info file.
 export readin_localization=.false.
 # if above is .false., these values are used.
-export s_ens_h=350.
-export s_ens_v=-0.582
+export s_ens_h=247.     # 900km
+export s_ens_v=-0.41    # 1.5 scale heights
 
 # NOTE: most other GSI namelist variables are in ${rungsi}
 export aircraft_bc=.true.
