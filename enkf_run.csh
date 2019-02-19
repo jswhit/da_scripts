@@ -71,7 +71,7 @@ cat <<EOF1 >! enkf.nml
   lnsigcutoffnh=$lnsigcutoffnh,lnsigcutoffsh=$lnsigcutoffsh,lnsigcutofftr=$lnsigcutofftr,
   lnsigcutoffsatnh=$lnsigcutoffsatnh,lnsigcutoffsatsh=$lnsigcutoffsatsh,lnsigcutoffsattr=$lnsigcutoffsattr,
   lnsigcutoffpsnh=$lnsigcutoffpsnh,lnsigcutoffpssh=$lnsigcutoffpssh,lnsigcutoffpstr=$lnsigcutoffpstr,
-  simple_partition=.true.,nlons=$LONA,nlats=$LATA,smoothparm=$SMOOTHINF,
+  simple_partition_obs=.true.,nlons=$LONA,nlats=$LATA,smoothparm=$SMOOTHINF,
   readin_localization=$readin_localization,saterrfact=$saterrfact,numiter=$numiter,
   sprd_tol=$sprd_tol,paoverpb_thresh=$paoverpb_thresh,letkf_flag=$letkf_flag,denkf=$denkf,
   getkf_inflation=$getkf_inflation,letkf_novlocal=$letkf_novlocal,modelspace_vloc=$modelspace_vloc,save_inflation=.false.,

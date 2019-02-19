@@ -93,9 +93,9 @@ else
 fi
 export datapath="${datadir}/${exptname}"
 export logdir="${datadir}/logs/${exptname}"
-export corrlengthnh=1500
-export corrlengthtr=1500
-export corrlengthsh=1500
+export corrlengthnh=900
+export corrlengthtr=900
+export corrlengthsh=900
 export lnsigcutoffnh=1.5
 export lnsigcutofftr=1.5
 export lnsigcutoffsh=1.5
@@ -108,7 +108,7 @@ export lnsigcutoffsatsh=1.5
 export obtimelnh=1.e30       
 export obtimeltr=1.e30       
 export obtimelsh=1.e30       
-export readin_localization=.true.
+export readin_localization=.false.
 
 # model physics parameters.
 export psautco="0.0008,0.0005"
