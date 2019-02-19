@@ -108,7 +108,6 @@ export lnsigcutoffsatsh=1.5
 export obtimelnh=1.e30       
 export obtimeltr=1.e30       
 export obtimelsh=1.e30       
-export readin_localization=.false.
 
 # model physics parameters.
 export psautco="0.0008,0.0005"
@@ -442,6 +441,9 @@ else
    export beta1_inv=0.125   # 0 means all ensemble, 1 means all 3DVar.
    export readin_beta=.true.
 fi
+# change the next line to .true. to read in from hybens_info file.
+export readin_localization=.false.
+# if above is .false., these values are used.
 export s_ens_h=350.
 export s_ens_v=-0.582
 
