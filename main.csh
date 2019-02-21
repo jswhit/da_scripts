@@ -387,8 +387,6 @@ echo "setenv fg_only false" >! $datapath/fg_only.csh
 
 cd $homedir
 
-echo "$analdate all done `date`"
-
 if ( ${analdate} <= ${analdate_end} ) then
   @ idate_job = ${idate_job} + 1
 else
