@@ -54,7 +54,6 @@ export save_hpss="true"
 export run_long_fcst="true"  # spawn a longer control forecast at 00 UTC
 export ensmean_restart='false'
 export copy_history_files=1 # save pressure level history files (and compute ens mean)
-export compute_ensmean_enkf="true" # compute ensmeans from enkf analysis
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
