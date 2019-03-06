@@ -93,9 +93,9 @@ else
 fi
 export datapath="${datadir}/${exptname}"
 export logdir="${datadir}/logs/${exptname}"
-export corrlengthnh=900
-export corrlengthtr=900
-export corrlengthsh=900
+export corrlengthnh=1250
+export corrlengthtr=1250
+export corrlengthsh=1250
 export lnsigcutoffnh=1.5
 export lnsigcutofftr=1.5
 export lnsigcutoffsh=1.5
@@ -443,9 +443,9 @@ else
 fi
 # change the next line to .true. to read in from hybens_info file.
 export readin_localization=.false.
-# if above is .false., these values are used.
-export s_ens_h=247.     # 900km
-export s_ens_v=-0.41    # 1.5 scale heights
+# if above is .false., these values are used in GSI (not used at all for hybgain)
+export s_ens_h=343.     # 1250 km
+export s_ens_v=-0.58    # 1.5 scale heights
 
 # NOTE: most other GSI namelist variables are in ${rungsi}
 export aircraft_bc=.true.
