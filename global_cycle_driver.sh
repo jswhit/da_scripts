@@ -42,7 +42,7 @@ export FNTSFA=${FNTSFA:-$DMPDIR/$CDATE/$CDUMP/${CDUMP}.t${cyc}z.rtgssthr.grb}
 export FNSNOA=${FNSNOA:-$DMPDIR/$CDATE/$CDUMP/${CDUMP}.t${cyc}z.snogrb_t1534.3072.1536}
 export FNACNA=${FNACNA:-$DMPDIR/$CDATE/$CDUMP/${CDUMP}.t${cyc}z.seaice.5min.blend.grb}
 
-export CYCLVARS=${CYCLVARS:-"FSNOL=-2.,FSNOS=99999.,"}
+export CYCLVARS=${CYCLVARS:-"FSNOL=0.,FSNOS=99999.,"}
 
 if [ $DONST = "YES" ]; then
     export GSI_FILE=${GSI_FILE:-$COMOUT/dtfanl.nc}
