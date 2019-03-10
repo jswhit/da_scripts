@@ -3,8 +3,8 @@
 ##PBS -A cpo_ngrr_e
 #PBS -l partition=c4
 ##PBS -q debug
-##PBS -q urgent
-#PBS -q batch
+#PBS -q urgent
+##PBS -q batch
 #PBS -l walltime=16:00:00
 ##PBS -l walltime=00:30:00
 #PBS -l nodes=40
