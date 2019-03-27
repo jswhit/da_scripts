@@ -1,0 +1,478 @@
+#!/usr/bin/python
+#
+# srun-multi
+#
+# Wrapper to support heterogeneous job steps in a homogeneous job
+#
+# Originally written by Matt Ezell <ezellma@ornl.gov>
+#
+# Syntax: srun-multi -n 16 -c 2 binary1 : -n 64 binary2
+#
+# If run against 16-core (32 thread) nodes, this would layout:
+#    ranks 0-15 on the first node
+#    ranks 16-79 on the next 4 nodes
+#
+# --num-cpus-per-task defaults to 2 if not explicitly specified
+#
+# This application runs in two modes - node allocator and task allocator.
+# The node allocator is expected to be run directly by users.  It assigns
+# tasks to node and will launch an 'srun' process that will in turn launch
+# this application in task allocator mode once for each task.  Task allocator
+# mode will calculate the binding and launch the acutal user task.  That mode
+# is not intended to be used directly by users
+#
+# Assumptions/Restrictions:
+# - All nodes have the same CPU count. If not, it assumes the lowest for all nodes
+# - All nodes have 2 sockets and Intel-style hyperthreading enabled
+# - The number of CPUs in Slurm is set to the number of cores, not threads
+# - Only one component per node. If you don't "fill up" a node, the remainder is wasted in this step
+# - Each component requires setting the number of tasks (no back-calculating at the moment)
+#
+
+import os
+import sys
+import re
+import argparse
+from tempfile import mkstemp
+from itertools import groupby
+from subprocess import Popen, PIPE
+
+# These are currently set in our slurm.conf
+# Could try to parse this, for now just hard code
+CR_ONE_TASK_PER_CORE=True
+AUTOBIND='cores'
+
+# You can set CPUs to 'cores' or 'threads'
+cpumode = 'cores'
+
+# These should only be set from the first component
+testonly = False
+verbose = 0
+cluster = None
+label = False
+
+def err(message):
+	sys.stderr.write("%s\n" % message)
+
+def errexit(message):
+	err(message)
+	sys.exit(1)
+
+def threadlist2mask(threadlist):
+	return "0x%x" % sum(map(lambda x: 1<<x, threadlist))
+
+def threadlist2bitmask(threadlist, width=64):
+	return format(sum(map(lambda x: 1<<x, threadlist)), 'b').zfill(width)
+
+def get_parser():
+	parser = argparse.ArgumentParser(prog="srun-multi", description="Run heterogeneous job steps in a homogeneous Slurm job", usage='%(prog)s -n ntasks [options] executable1 [executable1 arguments] [: -n ntasks [options] executable2 [executable2 arguments]]')
+	parser.add_argument('--test', dest='test', action='store_true', default=False, help='Test-only mode (do not spawn any tasks)')
+	parser.add_argument('-l', '--label', dest='label', action='store_true', default=False, help='Prepend task number to lines of stdout/err')
+	parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Enable verbose messages')
+	parser.add_argument('--component', dest='component', type=int, default=None, help=argparse.SUPPRESS)
+	parser.add_argument('--componentfirsttask', dest='componentfirsttask', type=int, default=None, help=argparse.SUPPRESS)
+	parser.add_argument('-n', '--ntasks', dest='ntasks', type=int, required=True, help='Required - the number of tasks to spawn in this component')
+	parser.add_argument('-c', '--cpus-per-task', dest='cpuspertask', type=int, default=1, help='CPU depth - how many CPUs to assign per task')
+	parser.add_argument('-N', '--nodes', dest='nodes', type=int, help='Attempt to spread out this component across this many nodes')
+	parser.add_argument('--ntasks-per-node', dest='ntaskspernode', type=int, help='Limit the number of tasks that can run on a node')
+	#parser.add_argument('--ntasks-per-socket', dest='ntaskspersocket')
+	parser.add_argument('--ntasks-per-core', dest='ntaskspercore', type=int, default=1 if CR_ONE_TASK_PER_CORE else 2, help='Limit the number of tasks per core')
+	parser.add_argument('-m', '--distribution', dest='distribution', default='block:cyclic,nopack', metavar='block|cyclic[:cyclic|block][,nopack|pack]', help='Task distribution/binding')
+	parser.add_argument('--cpu-bind', dest='cpubind', metavar='quiet|none|verbose|bitverbose|threads|cores', help='Options for CPU Binding')
+	parser.add_argument('command', nargs=argparse.REMAINDER, help='Executable to run with its arguments')
+
+	return parser
+
+# Hardware is a dummy class to hold info detected/calculated
+# about the nodes/sockets/cores/threads
+class Hardware:
+	pass
+
+def detect_hardware():
+	hw = Hardware()
+
+	# If we assume we are running this on a compute node, we could detect this
+	# For now, hard-code
+	hw.socketspernode = 2
+	hw.threadspercore = 2
+
+	try:
+		hw.cpuspernode = int(os.environ['SLURM_CPUS_ON_NODE'])
+	except KeyError:
+		try:
+			hw.cpuspernode = os.environ['SLURM_JOB_CPUS_PER_NODE']
+			hw.cpuspernode = map(lambda s: int(re.search('^\d+', s).group(0)), hw.cpuspernode.split(','))
+			if len(hw.cpuspernode) > 1:
+				hw.cpuspernode = min(hw.cpuspernode)
+				err('%s does not currently support heterogeneous nodes, assuming %d CPUs per node' % (sys.argv[0], hw.cpuspernode))
+			else:
+				hw.cpuspernode = int(hw.cpuspernode[0])
+		except KeyError:
+			hw.cpuspernode = 32
+
+	# Calculate some convenience variables
+	if cpumode == 'cores':
+		hw.corespernode = hw.cpuspernode
+		hw.threadspernode = hw.cpuspernode * hw.threadspercore
+		hw.threadspercpu = hw.threadspercore
+		hw.cpuspercore = 1
+	elif cpumode == 'threads':
+		hw.corespernode = hw.cpuspernode / hw.threadspercore
+		hw.threadspernode = hw.cpuspernode
+		hw.threadspercpu = 1
+		hw.cpuspercore = hw.threadspercore
+	else:
+		errexit('cpumode=%s is not supported' % cpumode)
+	hw.cpuspersocket = hw.cpuspernode / hw.socketspernode
+	hw.threadspersocket = hw.threadspernode / hw.socketspernode
+	hw.corespersocket = hw.corespernode / hw.socketspernode
+
+	return hw
+
+def run_parser(parser, componentargs, hw):
+	# Run argparse
+	args = parser.parse_args(componentargs)
+
+	# Determine the mode
+	if args.component is None:
+		args.mode = 'node'
+	else:
+		args.mode = 'task'
+
+	# Attempt to parse the distribution options
+	distargs = args.distribution.split(',')
+	distopts = distargs[0].split(':')
+
+	# Dist1 maps tasks to nodes
+	args.dist1 = str.lower(distopts[0])
+	if args.dist1 == '' or args.dist1 == '*':
+		args.dist1 = 'block'
+	if args.dist1 not in ['block', 'cyclic']:
+		# plane is not implemented yet, looking for use cases
+		errexit("Distribution option '%s' is not supported" % args.dist1)
+
+	# Dist2 maps CPUs across sockets
+	try:
+		args.dist2 = str.lower(distopts[1])
+	except IndexError:
+		args.dist2 = 'cyclic'
+	if args.dist2 == '' or args.dist2 == '*':
+		args.dist2 = 'cyclic'
+	if args.dist2 not in ['block', 'cyclic', 'fcyclic']:
+		errexit("Distribution option '%s' is not supported" % args.dist2)
+
+	# Dist3 maps CPUs across cores. Only supported with task/cgroup
+	if len(distopts) > 2:
+		errexit("More than 2 distribution options is not currently supported")
+
+	# The Pack option indicates if tasks should be packed tightly or spread out across as many nodes as possible
+	try:
+		args.packoption = str.lower(distargs[1])
+		if args.packoption not in ['pack', 'nopack']:
+			errexit("Unknown distribution pack option '%s'" % args.packoption)
+	except IndexError:
+		args.packoption = 'nopack'
+
+	# Attempt to parse the binding options
+	try:
+		args.cpubind = args.cpubind.split(',')
+	except AttributeError:
+		args.cpubind = []
+	for entry in args.cpubind:
+		if entry not in ['q', 'quiet', 'v', 'verbose', 'bitverbose', 'no', 'none', 'threads', 'cores']:
+			errexit("CPU Binding option '%s' not supported" % entry)
+	bindvalidopts = ['no', 'none', 'cores', 'threads']
+	bindopts = [ x for x in args.cpubind if x in bindvalidopts]
+	if len(bindopts) > 1:
+		errexit("Incompatible CPU binding options were requested")
+	elif len(bindopts) == 0:
+		args.bindoption = AUTOBIND
+	else:
+		args.bindoption = bindopts[0]
+		if args.bindoption == 'no':
+			args.bindoption = 'none'
+
+	# Check to make sure no negative values were passed
+	if ((args.nodes != None) and (args.nodes <= 0)) or ((args.ntaskspernode != None) and (args.ntaskspernode <= 0)) or ((args.cpuspertask != None) and (args.cpuspertask <= 0)):
+		errexit("Information invalid: Component %d: ntasks=%s cpuspertask=%s nodes=%s ntaskspernode=%s" % (componentnum, args.ntasks, args.cpuspertask, args.nodes, args.ntaskspernode))
+
+	# cpuspertask is the number requested by the user - the actual number needed
+	# threadsconsumepertask is the number to remove from scheduling for future tasks
+	# threadsbindpertask is the number to include in the mask
+	# This is the number of CPUs to allocate per task (calculated from multiple options)
+	if args.ntaskspercore > 1:
+		errexit("Only 1 task per core is currently supported")
+	else:
+		#args.threadsconsumepertask = args.cpuspertask + (threadspercore - args.cpuspertask % threadspercore) % threadspercore
+		args.threadsconsumepertask = args.cpuspertask * hw.threadspercpu
+
+	# This is the number of CPUs to bind per task
+	if args.bindoption == 'cores':
+		args.threadsbindpertask = args.threadsconsumepertask + args.threadsconsumepertask % hw.threadspercore
+	else:
+		args.threadsbindpertask = args.cpuspertask 
+
+	# If there is no requested nodecount, calculate it
+	if args.nodes == None:
+		if args.ntaskspernode == None:
+			# No requested number of tasks per node, minimize node count
+			maxtaskspernode = hw.threadspernode / args.threadsconsumepertask
+			args.nodes = (args.ntasks + maxtaskspernode - 1) / maxtaskspernode
+		else:
+			# User requested a specific (maximum) number of tasks per node
+			args.nodes = (args.ntasks + args.ntaskspernode - 1) / args.ntaskspernode
+
+	# If there is no requested ntaskspernode, calculate it
+	if args.ntaskspernode == None:
+		if args.packoption == "nopack":
+			args.ntaskspernode = (args.ntasks + args.nodes - 1) / args.nodes
+		elif args.packoption == "pack":
+			args.ntaskspernode = hw.cpuspernode / args.cpuspertask
+
+	# Some sanity checking
+	if (args.nodes == None) or (args.ntaskspernode == None) or (args.cpuspertask == None):
+		errexit("Information unset: Component %d: ntasks=%s cpuspertask=%s nodes=%s ntaskspernode=%s" % (componentnum, args.ntasks, args.cpuspertask, args.nodes, args.ntaskspernode))
+	if args.cpuspertask * args.ntaskspernode > hw.cpuspernode:
+		errexit("Cannot fit %d tasks-per-node of %d cpus-per-task (%d threads consumed per task) with %d cpus per node" % (args.ntaskspernode, args.cpuspertask, args.threadsconsumepertask, hw.cpuspernode))
+	return args
+
+def parse_nodelist(nodeexp):
+	# Convert the compressed nodelist expression into an array
+	p = Popen(['scontrol', 'show', 'hostnames', nodeexp], stdout=PIPE, stderr=PIPE)
+	(sout, serr) = p.communicate()
+	if p.returncode != 0:
+		errexit("Unable to parse nodelist: error %d: %s" % (p.returncode, serr.rstrip()))
+	nodelist = sout.rstrip().split('\n')
+	return nodelist
+
+def main():
+	global testonly
+	global verbose
+
+	# Prepare a parser for first pass
+	parser = get_parser()
+
+	# Split the request into its components
+	components = [list(group) for k, group in groupby(sys.argv[1:], lambda x: x == ":") if not k]
+
+	# If there were no command line args, print help and exit
+	if len(components) == 0:
+		parser.print_help()
+		sys.exit(1)
+
+	# Detect the hardware
+	hw = detect_hardware()
+
+	# Parse the first component to see if help was requested
+	args = run_parser(parser, components[0], hw)
+
+	if len(components) < 2 and args.mode == 'node' and not args.test:
+		errexit("%s is only supported with multiple components separated by a ':'" % sys.argv[0])
+
+	if args.mode == 'node':
+		node_allocator(components, args, hw)
+	else:
+		task_allocator(components, args, hw)
+
+	# The allocators should exec() something else, and we should never get here
+	sys.exit(1)
+
+def node_allocator(components, args, hw):
+	global testonly
+	global verbose
+
+	# Some declarations
+	totaltasks = 0
+	globaltaskidx = 0
+	hostlist = []
+	proglist = []
+
+	# Make sure we are inside a job or in test mode, since calculating layout requires the nodelist
+	try:
+		numnodes    = int(os.environ['SLURM_JOB_NUM_NODES'])
+		jobid       = os.environ['SLURM_JOB_ID']
+		nodeexp     = os.environ['SLURM_JOB_NODELIST']
+
+		# Convert the compressed nodelist expression into an array
+		nodelist = parse_nodelist(nodeexp)
+		if len(nodelist) != numnodes:
+			errexit("Node count and nodelist do not match. Aborting")
+
+	except KeyError:
+		if args.test:
+			# Provide 1000 fake 32-cpu nodes
+			numnodes     = 1000
+			jobid        = 'test'
+			nodelist     =  [ 'node{0:04d}'.format(i) for i in range(1, numnodes + 1) ]
+		else:
+			errexit('%s is only supported inside a job allocation' % sys.argv[0])
+
+	if args.nodes > len(nodelist):
+		errexit("Component %d requires %d nodes, but only %d remain" % (componentnum, args.nodes, len(nodelist)))
+
+	# Map components to nodes
+	for componentnum,component in enumerate(components):
+		parser = get_parser()
+		args = run_parser(parser, component, hw)
+
+		# Set global options from the first component
+		if componentnum == 0:
+			if args.test:
+				testonly = args.test
+			if args.label:
+				label = args.label
+			if args.verbose:
+				verbose = args.verbose
+
+		# Count of tasks on each node
+		# Only needed in simulation mode
+		if args.test:
+			nodealloc = [0] * args.nodes
+
+		# Debugging
+		if verbose:
+			print "Component %d: ntasks=%d cpuspertask=%d (consume %d bind %d) nodes=%d ntaskspernode=%d distribution %s:%s,%s" % (componentnum, args.ntasks, args.cpuspertask, args.threadsconsumepertask, args.threadsbindpertask, args.nodes, args.ntaskspernode, args.dist1, args.dist2, args.packoption)
+
+		componentfirsttaskidx=globaltaskidx
+
+		# Allocate tasks
+		for componenttaskidx in range(0, args.ntasks):
+			rank = componentfirsttaskidx + componenttaskidx
+
+			# Handle dist1 distribution to nodes
+			if args.dist1 == 'block':
+				nodeidx = componenttaskidx / args.ntaskspernode
+			elif args.dist1 == 'cyclic':
+				nodeidx = componenttaskidx % args.nodes
+			hostlist.append(nodelist[nodeidx])
+
+			# In test mode, simulate the task allocator running for each task
+			if args.test:
+				task_allocator(components, args, hw, node=nodelist[nodeidx], globalrank=rank, noderank=nodealloc[nodeidx])
+				noderank=nodealloc[nodeidx] = noderank=nodealloc[nodeidx] + 1
+
+		if args.ntasks == 1:
+			ranklist = str(componentfirsttaskidx)
+		else:
+			ranklist = "%d-%d" % (componentfirsttaskidx, componentfirsttaskidx + args.ntasks -1)
+		proglist.append("%s srun-multi --component %d --componentfirsttask %d %s" % (ranklist, componentnum, componentfirsttaskidx, ' '.join(component)))
+
+		# Remove the used nodes from the remaining nodelist
+		nodelist = nodelist[args.nodes:]
+		globaltaskidx += args.ntasks
+
+		# Increment total tasks
+		totaltasks = totaltasks + args.ntasks
+
+	if verbose:
+		print "# Generated hostlist:"
+		print "%s" % '\n'.join(hostlist)
+		print "# Generated multiprog conf:"
+		print "%s" % '\n'.join(proglist)
+
+	if testonly:
+		# Simlate each task to show what binding we would use
+		
+		sys.exit(0)
+
+	# Write out the generated config files
+	(hostlistconffd, hostlistconf) = mkstemp(prefix='srun-multi-%s-hostlist.' % jobid, suffix='.conf')
+	os.write(hostlistconffd, '\n'.join(hostlist))
+	os.write(hostlistconffd, '\n')
+	os.close(hostlistconffd)
+	(multiprogconffd, multiprogconf) = mkstemp(prefix='srun-multi-%s-multiprog.' % jobid, suffix='.conf')
+	os.write(multiprogconffd, '\n'.join(proglist))
+	os.write(multiprogconffd, '\n')
+	os.close(multiprogconffd)
+
+	if testonly or verbose:
+		print "Running: srun -n %d --distribution=arbitrary --cpu-bind=none --multi-prog %s" % (totaltasks, multiprogconf)
+
+	# In the future, consider instead using popen so we can clean up the temp files
+	# If we do that, make sure that we understand buffering
+	os.environ["SLURM_HOSTFILE"] = hostlistconf
+	os.execlp('srun', 'srun', '-n', str(totaltasks), '--distribution=arbitrary', '--cpu-bind=none', '--multi-prog', multiprogconf)
+
+def task_allocator(components, args, hw, node=None, globalrank=None, noderank=None):
+
+	if node is None:
+		try:
+			node = os.environ['SLURMD_NODENAME']
+		except KeyError:
+			node="unknown"
+
+	if globalrank is None:
+		try:
+			globalrank = int(os.environ['SLURM_PROCID'])
+		except KeyError:
+			errexit("Could not determine global rank")
+
+	if noderank is None:
+		try:
+			noderank = int(os.environ['SLURM_LOCALID'])
+		except KeyError:
+			errexit("Could not determine node rank")
+
+	# The list contains the first unused cpu (core or thread) on each socket
+	socketalloc = [0]*(hw.socketspernode)
+
+	# Total count of tasks assigned on this node
+	tasksassigned=0
+	coresassigned=0
+
+	# Though we only need to spawn 1 task, we have to allocate the
+	# lower number tasks on this node first so we know where to put
+	# this one
+	for noderankidx in range(0, noderank + 1):
+		threadlist = list()
+
+		# Handle dist2 distribution to sockets
+		if args.dist2 == 'cyclic':
+			socketidx = tasksassigned % hw.socketspernode
+			for rank in range(args.cpuspertask):
+				threadlist.append(socketalloc[socketidx] % hw.cpuspersocket + socketidx * hw.cpuspersocket)
+				socketalloc[socketidx] = socketalloc[socketidx] + 1
+		elif args.dist2 == 'block':
+			# Slurm will fully fill sockets
+			# It won't attempt to keep a task on a single socket
+			# It won't try to balance tasks across all sockets (pack is the only mode)
+			for rank in range(args.cpuspertask):
+				threadlist.append(coresassigned + rank)
+				socketidx = (coresassigned + rank) / hw.corespersocket
+				socketalloc[socketidx] = socketalloc[socketidx] + 1
+
+		# Mark that socket got a task
+		tasksassigned = tasksassigned + 1
+		coresassigned = coresassigned + args.cpuspertask
+
+		if args.bindoption == 'cores':
+			# This assumes the node presents all pyhsical cores first followed by virtual
+			threadlist = set(threadlist + [(x + hw.threadspersocket) % hw.threadspernode for x in threadlist])
+		threadlist = sorted(threadlist)
+
+		if noderankidx == noderank:
+			if args.test:
+				pid = "unknown"
+			else:
+				pid = str(os.getpid())
+
+			# Print verbose task layout here
+			if 'v' in args.cpubind or 'verbose' in args.cpubind:
+				mask = threadlist2mask(threadlist)
+			elif 'bitverbose' in args.cpubind:
+				mask = threadlist2bitmask(threadlist, hw.threadspernode)
+			if 'v' in args.cpubind or 'verbose' in args.cpubind or 'bitverbose' in args.cpubind:
+				print "cpu-bind=MASK - %s, task %2d %2d [%s]: mask %s set" % (node, globalrank, noderank, pid, mask)
+
+			if not args.test:
+				os.system("taskset -p -c %s %s > /dev/null" % (",".join(map(str,threadlist)), pid))
+				os.execvp(args.command[0], args.command)
+
+			break
+
+
+if __name__ == "__main__":
+	try:
+		main()
+	except Exception as inst:
+		errexit("Unknown error: %s. Please report your job submission parameters, your command line, and this error." % inst)
