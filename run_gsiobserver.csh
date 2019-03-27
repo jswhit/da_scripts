@@ -5,7 +5,7 @@ if ($cold_start_bias == "true") setenv NOSAT YES
 
 if ( ! $?charnanal2 ) setenv charnanal2 $charnanal
 
-if ($machine == 'theia') then
+if ( ! $?SLURM_JOB_ID && $machine == 'theia') then
    if (! $?hostfilein) then
      setenv hostfilein $PBS_NODEFILE
      setenv NODEFILE $datapath2/nodefile_observer

@@ -5,13 +5,13 @@ setenv nprocs `expr $cores \/ $enkf_threads`
 setenv mpitaskspernode `expr $corespernode \/ $enkf_threads`
 setenv OMP_NUM_THREADS $enkf_threads
 setenv OMP_STACKSIZE 512M
+setenv HOSTFILE $datapath2/machinefile_enkf
 if ( ! $?SLURM_JOB_ID && $machine == 'theia') then
    if (! $?hostfilein) then
      setenv hostfilein $PBS_NODEFILE
      setenv NODEFILE $datapath2/nodefile_enkf
      cat $hostfilein | uniq > $NODEFILE
    endif
-   setenv HOSTFILE $datapath2/machinefile_enkf
    /bin/rm -f $HOSTFILE
    if ($enkf_threads > 1) then
       awk "NR%${enkf_threads} == 1" ${hostfilein} >&! $HOSTFILE
@@ -188,18 +188,28 @@ echo "OMP_NUM_THREADS = $OMP_NUM_THREADS"
 if ( $?SLURM_JOB_ID ) then
    echo "slurm"
    # use srun
-   export OMP_PROC_BIND=spread
-   export OMP_PLACES=threads
-   @ cores2 = $cores - $corespernode 
-   setenv nprocs `expr $cores2 \/ $enkf_threads`
-   totcores=`expr $nprocs \* $OMP_NUM_THREADS`
-   totnodes=`python -c "import math; print int(math.ceil(float(${totcores})/${corespernode}))"`
-   count=`python -c "import math; print int(math.floor(float(${corespernode})/${mpitaskspernode}))"` 
-   echo "running srun-multi -N 1 -n 1 -c ${OMP_NUM_THREADS} --cpu_bind=cores $PGM : -N $totnodes -n $nprocs -c ${count} --cpu_bind=cores $PGM"
-   # -c: cpus per task (number of threads per mpi task)
-   # -n: number of mpi tasks
-   # -N: number of nodes to run on
-   srun-multi -N 1 -n 1 -c ${OMP_NUM_THREADS} --cpu_bind=cores $PGM : -N $totnodes -n $nprocs -c ${count} --cpu_bind=cores $PGM >&! ${current_logdir}/ensda.out
+   setenv OMP_PROC_BIND spread
+   setenv OMP_PLACES threads
+   if ( $machine == 'gaea' ) then
+      @ cores2 = $cores - $corespernode 
+      setenv nprocs `expr $cores2 \/ $enkf_threads`
+      set totcores=`expr $nprocs \* $OMP_NUM_THREADS`
+      set totnodes=`python -c "import math; print int(math.ceil(float(${totcores})/${corespernode}))"`
+      set count=`python -c "import math; print int(math.floor(float(${corespernode})/${mpitaskspernode}))"` 
+      echo "running srun-multi -N 1 -n 1 -c ${OMP_NUM_THREADS} --cpu-bind cores $PGM : -N $totnodes -n $nprocs -c ${count} --cpu-bind cores $PGM"
+      # -c: cpus per task (number of threads per mpi task)
+      # -n: number of mpi tasks
+      # -N: number of nodes to run on
+      srun-multi -N 1 -n 1 -c ${OMP_NUM_THREADS} --cpu-bind cores $PGM : -N $totnodes -n $nprocs -c ${count} --cpu-bind cores $PGM >&! ${current_logdir}/ensda.out
+   else
+      python ${enkfscripts}/get_slurm_hostfile.py $mpitaskspernode $HOSTFILE
+      setenv SLURM_HOSTFILE $HOSTFILE
+      set nprocs=`wc -l $SLURM_HOSTFILE | cut -f1 -d " "`
+      echo "nprocs = $nprocs"
+      cat $SLURM_HOSTFILE
+      echo "srun -c ${OMP_NUM_THREADS} -n $nprocs --distribution=arbitrary --cpu-bind=cores $PGM"
+      srun -c ${OMP_NUM_THREADS} -n $nprocs --distribution=arbitrary --cpu-bind=cores $PGM >&! ${current_logdir}/ensda.out
+   endif
 else if ( $machine == 'gaea' || $machine == 'wcoss' ) then
    # run with single task on root node using aprun
    @ cores2 = $cores - $corespernode 

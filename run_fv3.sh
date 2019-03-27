@@ -22,10 +22,6 @@ elif [ "$machine" == 'gaea' ]; then
    module load wgrib
    export WGRIB=`which wgrib`
 ##   export WGRIB=/ncrc/home1/Gary.Bates/bin/wgrib
-elif [ "$machine" == 'cori' ]; then
-   source $MODULESHOME/init/sh
-   module load craype-mic-knl
-   module list
 fi
 
 export VERBOSE=${VERBOSE:-"NO"}

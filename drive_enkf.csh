@@ -4,7 +4,7 @@ if ($mpitaskspernode < 1) setenv mpitaskspernode 1
 setenv OMP_NUM_THREADS `expr $corespernode \/ $mpitaskspernode`
 echo "mpitaskspernode = $mpitaskspernode threads = $OMP_NUM_THREADS"
 setenv nprocs $nanals
-if ($machine == 'theia') then
+if ( ! $?SLURM_JOB_ID && $machine == 'theia') then
     # HOSTFILE is machinefile to use for programs that require $nanals tasks.
     # if enough cores available, just one core on each node.
     # NODEFILE is machinefile containing one entry per node.

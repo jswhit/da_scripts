@@ -51,7 +51,7 @@ if ($mpitaskspernode < 1) setenv mpitaskspernode 1
 setenv OMP_NUM_THREADS `expr $corespernode \/ $mpitaskspernode`
 echo "mpitaskspernode = $mpitaskspernode threads = $OMP_NUM_THREADS"
 setenv nprocs $nanals
-if ($machine == 'theia') then
+if ( ! $?SLURM_JOB_ID && $machine == 'theia') then
     # HOSTFILE is machinefile to use for programs that require $nanals tasks.
     # if enough cores available, just one core on each node.
     # NODEFILE is machinefile containing one entry per node.
@@ -344,33 +344,21 @@ else
 endif
 cd $homedir
 if ( $save_hpss == "true" ) then
-cat ${machine}_preamble_hpss hpss.sh >! job_hpss.sh
-if ($machine == 'wcoss') then
+if ( $?SLURM_JOB_ID ) then
+   cat ${machine}_preamble_hpss_slurm hpss.sh >! job_hpss.sh
+else
+   cat ${machine}_preamble_hpss hpss.sh >! job_hpss.sh
+endif
+if ( $?SLURM_JOB_ID ) then
+   sbatch --export=ALL job_hpss.sh
+else if ($machine == 'wcoss') then
    bsub -env "all" < job_hpss.sh
 else if ($machine == 'gaea') then
    msub -V job_hpss.sh
-else if ($machine == 'cori') then
-   sbatch --export=ALL job_hpss.sh
 else
    qsub -V job_hpss.sh
 endif
 endif
-
-#if ($run_long_fcst == "true") then
-#   if ($hr == "00") then
-#   #if ($hr == "00" || $hr == "12") then
-#     cat ${machine}_preamble_longfcst run_long_fcst.sh >! job_longfcst.sh
-#     if ($machine == 'wcoss') then
-#         bsub -env "all" < job_longfcst.sh
-#     else if ($machine == 'gaea') then
-#         msub -V job_longfcst.sh
-#     else if ($machine == 'cori') then
-#         sbatch --export=ALL job_longfcst.sh
-#     else
-#         qsub -V job_longfcst.sh
-#     endif
-#   endif
-#endif
 
 endif # skip to here if fg_only = true
 
@@ -399,13 +387,17 @@ if ( ${analdate} <= ${analdate_end}  && ${resubmit} == 'true') then
    if ($resubmit == "true") then
       echo "resubmit script"
       echo "machine = $machine"
-      cat ${machine}_preamble config.sh >! job.sh
-      if ($machine == 'wcoss') then
+      if ( $?SLURM_JOB_ID ) then
+         cat ${machine}_preamble_slurm config.sh >! job.sh
+      else
+         cat ${machine}_preamble config.sh >! job.sh
+      endif
+      if ( $?SLURM_JOB_ID ) then
+          sbatch --export=ALL job_hpss.sh
+      else if ($machine == 'wcoss') then
           bsub < job.sh
       else if ($machine == 'gaea') then
           msub job.sh
-      else if ($machine == 'cori') then
-          sbatch job.sh
       else
           qsub job.sh
       endif

@@ -8,7 +8,7 @@ setenv OMP_NUM_THREADS $fg_threads
 setenv nprocs `expr $fg_proc \/ $OMP_NUM_THREADS`
 setenv mpitaskspernode `expr $corespernode \/ $OMP_NUM_THREADS`
 
-if ($machine == 'theia') then
+if ( ! $?SLURM_JOB_ID && $machine == 'theia') then
    set hosts = `cat $PBS_NODEFILE`
 endif
 
@@ -47,7 +47,7 @@ while ($nanal <= $nanals)
  if ($filemissing == 'yes') then
    #if ($node_end > $nhosts) set node_end=$nhosts
    echo "nanal = ${nanal}, nhost = ${nhost}, node = ${node}, node_end = ${node_end}"
-   if ($machine == 'theia') then
+   if ( ! $?SLURM_JOB_ID && $machine == 'theia') then
       setenv HOSTFILE ${datapath2}/hostfile${node}
       /bin/rm -f $HOSTFILE
       set hostindx=$nhost
