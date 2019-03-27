@@ -82,13 +82,8 @@ elif [ "$machine" == 'gaea' ]; then
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    #export hsidir="/3year/NCEPDEV/GEFSRR/${exptname}"
    export obs_datapath=/lustre/f1/unswept/Jeffrey.S.Whitaker/fv3_reanl/gdas1bufr
-elif [ "$machine" == 'cori' ]; then
-   export basedir=${SCRATCH}
-   export datadir=$basedir
-   export hsidir="fv3_reanl/${exptname}"
-   export obs_datapath=${basedir}/gdas1bufr
 else
-   echo "machine must be 'wcoss', 'theia', 'gaea' or 'cori', got $machine"
+   echo "machine must be 'wcoss', 'theia', or 'gaea' got $machine"
    exit 1
 fi
 export datapath="${datadir}/${exptname}"
@@ -396,21 +391,6 @@ elif [ "$machine" == 'wcoss' ]; then
    export fv3gfspath=/gpfs/hps3/emc/global/noscrub/emc.glopara/svn/fv3gfs
    export gsipath=/gpfs/hps2/esrl/gefsrr/noscrub/Jeffrey.S.Whitaker/gsi/ProdGSI
    export FIXFV3=${fv3gfspath}/fix_fv3
-   export FIXGLOBAL=${fv3gfspath}/fix/fix_am
-   export fixgsi=${gsipath}/fix
-   export fixcrtm=${fixgsi}/crtm_v2.2.3
-   export execdir=${enkfscripts}/exec_${machine}
-   export enkfbin=${execdir}/global_enkf
-   export FCSTEXEC=${execdir}/${fv3exec}
-   export gsiexec=${execdir}/global_gsi
-   export nemsioget=${execdir}/nemsio_get
-elif [ "$machine" == 'cori' ]; then
-   export python=`which python`
-   #export fv3gfspath=/project/projectdirs/refcst/whitaker/fv3_reanl/fv3gfs/global_shared.v15.0.0
-   export fv3gfspath=$SCRATCH/global_shared.v15.0.0
-   #export gsipath=/project/projectdirs/refcst/whitaker/fv3_reanl/ProdGSI
-   export gsipath=$SCRATCH/ProdGSI
-   export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
    export fixgsi=${gsipath}/fix
    export fixcrtm=${fixgsi}/crtm_v2.2.3
