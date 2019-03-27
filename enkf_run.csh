@@ -5,7 +5,7 @@ setenv nprocs `expr $cores \/ $enkf_threads`
 setenv mpitaskspernode `expr $corespernode \/ $enkf_threads`
 setenv OMP_NUM_THREADS $enkf_threads
 setenv OMP_STACKSIZE 512M
-if ($machine == 'theia') then
+if ( ! $?SLURM_JOB_ID && $machine == 'theia') then
    if (! $?hostfilein) then
      setenv hostfilein $PBS_NODEFILE
      setenv NODEFILE $datapath2/nodefile_enkf
@@ -182,24 +182,37 @@ cp ${enkfscripts}/vlocal_eig.dat ${datapath2}
 
 /bin/rm -f ${datapath2}/enkf.log
 /bin/mv -f ${current_logdir}/ensda.out ${current_logdir}/ensda.out.save
-#module switch intel intel/16.1.150
-module switch impi mvapich2/2.1rc1
 setenv PGM $enkfbin
 echo "OMP_NUM_THREADS = $OMP_NUM_THREADS"
 
-if ( $machine == 'gaea' || $machine == 'wcoss' ) then
+if ( $?SLURM_JOB_ID ) then
+   echo "slurm"
+   # use srun
+   export OMP_PROC_BIND=spread
+   export OMP_PLACES=threads
+   @ cores2 = $cores - $corespernode 
+   setenv nprocs `expr $cores2 \/ $enkf_threads`
+   totcores=`expr $nprocs \* $OMP_NUM_THREADS`
+   totnodes=`python -c "import math; print int(math.ceil(float(${totcores})/${corespernode}))"`
+   count=`python -c "import math; print int(math.floor(float(${corespernode})/${mpitaskspernode}))"` 
+   echo "running srun-multi -N 1 -n 1 -c ${OMP_NUM_THREADS} --cpu_bind=cores $PGM : -N $totnodes -n $nprocs -c ${count} --cpu_bind=cores $PGM"
+   # -c: cpus per task (number of threads per mpi task)
+   # -n: number of mpi tasks
+   # -N: number of nodes to run on
+   srun-multi -N 1 -n 1 -c ${OMP_NUM_THREADS} --cpu_bind=cores $PGM : -N $totnodes -n $nprocs -c ${count} --cpu_bind=cores $PGM >&! ${current_logdir}/ensda.out
+else if ( $machine == 'gaea' || $machine == 'wcoss' ) then
    # run with single task on root node using aprun
    @ cores2 = $cores - $corespernode 
    setenv nprocs `expr $cores2 \/ $enkf_threads`
    aprun -n 1 -N 1 -d ${OMP_NUM_THREADS} --cc depth $PGM : -n $nprocs -N $mpitaskspernode -d ${OMP_NUM_THREADS} --cc depth $PGM >&! ${current_logdir}/ensda.out
 else
+   # use mpirun/HOSTFILE to specify a single task on root node.
    sh ${enkfscripts}/runmpi >>& ${current_logdir}/ensda.out
 endif
 if ( ! -s ${datapath2}/enkf.log ) then
    echo "no enkf log file found"
    exit 1
 endif
-module switch intel impi
 if ($satbiasc == '.true.')  /bin/cp -f ${datapath2}/satbias_out $ABIAS
 
 else
