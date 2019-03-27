@@ -13,8 +13,8 @@ if [ ! -z $SLURM_JOB_ID ]; then
    # -c: cpus per task (number of threads per mpi task)
    # -n: number of mpi tasks
    # -N: number of nodes to run on
-   echo "running srun -N $totnodes -n $nprocs -c ${count} --cpu-bind=cores --time=$SRUN_TIME_LIMIT $PGM"
-   eval srun -N $totnodes -n $nprocs -c ${count} --cpu-bind=cores --time=$SRUN_TIME_LIMIT $PGM
+   echo "running srun -N $totnodes -n $nprocs -c ${count} --cpu-bind=cores $PGM"
+   eval srun -N $totnodes -n $nprocs -c ${count} --cpu-bind=cores $PGM
    rc=$?
 elif [ "$machine" == 'wcoss' ] ; then
    [ -z "$mpitaskspernode" ] && echo "Need to set mpitaskspernode" && exit 1;
