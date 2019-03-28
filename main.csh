@@ -4,6 +4,9 @@
 # allow this script to submit other scripts on WCOSS
 unsetenv LSB_SUB_RES_REQ 
 echo "nodes = $NODES"
+if ( ! $?SLURM_JOB_ID ) then
+   setenv USE_SLURM 1 # submit_job.sh uses this
+endif
 
 set idate_job=1
 
