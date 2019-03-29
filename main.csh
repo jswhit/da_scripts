@@ -4,9 +4,6 @@
 # allow this script to submit other scripts on WCOSS
 unsetenv LSB_SUB_RES_REQ 
 echo "nodes = $NODES"
-if ( ! $?SLURM_JOB_ID ) then
-   setenv USE_SLURM 1 # submit_job.sh uses this
-endif
 
 set idate_job=1
 
@@ -347,14 +344,16 @@ else
 endif
 cd $homedir
 if ( $save_hpss == "true" ) then
-if ( $?SLURM_JOB_ID ) then
-   cat ${machine}_preamble_hpss_slurm hpss.sh >! job_hpss.sh
-else
+# hpss jobs don't work in slurm yet
+#if ( $?SLURM_JOB_ID ) then
+#   cat ${machine}_preamble_hpss_slurm hpss.sh >! job_hpss.sh
+#else
    cat ${machine}_preamble_hpss hpss.sh >! job_hpss.sh
-endif
-if ( $?SLURM_JOB_ID ) then
-   sbatch --export=ALL job_hpss.sh
-else if ($machine == 'wcoss') then
+#endif
+#if ( $?SLURM_JOB_ID ) then
+#   sbatch --export=ALL job_hpss.sh
+#else if ($machine == 'wcoss') then
+if ($machine == 'wcoss') then
    bsub -env "all" < job_hpss.sh
 else if ($machine == 'gaea') then
    msub -V job_hpss.sh
@@ -396,7 +395,7 @@ if ( ${analdate} <= ${analdate_end}  && ${resubmit} == 'true') then
          cat ${machine}_preamble config.sh >! job.sh
       endif
       if ( $?SLURM_JOB_ID ) then
-          sbatch --export=ALL job_hpss.sh
+          sbatch --export=ALL job.sh
       else if ($machine == 'wcoss') then
           bsub < job.sh
       else if ($machine == 'gaea') then
