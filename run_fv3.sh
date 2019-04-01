@@ -375,6 +375,7 @@ nhours_fcst:             ${FHMAX_FCST}
 RUN_CONTINUE:            F
 ENS_SPS:                 F
 dt_atmos:                ${dt_atmos} 
+output_1st_tstep_rst:    .false.
 calendar:                'julian'
 cpl:                     F
 memuse_verbose:          F
