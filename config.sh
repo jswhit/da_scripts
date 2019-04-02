@@ -140,14 +140,22 @@ if [ $imp_physics == "11" ]; then
    export nwat=6
    export cal_pre=F
    export dnats=1
+   export cal_pre=".false."
    export do_sat_adj=".true."
    export random_clds=".false."
-   export cnvcld=".false."
+   export lgfdlmprad=".true."
+   export effr_in=".true."
 else
    export ncld=1
    export nwat=2
-   export cal_pre=T
    export dnats=0
+   export cal_pre=".true."
+   export do_sat_adj=".false."
+   export random_clds=".true."
+   export vtdm4=0.02
+   export nord=2
+   export dddmp=0.1
+   export d4_bg=0.12
 fi
 export k_split=1
 export n_split=6
