@@ -96,7 +96,7 @@ setenv current_logdir "${datapath2}/logs"
 echo "Current LogDir: ${current_logdir}"
 mkdir -p ${current_logdir}
 
-if ($fg_only == 'false' && $readin_localization == ".true.") then
+if ($fg_only == 'false') then
 /bin/rm -f $datapath2/hybens_info
 /bin/rm -f $datapath2/hybens_smoothinfo
 if ( $?HYBENSINFO ) then
