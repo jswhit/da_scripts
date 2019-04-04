@@ -14,16 +14,6 @@ export hybgain='true' # set to true for hybrid gain 3DVar/EnKF
 export exptname="C${RES}C${RES_CTL}_hybgain"
 export cores=`expr $NODES \* $corespernode`
 
-# check that value of NODES is consistent with PBS_NP on theia.
-if [ "$machine" == 'theia' ]; then
-   if [ $PBS_NP -ne $cores ]; then
-     echo "NODES = ${NODES} PBS_NP = ${PBS_NP} cores = ${cores}"
-     echo "NODES set incorrectly in preamble"
-     exit 1
-   fi
-fi
-#export KMP_AFFINITY=disabled
-
 export fg_gfs="run_ens_fv3.csh"
 export ensda="enkf_run.csh"
 export rungsi='run_gsi_4densvar.sh'
