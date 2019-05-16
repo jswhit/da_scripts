@@ -344,16 +344,14 @@ else
 endif
 cd $homedir
 if ( $save_hpss == "true" ) then
-# hpss jobs don't work in slurm yet
-#if ( $?SLURM_JOB_ID ) then
-#   cat ${machine}_preamble_hpss_slurm hpss.sh >! job_hpss.sh
-#else
+if ( $?SLURM_JOB_ID ) then
+   cat ${machine}_preamble_hpss_slurm hpss.sh >! job_hpss.sh
+else
    cat ${machine}_preamble_hpss hpss.sh >! job_hpss.sh
-#endif
-#if ( $?SLURM_JOB_ID ) then
-#   sbatch --export=ALL job_hpss.sh
-#else if ($machine == 'wcoss') then
-if ($machine == 'wcoss') then
+endif
+if ( $?SLURM_JOB_ID ) then
+   sbatch --export=ALL job_hpss.sh
+else if ($machine == 'wcoss') then
    bsub -env "all" < job_hpss.sh
 else if ($machine == 'gaea') then
    msub -V job_hpss.sh
