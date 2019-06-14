@@ -20,7 +20,7 @@ echo "${analdate} compute first guesses `date`"
 while [ $alldone == 'no' ] && [ $niter -le $nitermax ]; do
     if [ $niter -eq 1 ]; then
     ${enkfscripts}/${fg_gfs} > ${current_logdir}/run_fg.iter${niter}.out 2>&1
-    exitstat=$status
+    exitstat=$?
     else
     ${enkfscripts}/${fg_gfs} > ${current_logdir}/run_fg.iter${niter}.out 2>&1
     exitstat=$?
