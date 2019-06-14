@@ -25,7 +25,7 @@ while [ $alldone == 'no' ] && [ $niter -le $nitermax ]; do
     ${enkfscripts}/${fg_gfs} > ${current_logdir}/run_fg.iter${niter}.out 2>&1
     exitstat=$?
     fi
-    if [ $exitstat == 0 ]; then
+    if [ $exitstat -eq 0 ]; then
        alldone='yes'
     else
        echo "some files missing, try again .."
