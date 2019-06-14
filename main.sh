@@ -3,8 +3,9 @@
 # main driver script
 # single resolution hybrid using jacobian in the EnKF
 
-# allow this script to submit other scripts on WCOSS
+# allow this script to submit other scripts with LSF
 unset LSB_SUB_RES_REQ 
+
 echo "nodes = $NODES"
 
 idate_job=1
