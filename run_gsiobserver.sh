@@ -61,7 +61,7 @@ ls -l $diagfile
 niter=1
 alldone='no'
 if [ -s ${diagfile} ]; then
-  set alldone='yes'
+  alldone='yes'
 fi
 
 while [ $alldone == "no" ] && [ $niter -le $nitermax ]; do
@@ -120,20 +120,20 @@ status=$?
 
 if [ $status -ne 0 ]; then
   echo "gsi hybrid observer did not complete sucessfully"
-  set exitstat=1
+  exitstat=1
 else
   if [ ! -s ${diagfile} ]; then
     ls -l ${diagfile}
     echo "gsi hybrid observer did not complete sucessfully"
-    set exitstat=1
+    exitstat=1
   else
     echo "gsi hybrid completed sucessfully"
-    set exitstat=0
+    exitstat=0
   fi
 fi
 
 if [ $exitstat -eq 0 ] then
-   set alldone='yes'
+   alldone='yes'
 else
    echo "some files missing, try again .."
    niter=$((niter+1))

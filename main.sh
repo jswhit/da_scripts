@@ -157,7 +157,7 @@ if [ $controlfcst == 'false' ] || [ $replay_controlfcst == 'true' ]; then
    # single res hybrid, just symlink ensmean to control (no separate control forecast)
    fh=$FHMIN
    while [ $fh -le $FHMAX ]; do
-     set fhr=`printf %02i $fh`
+     fhr=`printf %02i $fh`
      ln -fs $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_control
      ln -fs $datapath2/bfg_${analdate}_fhr${fhr}_ensmean $datapath2/bfg_${analdate}_fhr${fhr}_control
      fh=$((fh+FHOUT))
@@ -268,7 +268,7 @@ if [ $controlanal == 'true' ] && [ $recenter_anal == 'true' ]; then
    else
       echo "$analdate recenter enkf analysis ensemble around control analysis `date`"
       sh ${enkfscripts}/recenter_ens_anal.sh > ${current_logdir}/recenter_ens_anal.out 2>&1
-      set recenter_done=`cat ${current_logdir}/recenter_ens.log`
+      recenter_done=`cat ${current_logdir}/recenter_ens.log`
       if [ $recenter_done == 'yes' ]; then
         echo "$analdate recentering enkf analysis completed successfully `date`"
       else
