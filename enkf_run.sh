@@ -62,7 +62,7 @@ echo "computing enkf update..."
 date
 cd ${datapath2}
 
-cat <<EOF1 >! enkf.nml
+cat <<EOF > enkf.nml
  &nam_enkf
   datestring="$analdate",datapath="$datapath2",
   analpertwtnh=$analpertwtnh,analpertwtsh=$analpertwtsh,analpertwttr=$analpertwttr,
@@ -176,7 +176,7 @@ cat <<EOF1 >! enkf.nml
   
  /
  &END
-EOF1
+EOF
 
 
 cat enkf.nml

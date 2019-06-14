@@ -374,7 +374,7 @@ echo "$analdate all done"
 # next analdate: increment by $ANALINC
 export analdate=`${incdate} $analdate $ANALINC`
 
-echo "export analdate=${analdate}" >!$startupenv
+echo "export analdate=${analdate}" > $startupenv
 echo "export analdate_end=${analdate_end}" >> $startupenv
 echo "export fg_only=false" > $datapath/fg_only.sh
 
