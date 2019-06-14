@@ -324,7 +324,7 @@ if [ "$warm_start" == "T" ] && [ -z $skip_global_cycle ]; then
    if [ $NST_GSI -gt 0 ]; then
        export GSI_FILE=${datapath2}/${PREINP}dtfanl.nc
    fi
-   . ${enkfscripts}/global_cycle_driver.sh
+   sh ${enkfscripts}/global_cycle_driver.sh
    n=1
    while [ $n -le 6 ]; do
      ls -l ${COMOUT}/sfcanl_data.tile${n}.nc

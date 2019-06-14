@@ -441,4 +441,4 @@ export use_prepb_satwnd=.false.
 
 cd $enkfscripts
 echo "run main driver script"
-. ./main.sh
+sh ./main.sh
