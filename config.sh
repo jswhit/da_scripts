@@ -8,14 +8,24 @@ export RES_CTL=384
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
-export alpha=500 # percentage of 3dvar increment (beta_2*1000)
-export beta=1000 # percentage of enkf increment (*10)
+export alpha=1000 # percentage of 3dvar increment (beta_2*1000)
+export beta=0 # percentage of enkf increment (*10)
 export hybgain='true' # set to true for hybrid gain 3DVar/EnKF
-export exptname="C${RES}C${RES_CTL}_hybgain"
+export exptname="C${RES}C${RES_CTL}_hybgain4"
 export cores=`expr $NODES \* $corespernode`
 
-export fg_gfs="run_ens_fv3.csh"
-export ensda="enkf_run.csh"
+# check that value of NODES is consistent with PBS_NP on theia.
+if [ "$machine" == 'theia' ]; then
+   if [ $PBS_NP -ne $cores ]; then
+     echo "NODES = ${NODES} PBS_NP = ${PBS_NP} cores = ${cores}"
+     echo "NODES set incorrectly in preamble"
+     exit 1
+   fi
+fi
+#export KMP_AFFINITY=disabled
+
+export fg_gfs="run_ens_fv3.sh"
+export ensda="enkf_run.sh"
 export rungsi='run_gsi_4densvar.sh'
 export rungfs='run_fv3.sh' # ensemble forecast
 
@@ -431,4 +441,4 @@ export use_prepb_satwnd=.false.
 
 cd $enkfscripts
 echo "run main driver script"
-csh main.csh
+. ./main.sh

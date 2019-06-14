@@ -1,3 +1,4 @@
+#!/bin/sh
 # model was compiled with these 
 echo "starting at `date`"
 if [ "$machine" == 'theia' ]; then
@@ -323,7 +324,7 @@ if [ "$warm_start" == "T" ] && [ -z $skip_global_cycle ]; then
    if [ $NST_GSI -gt 0 ]; then
        export GSI_FILE=${datapath2}/${PREINP}dtfanl.nc
    fi
-   sh ${enkfscripts}/global_cycle_driver.sh
+   . ${enkfscripts}/global_cycle_driver.sh
    n=1
    while [ $n -le 6 ]; do
      ls -l ${COMOUT}/sfcanl_data.tile${n}.nc
@@ -706,7 +707,7 @@ ls -l INPUT
 # run model
 export PGM=$FCSTEXEC
 echo "start running model `date`"
-sh ${enkfscripts}/runmpi
+${enkfscripts}/runmpi
 if [ $? -ne 0 ]; then
    echo "model failed..."
    exit 1

@@ -14,6 +14,14 @@ hsi ls -l $hsidir
 hsi mkdir ${hsidir}/
 cd ${datapath2}
 
+#cd fgens2
+#htar -cvf ${hsidir}/${analdate}_sfgens.tar sfg*fhr06*mem* sfg*fhr06*ensmean
+#cd ..
+#hsi ls -l ${hsidir}/${analdate}_sfgens.tar
+#if [ $? -ne 0 ]; then
+#   echo "htar sfgens failed"
+#fi
+
 if [ $save_hpss_full == "true" ]; then
    echo "htar fgens, fgens2"
    /bin/rm -rf gsitmp*

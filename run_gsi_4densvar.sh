@@ -1,3 +1,4 @@
+#!/bin/sh
 echo "Time starting at `date` "
 
 VERBOSE=${VERBOSE:-"YES"}
@@ -822,7 +823,7 @@ ls -l
 echo "Time before GSI `date` "
 export PGM=$tmpdir/gsi.x
 export FORT_BUFFERED=TRUE
-sh ${enkfscripts}/runmpi
+${enkfscripts}/runmpi
 rc=$?
 if [[ $rc -ne 0 ]];then
   echo "GSI failed with exit code $rc"
@@ -938,7 +939,7 @@ fi
 #             cat $HOSTFILE
 #          fi
 #          corecount=$((corecount+$nprocs))
-#          sh ${enkfscripts}/runmpi 1> nc_diag_cat_${type}_${string}.out 2> nc_diag_cat_${type}_${string}.out &
+#          ${enkfscripts}/runmpi 1> nc_diag_cat_${type}_${string}.out 2> nc_diag_cat_${type}_${string}.out &
 #          if [ $corecount -eq $cores ]; then
 #             echo "waiting... corecount=$corecount"
 #             wait
@@ -987,8 +988,8 @@ for loop in $loops; do
                echo "contents of hostfile_${nodecount}..."
                cat $HOSTFILE
             fi
-            sh ${enkfscripts}/runmpi 1> ${current_logdir}/nc_diag_cat_${type}_${string}_${charnanal2}.out 2> ${current_logdir}/nc_diag_cat_${type}_${string}_${charnanal2}.err &
-            #sh ${enkfscripts}/runmpi 1> nc_diag_cat_${type}_${string}.out &
+            ${enkfscripts}/runmpi 1> ${current_logdir}/nc_diag_cat_${type}_${string}_${charnanal2}.out 2> ${current_logdir}/nc_diag_cat_${type}_${string}_${charnanal2}.err &
+            #${enkfscripts}/runmpi 1> nc_diag_cat_${type}_${string}.out &
             if [ $nodecount -eq $totnodes ]; then
                echo "waiting... nodecount=$nodecount"
                wait

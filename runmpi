@@ -1,3 +1,4 @@
+#!/bin/sh
 export OMP_NUM_THREADS=${OMP_NUM_THREADS:-1}
 [ -z "$nprocs" ] && echo "Need to set nprocs" && exit 1;
 [ -z "$machine" ] && echo "Need to set machine" && exit 1;
@@ -13,18 +14,20 @@ if [ ! -z $SLURM_JOB_ID ]; then
    # -c: cpus per task (number of threads per mpi task)
    # -n: number of mpi tasks
    # -N: number of nodes to run on
-   echo "running srun -N $totnodes -n $nprocs -c ${count} --cpu-bind=cores --exclusive --gres=craynetwork:0 $PGM"
-   eval srun -N $totnodes -n $nprocs -c ${count} --cpu-bind=cores --exclusive --gres=craynetwork:0 $PGM
+   echo "running srun -N $totnodes -n $nprocs -c ${count} --exclusive $PGM"
+   eval srun -N $totnodes -n $nprocs -c ${count} --exclusive $PGM
    rc=$?
 elif [ "$machine" == 'wcoss' ] ; then
    [ -z "$mpitaskspernode" ] && echo "Need to set mpitaskspernode" && exit 1;
    echo "running aprun -n $nprocs -N $mpitaskspernode -d ${OMP_NUM_THREADS} --cc depth $PGM"
    eval aprun -n $nprocs -N $mpitaskspernode -d ${OMP_NUM_THREADS} --cc depth $PGM
+   rc=$?
 elif [ "$machine" == 'gaea' ] ; then
    [ -z "$mpitaskspernode" ] && echo "Need to set mpitaskspernode" && exit 1;
    # use aprun
    echo "running aprun -n $nprocs -N $mpitaskspernode -d ${OMP_NUM_THREADS} --cc depth $PGM"
    eval aprun -n $nprocs -N $mpitaskspernode -d ${OMP_NUM_THREADS} --cc depth $PGM
+   rc=$?
 elif [ "$machine" == 'theia' ]; then
    # HOSTFILE env var must be set
    [ -z "$HOSTFILE" ] && echo "Need to set HOSTFILE" && exit 1;
