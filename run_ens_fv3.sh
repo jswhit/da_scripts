@@ -67,7 +67,7 @@ while [ $nanal -le $nanals ]; do
  fi
 
  node_end_next=$((node_end+${fg_proc}-1))
- if ($node_end > $nhosts || $node_end_next > $nhosts) then
+ if [ $node_end -gt $nhosts ] || [ $node_end_next -gt $nhosts ]; then
   echo "$node_end $node_end_next $nhosts"
   echo "waiting at nanal = ${nanal} `date`"
   wait

@@ -69,18 +69,18 @@ export fv_sg_adj=$fv_sg_adj_ctl
 echo "fv_sg_adj = $fv_sg_adj"
 export cdmbgwd="$cdmbgwd_ctl"
 echo "cdmbgwd = $cdmbgwd"
-if [ -z $psautco_ctl ]; then
+if [ ! -z $psautco_ctl ]; then
 export psautco="$psautco_ctl"
 echo "psautco = $psautco"
 fi
-if [ -z $prautco_ctl ]; then
+if [ ! -z $prautco_ctl ]; then
 export prautco="$psautco_ctl"
 echo "prautco = $psautco"
 fi
-if [ -z $k_split_ctl ]; then
+if [ ! -z $k_split_ctl ]; then
 export k_split="${k_split_ctl}"
 fi
-if [ -z $n_split_ctl ]; then
+if [ ! -z $n_split_ctl ]; then
 export n_split="${n_split_ctl}"
 fi
 export fg_proc=$nprocs
