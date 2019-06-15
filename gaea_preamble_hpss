@@ -1,7 +1,7 @@
 #!/bin/sh
 #PBS -A nggps_psd
 ##PBS -A cpo_ngrr_e
-#PBS -l partition=es,size=1,walltime=6:00:00
+#PBS -l partition=es,size=1,walltime=16:00:00
 #PBS -q rdtn
 #PBS -N tarit
 #PBS -e tarit.err

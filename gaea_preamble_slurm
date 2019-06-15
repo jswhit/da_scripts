@@ -1,9 +1,11 @@
 #!/bin/sh
 #SBATCH -q urgent
+##SBATCH -q debug
 #SBATCH --clusters c4
 #SBATCH -t 16:00:00
-#SBATCH -A nggps_psd
-##SBATCH -A cpo_ngrr_e
+##SBATCH -t 00:30:00
+##SBATCH -A nggps_psd
+#SBATCH -A cpo_ngrr_e
 #SBATCH -N 20    
 #SBATCH -J C192C384_hybgain
 #SBATCH -e C192C384_hybgain.err
@@ -28,6 +30,7 @@ elif [ $NODES -eq 20 ]; then
   #export control_proc=444   # total number of processors for control forecast
   export control_threads=3
   export control_proc=666
+  export control_proc_noquilt=648
   export write_groups_ctl=1 # write groups for control forecast.
   export layout_ctl="6,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
 elif [ $NODES -eq 40 ] || [ $NODES -eq 41 ]; then

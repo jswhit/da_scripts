@@ -1,7 +1,6 @@
 #!/bin/sh
 # do hybrid analysis.
 
-sleep 10
 export CO2DIR=$fixgsi
 
 #export charnanal 'control'

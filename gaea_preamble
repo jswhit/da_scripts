@@ -1,6 +1,6 @@
 #!/bin/sh
-#PBS -A nggps_psd
-##PBS -A cpo_ngrr_e
+##PBS -A nggps_psd
+#PBS -A cpo_ngrr_e
 #PBS -l partition=c4
 ##PBS -q debug
 #PBS -q urgent

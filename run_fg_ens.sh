@@ -1,7 +1,6 @@
 #!/bin/sh
 # run ensemble first guess.
 # first, clean up old first guesses.
-sleep 10
 if [ $cleanup_fg == 'true' ];  then
 echo "deleting existing files..."
 nanal=1

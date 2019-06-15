@@ -707,6 +707,7 @@ ls -l INPUT
 
 # run model
 export PGM=$FCSTEXEC
+sleep 1 # avoid spawning too many jobs too fast (workaround for slurm issue on gaea)
 echo "start running model `date`"
 ${enkfscripts}/runmpi
 if [ $? -ne 0 ]; then

@@ -1,7 +1,6 @@
 #!/bin/sh
 export VERBOSE=YES
 
-sleep 10
 date
 # run model
 export DATOUT=${datapath}/${analdatep1}
@@ -61,6 +60,7 @@ while [ $nanal -le $nanals ]; do
       cat $HOSTFILE
    fi
    sh ${enkfscripts}/${rungfs} > ${current_logdir}/run_fg_${charnanal}.iter${niter}.out 2>&1 &
+   sleep 1
    nhost=$((nhost+fg_proc))
  else
    echo "skipping nanal = ${nanal}, output files already created"
