@@ -132,7 +132,7 @@ else
   fi
 fi
 
-if [ $exitstat -eq 0 ] then
+if [ $exitstat -eq 0 ]; then
    alldone='yes'
 else
    echo "some files missing, try again .."
