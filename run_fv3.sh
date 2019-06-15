@@ -176,6 +176,7 @@ if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
       /bin/rm -f ${increment_file}
       export "PGM=${execdir}/calc_increment_nemsio.x ${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal} ${analfile} ${increment_file} T F"
       nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
+      sleep 1 # avoid spawning too many jobs too fast (workaround for slurm issue on gaea)
       if [ $? -ne 0 -o ! -s ${increment_file} ]; then
          echo "problem creating ${increment_file}, stopping .."
          exit 1

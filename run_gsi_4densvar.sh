@@ -988,6 +988,7 @@ for loop in $loops; do
                echo "contents of hostfile_${nodecount}..."
                cat $HOSTFILE
             fi
+            sleep 1 # avoid spawning too many jobs too fast (workaround for slurm issue on gaea)
             ${enkfscripts}/runmpi 1> ${current_logdir}/nc_diag_cat_${type}_${string}_${charnanal2}.out 2> ${current_logdir}/nc_diag_cat_${type}_${string}_${charnanal2}.err &
             #${enkfscripts}/runmpi 1> nc_diag_cat_${type}_${string}.out &
             if [ $nodecount -eq $totnodes ]; then
