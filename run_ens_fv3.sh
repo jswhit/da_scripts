@@ -60,7 +60,7 @@ while [ $nanal -le $nanals ]; do
       cat $HOSTFILE
    fi
    sh ${enkfscripts}/${rungfs} > ${current_logdir}/run_fg_${charnanal}.iter${niter}.out 2>&1 &
-   sleep 1
+   sleep 2
    nhost=$((nhost+fg_proc))
  else
    echo "skipping nanal = ${nanal}, output files already created"
