@@ -1,7 +1,17 @@
 echo "running on $machine using $NODES nodes"
 ## ulimit -s unlimited
 
-export exptname=C192C192_hybgain
+export ndates_job=10 # number of DA cycles to run in one job submission
+# resolution of control and ensmemble.
+export RES=192
+export RES_CTL=384 
+# Penney 2014 Hybrid Gain algorithm with beta_1=1.0
+# beta_2=alpha and beta_3=0 in eqn 6 
+# (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
+export alpha=500 # percentage of 3dvar increment (beta_2*1000)
+export beta=1000 # percentage of enkf increment (*10)
+export hybgain='true' # set to true for hybrid gain 3DVar/EnKF
+export exptname="C${RES}C${RES_CTL}_hybgain"
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia.
@@ -14,16 +24,15 @@ if [ "$machine" == 'theia' ]; then
 fi
 #export KMP_AFFINITY=disabled
 
-export fg_gfs="run_ens_fv3.csh"
-export ensda="enkf_run.csh"
+export fg_gfs="run_ens_fv3.sh"
+export ensda="enkf_run.sh"
 export rungsi='run_gsi_4densvar.sh'
 export rungfs='run_fv3.sh' # ensemble forecast
 
 export recenter_anal="true" # recenter enkf analysis around GSI hybrid 4DEnVar analysis
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
 export controlanal='true' # use gsi hybrid (if false, pure enkf is used)
-export controlfcst='false' # if true, run dual-res setup with single high-res control
-export hybgain='true' # hybrid gain 3DVar/EnKF
+export controlfcst='true' # if true, run dual-res setup with single high-res control
 export cleanup_fg='true'
 export cleanup_ensmean='true'
 export cleanup_anal='true'
@@ -34,15 +43,15 @@ export resubmit='true'
 # control forecast files have 'control2' suffix, instead of 'control'
 # GSI observer will be run on 'control2' forecast
 # this is for diagnostic purposes (to get GSI diagnostic files) 
-export replay_controlfcst='false'
-export replay_run_observer='false' # run observer on replay forecast
+export replay_controlfcst='true'
+export replay_run_observer='true' # run observer on replay forecast
 # python script checkdate.py used to check
 # YYYYMMDDHH analysis date string to see if
 # full ensemble should be saved to HPSS (returns 0 if 
 # HPSS save should be done)
 export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
 export save_hpss="true"
-export run_long_fcst="false"  # spawn a longer control forecast at 00 UTC
+export run_long_fcst="true"  # spawn a longer control forecast at 00 UTC
 export ensmean_restart='false'
 export copy_history_files=1 # save pressure level history files (and compute ens mean)
 
@@ -68,18 +77,13 @@ elif [ "$machine" == 'theia' ]; then
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    export obs_datapath=/scratch3/BMC/gsienkf/whitaker/gdas1bufr
 elif [ "$machine" == 'gaea' ]; then
-   export basedir=/lustre/f1/unswept/${USER}
-   export datadir=/lustre/f1/${USER}
+   export basedir=/lustre/f2/dev/${USER}
+   export datadir=/lustre/f2/scratch/${USER}
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    #export hsidir="/3year/NCEPDEV/GEFSRR/${exptname}"
-   export obs_datapath=/lustre/f1/unswept/Jeffrey.S.Whitaker/fv3_reanl/gdas1bufr
-elif [ "$machine" == 'cori' ]; then
-   export basedir=${SCRATCH}
-   export datadir=$basedir
-   export hsidir="fv3_reanl/${exptname}"
-   export obs_datapath=${basedir}/gdas1bufr
+   export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/fv3_reanl/gdas1bufr
 else
-   echo "machine must be 'wcoss', 'theia', 'gaea' or 'cori', got $machine"
+   echo "machine must be 'wcoss', 'theia', or 'gaea' got $machine"
    exit 1
 fi
 export datapath="${datadir}/${exptname}"
@@ -99,11 +103,6 @@ export lnsigcutoffsatsh=1.5
 export obtimelnh=1.e30       
 export obtimeltr=1.e30       
 export obtimelsh=1.e30       
-export readin_localization=.false.
-
-# resolution of control and ensmemble.
-export RES=192
-export RES_CTL=384 
 
 # model physics parameters.
 export psautco="0.0008,0.0005"
@@ -141,17 +140,27 @@ if [ $imp_physics == "11" ]; then
    export nwat=6
    export cal_pre=F
    export dnats=1
+   export cal_pre=".false."
    export do_sat_adj=".true."
    export random_clds=".false."
-   export cnvcld=".false."
+   export lgfdlmprad=".true."
+   export effr_in=".true."
 else
    export ncld=1
    export nwat=2
-   export cal_pre=T
    export dnats=0
+   export cal_pre=".true."
+   export do_sat_adj=".false."
+   export random_clds=".true."
+   export vtdm4=0.02
+   export nord=2
+   export dddmp=0.1
+   export d4_bg=0.12
 fi
 export k_split=1
 export n_split=6
+export fv_sg_adj=450
+export fv_sg_adj_ctl=$fv_sg_adj
 export hydrostatic=F
 if [ $hydrostatic == 'T' ];  then
    export fv3exec='fv3-hydro.exe'
@@ -191,7 +200,7 @@ if [ $imp_physics -eq 11 ]; then
 fi
 
 # stochastic physics parameters.
-export SPPT=0.6
+export SPPT=0.5
 export SPPT_TSCALE=21600.
 export SPPT_LSCALE=500.e3
 export SHUM=0.005
@@ -203,39 +212,30 @@ export SKEB_LSCALE=500.e3
 export SKEBNORM=0
 export SKEB_NPASS=30
 export SKEB_VDOF=5
-export RNDA=0.0
-export RNDA_VDOF=0
-export RNDA_LSCALE=250.
-export RNDA_TSCALE=21600.
-export RNDA_PERTVORTFLUX=T
 
 # resolution dependent model parameters
 if [ $RES -eq 384 ]; then
    export JCAP=766
    export LONB=1536
    export LATB=768
-   export fv_sg_adj=600
-   export dt_atmos=225
+   export dt_atmos=225 # for n_split=6
    export cdmbgwd="1.0,1.2"
 elif [ $RES -eq 192 ]; then
    export JCAP=382 
    export LONB=768   
    export LATB=384  
-   export fv_sg_adj=900
    export dt_atmos=450
    export cdmbgwd="0.2,2.5"
 elif [ $RES -eq 128 ]; then
    export JCAP=254 
    export LONB=512   
    export LATB=256  
-   export fv_sg_adj=1500
    export dt_atmos=720
    export cdmbgwd="0.15,2.75"
 elif [ $RES -eq 96 ]; then
    export JCAP=188 
    export LONB=384   
    export LATB=190  
-   export fv_sg_adj=1800
    export dt_atmos=900
    export cdmbgwd="0.125,3.0"
 else
@@ -244,27 +244,24 @@ else
 fi
 
 if [ $RES_CTL -eq 768 ]; then
-   export fv_sg_adj_ctl=600
-   export dt_atmos_ctl=120
    export cdmbgwd_ctl="3.5,0.25"
-   export psautco_ctl="0.0008,0.0005"
-   export prautco_ctl="0.00015,0.00015"
    export LONB_CTL=3072
    export LATB_CTL=1536
+   export k_split_ctl=2
+   export n_split_ctl=6
+   export dt_atmos_ctl=225
+   #export dt_atmos_ctl=112.5
 elif [ $RES_CTL -eq 384 ]; then
-   export fv_sg_adj_ctl=600
    export dt_atmos_ctl=225
    export cdmbgwd_ctl="1.0,1.2"
    export LONB_CTL=1536
    export LATB_CTL=768
 elif [ $RES_CTL -eq 192 ]; then
-   export fv_sg_adj_ctl=900
    export dt_atmos_ctl=450
    export cdmbgwd_ctl="0.25,2.0"
    export LONB_CTL=768  
    export LATB_CTL=384
 elif [ $RES_CTL -eq 96 ]; then
-   export fv_sg_adj_ctl=1800
    export dt_atmos_ctl=900
    export cdmbgwd_ctl="0.125,3.0"
    export LONB_CTL=384  
@@ -283,12 +280,12 @@ export ANALINC=6
 export LEVS=64
 export FHMIN=3
 export FHMAX=9
+export FHMAX_LONG=120 # control forecast every 00UTC in run_long_fcst=true
 export FHOUT=3
 FHMAXP1=`expr $FHMAX + 1`
 export enkfstatefhrs=`python -c "print range(${FHMIN},${FHMAXP1},${FHOUT})" | cut -f2 -d"[" | cut -f1 -d"]"`
 export iaufhrs="3,6,9"
 export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
-export iau_filter_weights=T
 # dump increment in one time step (for debugging)
 #export iaufhrs="6"
 #export iau_delthrs=0.25
@@ -301,30 +298,29 @@ export iau_filter_weights=T
 export SMOOTHINF=35
 export npts=`expr \( $LONA \) \* \( $LATA \)`
 export RUN=gdas1 # use gdas obs
-export reducedgrid=.false.
+export reducedgrid=.true.
 export univaroz=.false.
 
 export iassim_order=0
 
 export covinflatemax=1.e2
 export covinflatemin=1.0                                            
-export analpertwtnh=0.9
-export analpertwtsh=0.9
-export analpertwttr=0.9
-export analpertwtnh_rtpp=0.4
-export analpertwtsh_rtpp=0.4
-export analpertwttr_rtpp=0.4
+export analpertwtnh=0.75
+export analpertwtsh=0.75
+export analpertwttr=0.75
+export analpertwtnh_rtpp=0.0
+export analpertwtsh_rtpp=0.0
+export analpertwttr_rtpp=0.0
 export pseudo_rh=.true.
-export use_qsatensmean=.true.
                                                                     
 export letkf_flag=.true.
 export denkf=.true.
 export getkf=.true.
+export getkf_inflation=.false.
 export modelspace_vloc=.true.
 export letkf_novlocal=.true.
 export dfs_sort=.false.
 export nobsl_max=10000
-#export nobsl_max=5000
 export sprd_tol=1.e30
 export varqc=.false.
 export huber=.false.
@@ -363,13 +359,14 @@ export saterrfact=1.0
 export deterministic=.true.
 export sortinc=.true.
                                                                     
-export nitermax=2
+export nitermax=1
 
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
 
 if [ "$machine" == 'theia' ]; then
+   export python=/contrib/anaconda/2.3.0/bin/python
    export fv3gfspath=/scratch4/NCEPDEV/global/save/glopara/svn/fv3gfs
    export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
@@ -382,38 +379,26 @@ if [ "$machine" == 'theia' ]; then
    export gsiexec=${execdir}/global_gsi
    export nemsioget=${execdir}/nemsio_get
 elif [ "$machine" == 'gaea' ]; then
-# warning - these paths need to be updated on gaea
-   export fv3gfspath=/lustre/f1/unswept/Jeffrey.S.Whitaker/fv3_reanl/fv3gfs/global_shared.v15.0.0
-## export fv3gfspath=${basedir}/fv3gfs/global_shared.v15.0.0
+   export python=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/bin/python
+   export PYTHONPATH=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/lib/python2.7/site-packages
+   #export fv3gfspath=/lustre/f1/pdata/ncep_shared/fv3/fix-fv3gfs/
+   export fv3gfspath=/lustre/f2/dev/Jeffrey.S.Whitaker/fv3_reanl/fv3gfs/global_shared.v15.0.0
    export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
-   export gsipath=/lustre/f1/unswept/Jeffrey.S.Whitaker/fv3_reanl/ProdGSI
-## export gsipath=${basedir}/ProdGSI
+   export gsipath=/lustre/f2/dev/Jeffrey.S.Whitaker/fv3_reanl/ProdGSI
    export fixgsi=${gsipath}/fix
-   export fixcrtm=${fixgsi}/crtm_v2.2.3
+   export fixcrtm=/lustre/f2/pdata/ncep_shared/NCEPLIBS/lib/crtm/v2.2.5/fix
+   #export fixcrtm=${fixgsi}/crtm_v2.2.3
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
    export nemsioget=${execdir}/nemsio_get
 elif [ "$machine" == 'wcoss' ]; then
+   export python=`which python`
    export fv3gfspath=/gpfs/hps3/emc/global/noscrub/emc.glopara/svn/fv3gfs
    export gsipath=/gpfs/hps2/esrl/gefsrr/noscrub/Jeffrey.S.Whitaker/gsi/ProdGSI
    export FIXFV3=${fv3gfspath}/fix_fv3
-   export FIXGLOBAL=${fv3gfspath}/fix/fix_am
-   export fixgsi=${gsipath}/fix
-   export fixcrtm=${fixgsi}/crtm_v2.2.3
-   export execdir=${enkfscripts}/exec_${machine}
-   export enkfbin=${execdir}/global_enkf
-   export FCSTEXEC=${execdir}/${fv3exec}
-   export gsiexec=${execdir}/global_gsi
-   export nemsioget=${execdir}/nemsio_get
-elif [ "$machine" == 'cori' ]; then
-   #export fv3gfspath=/project/projectdirs/refcst/whitaker/fv3_reanl/fv3gfs/global_shared.v15.0.0
-   export fv3gfspath=$SCRATCH/global_shared.v15.0.0
-   #export gsipath=/project/projectdirs/refcst/whitaker/fv3_reanl/ProdGSI
-   export gsipath=$SCRATCH/ProdGSI
-   export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
    export fixgsi=${gsipath}/fix
    export fixcrtm=${fixgsi}/crtm_v2.2.3
@@ -436,29 +421,24 @@ export OZINFO=${enkfscripts}/global_ozinfo_oper_fix.txt
 #export SATINFO=${enkfscripts}/global_satinfo.txt.clrsky
 export SATINFO=${enkfscripts}/global_satinfo.txt
 
-# parameters for hybrid
-#export beta1_inv=0.0    # 0 means all ensemble, 1 means all 3DVar.
-export beta1_inv=0.125    # 0 means all ensemble, 1 means all 3DVar.
-#export beta1_inv=0 # non-hybrid, pure ensemble
-# these are only used if readin_localization=F
-export s_ens_h=485      # a gaussian e-folding, similar to sqrt(0.15) times Gaspari-Cohn length
-export s_ens_v=-0.582   # in lnp units.
+# parameters for hybrid gain
+if [ $hybgain == "true" ]; then
+   export beta1_inv=1.000
+   export readin_beta=.false.
+else
+   export beta1_inv=0.125   # 0 means all ensemble, 1 means all 3DVar.
+   export readin_beta=.true.
+fi
+# change the next line to .true. to read in from hybens_info file.
+export readin_localization=.false.
+# if above is .false., these values are used in GSI (not used at all for hybgain)
+export s_ens_h=343.     # 1250 km
+export s_ens_v=-0.58    # 1.5 scale heights
+
 # NOTE: most other GSI namelist variables are in ${rungsi}
 export aircraft_bc=.true.
 export use_prepb_satwnd=.false.
 
-# parameters for hybrid gain
-if [ $hybgain == "true" ]; then
-   export beta1_inv=1.   # 0 means all ensemble, 1 means all 3DVar.
-   export alpha=250 # percentage of 3dvar increment (*10)
-   export beta=1000 # percentage of enkf increment (*10)
-fi
-
 cd $enkfscripts
 echo "run main driver script"
-if [ $hybgain == "true" ]; then
-   csh main_hybgain.csh
-else
-   csh main.csh
-   #csh main2.csh
-fi
+sh ./main.sh

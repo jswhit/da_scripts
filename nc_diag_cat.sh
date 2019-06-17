@@ -30,7 +30,7 @@ for loop in $loops; do
           export PGM="${execdir}/nc_diag_cat.x -o ${savdir}/diag_${type}_${string}.${analdate}_${charnanal2}.nc4  pe*${type}_${loop}*nc4"
           ls -l pe*${type}_${loop}*nc4
           nodecount=$((nodecount+1))
-          if [ "$machine" == 'theia' ]; then
+          if [ ! -z $SLURM_JOB_ID ] && [ "$machine" == 'theia' ]; then
              node=`head -$nodecount $NODEFILE | tail -1`
              export HOSTFILE=hostfile_${nodecount}
              /bin/rm -f $HOSTFILE

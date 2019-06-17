@@ -1,3 +1,4 @@
+#!/bin/sh
 # model was compiled with these 
 echo "starting at `date`"
 if [ "$machine" == 'theia' ]; then
@@ -11,8 +12,8 @@ if [ "$machine" == 'theia' ]; then
    module load nco/4.6.0
    module use /scratch4/NCEPDEV/nems/noscrub/emc.nemspara/soft/modulefiles
    module load esmf/7.1.0rp1bs01
-   export WGRIB=`which wgrib`
    module list
+   export WGRIB=`which wgrib`
 elif [ "$machine" == 'wcoss' ]; then
    module load grib_util/1.0.3
    module load nco-gnu-sandybridge
@@ -22,10 +23,6 @@ elif [ "$machine" == 'gaea' ]; then
    module load wgrib
    export WGRIB=`which wgrib`
 ##   export WGRIB=/ncrc/home1/Gary.Bates/bin/wgrib
-elif [ "$machine" == 'cori' ]; then
-   source $MODULESHOME/init/sh
-   module load craype-mic-knl
-   module list
 fi
 
 export VERBOSE=${VERBOSE:-"NO"}
@@ -35,6 +32,7 @@ if [ "$VERBOSE" == "YES" ]; then
  set -x
 fi
 
+niter=${niter:-1}
 if [ "$charnanal" != "control" ] && [ "$charnanal" != "ensmean" ] && [ "$charnanal" != "control2" ]; then
    nmem=`echo $charnanal | cut -f3 -d"m"`
    nmem=$(( 10#$nmem )) # convert to decimal (remove leading zeros)
@@ -176,8 +174,9 @@ if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
       fi
       echo "create ${increment_file}"
       /bin/rm -f ${increment_file}
-      export "PGM=${execdir}/calc_increment.x ${analfile} ${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal} ${increment_file} T T -1"
+      export "PGM=${execdir}/calc_increment_nemsio.x ${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal} ${analfile} ${increment_file} T F"
       nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
+      sleep 2 # avoid spawning too many jobs too fast (workaround for slurm issue on gaea)
       if [ $? -ne 0 -o ! -s ${increment_file} ]; then
          echo "problem creating ${increment_file}, stopping .."
          exit 1
@@ -221,6 +220,9 @@ else
       SPPT=0
       SKEB=0
       SHUM=0
+      # set to large value so no random patterns will be output
+      # and random pattern will be reinitialized
+      FHSTOCH=240
       # reduce model time step
       #dt_atmos=`python -c "print ${dt_atmos}/2"`
    fi
@@ -267,8 +269,8 @@ fnsnog=${obs_datapath}/bufr_${analdatem1}/gdas1.t${hourprev}z.snogrb
 nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
 if [ $nrecs_snow -eq 0 ]; then
    # no snow depth in file, use model
-   fnsnoa='        ' # no input file
-   fsnol=99999 # use model value
+   fnsnoa=' ' # no input file
+   export FSNOL=99999 # use model value
    echo "no snow depth in snow analysis file, use model"
 else
    # snow depth in file, but is it current?
@@ -277,33 +279,34 @@ else
         `$WGRIB -4yr ${fnsnog} 2>/dev/null |grep -i $snoid  |\
                awk -F: '{print $3}'|awk -F= '{print $2}'` ] ; then
       echo "no snow analysis, use model"
-      fnsnoa='        ' # no input file
-      fsnol=99999 # use model value
+      fnsnoa=' ' # no input file
+      export FSNOL=99999 # use model value
    else
       echo "current snow analysis found in snow analysis file, replace model"
-      fsnol=0 # use analysis value
+      export FSNOL=0 # use analysis value
    fi
 fi
 
 ls -l 
 
-export FHRESTART=${FHRESTART:-$ANALINC}
+FHRESTART=${FHRESTART:-$ANALINC}
 if [ "${iau_delthrs}" != "-1" ]; then
    FHOFFSET=$ANALINC
    FHMAX_FCST=`expr $FHMAX + $FHOFFSET`
-   #FHMAX_FCST=`expr $FHMAX + $ANALINC \/ 2`
+   FHSTOCH=`expr $FHRESTART + $FHOFFSET \/ 2`
    if [ "${fg_only}" == "true" ]; then
+      FHSTOCH=${FHSTOCH:-`expr $ANALINC \/ 2 + $FHOFFSET \/ 2`}
       FHRESTART=`expr $ANALINC \/ 2`
       FHMAX_FCST=$FHMAX
       FHOFFSET=0
    fi
 else
+   FHSTOCH=$FHRESTART
    FHMAX_FCST=$FHMAX
    FHOFFSET=0
 fi
-FHSTOCH=`expr $FHRESTART + $FHOFFSET \/ 2`
 
-if [ $FHCYC -eq 0 ] && [ "$warm_start" == "T" ] && [ -z $skip_global_cycle ]; then
+if [ "$warm_start" == "T" ] && [ -z $skip_global_cycle ]; then
    # run global_cycle to update surface in restart file.
    export BASE_GSM=${fv3gfspath}
    export FIXfv3=$FIXFV3
@@ -353,7 +356,12 @@ NST_RESV=${NST_RESV-0}
 ZSEA1=${ZSEA1:-0}
 ZSEA2=${ZSEA2:-0}
 nstf_name=${nstf_name:-"$NST_MODEL,$NST_SPINUP,$NST_RESV,$ZSEA1,$ZSEA2"}
-nst_anl=${nst_anl:-".false."}
+nst_anl=${nst_anl:-".true."}
+if [ $NST_GSI -gt 0 ] && [ $FHCYC -gt 0]; then
+   fntsfa='        ' # no input file, use GSI foundation temp
+   fnsnoa='        '
+   fnacna='        '
+fi
 
 cat > model_configure <<EOF
 print_esmf:              .true.
@@ -369,6 +377,7 @@ nhours_fcst:             ${FHMAX_FCST}
 RUN_CONTINUE:            F
 ENS_SPS:                 F
 dt_atmos:                ${dt_atmos} 
+output_1st_tstep_rst:    .false.
 calendar:                'julian'
 cpl:                     F
 memuse_verbose:          F
@@ -437,7 +446,7 @@ cat > input.nml <<EOF
 
 &fms_nml
   clock_grain = "ROUTINE",
-  domains_stack_size = 5000000,
+  domains_stack_size = 6000000,
   print_memory_usage = F,
 /
 
@@ -478,7 +487,7 @@ cat > input.nml <<EOF
   na_init = ${na_init},
   d_ext = 0.0,
   dnats = ${dnats},
-  fv_sg_adj = ${fv_sg_adj:-600},
+  fv_sg_adj = ${fv_sg_adj:-450},
   d2_bg = 0.0,
   nord = ${nord:-3},
   dddmp = ${dddmp:-0.2},
@@ -521,14 +530,16 @@ cat > input.nml <<EOF
 /
 
 &gfs_physics_nml
+  iccn           = F
   fhzero         = ${FHOUT}
   ldiag3d        = F
   fhcyc          = ${FHCYC}
+  nst_anl        = ${nst_anl}
   use_ufo        = T
   pre_rad        = F
   ncld           = ${ncld}
   imp_physics    = ${imp_physics}
-  pdfcld         = F
+  pdfcld         = ${pdfcld:-"F"}
   fhswr          = 3600.
   fhlwr          = 3600.
   ialb           = 1
@@ -544,10 +555,10 @@ cat > input.nml <<EOF
   shal_cnv       = T
   cal_pre        = ${cal_pre:-"T"}
   redrag         = T
-  dspheat        = F
+  dspheat        = ${dspheat:-"T"}
   hybedmf        = T
   random_clds    = ${random_clds:-"T"}
-  trans_trac     = F
+  trans_trac     = ${trans_trac:-"T"}
   cnvcld         = ${cnvcld:-"T"}
   imfshalcnv     = 2
   imfdeepcnv     = 2
@@ -556,13 +567,15 @@ cat > input.nml <<EOF
   isot           = 1
   debug          = T
   nstf_name      = 0
-  cdmbgwd = ${cdmbgwd}
-  psautco = ${psautco}
-  prautco = ${prautco}
-  h2o_phys      = ${h2o_phys:-T}
-  nstf_name     = ${nstf_name}
-  nst_anl       = ${nst_anl}
-  iau_filter_weights = ${iau_filter_weights}
+  lgfdlmprad     = ${lgfdlmprad:-"F"}
+  effr_in        = ${effr_in:-"F"}
+  cdmbgwd        = ${cdmbgwd}
+  psautco        = ${psautco}
+  prautco        = ${prautco}
+  h2o_phys       = ${h2o_phys:-"T"}
+  nstf_name      = ${nstf_name}
+  nst_anl        = ${nst_anl}
+  iau_filter_increments = F
   iaufhrs = ${iaufhrs}
   iau_delthrs = ${iaudelthrs}
   iau_inc_files = ${iau_inc_files}
@@ -647,7 +660,20 @@ cat > input.nml <<EOF
   fsmcl(2) = 60,
   fsmcl(3) = 60,
   fsmcl(4) = 60,
-  fsnol=99999,
+  FTSFS = 90,
+  FAISL = 99999,
+  FAISS = 99999,
+  FSNOL = 99999,
+  FSNOS = 99999,
+  FSICL = 99999,
+  FSICS = 99999,
+  FTSFL = 99999,
+  FVETL = 99999,
+  FSOTL = 99999,
+  FvmnL = 99999,
+  FvmxL = 99999,
+  FSLPL = 99999,
+  FABSL = 99999,
 /
 
 &fv_grid_nml
@@ -671,11 +697,6 @@ cat > input.nml <<EOF
 &nam_sfcperts
 /
 EOF
-# RNDA=$RNDA, -999, -999, -999, -999,
-# RNDA_TAU=$RNDA_TSCALE, -999, -999, -999, -999,
-# RNDA_LSCALE=$RNDA_LSCALE, -999, -999, -999, -999,
-# RNDA_VDOF=$RNDA_VDOF,RNDA_SIGTOP1=0.15, RNDA_SIGTOP2=0.075,
-# RNDA_PERTVORTFLUX=$RNDA_PERTVORTFLUX,
 
 # ftsfs = 99999 means all climo or all model, 0 means all analysis,
 # 90 mean relax to climo
@@ -686,8 +707,9 @@ ls -l INPUT
 
 # run model
 export PGM=$FCSTEXEC
+sleep 2 # avoid spawning too many jobs too fast (workaround for slurm issue on gaea)
 echo "start running model `date`"
-sh ${enkfscripts}/runmpi
+${enkfscripts}/runmpi
 if [ $? -ne 0 ]; then
    echo "model failed..."
    exit 1
@@ -699,8 +721,7 @@ fi
 export DATOUT=${DATOUT:-$datapathp1}
 if [ "$quilting" == ".true." ]; then
    ls -l *nemsio*
-   #fh=$FHMIN
-   fh=0
+   fh=$FHMIN
    while [ $fh -le $FHMAX ]; do
      fh2=`expr $fh + $FHOFFSET`
      charfhr="fhr"`printf %02i $fh`
