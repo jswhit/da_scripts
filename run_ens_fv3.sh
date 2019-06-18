@@ -7,6 +7,8 @@ export DATOUT=${datapath}/${analdatep1}
 
 export OMP_NUM_THREADS=$fg_threads
 export nprocs=`expr $fg_proc \/ $OMP_NUM_THREADS`
+countproc=`python -c "import math; print ${corespernode}*int(math.ceil(float(${fg_proc})/${corespernode}))"`
+echo "countproc = $countproc"
 export mpitaskspernode=`expr $corespernode \/ $OMP_NUM_THREADS`
 
 if [ -z $SLURM_JOB_ID ] && [ $machine == 'theia' ]; then
@@ -44,7 +46,7 @@ while [ $nanal -le $nanals ]; do
 
  node=$nhost
  node_end=$node
- node_end=$((node_end+${fg_proc}-1))
+ node_end=$((node_end+${countproc}-1))
  if [ $filemissing == 'yes' ]; then
    echo "nanal = ${nanal}, nhost = ${nhost}, node = ${node}, node_end = ${node_end}"
    if [ -z $SLURM_JOB_ID ] && [ $machine == 'theia' ]; then
@@ -61,12 +63,12 @@ while [ $nanal -le $nanals ]; do
    fi
    sh ${enkfscripts}/${rungfs} > ${current_logdir}/run_fg_${charnanal}.iter${niter}.out 2>&1 &
    sleep 2
-   nhost=$((nhost+fg_proc))
+   nhost=$((nhost+countproc))
  else
    echo "skipping nanal = ${nanal}, output files already created"
  fi
 
- node_end_next=$((node_end+${fg_proc}-1))
+ node_end_next=$((node_end+${countproc}-1))
  if [ $node_end -gt $nhosts ] || [ $node_end_next -gt $nhosts ]; then
   echo "$node_end $node_end_next $nhosts"
   echo "waiting at nanal = ${nanal} `date`"
