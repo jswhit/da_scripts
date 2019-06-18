@@ -11,11 +11,12 @@ if [ ! -z $SLURM_JOB_ID ]; then
    totcores=`expr $nprocs \* $OMP_NUM_THREADS`
    totnodes=`python -c "import math; print int(math.ceil(float(${totcores})/${corespernode}))"`
    count=`python -c "import math; print int(math.floor(float(${corespernode})/${mpitaskspernode}))"` 
+   taskspernode=`python -c "import math; print int(math.ceil(float(${nprocs})/${totnodes}))"`
    # -c: cpus per task (number of threads per mpi task)
    # -n: number of mpi tasks
    # -N: number of nodes to run on
-   echo "running srun -N $totnodes -n $nprocs -c ${count} --exclusive $PGM"
-   eval srun -N $totnodes -n $nprocs -c ${count} --exclusive $PGM
+   echo "running srun -N $totnodes -n $nprocs -c $count --ntasks-per-node=$taskspernode  --exclusive --cpu-bind=cores --verbose $PGM"
+   eval srun -N $totnodes -n $nprocs -c $count --ntasks-per-node=$taskspernode --exclusive --cpu-bind=cores --verbose $PGM
    rc=$?
 elif [ "$machine" == 'wcoss' ] ; then
    [ -z "$mpitaskspernode" ] && echo "Need to set mpitaskspernode" && exit 1;
