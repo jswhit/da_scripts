@@ -1,7 +1,6 @@
 # run high-res control first guess.
 # first, clean up old first guesses.
 
-sleep 10
 if [ $replay_controlfcst == 'true' ]; then
    export charnanal="control2"
 else
