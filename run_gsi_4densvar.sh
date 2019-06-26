@@ -990,7 +990,6 @@ for loop in $loops; do
             fi
             ${enkfscripts}/runmpi 1> ${current_logdir}/nc_diag_cat_${type}_${string}_${charnanal2}.out 2> ${current_logdir}/nc_diag_cat_${type}_${string}_${charnanal2}.err &
             #${enkfscripts}/runmpi 1> nc_diag_cat_${type}_${string}.out &
-            sleep 1
             if [ $nodecount -eq $totnodes ]; then
                echo "waiting... nodecount=$nodecount"
                wait
