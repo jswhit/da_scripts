@@ -413,9 +413,9 @@ else
 fi
 
 #export ANAVINFO=${enkfscripts}/global_anavinfo.l64.txt.clrsky
-export ANAVINFO=${enkfscripts}/global_anavinfo.l64.txt
+export ANAVINFO=${enkfscripts}/global_anavinfo.l${LEVS}.txt
 export ANAVINFO_ENKF=${ANAVINFO}
-export HYBENSINFO=${enkfscripts}/global_hybens_info.l64.txt
+export HYBENSINFO=${enkfscripts}/global_hybens_info.l${LEVS}.txt
 export CONVINFO=${enkfscripts}/global_convinfo_oper_fix.txt
 export OZINFO=${enkfscripts}/global_ozinfo_oper_fix.txt
 #export SATINFO=${enkfscripts}/global_satinfo.txt.clrsky
