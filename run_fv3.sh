@@ -1,17 +1,18 @@
 #!/bin/sh
 # model was compiled with these 
 echo "starting at `date`"
+source $MODULESHOME/init/sh
 if [ "$machine" == 'theia' ]; then
    module purge
-   module load intel/15.1.133
-   module load impi/5.1.1.109
+   module load intel/18.0.1.163
+   module load impi/5.1.2.150
    module load netcdf/4.3.0
+   module load pnetcdf/1.5.0-impi
    module load hdf5
-   module load pnetcdf
    module load wgrib
    module load nco/4.6.0
    module use /scratch4/NCEPDEV/nems/noscrub/emc.nemspara/soft/modulefiles
-   module load esmf/7.1.0rp1bs01
+   module load esmf/8.0.0bs21-intel18
    module list
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'wcoss' ]; then
@@ -290,19 +291,16 @@ ls -l
 
 FHRESTART=${FHRESTART:-$ANALINC}
 if [ "${iau_delthrs}" != "-1" ]; then
-   FHOFFSET=$ANALINC
-   FHMAX_FCST=`expr $FHMAX + $FHOFFSET`
-   FHSTOCH=`expr $FHRESTART + $FHOFFSET \/ 2`
+   FHMAX_FCST=`expr $FHMAX + $ANALINC`
+   FHSTOCH=`expr $FHRESTART + $ANALINC \/ 2`
    if [ "${fg_only}" == "true" ]; then
-      FHSTOCH=${FHSTOCH:-`expr $ANALINC \/ 2 + $FHOFFSET \/ 2`}
+      FHSTOCH=${FHSTOCH:-$ANALINC}
       FHRESTART=`expr $ANALINC \/ 2`
       FHMAX_FCST=$FHMAX
-      FHOFFSET=0
    fi
 else
    FHSTOCH=$FHRESTART
    FHMAX_FCST=$FHMAX
-   FHOFFSET=0
 fi
 
 if [ "$warm_start" == "T" ] && [ -z $skip_global_cycle ]; then
@@ -393,9 +391,10 @@ output_grid:             'gaussian_grid'
 output_file:             'nemsio'
 write_nemsioflip:        .true.
 write_fsyncflag:         .true.
+iau_offset:              ${IAU_DELTHRS}
 imo:                     ${LONB}
 jmo:                     ${LATB}
-nfhout:                  3
+nfhout:                  ${FHOUT}
 nfhmax_hf:               -1
 nfhout_hf:               -1
 nsout:                   -1
@@ -721,15 +720,14 @@ if [ "$quilting" == ".true." ]; then
    ls -l *nemsio*
    fh=$FHMIN
    while [ $fh -le $FHMAX ]; do
-     fh2=`expr $fh + $FHOFFSET`
      charfhr="fhr"`printf %02i $fh`
-     charfhr3="f"`printf %03i $fh2`
-     /bin/mv -f dyn${charfhr3}.nemsio ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
+     charfhr2="f"`printf %03i $fh`
+     /bin/mv -f dyn${charfhr2}.nemsio ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
      if [ $? -ne 0 ]; then
         echo "nemsio file missing..."
         exit 1
      fi
-     /bin/mv -f phy${charfhr3}.nemsio ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
+     /bin/mv -f phy${charfhr2}.nemsio ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
      if [ $? -ne 0 ]; then
         echo "nemsio file missing..."
         exit 1
