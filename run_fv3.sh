@@ -391,7 +391,7 @@ output_grid:             'gaussian_grid'
 output_file:             'nemsio'
 write_nemsioflip:        .true.
 write_fsyncflag:         .true.
-iau_offset:              ${IAU_DELTHRS}
+iau_offset:              ${iaudelthrs}
 imo:                     ${LONB}
 jmo:                     ${LATB}
 nfhout:                  ${FHOUT}
