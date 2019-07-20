@@ -575,7 +575,6 @@ cat > input.nml <<EOF
   nst_anl        = ${nst_anl}
   iau_filter_increments = F
   iaufhrs = ${iaufhrs}
-  iau_offset = ${iaudelthrs}
   iau_delthrs = ${iaudelthrs}
   iau_inc_files = ${iau_inc_files}
 /
