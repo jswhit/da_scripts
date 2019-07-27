@@ -42,7 +42,7 @@ fi
 while [ $alldone == "no" ] && [ $niter -le $nitermax ]; do
 
 export JCAP_A=$JCAP
-export JCAP_B=$JCAP
+export JCAP_B=$JCAP_CTL
 export HXONLY='NO'
 export VERBOSE=YES  
 export OMP_NUM_THREADS=$gsi_control_threads

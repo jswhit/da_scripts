@@ -30,6 +30,10 @@ fi
 
 export RES=$RES_CTL
 echo "RES = $RES"
+export LONB=$LONB_CTL
+echo "LONB = ${LONB_CTL}"
+export LATB=$LATB_CTL
+echo "LATB = ${LATB_CTL}"
 export write_groups="$write_groups_ctl"
 echo "write_groups = $write_groups"
 export layout="$layout_ctl"

@@ -125,6 +125,7 @@ echo "$analdate done computing ensemble mean `date`"
 
 # change orography in high-res control forecast nemsio file so it matches enkf ensemble,
 # adjust surface pressure accordingly.
+# this file only used to calculate analysis increment for replay
 if [ $controlfcst == 'true' ] && [ $cleanup_ensmean == 'true' ]; then
    if [ $replay_controlfcst == 'true' ]; then
      # sfg*control2 only used to compute IAU forcing
@@ -140,12 +141,19 @@ if [ $controlfcst == 'true' ] && [ $cleanup_ensmean == 'true' ]; then
    while [ $fh -le $FHMAX ]; do
      fhr=`printf %02i $fh`
      # run concurrently, wait
-     sh ${enkfscripts}/adjustps.sh $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} > ${current_logdir}/adjustps_${fhr}.out 2>&1 &
+     # TODO: both these codes need to be generalized to handle arbitrary fields in nemsio
+     if [ $LONB -eq $LONB_CTL ]; then
+       # this requires reduced diag_table (diag_table_reduced)
+       sh ${enkfscripts}/adjustps.sh $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal}.chgres > ${current_logdir}/adjustps_${fhr}.out 2>&1 &
+     else
+       # this requires full diag_table (full EMC version)
+       sh ${enkfscripts}/chgres.sh $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal}.chgres > ${current_logdir}/chgres_${fhr}.out 2>&1 &
+     fi
      fh=$((fh+FHOUT))
    done
    wait
    if [ $? -ne 0 ]; then
-      echo "adjustps step failed, exiting...."
+      echo "adjustps/chgres step failed, exiting...."
       exit 1
    fi
    echo "$analdate done adjusting orog/ps of control forecast on ens grid `date`"
@@ -188,8 +196,8 @@ if [ $controlanal == 'true' ]; then
    else
       # use control forecast background if control forecast is run, and it is
       # not begin replayed to ensemble mean increment.
-      export charnanal='control'
-      export charnanal2='control'
+      export charnanal='control' # sfg files at ensemble resolution
+      export charnanal2='control' # for diag files
       export lobsdiag_forenkf='.false.'
       export skipcat="false"
    fi
@@ -281,8 +289,8 @@ fi
 # for passive (replay) cycling of control forecast, optionally run GSI observer
 # on control forecast background (diag files saved with 'control2' suffix)
 if [ $controlfcst == 'true' ] && [ $replay_controlfcst == 'true' ] && [ $replay_run_observer == "true" ]; then
-   export charnanal='control2'
-   export charnanal2='control2'
+   export charnanal='control2' 
+   export charnanal2='control2' 
    export lobsdiag_forenkf='.false.'
    export skipcat="false"
    echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"

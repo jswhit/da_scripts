@@ -10,9 +10,22 @@ echo  "iaufhrs2= $iaufhrs2"
 for nhr_anal in $iaufhrs2; do
 charfhr="fhr"`printf %02i $nhr_anal`
 
+# control analysis is at higher resolution, change resolution and adjust topography
+if [ $LONB -ne $LONB_CTL ]; then
+    sh ${enkfscripts}/chgres.sh $datapath2/sanl_${analdate}_${charfhr}_${charnanal} $datapath2/sanl_${analdate}_${charfhr}_ensmean $datapath2/sanl_${analdate}_${charfhr}_${charnanal}.chgres 
+    if [ $? -ne 0 ]; then
+       echo "chgres failed, exiting.."
+       exit 1
+    fi
+fi
+
 echo "recenter ensemble perturbations about low resolution hybrid analysis"
 filename_meanin=sanl_${analdate}_${charfhr}_ensmean
-filename_meanout=sanl_${analdate}_${charfhr}_${charnanal}
+if [ $LONB -eq $LONB_CTL ]; then
+   filename_meanout=sanl_${analdate}_${charfhr}_${charnanal}
+else
+   filename_meanout=sanl_${analdate}_${charfhr}_${charnanal}.chgres
+fi
 filenamein=sanl_${analdate}_${charfhr}
 filenameout=sanlr_${analdate}_${charfhr}
 

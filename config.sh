@@ -1,7 +1,7 @@
 echo "running on $machine using $NODES nodes"
 ## ulimit -s unlimited
 
-export ndates_job=10 # number of DA cycles to run in one job submission
+export ndates_job=1 # number of DA cycles to run in one job submission
 # resolution of control and ensmemble.
 export RES=192
 export RES_CTL=384 
@@ -12,6 +12,8 @@ export alpha=500 # percentage of 3dvar increment (beta_2*1000)
 export beta=1000 # percentage of enkf increment (*10)
 export hybgain='true' # set to true for hybrid gain 3DVar/EnKF
 export exptname="C${RES}C${RES_CTL}_hybgain"
+#export hybgain='false' # set to true for hybrid gain 3DVar/EnKF
+#export exptname="C${RES}C${RES_CTL}_hybcov"
 export cores=`expr $NODES \* $corespernode`
 
 ## check that value of NODES is consistent with PBS_NP on theia.
@@ -32,7 +34,7 @@ export rungfs='run_fv3.sh' # ensemble forecast
 export recenter_anal="true" # recenter enkf analysis around GSI hybrid 4DEnVar analysis
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
 export controlanal='true' # use gsi hybrid (if false, pure enkf is used)
-export controlfcst='true' # if true, run dual-res setup with single high-res control
+export controlfcst='false' # if true, run dual-res setup with single high-res control
 export cleanup_fg='true'
 export cleanup_ensmean='true'
 export cleanup_anal='true'
@@ -245,6 +247,7 @@ fi
 
 if [ $RES_CTL -eq 768 ]; then
    export cdmbgwd_ctl="3.5,0.25"
+   export JCAP_CTL=1534
    export LONB_CTL=3072
    export LATB_CTL=1536
    export k_split_ctl=2
@@ -254,16 +257,19 @@ if [ $RES_CTL -eq 768 ]; then
 elif [ $RES_CTL -eq 384 ]; then
    export dt_atmos_ctl=225
    export cdmbgwd_ctl="1.0,1.2"
+   export JCAP_CTL=766
    export LONB_CTL=1536
    export LATB_CTL=768
 elif [ $RES_CTL -eq 192 ]; then
    export dt_atmos_ctl=450
    export cdmbgwd_ctl="0.25,2.0"
+   export JCAP_CTL=382
    export LONB_CTL=768  
    export LATB_CTL=384
 elif [ $RES_CTL -eq 96 ]; then
    export dt_atmos_ctl=900
    export cdmbgwd_ctl="0.125,3.0"
+   export JCAP_CTL=188
    export LONB_CTL=384  
    export LATB_CTL=192
 else
@@ -272,6 +278,7 @@ else
 fi
 export FHCYC=0 # run global_cycle instead of gcycle inside model
 
+# analysis is done at ensemble resolution
 export LONA=$LONB
 export LATA=$LATB      
 
@@ -326,6 +333,8 @@ export varqc=.false.
 export huber=.false.
 export zhuberleft=1.e10
 export zhuberright=1.e10
+# extra vars in nemsio for UPP
+export lupp=.false.
 
 export biasvar=-500
 if [ $controlanal == 'false' ] && [ $NOSAT == "NO" ];  then
@@ -378,6 +387,7 @@ if [ "$machine" == 'theia' ]; then
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
    export nemsioget=${execdir}/nemsio_get
+   export CHGRESEXEC=${execdir}/chgres_recenter.exe
 elif [ "$machine" == 'gaea' ]; then
    export python=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/bin/python
    export PYTHONPATH=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/lib/python2.7/site-packages
@@ -394,6 +404,7 @@ elif [ "$machine" == 'gaea' ]; then
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
    export nemsioget=${execdir}/nemsio_get
+   export CHGRESEXEC=${execdir}/chgres_recenter.exe
 elif [ "$machine" == 'wcoss' ]; then
    export python=`which python`
    export fv3gfspath=/gpfs/hps3/emc/global/noscrub/emc.glopara/svn/fv3gfs

@@ -170,12 +170,14 @@ if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
       export increment_file="fv3_increment${fh}.nc"
       if [ "$replay_controlfcst" == 'true' ] && [ "$charnanal" == 'control2' ]; then
          export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_ensmean"
+         export fgfile="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}.chgres"
       else
          export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_${charnanal}"
+         export fgfile="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}"
       fi
       echo "create ${increment_file}"
       /bin/rm -f ${increment_file}
-      export "PGM=${execdir}/calc_increment_nemsio.x ${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal} ${analfile} ${increment_file} T F"
+      export "PGM=${execdir}/calc_increment_nemsio.x ${fgfile} ${analfile} ${increment_file} T F"
       nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
       if [ $? -ne 0 -o ! -s ${increment_file} ]; then
          echo "problem creating ${increment_file}, stopping .."
