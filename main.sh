@@ -133,13 +133,12 @@ if [ $controlfcst == 'true' ] && [ $cleanup_ensmean == 'true' ] && [ $replay_con
    while [ $fh -le $FHMAX ]; do
      fhr=`printf %02i $fh`
      # run concurrently, wait
-     #sh ${enkfscripts}/adjustps.sh $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} > ${current_logdir}/adjustps_${fhr}.out 2>&1 &
      sh ${enkfscripts}/chgres.sh $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal}.chgres > ${current_logdir}/chgres_${fhr}.out 2>&1 &
      fh=$((fh+FHOUT))
    done
    wait
    if [ $? -ne 0 ]; then
-      echo "chgres fcst step failed, exiting...."
+      echo "adjustps/chgres step failed, exiting...."
       exit 1
    fi
    echo "$analdate done adjusting orog/ps of control forecast on ens grid `date`"
@@ -175,14 +174,14 @@ if [ $controlanal == 'true' ]; then
    if [ $replay_controlfcst == 'true' ] || [ $controlfcst == 'false' ]; then
       # use ensmean mean background if no control forecast is run, or 
       # control forecast is replayed to ens mean increment
-      export charnanal='control'
+      export charnanal='control' # control is symlink to ens mean
       export charnanal2='ensmean'
       export lobsdiag_forenkf='.true.'
       export skipcat="false"
    else
       # use control forecast background if control forecast is run, and it is
       # not begin replayed to ensemble mean increment.
-      export charnanal='control' # sfg files at ensemble resolution
+      export charnanal='control' # sfg files 
       export charnanal2='control' # for diag files
       export lobsdiag_forenkf='.false.'
       export skipcat="false"
@@ -203,10 +202,12 @@ if [ $controlanal == 'true' ]; then
      echo "$analdate $type analysis did not complete successfully, exiting `date`"
      exit 1
    fi
-else
+fi
+# if high res control forecast is run, run observer on ens mean
+if [ $controlanal == 'true' ] && [ $replay_controlfcst == 'false' ] && [ $controlfcst == 'true' ]; then
    # run gsi observer with ens mean fcst background, saving jacobian.
    # generated diag files used by EnKF. No control analysis.
-   export charnanal='control' 
+   export charnanal='ensmean' 
    export charnanal2='ensmean'
    export lobsdiag_forenkf='.true.'
    export skipcat="false"

@@ -145,7 +145,7 @@ if [ $alldone == 'no' ]; then
     echo "no" > ${current_logdir}/run_gsi_observer.log 2>&1
 else
     echo "yes" > ${current_logdir}/run_gsi_observer.log 2>&1
-    if [ $skipcat == 'false']; then
+    if [ $skipcat == 'false' ]; then
         /bin/rm -rf $tmpdir
     fi
 fi
