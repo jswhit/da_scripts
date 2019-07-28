@@ -15,6 +15,7 @@ if [ $LONB -ne $LONB_CTL ]; then
     sh ${enkfscripts}/chgres.sh $datapath2/sanl_${analdate}_${charfhr}_${charnanal} $datapath2/sanl_${analdate}_${charfhr}_ensmean $datapath2/sanl_${analdate}_${charfhr}_${charnanal}.chgres 
     if [ $? -ne 0 ]; then
        echo "chgres failed, exiting.."
+       echo "no" > ${current_logdir}/recenter_ens.log
        exit 1
     fi
 fi

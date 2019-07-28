@@ -334,7 +334,7 @@ export huber=.false.
 export zhuberleft=1.e10
 export zhuberright=1.e10
 # extra vars in nemsio for UPP
-export lupp=.false.
+export lupp=.true.
 
 export biasvar=-500
 if [ $controlanal == 'false' ] && [ $NOSAT == "NO" ];  then

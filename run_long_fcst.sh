@@ -42,7 +42,7 @@ export quilting=".false."
 export DATOUT="${datapath2}/longfcst"
 echo "DATOUT = $DATOUT"
 mkdir -p ${DATOUT}
-export DIAG_TABLE="${enkfscripts}/diag_table_long"
+export DIAG_TABLE="${enkfscripts}/diag_table_full"
 echo "DIAG_TABLE = $DIAG_TABLE"
 
 export OMP_NUM_THREADS=$control_threads

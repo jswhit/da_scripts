@@ -28,7 +28,7 @@ cat fort.43
 
 $CHGRESEXEC
 if [ $? -ne 0 ]; then
-   ${execdir}/nemsio_get atmanl_gsi recname
+  ${execdir}/nemsio_get atmanl_gsi recname
   exit 1
 fi
 

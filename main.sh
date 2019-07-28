@@ -126,34 +126,19 @@ echo "$analdate done computing ensemble mean `date`"
 # change orography in high-res control forecast nemsio file so it matches enkf ensemble,
 # adjust surface pressure accordingly.
 # this file only used to calculate analysis increment for replay
-if [ $controlfcst == 'true' ] && [ $cleanup_ensmean == 'true' ]; then
-   if [ $replay_controlfcst == 'true' ]; then
-     # sfg*control2 only used to compute IAU forcing
-     # and for gsi observer diagnostic calculation
-     charnanal='control2'
-   else
-     charnanal='control'
-   fi
+if [ $controlfcst == 'true' ] && [ $cleanup_ensmean == 'true' ] && [ $replay_controlfcst == 'true' ]; then
+   charnanal='control2'
    echo "$analdate adjust orog/ps of control forecast on ens grid `date`"
-   /bin/rm -f ${current_logdir}/adjustps.out
-   touch ${current_logdir}/adjustps.out
    fh=$FHMIN
    while [ $fh -le $FHMAX ]; do
      fhr=`printf %02i $fh`
      # run concurrently, wait
-     # TODO: both these codes need to be generalized to handle arbitrary fields in nemsio
-     if [ $LONB -eq $LONB_CTL ]; then
-       # this requires reduced diag_table (diag_table_reduced)
-       sh ${enkfscripts}/adjustps.sh $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal}.chgres > ${current_logdir}/adjustps_${fhr}.out 2>&1 &
-     else
-       # this requires full diag_table (full EMC version)
-       sh ${enkfscripts}/chgres.sh $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal}.chgres > ${current_logdir}/chgres_${fhr}.out 2>&1 &
-     fi
+     sh ${enkfscripts}/chgres.sh $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal}.chgres > ${current_logdir}/chgres_${fhr}.out 2>&1 &
      fh=$((fh+FHOUT))
    done
    wait
    if [ $? -ne 0 ]; then
-      echo "adjustps/chgres step failed, exiting...."
+      echo "chgres fcst step failed, exiting...."
       exit 1
    fi
    echo "$analdate done adjusting orog/ps of control forecast on ens grid `date`"
