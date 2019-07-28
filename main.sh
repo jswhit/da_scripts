@@ -133,6 +133,7 @@ if [ $controlfcst == 'true' ] && [ $cleanup_ensmean == 'true' ] && [ $replay_con
    while [ $fh -le $FHMAX ]; do
      fhr=`printf %02i $fh`
      # run concurrently, wait
+     #sh ${enkfscripts}/adjustps.sh $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} > ${current_logdir}/adjustps_${fhr}.out 2>&1 &
      sh ${enkfscripts}/chgres.sh $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal}.chgres > ${current_logdir}/chgres_${fhr}.out 2>&1 &
      fh=$((fh+FHOUT))
    done
