@@ -1,5 +1,3 @@
-export OMP_NUM_THREADS=2
-
 export LEVSp1=`expr $LEVS \+ 1`
 SIGLEVEL=${SIGLEVEL:-${FIXGLOBAL}/global_hyblev.l${LEVSp1}.txt}
 export CHGRESEXEC=${CHGRESEXEC:-${execdir}/chgres_recenter.exe}
@@ -26,9 +24,14 @@ cat > fort.43 << EOF
 EOF
 cat fort.43
 
-$CHGRESEXEC
+#$CHGRESEXEC
+export PGM=$CHGRESEXEC
+export nprocs=1
+export mpitaskspernode=1
+export OMP_NUM_THREADS=$corespernode
+${enkfscripts}/runmpi
+
 if [ $? -ne 0 ]; then
-  ${execdir}/nemsio_get atmanl_gsi recname
   exit 1
 fi
 
