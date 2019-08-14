@@ -376,7 +376,7 @@ export incdate="${enkfscripts}/incdate.sh"
 
 if [ "$machine" == 'theia' ]; then
    export python=/contrib/anaconda/2.3.0/bin/python
-   export fv3gfspath=/scratch4/NCEPDEV/global/save/glopara/svn/fv3gfs
+   export fv3gfspath=/scratch4/NCEPDEV/global/save/glopara/git/fv3gfs
    export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
    export gsipath=/scratch3/BMC/gsienkf/whitaker/gsi/ProdGSI
