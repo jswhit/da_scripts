@@ -1,0 +1,66 @@
+#!/bin/sh
+##SBATCH -q debug
+#SBATCH -t 02:30:00
+#SBATCH -A gsienkf
+#SBATCH -N 20    
+#SBATCH -J C192C192_hybgain1
+#SBATCH -e C192C192_hybgain1.err
+#SBATCH -o C192C192_hybgain1.out
+
+export NODES=$SLURM_NNODES
+export corespernode=$SLURM_CPUS_ON_NODE
+ 
+##PBS -l nodes=20:ppn=24
+##PBS -l walltime=4:00:00
+###PBS -l walltime=0:30:00
+##PBS -A gsienkf
+###PBS -A da-cpu
+###PBS -q debug
+##PBS -N C192C192_hybgain1
+##PBS -S /bin/bash
+##PBS -o C192C192_hybgain1.stdout
+##PBS -e C192C192_hybgain1.stderr
+#export NODES=20
+#export corespernode=24
+
+export machine='hera'
+
+# for control forecast
+if [ $NODES -eq 20 ]; then
+  # 20 nodes, 2 threads
+  #export control_threads=2 # control forecast threads
+  #export control_proc=444   # total number of processors for control forecast
+  export control_threads=1
+  export control_proc=480
+  export write_groups_ctl=8 # write groups for control forecast.
+  export layout_ctl="12,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+elif [ $NODES -eq 40 ]; then
+  # 40 nodes, 4 threads
+  export control_threads=4 
+  export control_proc=960  
+  export control_proc_noquilt=864  
+  export write_groups_ctl=4
+  export layout_ctl="6, 6"
+elif [ $NODES -eq 80 ]; then
+  # 80 nodes, 4 threads
+  export write_groups_ctl=16
+  export control_threads=2
+  export control_proc=1920 
+  export layout_ctl="12, 12" 
+else
+  echo "processor layout for $NODES nodes not set"
+  exit 1
+fi
+
+# for ensemble forecast and GSI
+#export fg_proc=`expr 4 \* $corespernode`
+export fg_proc=$corespernode
+export fg_threads=1 
+export enkf_threads=4
+export gsi_control_threads=4
+export write_groups=2
+export write_tasks=6 
+export fg_proc=36
+export layout="2, 2"
+#export fg_proc=78
+#export layout="3, 4" 

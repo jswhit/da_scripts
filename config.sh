@@ -34,7 +34,7 @@ export rungfs='run_fv3.sh' # ensemble forecast
 export recenter_anal="true" # recenter enkf analysis around GSI hybrid 4DEnVar analysis
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
 export controlanal='true' # use gsi hybrid (if false, pure enkf is used)
-export controlfcst='false' # if true, run dual-res setup with single high-res control
+export controlfcst='true' # if true, run dual-res setup with single high-res control
 export cleanup_fg='true'
 export cleanup_ensmean='true'
 export cleanup_anal='true'
@@ -75,6 +75,11 @@ if [ "$machine" == 'wcoss' ]; then
    export obs_datapath=${basedir}/gdas1bufr
 elif [ "$machine" == 'theia' ]; then
    export basedir=/scratch3/BMC/gsienkf/${USER}
+   export datadir=$basedir
+   export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
+   export obs_datapath=/scratch3/BMC/gsienkf/whitaker/gdas1bufr
+elif [ "$machine" == 'hera' ]; then
+   export basedir=/scratch2/BMC/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    export obs_datapath=/scratch3/BMC/gsienkf/whitaker/gdas1bufr
@@ -334,7 +339,7 @@ export huber=.false.
 export zhuberleft=1.e10
 export zhuberright=1.e10
 # extra vars in nemsio for UPP
-export lupp=.true.
+export lupp=.false.
 
 export biasvar=-500
 if [ $controlanal == 'false' ] && [ $NOSAT == "NO" ];  then
@@ -376,7 +381,21 @@ export incdate="${enkfscripts}/incdate.sh"
 
 if [ "$machine" == 'theia' ]; then
    export python=/contrib/anaconda/2.3.0/bin/python
-   export fv3gfspath=/scratch4/NCEPDEV/global/save/glopara/git/fv3gfs
+   export fv3gfspath=/scratch4/NCEPDEV/global/save/glopara/svn/fv3gfs
+   export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
+   export FIXGLOBAL=${fv3gfspath}/fix/fix_am
+   export gsipath=/scratch3/BMC/gsienkf/whitaker/gsi/ProdGSI
+   export fixgsi=${gsipath}/fix
+   export fixcrtm=/scratch3/BMC/gsienkf/whitaker/gsi/branches/EXP-enkflinhx/fix/crtm_2.2.3
+   export execdir=${enkfscripts}/exec_${machine}
+   export enkfbin=${execdir}/global_enkf
+   export FCSTEXEC=${execdir}/${fv3exec}
+   export gsiexec=${execdir}/global_gsi
+   export nemsioget=${execdir}/nemsio_get
+   export CHGRESEXEC=${execdir}/chgres_recenter.exe
+elif [ "$machine" == 'hera' ]; then
+   export python=/contrib/anaconda/2.3.0/bin/python
+   export fv3gfspath=/scratch4/NCEPDEV/global/save/glopara/svn/fv3gfs
    export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
    export gsipath=/scratch3/BMC/gsienkf/whitaker/gsi/ProdGSI
