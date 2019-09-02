@@ -88,7 +88,7 @@ if [ "$cold_start_bias" == "true" ]; then
     mkdir -p $tmpdir
     sh ${enkfscripts}/${rungsi}
     /bin/rm -rf $tmpdir
-    if [  ! -s ${datapath2}/diag_conv_uv_ges.${analdate}_${charnanal}.nc4 ]; then
+    if [  ! -s ${datapath2}/diag_conv_uv_ges.${analdate}_${charnanal2}.nc4 ]; then
        echo "gsi observer step failed"
        exit 1
     fi
