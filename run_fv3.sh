@@ -15,11 +15,13 @@ if [ "$machine" == 'theia' ]; then
    module load esmf/8.0.0bs21-intel18
    module list
    export WGRIB=`which wgrib`
+elif [ "$machine" == 'hera' ]; then
+   module load wgrib
+   export WGRIB=`which wgrib`
 elif [ "$machine" == 'wcoss' ]; then
    module load grib_util/1.0.3
    module load nco-gnu-sandybridge
 elif [ "$machine" == 'gaea' ]; then
-   source $MODULESHOME/init/sh
    module load nco/4.6.4
    module load wgrib
    export WGRIB=`which wgrib`
