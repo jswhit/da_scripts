@@ -24,11 +24,12 @@ cat > fort.43 << EOF
 EOF
 cat fort.43
 
+export OMP_NUM_THREADS=$corespernode
+export OMP_STACKSIZE=256M
 #$CHGRESEXEC
 export PGM=$CHGRESEXEC
 export nprocs=1
 export mpitaskspernode=1
-export OMP_NUM_THREADS=$corespernode
 ${enkfscripts}/runmpi
 
 if [ $? -ne 0 ]; then
