@@ -56,9 +56,11 @@ PROGRAM calc_increment_nemsio
   integer, dimension(3) :: dimid_3d
   integer, dimension(1) :: dimid_1d
   integer varid_lon,varid_lat,varid_lev,varid_ilev,varid_hyai,varid_hybi,&
-          dimid_lon,dimid_lat,dimid_lev,dimid_ilev,ncfileid,ncstatus
+          dimid_lon,dimid_lat,dimid_lev,dimid_ilev,ncfileid,ncstatus,ideflate
   logical :: no_mpinc, inc_delz
   character(len=10) :: bufchar
+
+  ideflate = 4 ! 0 means no compression of 3d variables
 
   call getarg(1,filename_fg)    ! first guess nemsio file
   call getarg(2,filename_anal)  ! analysis nemsio file
@@ -74,6 +76,7 @@ PROGRAM calc_increment_nemsio
   write(6,*)'filename_inc=',trim(filename_inc)
   write(6,*)'no_mpinc',no_mpinc
   write(6,*)'inc_delz',inc_delz
+  write(6,*)'ideflate',ideflate
 
   call nemsio_open(gfile_fg,trim(filename_fg),'READ',iret=iret)
   if (iret .ne. 0) then
@@ -297,21 +300,21 @@ PROGRAM calc_increment_nemsio
   dimid_3d(3) = dimid_lev
   
   ncvarname = 'u_inc';field = 'ugrd'
-  call write_ncdata3d(rwork_inc,incdata,field,ncvarname,fieldlevel_fg,fieldname_fg,nlons,nlats,nlevs,nrec,ncfileid,dimid_3d,.true.)
+  call write_ncdata3d(rwork_inc,incdata,field,ncvarname,fieldlevel_fg,fieldname_fg,nlons,nlats,nlevs,nrec,ncfileid,dimid_3d,.true.,ideflate)
   if (minval(incdata) > 1.e30) then
      print *,trim(field),' not found'
      stop
   endif
 
   ncvarname = 'v_inc';field = 'vgrd'
-  call write_ncdata3d(rwork_inc,incdata,field,ncvarname,fieldlevel_fg,fieldname_fg,nlons,nlats,nlevs,nrec,ncfileid,dimid_3d,.true.)
+  call write_ncdata3d(rwork_inc,incdata,field,ncvarname,fieldlevel_fg,fieldname_fg,nlons,nlats,nlevs,nrec,ncfileid,dimid_3d,.true.,ideflate)
   if (minval(incdata) > 1.e30) then
      print *,trim(field),' not found'
      stop
   endif
 
   ncvarname = 'T_inc';field = 'tmp'
-  call write_ncdata3d(rwork_inc,incdata,field,ncvarname,fieldlevel_fg,fieldname_fg,nlons,nlats,nlevs,nrec,ncfileid,dimid_3d,.true.)
+  call write_ncdata3d(rwork_inc,incdata,field,ncvarname,fieldlevel_fg,fieldname_fg,nlons,nlats,nlevs,nrec,ncfileid,dimid_3d,.true.,ideflate)
   if (minval(incdata) > 1.e30) then
      print *,trim(field),' not found'
      stop
@@ -332,7 +335,7 @@ PROGRAM calc_increment_nemsio
        incdata(:,:,k) = incdata2(:,:)*(vcoord(nlevs-k+1,2,1)-vcoord(nlevs-k+2,2,1))
      enddo
   endif 
-  call write_ncdata3d(rwork_inc,incdata,field,ncvarname,fieldlevel_fg,fieldname_fg,nlons,nlats,nlevs,nrec,ncfileid,dimid_3d,.false.)
+  call write_ncdata3d(rwork_inc,incdata,field,ncvarname,fieldlevel_fg,fieldname_fg,nlons,nlats,nlevs,nrec,ncfileid,dimid_3d,.false.,ideflate)
   if (minval(incdata) > 1.e30) then
      print *,trim(field),' not found'
      stop
@@ -375,19 +378,19 @@ PROGRAM calc_increment_nemsio
     print *,'minval/maxval fg_dz',minval(fg_dz),maxval(fg_dz)
     incdata = anal_dz - fg_dz
     ncvarname = 'delz_inc'
-    call write_ncdata3d(rwork_inc,incdata,field,ncvarname,fieldlevel_fg,fieldname_fg,nlons,nlats,nlevs,nrec,ncfileid,dimid_3d,.false.)
+    call write_ncdata3d(rwork_inc,incdata,field,ncvarname,fieldlevel_fg,fieldname_fg,nlons,nlats,nlevs,nrec,ncfileid,dimid_3d,.false.,ideflate)
     deallocate(dpres_fg,dpres_anal,tmp_fg,tmp_anal,spfh_fg,spfh_anal,fg_dz,anal_dz,ptop,pbot)
   endif
 
   ncvarname = 'sphum_inc';field = 'spfh'
-  call write_ncdata3d(rwork_inc,incdata,field,ncvarname,fieldlevel_fg,fieldname_fg,nlons,nlats,nlevs,nrec,ncfileid,dimid_3d,.true.)
+  call write_ncdata3d(rwork_inc,incdata,field,ncvarname,fieldlevel_fg,fieldname_fg,nlons,nlats,nlevs,nrec,ncfileid,dimid_3d,.true.,ideflate)
   if (minval(incdata) > 1.e30) then
      print *,trim(field),' not found'
      stop
   endif
 
   ncvarname = 'o3mr_inc';field = 'o3mr'
-  call write_ncdata3d(rwork_inc,incdata,field,ncvarname,fieldlevel_fg,fieldname_fg,nlons,nlats,nlevs,nrec,ncfileid,dimid_3d,.true.)
+  call write_ncdata3d(rwork_inc,incdata,field,ncvarname,fieldlevel_fg,fieldname_fg,nlons,nlats,nlevs,nrec,ncfileid,dimid_3d,.true.,ideflate)
   if (minval(incdata) > 1.e30) then
      print *,trim(field),' not found'
      stop
@@ -395,9 +398,9 @@ PROGRAM calc_increment_nemsio
 
   if (.not. no_mpinc) then
      ncvarname = 'liq_wat_inc';field = 'clwmr'
-     call write_ncdata3d(rwork_inc,incdata,field,ncvarname,fieldlevel_fg,fieldname_fg,nlons,nlats,nlevs,nrec,ncfileid,dimid_3d,.true.)
+     call write_ncdata3d(rwork_inc,incdata,field,ncvarname,fieldlevel_fg,fieldname_fg,nlons,nlats,nlevs,nrec,ncfileid,dimid_3d,.true.,ideflate)
      ncvarname = 'ice_wat_inc';field = 'icmr'
-     call write_ncdata3d(rwork_inc,incdata,field,ncvarname,fieldlevel_fg,fieldname_fg,nlons,nlats,nlevs,nrec,ncfileid,dimid_3d,.true.)
+     call write_ncdata3d(rwork_inc,incdata,field,ncvarname,fieldlevel_fg,fieldname_fg,nlons,nlats,nlevs,nrec,ncfileid,dimid_3d,.true.,ideflate)
   endif ! no_mpinc
 
   ncstatus = nf90_close(ncfileid)
@@ -493,7 +496,7 @@ end subroutine getorder
   end subroutine get2dfield
 
   subroutine write_ncdata3d(rwork_inc,incdata,field,ncvarname,&
-  fieldlevel,fieldname,nlons,nlats,nlevs,nrec,ncfileid,dimid_3d,getincdata)
+  fieldlevel,fieldname,nlons,nlats,nlevs,nrec,ncfileid,dimid_3d,getincdata,ideflate)
   use nemsio_module, only: nemsio_charkind
   use netcdf
   integer, intent(in) :: nlons,nlats,nlevs,nrec,ncfileid,dimid_3d(3)
@@ -502,7 +505,7 @@ end subroutine getorder
   real, intent(in) :: rwork_inc(nlons*nlats,nrec)
   character(nemsio_charkind), intent(in) :: field,ncvarname
   character(nemsio_charkind), intent(in) :: fieldname(nrec)
-  integer, intent(in) :: fieldlevel(nrec)
+  integer, intent(in) :: fieldlevel(nrec),ideflate
   logical, intent(in) :: getincdata
   if (getincdata) then
      call get3dfield(rwork_inc,incdata,field,fieldlevel,fieldname,nlons,nlats,nlevs,nrec)
@@ -518,12 +521,14 @@ end subroutine getorder
         print *, 'error creating',trim(ncvarname),' ',trim(nf90_strerror(ncstatus))
         stop
      endif
-     ! turn on compression (level 4)
-     !ncstatus = nf90_def_var_deflate(ncfileid, varid, 1,1,4)
-     !if (ncstatus /= nf90_noerr) then
-     !   print *,'nc_def_var_deflate error ',trim(nf90_strerror(ncstatus))
-     !   stop
-     !endif
+     ! turn on compression (if ideflate > 0)
+     if (ideflate > 0) then
+        ncstatus = nf90_def_var_deflate(ncfileid, varid, 1, 1, ideflate)
+        if (ncstatus /= nf90_noerr) then
+           print *,'nc_def_var_deflate error ',trim(nf90_strerror(ncstatus))
+           stop
+        endif
+     endif
      ncstatus = nf90_enddef(ncfileid)
      if (ncstatus /= nf90_noerr) then
         print *,'enddef error ',trim(nf90_strerror(ncstatus))

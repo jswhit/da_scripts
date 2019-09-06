@@ -70,6 +70,6 @@ fi
 /bin/rm -f *log
 /bin/rm -f *lores *mem*orig
 /bin/rm -f ozinfo convinfo satinfo scaninfo anavinfo
-/bin/rm -rf hybridtmp* gsitmp* gfstmp* nodefile* machinefile*
+/bin/rm -rf *tmp* nodefile* machinefile*
 echo "unwanted files removed `date`"
 wait
