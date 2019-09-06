@@ -1,0 +1,5 @@
+these are utilities that are not yet in ProdGSI or global-workflow repos.
+
+1) calc_increment_nemsio.f90:  simplified version of increment calculating utility that produces compressed netcdf.
+2) enkf_chgres_recenter.diff:  diff against enkf_chgres_recenter in global-workflow master that allows for a
+reduced set of variables in diag_table.
