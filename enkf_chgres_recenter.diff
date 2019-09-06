@@ -1,5 +1,382 @@
+diff --git a/sorc/enkf_chgres_recenter.fd/input_data.f90 b/sorc/enkf_chgres_recenter.fd/input_data.f90
+index 99657a0..eaef5a7 100644
+--- a/sorc/enkf_chgres_recenter.fd/input_data.f90
++++ b/sorc/enkf_chgres_recenter.fd/input_data.f90
+@@ -9,7 +9,9 @@
+  private
+ 
+  integer, public                              :: idvc, idsl, idvm, nvcoord
+- integer, public                              :: ntrac, ncldt,icldamt
++ integer, public                              :: ntrac, ncldt,icldamt, &
++                                                 idelz,idpres,idzdt, &
++                                                 irwmr,isnmr,igrle
+  integer, public                              :: ij_input, kgds_input(200)
+  integer(nemsio_intkind), public              :: i_input, j_input, lev
+  integer(nemsio_intkind), public              :: idate(7)
+@@ -89,11 +91,30 @@
+    endif
+  enddo
+ 
+- icldamt = 0
++ icldamt = 0; idzdt = 0; idelz = 0; idpres = 0
++ irwmr = 0; isnmr = 0; igrle = 0
+  do n = 1, nrec
++   ! check for optional fields (gsi does not use these)
+    if (trim(recname(n)) == "cld_amt") then
+-     icldamt = 1        ! 3D cloud amount present
+-     exit
++     icldamt = 1
++   endif
++   if (trim(recname(n)) == "dzdt") then
++     idzdt = 1        
++   endif
++   if (trim(recname(n)) == "delz") then
++     idelz = 1        
++   endif
++   if (trim(recname(n)) == "dpres") then
++     idpres = 1        
++   endif
++   if (trim(recname(n)) == "irwmr") then
++     irwmr = 1        
++   endif
++   if (trim(recname(n)) == "isnmr") then
++     isnmr = 1        
++   endif
++   if (trim(recname(n)) == "igrle") then
++     igrle = 1        
+    endif
+  enddo
+ 
+@@ -113,7 +134,7 @@
+  print*,'IDVM IS: ', idvm
+ 
+  if (gfdl_mp) then
+-   ntrac = 7 + icldamt
++   ntrac = 8
+    ncldt = 5
+  else
+    ntrac = 3
+@@ -218,31 +239,22 @@
+    print*,'MAX/MIN OZONE AT LEVEL ', vlev, 'IS: ', maxval(o3mr_input(:,vlev)), minval(o3mr_input(:,vlev))
+  enddo
+ 
+- print*
+- print*,"READ DZDT"
+- vname   = "dzdt"
+- vlevtyp = "mid layer"
+  allocate(dzdt_input(ij_input,lev))
+- do vlev = 1, lev
+-   call nemsio_readrecv(gfile, vname, vlevtyp, vlev, dummy, 0, iret)
+-   if (iret /= 0) goto 67
+-   dzdt_input(:,vlev) = dummy
+-   print*,'MAX/MIN DZDT AT LEVEL ', vlev, 'IS: ', maxval(dzdt_input(:,vlev)), minval(dzdt_input(:,vlev))
+- enddo
+-
+- if (gfdl_mp) then
+-
++ dzdt_input = 0
++ if (idzdt == 1) then
+    print*
+-   print*,"READ RWMR"
+-   vname   = "rwmr"
++   print*,"READ DZDT"
++   vname   = "dzdt"
+    vlevtyp = "mid layer"
+-   allocate(rwmr_input(ij_input,lev))
+    do vlev = 1, lev
+      call nemsio_readrecv(gfile, vname, vlevtyp, vlev, dummy, 0, iret)
+      if (iret /= 0) goto 67
+-     rwmr_input(:,vlev) = dummy
+-     print*,'MAX/MIN RWMR AT LEVEL ', vlev, 'IS: ', maxval(rwmr_input(:,vlev)), minval(rwmr_input(:,vlev))
++     dzdt_input(:,vlev) = dummy
++     print*,'MAX/MIN DZDT AT LEVEL ', vlev, 'IS: ', maxval(dzdt_input(:,vlev)), minval(dzdt_input(:,vlev))
+    enddo
++ endif
++
++ if (gfdl_mp) then
+ 
+    print*
+    print*,"READ ICMR"
+@@ -256,36 +268,59 @@
+      print*,'MAX/MIN ICMR AT LEVEL ', vlev, 'IS: ', maxval(icmr_input(:,vlev)), minval(icmr_input(:,vlev))
+    enddo
+ 
+-   print*
+-   print*,"READ SNMR"
+-   vname   = "snmr"
+-   vlevtyp = "mid layer"
++
++   allocate(rwmr_input(ij_input,lev))
++   rwmr_input = 0
++   if (irwmr == 1) then
++      print*
++      print*,"READ RWMR"
++      vname   = "rwmr"
++      vlevtyp = "mid layer"
++      do vlev = 1, lev
++        call nemsio_readrecv(gfile, vname, vlevtyp, vlev, dummy, 0, iret)
++        if (iret /= 0) goto 67
++        rwmr_input(:,vlev) = dummy
++        print*,'MAX/MIN RWMR AT LEVEL ', vlev, 'IS: ', maxval(rwmr_input(:,vlev)), minval(rwmr_input(:,vlev))
++      enddo
++   endif
++
+    allocate(snmr_input(ij_input,lev))
+-   do vlev = 1, lev
+-     call nemsio_readrecv(gfile, vname, vlevtyp, vlev, dummy, 0, iret)
+-     if (iret /= 0) goto 67
+-     snmr_input(:,vlev) = dummy
+-     print*,'MAX/MIN SNMR AT LEVEL ', vlev, 'IS: ', maxval(snmr_input(:,vlev)), minval(snmr_input(:,vlev))
+-   enddo
++   snmr_input = 0
++   if (isnmr == 1) then
++      print*
++      print*,"READ SNMR"
++      vname   = "snmr"
++      vlevtyp = "mid layer"
++      do vlev = 1, lev
++        call nemsio_readrecv(gfile, vname, vlevtyp, vlev, dummy, 0, iret)
++        if (iret /= 0) goto 67
++        snmr_input(:,vlev) = dummy
++        print*,'MAX/MIN SNMR AT LEVEL ', vlev, 'IS: ', maxval(snmr_input(:,vlev)), minval(snmr_input(:,vlev))
++      enddo
++   endif
+ 
+-   print*
+-   print*,"READ GRLE"
+-   vname   = "grle"
+-   vlevtyp = "mid layer"
+    allocate(grle_input(ij_input,lev))
+-   do vlev = 1, lev
+-     call nemsio_readrecv(gfile, vname, vlevtyp, vlev, dummy, 0, iret)
+-     if (iret /= 0) goto 67
+-     grle_input(:,vlev) = dummy
+-     print*,'MAX/MIN GRLE AT LEVEL ', vlev, 'IS: ', maxval(grle_input(:,vlev)), minval(grle_input(:,vlev))
+-   enddo
++   grle_input = 0
++   if (igrle == 1) then
++      print*
++      print*,"READ GRLE"
++      vname   = "grle"
++      vlevtyp = "mid layer"
++      do vlev = 1, lev
++        call nemsio_readrecv(gfile, vname, vlevtyp, vlev, dummy, 0, iret)
++        if (iret /= 0) goto 67
++        grle_input(:,vlev) = dummy
++        print*,'MAX/MIN GRLE AT LEVEL ', vlev, 'IS: ', maxval(grle_input(:,vlev)), minval(grle_input(:,vlev))
++      enddo
++   endif
+ 
++   allocate(cldamt_input(ij_input,lev))
++   cldamt_input = 0
+    if (icldamt == 1) then
+       print*
+       print*,"READ CLD_AMT"
+       vname   = "cld_amt"
+       vlevtyp = "mid layer"
+-      allocate(cldamt_input(ij_input,lev))
+       do vlev = 1, lev
+          write(6,*) 'read ',vname,' on ',vlev
+          call nemsio_readrecv(gfile, vname, vlevtyp, vlev, dummy, 0, iret)
+diff --git a/sorc/enkf_chgres_recenter.fd/interp.f90 b/sorc/enkf_chgres_recenter.fd/interp.f90
+index 63f78c4..9205267 100644
+--- a/sorc/enkf_chgres_recenter.fd/interp.f90
++++ b/sorc/enkf_chgres_recenter.fd/interp.f90
+@@ -108,7 +108,7 @@
+    q_b4_adj_output(:,:,5) = icmr_b4_adj_output(:,:)
+    q_b4_adj_output(:,:,6) = snmr_b4_adj_output(:,:)
+    q_b4_adj_output(:,:,7) = grle_b4_adj_output(:,:)
+-   if (icldamt == 1) q_b4_adj_output(:,:,8) = cldamt_b4_adj_output(:,:)
++   q_b4_adj_output(:,:,8) = cldamt_b4_adj_output(:,:)
+  endif
+ 
+  allocate(q_output(ij_output,lev,ntrac))
+@@ -150,10 +150,8 @@
+    snmr_output = q_output(:,:,6)
+    allocate(grle_output(ij_output,lev))
+    grle_output = q_output(:,:,7)
+-   if (icldamt == 1) then
+-      allocate(cldamt_output(ij_output,lev))
+-      cldamt_output = q_output(:,:,8)
+-   endif
++   allocate(cldamt_output(ij_output,lev))
++   cldamt_output = q_output(:,:,8)
+  endif
+ 
+  deallocate(q_output)
+@@ -220,13 +218,11 @@
+ 
+    deallocate(grle_b4_adj_output)
+ 
+-   if (icldamt == 1) then
+-!     do k = 1, lev
+-!     print*,'after vintg cld_amt ',cldamt_b4_adj_output(ij_output/2,k),cldamt_output(ij_output/2,k)
+-!     enddo
++!  do k = 1, lev
++!  print*,'after vintg cld_amt ',cldamt_b4_adj_output(ij_output/2,k),cldamt_output(ij_output/2,k)
++!  enddo
+ 
+-      deallocate(cldamt_b4_adj_output)
+-   endif
++   deallocate(cldamt_b4_adj_output)
+    
+ 
+  endif
+@@ -417,12 +413,14 @@
+  allocate(dzdt_b4_adj_output(ij_output,num_fields))
+  dzdt_b4_adj_output = 0
+ 
+- print*,'INTERPOLATE DZDT'
+- call ipolates(ip, ipopt, kgds_input, kgds_output, ij_input, ij_output,&
+-               num_fields, ibi, bitmap_input, dzdt_input,  &
+-               numpts, rlat_output, rlon_output, ibo, bitmap_output, &
+-               dzdt_b4_adj_output, iret)
+- if (iret /= 0) goto 89
++ if (idzdt == 1) then
++    print*,'INTERPOLATE DZDT'
++    call ipolates(ip, ipopt, kgds_input, kgds_output, ij_input, ij_output,&
++                  num_fields, ibi, bitmap_input, dzdt_input,  &
++                  numpts, rlat_output, rlon_output, ibo, bitmap_output, &
++                  dzdt_b4_adj_output, iret)
++    if (iret /= 0) goto 89
++ endif
+ 
+  deallocate(dzdt_input)
+ 
+@@ -433,52 +431,56 @@
+  if (gfdl_mp) then
+ 
+ !-------------
+-!  Rain water
++!  Ice water
+ !-------------
+ 
+-   allocate(rwmr_b4_adj_output(ij_output,num_fields))
+-   rwmr_b4_adj_output = 0
++   allocate(icmr_b4_adj_output(ij_output,num_fields))
++   icmr_b4_adj_output = 0
+ 
+-   print*,'INTERPOLATE RWMR'
++   print*,'INTERPOLATE ICMR'
+    call ipolates(ip, ipopt, kgds_input, kgds_output, ij_input, ij_output,&
+-                 num_fields, ibi, bitmap_input, rwmr_input,  &
++                 num_fields, ibi, bitmap_input, icmr_input,  &
+                  numpts, rlat_output, rlon_output, ibo, bitmap_output, &
+-                 rwmr_b4_adj_output, iret)
++                 icmr_b4_adj_output, iret)
+    if (iret /= 0) goto 89
+ 
+-   deallocate(rwmr_input)
++   deallocate(icmr_input)
+ 
+ !-------------
+-!  Snow water
++!  Rain water
+ !-------------
+ 
+-   allocate(snmr_b4_adj_output(ij_output,num_fields))
+-   snmr_b4_adj_output = 0
++   allocate(rwmr_b4_adj_output(ij_output,num_fields))
++   rwmr_b4_adj_output = 0
+ 
+-   print*,'INTERPOLATE SNMR'
+-   call ipolates(ip, ipopt, kgds_input, kgds_output, ij_input, ij_output,&
+-                 num_fields, ibi, bitmap_input, snmr_input,  &
+-                 numpts, rlat_output, rlon_output, ibo, bitmap_output, &
+-                 snmr_b4_adj_output, iret)
+-   if (iret /= 0) goto 89
++   if (irwmr == 1) then
++      print*,'INTERPOLATE RWMR'
++      call ipolates(ip, ipopt, kgds_input, kgds_output, ij_input, ij_output,&
++                    num_fields, ibi, bitmap_input, rwmr_input,  &
++                    numpts, rlat_output, rlon_output, ibo, bitmap_output, &
++                    rwmr_b4_adj_output, iret)
++      if (iret /= 0) goto 89
++   endif
+ 
+-   deallocate(snmr_input)
++   deallocate(rwmr_input)
+ 
+ !-------------
+-!  Ice water
++!  Snow water
+ !-------------
+ 
+-   allocate(icmr_b4_adj_output(ij_output,num_fields))
+-   icmr_b4_adj_output = 0
++   allocate(snmr_b4_adj_output(ij_output,num_fields))
++   snmr_b4_adj_output = 0
+ 
+-   print*,'INTERPOLATE ICMR'
+-   call ipolates(ip, ipopt, kgds_input, kgds_output, ij_input, ij_output,&
+-                 num_fields, ibi, bitmap_input, icmr_input,  &
+-                 numpts, rlat_output, rlon_output, ibo, bitmap_output, &
+-                 icmr_b4_adj_output, iret)
+-   if (iret /= 0) goto 89
++   if (isnmr == 1) then
++      print*,'INTERPOLATE SNMR'
++      call ipolates(ip, ipopt, kgds_input, kgds_output, ij_input, ij_output,&
++                    num_fields, ibi, bitmap_input, snmr_input,  &
++                    numpts, rlat_output, rlon_output, ibo, bitmap_output, &
++                    snmr_b4_adj_output, iret)
++      if (iret /= 0) goto 89
++   endif
+ 
+-   deallocate(icmr_input)
++   deallocate(snmr_input)
+ 
+ !-------------
+ !  Graupel
+@@ -487,33 +489,35 @@
+    allocate(grle_b4_adj_output(ij_output,num_fields))
+    grle_b4_adj_output = 0
+ 
+-   print*,'INTERPOLATE GRLE'
+-   call ipolates(ip, ipopt, kgds_input, kgds_output, ij_input, ij_output,&
+-                 num_fields, ibi, bitmap_input, grle_input,  &
+-                 numpts, rlat_output, rlon_output, ibo, bitmap_output, &
+-                 grle_b4_adj_output, iret)
+-   if (iret /= 0) goto 89
++   if (igrle == 1) then
++      print*,'INTERPOLATE GRLE'
++      call ipolates(ip, ipopt, kgds_input, kgds_output, ij_input, ij_output,&
++                    num_fields, ibi, bitmap_input, grle_input,  &
++                    numpts, rlat_output, rlon_output, ibo, bitmap_output, &
++                    grle_b4_adj_output, iret)
++      if (iret /= 0) goto 89
++   endif
+ 
+    deallocate(grle_input)
+ 
+ !---------------------------
+-!  Cloud amount (if present)
++!  Cloud amount 
+ !---------------------------
+ 
+-   if (icldamt == 1) then
+-      allocate(cldamt_b4_adj_output(ij_output,num_fields))
+-      cldamt_b4_adj_output = 0
++   allocate(cldamt_b4_adj_output(ij_output,num_fields))
++   cldamt_b4_adj_output = 0
+ 
++   if (icldamt == 1) then
+       print*,'INTERPOLATE CLD_AMT'
+       call ipolates(ip, ipopt, kgds_input, kgds_output, ij_input, ij_output,&
+            num_fields, ibi, bitmap_input, cldamt_input,  &
+            numpts, rlat_output, rlon_output, ibo, bitmap_output, &
+            cldamt_b4_adj_output, iret)
+       if (iret /= 0) goto 89
+-      
+-      deallocate(cldamt_input)
+    endif
+    
++   deallocate(cldamt_input)
++   
+ 
+  endif
+ 
 diff --git a/sorc/enkf_chgres_recenter.fd/output_data.f90 b/sorc/enkf_chgres_recenter.fd/output_data.f90
-index 36063d3..97d5397 100644
+index 36063d3..5013cf0 100644
 --- a/sorc/enkf_chgres_recenter.fd/output_data.f90
 +++ b/sorc/enkf_chgres_recenter.fd/output_data.f90
 @@ -130,7 +130,7 @@
@@ -204,23 +581,11 @@ index 36063d3..97d5397 100644
     do l = 1, lev
       count = count + 1
       recname(count) = fields(n)
-@@ -361,7 +378,23 @@
+@@ -361,7 +378,11 @@
   enddo
  
   if (gfdl_mp) then
 -   do n = 1, 4 + icldamt
-+   !if (irwmr == 0) then
-+   !   ntrac=ntrac-1
-+   !   ncldt=ncldt-1
-+   !endif
-+   !if (isnmr == 0) then
-+   !   ntrac=ntrac-1
-+   !   ncldt=ncldt-1
-+   !endif
-+   !if (igrle == 0) then
-+   !   ntrac=ntrac-1
-+   !   ncldt=ncldt-1
-+   !endif
 +   do n = 1, 5
 +     if (irwmr /= 1 .and. trim(fields_gfdl_mp(n)) == 'rwmr') cycle
 +     if (isnmr /= 1 .and. trim(fields_gfdl_mp(n)) == 'snmr') cycle
@@ -229,7 +594,7 @@ index 36063d3..97d5397 100644
       do l = 1, lev
         count = count + 1
         recname(count) = fields_gfdl_mp(n)
-@@ -370,14 +403,17 @@
+@@ -370,14 +391,17 @@
       enddo
     enddo
   endif
@@ -253,3 +618,29 @@ index 36063d3..97d5397 100644
  
   allocate(vcoord_header(lev+1,3,2))
   vcoord_header = 0.0
+diff --git a/sorc/enkf_chgres_recenter.fd/utils.f90 b/sorc/enkf_chgres_recenter.fd/utils.f90
+index c9b1f1b..9bed3b4 100644
+--- a/sorc/enkf_chgres_recenter.fd/utils.f90
++++ b/sorc/enkf_chgres_recenter.fd/utils.f90
+@@ -371,9 +371,9 @@
+ !  BUT WITHIN THE TWO EDGE INTERVALS INTERPOLATE LINEARLY.              
+ !  KEEP THE OUTPUT FIELDS CONSTANT OUTSIDE THE INPUT DOMAIN.            
+                                                                         
+-!!$OMP PARALLEL DO DEFAULT(PRIVATE) SHARED(IM,IXZ1,IXQ1,IXZ2), &
+-!!$OMP& SHARED(IXQ2,NM,NXQ1,NXQ2,KM1,KXZ1,KXQ1,Z1,Q1,KM2,KXZ2), &
+-!!$OMP& SHARED(KXQ2,Z2,Q2,J2,K1S)
++!$OMP PARALLEL DO DEFAULT(PRIVATE) SHARED(IM,IXZ1,IXQ1,IXZ2), &
++!$OMP& SHARED(IXQ2,NM,NXQ1,NXQ2,KM1,KXZ1,KXQ1,Z1,Q1,KM2,KXZ2), &
++!$OMP& SHARED(KXQ2,Z2,Q2,J2,K1S)
+                                                                         
+       DO K2=1,KM2 
+         DO I=1,IM 
+@@ -477,7 +477,7 @@
+           ENDDO 
+         ENDDO 
+       ENDDO 
+-!!$OMP END PARALLEL DO                                                   
++!$OMP END PARALLEL DO                                                   
+ 
+  END SUBROUTINE TERP3 
+ 
