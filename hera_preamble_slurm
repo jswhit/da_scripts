@@ -3,9 +3,9 @@
 #SBATCH -t 02:30:00
 #SBATCH -A gsienkf
 #SBATCH -N 20    
-#SBATCH -J C192C192_hybgain1
-#SBATCH -e C192C192_hybgain1.err
-#SBATCH -o C192C192_hybgain1.out
+#SBATCH -J C192C384_hybgain1
+#SBATCH -e C192C384_hybgain1.err
+#SBATCH -o C192C384_hybgain1.out
 
 export NODES=$SLURM_NNODES
 export corespernode=$SLURM_CPUS_ON_NODE
@@ -16,10 +16,10 @@ export corespernode=$SLURM_CPUS_ON_NODE
 ##PBS -A gsienkf
 ###PBS -A da-cpu
 ###PBS -q debug
-##PBS -N C192C192_hybgain1
+##PBS -N C192C384_hybgain1
 ##PBS -S /bin/bash
-##PBS -o C192C192_hybgain1.stdout
-##PBS -e C192C192_hybgain1.stderr
+##PBS -o C192C384_hybgain1.stdout
+##PBS -e C192C384_hybgain1.stderr
 #export NODES=20
 #export corespernode=24
 
@@ -28,12 +28,15 @@ export machine='hera'
 # for control forecast
 if [ $NODES -eq 20 ]; then
   # 20 nodes, 2 threads
-  #export control_threads=2 # control forecast threads
-  #export control_proc=444   # total number of processors for control forecast
   export control_threads=1
-  export control_proc=480
-  export write_groups_ctl=8 # write groups for control forecast.
-  export layout_ctl="12,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  export control_proc=792
+  export control_proc_noquilt=768
+  export write_groups_ctl=4 # write groups for control forecast.
+  export layout_ctl="16,8" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  #export control_threads=2
+  #export control_proc=792
+  #export write_groups_ctl=2 # write groups for control forecast.
+  #export layout_ctl="8,8" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
 elif [ $NODES -eq 40 ]; then
   # 40 nodes, 4 threads
   export control_threads=4 

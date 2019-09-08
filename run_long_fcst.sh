@@ -46,6 +46,7 @@ export DIAG_TABLE="${enkfscripts}/diag_table_full"
 echo "DIAG_TABLE = $DIAG_TABLE"
 
 export OMP_NUM_THREADS=$control_threads
+export OMP_STACKSIZE=256M
 echo "OMP_NUM_THREADS = $OMP_NUM_THREADS"
 export nprocs=`expr $control_proc \/ $OMP_NUM_THREADS`
 echo "nprocs = $nprocs"
