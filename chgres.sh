@@ -1,6 +1,6 @@
 export LEVSp1=`expr $LEVS \+ 1`
 SIGLEVEL=${SIGLEVEL:-${FIXGLOBAL}/global_hyblev.l${LEVSp1}.txt}
-export CHGRESEXEC=${CHGRESEXEC:-${execdir}/chgres_recenter.exe}
+export CHGRESEXEC=${CHGRESEXEC:-${execdir}/chgres_nc_gauss.x}
 
 DATA=$datapath2/chgrestmp$$
 mkdir -p $DATA
@@ -11,9 +11,9 @@ ls -l $2
 ln -fs $1       atmanl_gsi
 ln -fs $2       atmanl_ensmean
 
-rm -f fort.43
-cat > fort.43 << EOF
-&nam_setup
+rm -f chgres_nc_gauss.nml
+cat > chgres_nc_gauss.nml << EOF
+&chgres_setup
   i_output=$LONB
   j_output=$LATB
   input_file="atmanl_gsi"
@@ -40,10 +40,10 @@ if [ -s atmanl_gsi_ensres ]; then
    mv atmanl_gsi_ensres $3
 else
    popd
-   /bin/rm -rf $DATA
+   #/bin/rm -rf $DATA
    exit 1
 fi
 
 popd
-/bin/rm -rf $DATA
+#/bin/rm -rf $DATA
 exit 0

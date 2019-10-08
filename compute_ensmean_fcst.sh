@@ -15,6 +15,7 @@ else
 fi
 module list
 export HOSTFILE=${datapath2}/machinesx
+export OMP_STACKSIZE=2048M
 
 cd ${datapath2}
 
@@ -31,14 +32,14 @@ while [ $fh -le $FHMAX ]; do
   fi
   if [ $cleanup_ensmean == 'true' ] || ([ $cleanup_ensmean == 'false' ]  && [ ! -s ${datapath}/${analdate}/sfg_${analdate}_${charfhr}_ensmean ]); then
       /bin/rm -f ${datapath2}/sfg_${analdate}_${charfhr}_ensmean
-      echo "running ${execdir}/getsigensmeanp_smooth.x ${datapath2}/ sfg_${analdate}_${charfhr}_ensmean sfg_${analdate}_${charfhr} ${nanals} ${JCAP}"
-      export PGM="${execdir}/getsigensmeanp_smooth.x ${datapath2}/ sfg_${analdate}_${charfhr}_ensmean sfg_${analdate}_${charfhr} ${nanals} ${JCAP}"
+      echo "running ${execdir}/getsigensmeanp_smooth.x ${datapath2}/ sfg_${analdate}_${charfhr}_ensmean sfg_${analdate}_${charfhr} ${nanals} sfg_${analdate}_${charfhr}_enssprd"
+      #if [ $fh -eq $ANALINC ]; then
+      export PGM="${execdir}/getsigensmeanp_smooth.x ${datapath2}/ sfg_${analdate}_${charfhr}_ensmean sfg_${analdate}_${charfhr} ${nanals} sfg_${analdate}_${charfhr}_enssprd"
       ${enkfscripts}/runmpi
-      if [ $fh -eq $ANALINC ]; then
-      echo "running ${execdir}/getsigensstatp.x ${datapath2}/ sfg_${analdate}_${charfhr} ${nanals}"
-      export PGM="${execdir}/getsigensstatp.x ${datapath2}/ sfg_${analdate}_${charfhr} ${nanals}"
-      ${enkfscripts}/runmpi
-      fi
+      #else
+      #export PGM="${execdir}/getsigensmeanp_smooth.x ${datapath2}/ sfg_${analdate}_${charfhr}_ensmean sfg_${analdate}_${charfhr} ${nanals}"
+      #$${enkfscripts}/runmpi
+      #fi
   fi
 
   fh=$((fh+FHOUT))

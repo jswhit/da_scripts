@@ -20,7 +20,7 @@ filenamein=sanl_${analdate}_${charfhr}
 filenameout=sanlr_${analdate}_${charfhr}
 # new_anal (filename_anal) = fg + alpha*(anal_3dvar-fg) + beta*(anal_enkf-fg)
 #                          = (1.-alpha-beta)*fg + alpha*anal_3dvar + beta*anal_enkf
-export PGM="${execdir}/recenternemsiop_hybgain.x $filename_fg $filename_anal1 $filename_anal2 $filename_anal $filenamein $filenameout $alpha $beta $nanals"
+export PGM="${execdir}/recenterncio_hybgain.x $filename_fg $filename_anal1 $filename_anal2 $filename_anal $filenamein $filenameout $alpha $beta $nanals"
 errorcode=0
 ${enkfscripts}/runmpi
 status=$?

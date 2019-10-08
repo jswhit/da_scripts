@@ -11,7 +11,7 @@ export RES_CTL=384
 export alpha=500 # percentage of 3dvar increment (beta_2*1000)
 export beta=1000 # percentage of enkf increment (*10)
 export hybgain='true' # set to true for hybrid gain 3DVar/EnKF
-export exptname="C${RES}C${RES_CTL}_hybgain"
+export exptname="C${RES}C${RES_CTL}_hybgain_nc"
 #export hybgain='false' # set to true for hybrid gain 3DVar/EnKF
 #export exptname="C${RES}C${RES_CTL}_hybcov"
 export cores=`expr $NODES \* $corespernode`
@@ -82,7 +82,7 @@ elif [ "$machine" == 'hera' ]; then
    export basedir=/scratch2/BMC/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   export obs_datapath=/scratch3/BMC/gsienkf/whitaker/gdas1bufr
+   export obs_datapath=/scratch2/BMC/gsienkf/whitaker/gdas1bufr
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f2/dev/${USER}
    export datadir=/lustre/f2/scratch/${USER}
@@ -395,18 +395,19 @@ if [ "$machine" == 'theia' ]; then
    export CHGRESEXEC=${execdir}/chgres_recenter.exe
 elif [ "$machine" == 'hera' ]; then
    export python=/contrib/anaconda/2.3.0/bin/python
-   export fv3gfspath=/scratch4/NCEPDEV/global/save/glopara/svn/fv3gfs
+   export fv3gfspath=/scratch1/NCEPDEV/global/glopara
    export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
-   export gsipath=/scratch3/BMC/gsienkf/whitaker/gsi/ProdGSI
+   export gsipath=/scratch2/BMC/gsienkf/whitaker/gsi/fv3_ncio
    export fixgsi=${gsipath}/fix
-   export fixcrtm=/scratch3/BMC/gsienkf/whitaker/gsi/branches/EXP-enkflinhx/fix/crtm_2.2.3
+   export fixcrtm=/scratch1/NCEPDEV/global/gwv/l827h/lib/crtm/v2.2.6/fix
+   export fixcrtm=/scratch1/NCEPDEV/global/glopara/crtm/v2.2.6/fix
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
    export nemsioget=${execdir}/nemsio_get
-   export CHGRESEXEC=${execdir}/chgres_recenter.exe
+   export CHGRESEXEC=${execdir}/chgres_nc_gauss.x
 elif [ "$machine" == 'gaea' ]; then
    export python=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/bin/python
    export PYTHONPATH=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/lib/python2.7/site-packages

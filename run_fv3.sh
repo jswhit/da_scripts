@@ -110,7 +110,7 @@ if [ $? -ne 0 ]; then
   echo "cd to ${datapath2}/${charnanal} failed, stopping..."
   exit 1
 fi
-/bin/rm -f *nemsio* PET*
+/bin/rm -f dyn*.nc phy*nc PET*
 export DIAG_TABLE=${DIAG_TABLE:-$enkfscripts/diag_table}
 /bin/cp -f $DIAG_TABLE diag_table
 /bin/cp -f $enkfscripts/nems.configure .
@@ -179,8 +179,7 @@ if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
       fi
       echo "create ${increment_file}"
       /bin/rm -f ${increment_file}
-      export "PGM=${execdir}/calc_increment_nemsio.x ${fgfile} ${analfile} ${increment_file} T F"
-      #export "PGM=${execdir}/calc_increment_serial.x ${analfile} ${fgfile} ${increment_file} F T ${imp_physics}"
+      export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file} T"
       nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
       if [ $? -ne 0 -o ! -s ${increment_file} ]; then
          echo "problem creating ${increment_file}, stopping .."
@@ -393,9 +392,11 @@ write_tasks_per_group:   ${write_tasks}
 num_files:               2
 filename_base:           'dyn' 'phy'
 output_grid:             'gaussian_grid'
-output_file:             'nemsio'
-write_nemsioflip:        .true.
+output_file:             'netcdf'
+nbits:                   14
+ideflate:                1
 write_fsyncflag:         .true.
+write_nemsioflip:        .true.
 iau_offset:              ${iaudelthrs}
 imo:                     ${LONB}
 jmo:                     ${LATB}
@@ -444,7 +445,7 @@ cat > input.nml <<EOF
 
 &mpp_io_nml
   shuffle=1,
-  deflate_level=5,
+  deflate_level=1,
 /
 
 &fms_nml
@@ -578,6 +579,8 @@ cat > input.nml <<EOF
   h2o_phys       = ${h2o_phys:-"T"}
   nstf_name      = ${nstf_name}
   nst_anl        = ${nst_anl}
+  ldiag_ugwp   = .false.
+  do_ugwp      = .false.
   iau_filter_increments = F
   iaufhrs = ${iaufhrs}
   iau_delthrs = ${iaudelthrs}
@@ -631,6 +634,21 @@ cat > input.nml <<EOF
   fix_negative = .true.
   icloud_f = 1
   mp_time = 150.
+/
+
+&cires_ugwp_nml
+       knob_ugwp_solver  = 2
+       knob_ugwp_source  = 1,1,0,0
+       knob_ugwp_wvspec  = 1,25,25,25
+       knob_ugwp_azdir   = 2,4,4,4
+       knob_ugwp_stoch   = 0,0,0,0
+       knob_ugwp_effac   = 1,1,1,1
+       knob_ugwp_doaxyz  = 1
+       knob_ugwp_doheat  = 1
+       knob_ugwp_dokdis  = 1
+       knob_ugwp_ndx4lh  = 1
+       knob_ugwp_version = 0
+       launch_level      = 54
 /
 
 &interpolator_nml
@@ -719,22 +737,23 @@ else
    echo "done running model.. `date`"
 fi
 
-# rename nemsio files (if quilting = .true.).
+# rename netcdf files (if quilting = .true.).
 export DATOUT=${DATOUT:-$datapathp1}
 if [ "$quilting" == ".true." ]; then
-   ls -l *nemsio*
+   ls -l dyn*.nc
+   ls -l phy*.nc
    fh=$FHMIN
    while [ $fh -le $FHMAX ]; do
      charfhr="fhr"`printf %02i $fh`
      charfhr2="f"`printf %03i $fh`
-     /bin/mv -f dyn${charfhr2}.nemsio ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
+     /bin/mv -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
      if [ $? -ne 0 ]; then
-        echo "nemsio file missing..."
+        echo "netcdffile missing..."
         exit 1
      fi
-     /bin/mv -f phy${charfhr2}.nemsio ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
+     /bin/mv -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
      if [ $? -ne 0 ]; then
-        echo "nemsio file missing..."
+        echo "netcdf file missing..."
         exit 1
      fi
      fh=$[$fh+$FHOUT]
