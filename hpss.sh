@@ -109,7 +109,7 @@ else
    cd ${analdate}
    /bin/rm -f diag*cris* diag*airs* diag*iasi*
    /bin/rm -rf control control2 ensmean
-   /bin/rm -f *fhr03* *fhr09*
+   #/bin/rm -f *fhr03* *fhr09*
 fi
 
 exit $exitstat

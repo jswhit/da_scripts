@@ -62,8 +62,9 @@ im=`echo $adate | cut -c5-6`
 id=`echo $adate | cut -c7-8`
 ih=`echo $adate | cut -c9-10`
 echo "iy,im,id,ih = $iy $im $id $ih"
-fdatei=`$nemsioget ${datges}/bfg_${adate}_fhr03_${charnanal} idate | tail -1 | cut -f2 -d"="`
-fhr=`$nemsioget ${datges}/bfg_${adate}_fhr03_${charnanal} nfhour | cut -f2 -d"="`
+date_fhour=`$python ${enkfscripts}/getidate.py ${datges}/bfg_${adate}_fhr03_${charnanal`
+fdatei=`echo $date_fhour | cut -f1 -d " "`
+fhr=`echo $date_fhour | cut -f2 -d " "`
 fdatev=`${incdate} $fdatei $fhr`
 echo "fdatei=$fdatei fhr=$fhr fdatev=$fdatev"
 gdate0=`echo $gdate | cut -c1-8`

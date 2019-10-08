@@ -40,20 +40,11 @@ fi
 #/bin/mv -f sanl_*mem* analens # save analysis ensemble
 #echo "files moved to analens `date`"
 /bin/rm -f sanl_*mem* # don't save analysis ensemble
-/bin/rm -f s*ensmean*nc4 # just save spread netcdf files.
-
-nemsio2nc4.py -n sanl_${analdate}_fhr06_ensmean
-nemsio2nc4.py -n sanl_${analdate}_fhr06_ensmean.orig
-nemsio2nc4.py -n sfg_${analdate}_fhr06_ensmean
-nemsio2nc4.py -n bfg_${analdate}_fhr06_ensmean
-nemsio2nc4.py -n sanl_${analdate}_fhr06_control
-/bin/rm -f sanl*ensmean sanl*ensmean*orig
-/bin/rm -f sanl*control 
 /bin/rm -f fgens2/*fhr00* fgens2/*orig
 echo "files moved to fgens, fgens2 `date`"
 if [ -z $NOSAT ]; then
 # only save control and spread diag files.
-/bin/rm -rf diag*ensmean.nc4
+#/bin/rm -rf diag*ensmean.nc4
 # only save conventional diag files
 #mkdir diagsavdir
 #/bin/mv -f diag*conv*control*nc4 diag*conv*spread*nc4 diagsavdir

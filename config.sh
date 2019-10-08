@@ -65,7 +65,7 @@ export copy_history_files=1 # save pressure level history files (and compute ens
 #export recenter_anal="false"
 #export cleanup_fg='false'
 #export resubmit='false'
-#export do_cleanup='false'
+export do_cleanup='false'
 #export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
  
 if [ "$machine" == 'wcoss' ]; then
@@ -391,7 +391,6 @@ if [ "$machine" == 'theia' ]; then
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
-   export nemsioget=${execdir}/nemsio_get
    export CHGRESEXEC=${execdir}/chgres_recenter.exe
 elif [ "$machine" == 'hera' ]; then
    export python=/contrib/anaconda/2.3.0/bin/python
@@ -406,7 +405,6 @@ elif [ "$machine" == 'hera' ]; then
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
-   export nemsioget=${execdir}/nemsio_get
    export CHGRESEXEC=${execdir}/chgres_nc_gauss.x
 elif [ "$machine" == 'gaea' ]; then
    export python=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/bin/python
@@ -423,7 +421,6 @@ elif [ "$machine" == 'gaea' ]; then
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
-   export nemsioget=${execdir}/nemsio_get
    export CHGRESEXEC=${execdir}/chgres_recenter.exe
 elif [ "$machine" == 'wcoss' ]; then
    export python=`which python`
@@ -437,7 +434,6 @@ elif [ "$machine" == 'wcoss' ]; then
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
-   export nemsioget=${execdir}/nemsio_get
 else
    echo "${machine} unsupported machine"
    exit 1
