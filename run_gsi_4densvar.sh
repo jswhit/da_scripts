@@ -340,7 +340,7 @@ cat <<EOF > gsiparm.anl
    tzr_qc=1,iguess=-1,
    oneobtest=.false.,retrieval=.false.,l_foto=.false.,
    use_pbl=.false.,use_compress=.true.,nsig_ext=12,gpstop=50.,
-   use_gfs_ncio=.true.,sfcnst_comb=.true.,cwoption=3,imp_physics=${imp_physics},
+   write_fv3_incr=.false.,use_gfs_ncio=.true.,sfcnst_comb=.true.,cwoption=3,imp_physics=${imp_physics},
    lupp=${lupp},
    $SETUP
  /

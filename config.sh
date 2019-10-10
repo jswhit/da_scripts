@@ -12,8 +12,15 @@ export alpha=500 # percentage of 3dvar increment (beta_2*1000)
 export beta=1000 # percentage of enkf increment (*10)
 export hybgain='true' # set to true for hybrid gain 3DVar/EnKF
 export exptname="C${RES}C${RES_CTL}_hybgain_nc"
+# for 'passive' or 'replay' cycling of control fcst 
+# control forecast files have 'control2' suffix, instead of 'control'
+# GSI observer will be run on 'control2' forecast
+# this is for diagnostic purposes (to get GSI diagnostic files) 
+export replay_controlfcst='true'
+# for dual-res hybrid, set hybgain=false, replay_controlfcst=false
 #export hybgain='false' # set to true for hybrid gain 3DVar/EnKF
 #export exptname="C${RES}C${RES_CTL}_hybcov"
+#export replay_controlfcst='false'
 export cores=`expr $NODES \* $corespernode`
 
 ## check that value of NODES is consistent with PBS_NP on theia.
@@ -41,11 +48,6 @@ export cleanup_anal='true'
 export cleanup_controlanl='true'
 export cleanup_observer='true' 
 export resubmit='true'
-# for 'passive' or 'replay' cycling of control fcst 
-# control forecast files have 'control2' suffix, instead of 'control'
-# GSI observer will be run on 'control2' forecast
-# this is for diagnostic purposes (to get GSI diagnostic files) 
-export replay_controlfcst='true'
 export replay_run_observer='true' # run observer on replay forecast
 # python script checkdate.py used to check
 # YYYYMMDDHH analysis date string to see if
@@ -65,7 +67,7 @@ export copy_history_files=1 # save pressure level history files (and compute ens
 #export recenter_anal="false"
 #export cleanup_fg='false'
 #export resubmit='false'
-export do_cleanup='false'
+#export do_cleanup='false'
 #export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
  
 if [ "$machine" == 'wcoss' ]; then
@@ -310,7 +312,7 @@ export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 export SMOOTHINF=35
 export npts=`expr \( $LONA \) \* \( $LATA \)`
 export RUN=gdas1 # use gdas obs
-export reducedgrid=.true.
+export reducedgrid=.false.
 export univaroz=.false.
 
 export iassim_order=0
@@ -439,7 +441,6 @@ else
    exit 1
 fi
 
-#export ANAVINFO=${enkfscripts}/global_anavinfo.l64.txt.clrsky
 export ANAVINFO=${enkfscripts}/global_anavinfo.l${LEVS}.txt
 export ANAVINFO_ENKF=${ANAVINFO}
 export HYBENSINFO=${enkfscripts}/global_hybens_info.l${LEVS}.txt

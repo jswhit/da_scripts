@@ -171,7 +171,7 @@ fi
 # ens mean background is used ("control" symlinked to "ensmean", control
 # forecast uses "control2")
 if [ $controlanal == 'true' ]; then
-   if [ $replay_controlfcst == 'true' ] || [ $controlfcst == 'false' ]; then
+   if [ $hybgain == 'true' ] || [ $replay_controlfcst == 'true' ] || [ $controlfcst == 'false' ]; then
       # use ensmean mean background if no control forecast is run, or 
       # control forecast is replayed to ens mean increment
       export charnanal='control' # control is symlink to ens mean
@@ -246,6 +246,7 @@ echo "$analdate starting ens mean analysis computation `date`"
 sh ${enkfscripts}/compute_ensmean_enkf.sh > ${current_logdir}/compute_ensmean_anal.out 2>&1
 echo "$analdate done computing ensemble mean analyses `date`"
 
+exit
 # recenter enkf analyses around control analysis
 if [ $controlanal == 'true' ] && [ $recenter_anal == 'true' ]; then
    if [ $hybgain == 'true' ]; then
