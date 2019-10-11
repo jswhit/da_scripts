@@ -246,7 +246,6 @@ echo "$analdate starting ens mean analysis computation `date`"
 sh ${enkfscripts}/compute_ensmean_enkf.sh > ${current_logdir}/compute_ensmean_anal.out 2>&1
 echo "$analdate done computing ensemble mean analyses `date`"
 
-exit
 # recenter enkf analyses around control analysis
 if [ $controlanal == 'true' ] && [ $recenter_anal == 'true' ]; then
    if [ $hybgain == 'true' ]; then

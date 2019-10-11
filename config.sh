@@ -209,15 +209,19 @@ if [ $imp_physics -eq 11 ]; then
 fi
 
 # stochastic physics parameters.
+export DO_SPPT=.true.
 export SPPT=0.5
 export SPPT_TSCALE=21600.
 export SPPT_LSCALE=500.e3
+export DO_SHUM=.true.
 export SHUM=0.005
 export SHUM_TSCALE=21600.
 export SHUM_LSCALE=500.e3
+export DO_SKEB=.true.
 export SKEB=0.3
 export SKEB_TSCALE=21600.
 export SKEB_LSCALE=500.e3
+export SKEBINT=1800
 export SKEBNORM=0
 export SKEB_NPASS=30
 export SKEB_VDOF=5
