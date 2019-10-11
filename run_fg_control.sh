@@ -63,8 +63,11 @@ echo "fg_proc = $fg_proc"
 
 # turn off stochastic physics
 export SKEB=0
+export DO_SKEB=.false.
 export SPPT=0
+export DO_SPPT=.false.
 export SHUM=0
+export DO_SHUM=.false
 echo "SKEB SPPT SHUM = $SKEB $SPPT $SHUM"
 
 if [ $cleanup_fg == 'true' ]; then

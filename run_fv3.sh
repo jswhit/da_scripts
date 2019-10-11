@@ -587,9 +587,9 @@ cat > input.nml <<EOF
   nst_anl        = ${nst_anl}
   ldiag_ugwp   = .false.
   do_ugwp      = .false.
-  do_skeb      = .true.
-  do_sppt      = .true.
-  do_shum      = .true.
+  do_skeb      = $DO_SKEB
+  do_sppt      = $DO_SPPT
+  do_shum      = $DO_SHUM
   iau_filter_increments = F
   iaufhrs = ${iaufhrs}
   iau_delthrs = ${iaudelthrs}
