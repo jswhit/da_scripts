@@ -16,12 +16,12 @@ if [ "$machine" == 'theia' ]; then
    module list
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'hera' ]; then
-   #module purge
-   #module load intel/18.0.5.274
-   #module load impi/2018.0.4
-   #module load netcdf/4.7.0
-   #module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
-   #module load esmf/8.0.0bs50
+   module purge
+   module load intel/18.0.5.274
+   module load impi/2018.0.4
+   module load netcdf/4.7.0
+   module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
+   module load esmf/8.0.0bs50
    module load wgrib
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'wcoss' ]; then
