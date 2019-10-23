@@ -30,7 +30,7 @@ export DTFANL=${datapath2}/${PREINP}dtfanl.nc
 
 if [ $cleanup_controlanl == 'true' ]; then
    /bin/rm -f ${SIGANL06}
-   /bin/rm -f ${datapath2}/diag*${charnanal2}
+   /bin/rm -f ${datapath2}/diag*${charnanal2}*nc4
 fi
 
 niter=1
