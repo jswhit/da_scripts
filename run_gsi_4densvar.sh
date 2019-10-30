@@ -341,7 +341,6 @@ cat <<EOF > gsiparm.anl
    oneobtest=.false.,retrieval=.false.,l_foto=.false.,
    use_pbl=.false.,use_compress=.true.,nsig_ext=12,gpstop=50.,
    write_fv3_incr=.false.,use_gfs_ncio=.true.,sfcnst_comb=.true.,cwoption=3,imp_physics=${imp_physics},
-   lupp=${lupp},
    $SETUP
  /
  &GRIDOPTS
@@ -556,7 +555,6 @@ errtable=$fixgsi/prepobs_errtable.global
 anavinfo=${ANAVINFO:-$fixgsi/global_anavinfo.l64.txt}
 radcloudinfo=${RADCLOUDINFO:-${fixgsi}/cloudy_radiance_info.txt}
 
-
 # Only need this file for single obs test
 bufrtable=$fixgsi/prepobs_prep.bufrtable
 
@@ -593,6 +591,20 @@ $nln $errtable ./errtable
 
 $nln $bufrtable ./prepobs_prep.bufrtable
 $nln $bftab_sst ./bftab_sstphr
+
+# if correlated ob errors desired, link Rcov files.
+if [ $use_correlated_oberrs == ".true." ];  then
+  if ls ${fixgsi}/Rcov* 1> /dev/null 2>&1; then
+    $nln ${fixgsi}/Rcov* .
+    echo "using correlated obs error"
+  else
+    echo "Warning: Satellite error covariance files are missing."
+    echo "Check for the required Rcov files in " $ANAVINFO
+    exit 1
+  fi
+else
+  echo "not using correlated obs error"
+fi
 
 
 GBIAS=${GBIAS:-$datgesm1/${prefix_tbc}.abias}

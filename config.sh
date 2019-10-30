@@ -62,8 +62,8 @@ export copy_history_files=1 # save pressure level history files (and compute ens
 # override values from above for debugging.
 #export cleanup_ensmean='false'
 #export cleanup_observer='false'
-#export cleanup_anal='false'
 #export cleanup_controlanl='false'
+#export cleanup_anal='false'
 #export recenter_anal="false"
 #export cleanup_fg='false'
 #export resubmit='false'
@@ -330,6 +330,7 @@ export analpertwtnh_rtpp=0.0
 export analpertwtsh_rtpp=0.0
 export analpertwttr_rtpp=0.0
 export pseudo_rh=.true.
+export use_correlated_oberrs=".true."
                                                                     
 export letkf_flag=.true.
 export denkf=.true.
@@ -344,8 +345,6 @@ export varqc=.false.
 export huber=.false.
 export zhuberleft=1.e10
 export zhuberright=1.e10
-# extra vars in nemsio for UPP
-export lupp=.false.
 
 export biasvar=-500
 if [ $controlanal == 'false' ] && [ $NOSAT == "NO" ];  then
@@ -445,13 +444,15 @@ else
    exit 1
 fi
 
-export ANAVINFO=${enkfscripts}/global_anavinfo.l${LEVS}.txt
+#export ANAVINFO=${enkfscripts}/global_anavinfo.l${LEVS}.txt
+export ANAVINFO=${fixgsi}/global_anavinfo.l${LEVS}.txt
 export ANAVINFO_ENKF=${ANAVINFO}
 export HYBENSINFO=${enkfscripts}/global_hybens_info.l${LEVS}.txt
 export CONVINFO=${enkfscripts}/global_convinfo_oper_fix.txt
 export OZINFO=${enkfscripts}/global_ozinfo_oper_fix.txt
 #export SATINFO=${enkfscripts}/global_satinfo.txt.clrsky
-export SATINFO=${enkfscripts}/global_satinfo.txt
+#export SATINFO=${enkfscripts}/global_satinfo.txt
+export SATINFO=${fixgsi}/global_satinfo.txt
 
 # parameters for hybrid gain
 if [ $hybgain == "true" ]; then
