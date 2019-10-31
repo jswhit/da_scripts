@@ -594,13 +594,18 @@ $nln $bftab_sst ./bftab_sstphr
 
 # if correlated ob errors desired, link Rcov files.
 if [ $use_correlated_oberrs == ".true." ];  then
-  if ls ${fixgsi}/Rcov* 1> /dev/null 2>&1; then
-    $nln ${fixgsi}/Rcov* .
-    echo "using correlated obs error"
+  if grep -q "Rcov" $ANAVINFO ; then
+     if ls ${fixgsi}/Rcov* 1> /dev/null 2>&1; then
+       $NLN ${fixgsi}/Rcov* $DATA
+       echo "using correlated obs error"
+     else
+       echo "Error: Satellite error covariance files are missing."
+       echo "Check for the required Rcov files in " $ANAVINFO
+       exit 1
+     fi
   else
-    echo "Warning: Satellite error covariance files are missing."
-    echo "Check for the required Rcov files in " $ANAVINFO
-    exit 1
+     echo "Error: Satellite error covariance info missing in " $ANAVINFO
+     exit 1
   fi
 else
   echo "not using correlated obs error"

@@ -3,26 +3,13 @@
 #SBATCH -t 02:30:00
 #SBATCH -A gsienkf
 #SBATCH -N 20    
-#SBATCH -J C192C384_hybgain1
-#SBATCH -e C192C384_hybgain1.err
-#SBATCH -o C192C384_hybgain1.out
+#SBATCH -J C192C384_hybgain
+#SBATCH -e C192C384_hybgain.err
+#SBATCH -o C192C384_hybgain.out
 
 export NODES=$SLURM_NNODES
 export corespernode=$SLURM_CPUS_ON_NODE
  
-##PBS -l nodes=20:ppn=24
-##PBS -l walltime=4:00:00
-###PBS -l walltime=0:30:00
-##PBS -A gsienkf
-###PBS -A da-cpu
-###PBS -q debug
-##PBS -N C192C384_hybgain1
-##PBS -S /bin/bash
-##PBS -o C192C384_hybgain1.stdout
-##PBS -e C192C384_hybgain1.stderr
-#export NODES=20
-#export corespernode=24
-
 export machine='hera'
 
 # for control forecast
