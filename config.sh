@@ -11,7 +11,7 @@ export RES_CTL=384
 export alpha=500 # percentage of 3dvar increment (beta_2*1000)
 export beta=1000 # percentage of enkf increment (*10)
 export hybgain='true' # set to true for hybrid gain 3DVar/EnKF
-export exptname="C${RES}C${RES_CTL}_hybgain"
+export exptname="C${RES}C${RES_CTL}_hybgain_nc_correrr"
 # for 'passive' or 'replay' cycling of control fcst 
 # control forecast files have 'control2' suffix, instead of 'control'
 # GSI observer will be run on 'control2' forecast
@@ -333,6 +333,7 @@ export pseudo_rh=.true.
 export use_correlated_oberrs=".true."
                                                                     
 export letkf_flag=.true.
+export letkf_bruteforce_search=.true.
 export denkf=.true.
 export getkf=.true.
 export getkf_inflation=.false.
@@ -448,6 +449,7 @@ fi
 export ANAVINFO=${fixgsi}/global_anavinfo.l${LEVS}.txt
 export ANAVINFO_ENKF=${ANAVINFO}
 export HYBENSINFO=${enkfscripts}/global_hybens_info.l${LEVS}.txt
+export HYBENSMOOTHINFO=${fixgsi}/global_hybens_smoothinfo.l${LEVS}.txt
 export CONVINFO=${enkfscripts}/global_convinfo_oper_fix.txt
 export OZINFO=${enkfscripts}/global_ozinfo_oper_fix.txt
 #export SATINFO=${enkfscripts}/global_satinfo.txt.clrsky

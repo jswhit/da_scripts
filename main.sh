@@ -108,8 +108,8 @@ if [ $fg_only == 'false' ]; then
 if [ ! -z $HYBENSINFO ]; then
    /bin/cp -f ${HYBENSINFO} ${datapath2}/hybens_info
 fi
-if [ ! -z $HYBENSMOOTH ];  then
-   /bin/cp -f ${HYBENSMOOTH} $datapath2/hybens_smoothinfo
+if [ ! -z $HYBENSMOOTHINFO ];  then
+   /bin/cp -f ${HYBENSMOOTHINFO} $datapath2/hybens_smoothinfo
 fi
 fi
 
