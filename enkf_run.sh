@@ -158,23 +158,33 @@ cat <<EOF > enkf.nml
   sattypes_rad(71)= 'avhrr_n15',     dsis(71)= 'avhrr3_n15',
   sattypes_rad(72)= 'avhrr_n16',     dsis(72)= 'avhrr3_n16',
   sattypes_rad(73)= 'avhrr_n17',     dsis(73)= 'avhrr3_n17',
-  sattypes_rad(74)='amsua_n16',      dsis(74)= 'amsua_n16'
-  sattypes_rad(75)='amsub_n15',      dsis(75)= 'amsub_n15',  
-  sattypes_rad(76)='avhrr_n14',      dsis(76)= 'avhrr2_n14',
+  sattypes_rad(74)= 'amsua_n16',     dsis(74)= 'amsua_n16'
+  sattypes_rad(75)= 'amsub_n15',     dsis(75)= 'amsub_n15',  
+  sattypes_rad(76)= 'avhrr_n14',     dsis(76)= 'avhrr2_n14',
+  sattypes_rad(77)= 'atms_n20',      dsis(77)= 'atms_n20',
+  sattypes_rad(78)= 'cris-fsr_npp',  dsis(78)= 'cris-fsr_npp',
+  sattypes_rad(79)= 'cris-fsr_n20',  dsis(79)= 'cris-fsr_n20',
+  sattypes_rad(80)= 'gmi_gpm',       dsis(80)= 'gmi_gpm',
+  sattypes_rad(81)= 'saphir_meghat', dsis(81)= 'saphir_meghat',
+  sattypes_rad(82)= 'amsua_metop-c', dsis(82)= 'amsua_metop-c',
+  sattypes_rad(83)= 'mhs_metop-c',   dsis(83)= 'mhs_metop-c',
+  sattypes_rad(84)= 'ahi_himawari8', dsis(84)= 'ahi_himawari8',
+  sattypes_rad(85)= 'abi_g16',       dsis(85)= 'abi_g16',
  /
  &END
  &ozobs_enkf
-  sattypes_oz(1) = 'sbuv2_n11',
-  sattypes_oz(2) = 'sbuv2_n14',
-  sattypes_oz(3) = 'sbuv2_n16',
-  sattypes_oz(4) = 'sbuv2_n17',
-  sattypes_oz(5) = 'sbuv2_n18',
-  sattypes_oz(6) = 'sbuv2_n19',
-  sattypes_oz(7) = 'omi_aura',
-  sattypes_oz(8) = 'gome_metop-a',
-  sattypes_oz(9) = 'gome_metop-b',
-  sattypes_oz(10) = 'mls30_aura',
-  
+   sattypes_oz(1) = 'sbuv2_n11',
+   sattypes_oz(2) = 'sbuv2_n14',
+   sattypes_oz(3) = 'sbuv2_n16',
+   sattypes_oz(4) = 'sbuv2_n17',
+   sattypes_oz(5) = 'sbuv2_n18',
+   sattypes_oz(6) = 'sbuv2_n19',
+   sattypes_oz(7) = 'omi_aura',
+   sattypes_oz(8) = 'gome_metop-a',
+   sattypes_oz(9) = 'gome_metop-b',
+   sattypes_oz(10) = 'mls30_aura',
+   sattypes_oz(11) = 'ompsnp_npp',
+   sattypes_oz(12) = 'ompstc8_npp',
  /
  &END
 EOF

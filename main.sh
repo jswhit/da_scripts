@@ -18,11 +18,66 @@ export startupenv="${datapath}/analdate.sh"
 source $startupenv
 
 # if SATINFO in obs dir, use it
-if [ -s ${obs_datapath}/bufr_${analdate}/global_satinfo.txt ]; then
-   export SATINFO=${obs_datapath}/bufr_${analdate}/global_satinfo.txt
+#if [ -s ${obs_datapath}/bufr_${analdate}/global_satinfo.txt ]; then
+#   export SATINFO=${obs_datapath}/bufr_${analdate}/global_satinfo.txt
+#fi
+#export OZINFO=`sh ${enkfscripts}/pickinfo.sh ${analdate} ozinfo`
+#export CONVINFO=`sh ${enkfscripts}/pickinfo.sh ${analdate} convinfo`
+#   Set CONVINFO
+if [[ "$analdate" -ge "2018022818" ]]; then
+    export CONVINFO=$fixgsi/fv3_historical/global_convinfo.txt.2018022818
+elif [[ "$analdate" -ge "2018010512" ]]; then
+    export CONVINFO=$fixgsi/fv3_historical/global_convinfo.txt.2018010512
+elif [[ "$analdate" -ge "2017071912" ]]; then
+    export CONVINFO=$fixgsi/fv3_historical/global_convinfo.txt.2017071912
+elif [[ "$analdate" -ge "2016031512" ]]; then
+    export CONVINFO=$fixgsi/fv3_historical/global_convinfo.txt.2016031512
+elif [[ "$analdate" -ge "2014041400" ]]; then
+    export CONVINFO=$fixgsi/fv3_historical/global_convinfo.txt.2014041400
+else
+    echo "no convinfo found"
+    exit 1
 fi
-export OZINFO=`sh ${enkfscripts}/pickinfo.sh ${analdate} ozinfo`
-export CONVINFO=`sh ${enkfscripts}/pickinfo.sh ${analdate} convinfo`
+#   Set OZINFO
+if [[ "$analdate" -ge "2018110700" ]]; then
+    export OZINFO=$fixgsi/fv3_historical/global_ozinfo.txt.2018110700
+elif [[ "$analdate" -ge "2015110500" ]]; then
+    export OZINFO=$fixgsi/fv3_historical/global_ozinfo.txt.2015110500
+else
+    echo "no ozinfo found"
+    exit 1
+fi
+#   Set SATINFO
+if [[ "$analdate" -ge "2018053012" ]]; then
+    export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2018053012
+elif [[ "$analdate" -ge "2018021212" ]]; then
+    export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2018021212
+elif [[ "$analdate" -ge "2017103118" ]]; then
+    export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2017103118
+elif [[ "$analdate" -ge "2017031612" ]]; then
+    export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2017031612
+elif [[ "$analdate" -ge "2017030812" ]]; then
+    export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2017030812
+elif [[ "$analdate" -ge "2016110812" ]]; then
+    export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2016110812
+elif [[ "$analdate" -ge "2016090912" ]]; then
+    export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2016090912
+elif [[ "$analdate" -ge "2016020312" ]]; then
+    export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2016020312
+elif [[ "$analdate" -ge "2016011912" ]]; then
+    export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2016011912
+elif [[ "$analdate" -ge "2015111012" ]]; then
+    export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2015111012
+elif [[ "$analdate" -ge "2015100118" ]]; then
+    export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2015100118
+elif [[ "$analdate" -ge "2015070218" ]]; then
+    export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2015070218
+elif [[ "$analdate" -ge "2015011412" ]]; then
+    export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2015011412
+else
+    echo "no satinfo found"
+    exit 1
+fi
 
 #------------------------------------------------------------------------
 mkdir -p $datapath
@@ -391,6 +446,7 @@ export analdate=`${incdate} $analdate $ANALINC`
 echo "export analdate=${analdate}" > $startupenv
 echo "export analdate_end=${analdate_end}" >> $startupenv
 echo "export fg_only=false" > $datapath/fg_only.sh
+echo "export cold_start=false" >> $datapath/fg_only.sh
 
 cd $homedir
 

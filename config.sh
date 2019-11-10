@@ -11,12 +11,12 @@ export RES_CTL=384
 export alpha=500 # percentage of 3dvar increment (beta_2*1000)
 export beta=1000 # percentage of enkf increment (*10)
 export hybgain='true' # set to true for hybrid gain 3DVar/EnKF
-export exptname="C${RES}C${RES_CTL}_hybgain_nc_correrr"
+export exptname="C${RES}C${RES_CTL}_hybgain_expt1"
 # for 'passive' or 'replay' cycling of control fcst 
 # control forecast files have 'control2' suffix, instead of 'control'
 # GSI observer will be run on 'control2' forecast
 # this is for diagnostic purposes (to get GSI diagnostic files) 
-export replay_controlfcst='true'
+export replay_controlfcst='false'
 # for dual-res hybrid, set hybgain=false, replay_controlfcst=false
 #export hybgain='false' # set to true for hybrid gain 3DVar/EnKF
 #export exptname="C${RES}C${RES_CTL}_hybcov"
@@ -41,7 +41,7 @@ export rungfs='run_fv3.sh' # ensemble forecast
 export recenter_anal="true" # recenter enkf analysis around GSI hybrid 4DEnVar analysis
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
 export controlanal='true' # use gsi hybrid (if false, pure enkf is used)
-export controlfcst='true' # if true, run dual-res setup with single high-res control
+export controlfcst='false' # if true, run dual-res setup with single high-res control
 export cleanup_fg='true'
 export cleanup_ensmean='true'
 export cleanup_anal='true'
@@ -55,7 +55,7 @@ export replay_run_observer='true' # run observer on replay forecast
 # HPSS save should be done)
 export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
 export save_hpss="true"
-export run_long_fcst="true"  # spawn a longer control forecast at 00 UTC
+export run_long_fcst="false"  # spawn a longer control forecast at 00 UTC
 export ensmean_restart='false'
 export copy_history_files=1 # save pressure level history files (and compute ens mean)
 
@@ -84,7 +84,8 @@ elif [ "$machine" == 'hera' ]; then
    export basedir=/scratch2/BMC/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   export obs_datapath=/scratch2/BMC/gsienkf/whitaker/gdas1bufr
+   #export obs_datapath=/scratch2/BMC/gsienkf/whitaker/gdas1bufr
+   export obs_datapath=/scratch1/NCEPDEV/global/glopara/dump
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f2/dev/${USER}
    export datadir=/lustre/f2/scratch/${USER}
@@ -315,7 +316,7 @@ export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 
 export SMOOTHINF=35
 export npts=`expr \( $LONA \) \* \( $LATA \)`
-export RUN=gdas1 # use gdas obs
+export RUN=gdas # use gdas obs
 export reducedgrid=.false.
 export univaroz=.false.
 
@@ -449,12 +450,9 @@ fi
 export ANAVINFO=${fixgsi}/global_anavinfo.l${LEVS}.txt
 export ANAVINFO_ENKF=${ANAVINFO}
 export HYBENSINFO=${enkfscripts}/global_hybens_info.l${LEVS}.txt
-export HYBENSMOOTHINFO=${fixgsi}/global_hybens_smoothinfo.l${LEVS}.txt
-export CONVINFO=${enkfscripts}/global_convinfo_oper_fix.txt
-export OZINFO=${enkfscripts}/global_ozinfo_oper_fix.txt
-#export SATINFO=${enkfscripts}/global_satinfo.txt.clrsky
-#export SATINFO=${enkfscripts}/global_satinfo.txt
-export SATINFO=${fixgsi}/global_satinfo.txt
+# comment out next line to disable smoothing of ensemble perturbations
+# in stratosphere/mesosphere
+#export HYBENSMOOTHINFO=${fixgsi}/global_hybens_smoothinfo.l${LEVS}.txt
 
 # parameters for hybrid gain
 if [ $hybgain == "true" ]; then

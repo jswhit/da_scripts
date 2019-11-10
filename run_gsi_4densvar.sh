@@ -47,7 +47,7 @@ gdate=`${incdate} $adate -${ANALINC}`
 hha=`echo $adate | cut -c9-10`
 hham1=`echo $analdatem1 | cut -c9-10`
 hhg=`echo $gdate | cut -c9-10`
-RUN=${RUN:-gfs}
+RUN=${RUN:-gdas}
 prefix_obs=${RUN}.t${hha}z
 prefix_obsm1=${RUN}.t${hham1}z
 prefix_tbc=${RUN}.t${hhg}z
@@ -68,9 +68,8 @@ fhr=`echo $date_fhour | cut -f2 -d " "`
 fdatev=`${incdate} $fdatei $fhr`
 echo "fdatei=$fdatei fhr=$fhr fdatev=$fdatev"
 gdate0=`echo $gdate | cut -c1-8`
-obs_datapath=${obs_datapath:-/lfs1/projects/fim/whitaker/bufr}
-datobs=$obs_datapath/bufr_$adate
-datobsm1=$obs_datapath/bufr_$analdatem1
+obs_datapath=${obs_datapath:-/scratch1/NCEPDEV/global/glopara/dump}
+datobs=$obs_datapath/gdas.${iy}${im}${id}/${ih}
 
 # Set runtime and save directories
 tmpdir=${tmpdir:-$datges/gsitmp$$}
@@ -95,33 +94,33 @@ nmv="/bin/mv -f"
 nln="/bin/ln -fs"
 
 # copy symlinks if needed.
-if [[ "$lread_obs_save" = ".false." && "$HXONLY" = "YES" ]]; then
-tmpdir_ensmean=${datges}/gsitmp_${charnanal2}
-mkdir -p $tmpdir
-for filein in ${tmpdir_ensmean}/obs_input*; do
-  file=`basename ${filein}`
-  ln -fs $filein ${tmpdir}/${file}
-done
-for filein in ${tmpdir_ensmean}/*bin; do
-  file=`basename ${filein}`
-  /bin/cp -a $filein ${tmpdir}/${file}
-done
-for filein in ${tmpdir_ensmean}/*bufr; do
-  file=`basename ${filein}`
-  /bin/cp -a $filein ${tmpdir}/${file}
-done
-for filein in ${tmpdir_ensmean}/*bufrears; do
-  file=`basename ${filein}`
-  /bin/cp -a $filein ${tmpdir}/${file}
-done
-for filein in ${tmpdir_ensmean}/*bufrears; do
-  file=`basename ${filein}`
-  /bin/cp -a $filein ${tmpdir}/${file}
-done
-/bin/cp -a ${tmpdir_ensmean}/tcvitals ${tmpdir}/tcvitals
-/bin/cp -a ${tmpdir_ensmean}/satbias_in ${tmpdir}/satbias_in
-/bin/cp -a ${tmpdir_ensmean}/satbias_angle ${tmpdir}/satbias_angle
-fi
+#if [[ "$lread_obs_save" = ".false." && "$HXONLY" = "YES" ]]; then
+#tmpdir_ensmean=${datges}/gsitmp_${charnanal2}
+#mkdir -p $tmpdir
+#for filein in ${tmpdir_ensmean}/obs_input*; do
+#  file=`basename ${filein}`
+#  ln -fs $filein ${tmpdir}/${file}
+#done
+#for filein in ${tmpdir_ensmean}/*bin; do
+#  file=`basename ${filein}`
+#  /bin/cp -a $filein ${tmpdir}/${file}
+#done
+#for filein in ${tmpdir_ensmean}/*bufr; do
+#  file=`basename ${filein}`
+#  /bin/cp -a $filein ${tmpdir}/${file}
+#done
+#for filein in ${tmpdir_ensmean}/*bufrears; do
+#  file=`basename ${filein}`
+#  /bin/cp -a $filein ${tmpdir}/${file}
+#done
+#for filein in ${tmpdir_ensmean}/*bufr_db do
+#  file=`basename ${filein}`
+#  /bin/cp -a $filein ${tmpdir}/${file}
+#done
+#/bin/cp -a ${tmpdir_ensmean}/tcvitals ${tmpdir}/tcvitals
+#/bin/cp -a ${tmpdir_ensmean}/satbias_in ${tmpdir}/satbias_in
+#/bin/cp -a ${tmpdir_ensmean}/satbias_angle ${tmpdir}/satbias_angle
+#fi
 
 # go to $tmpdir
 cd $tmpdir
@@ -466,12 +465,28 @@ OBS_INPUT::
    iasibufr       iasi        metop-b     iasi616_metop-b      0.0     1      0
    gomebufr       gome        metop-b     gome_metop-b         0.0     2      0
    atmsbufr       atms        npp         atms_npp             0.0     1      0
+   atmsbufr       atms        n20         atms_n20             0.0     1     1
    crisbufr       cris        npp         cris_npp             0.0     1      0
+   crisfsbufr     cris-fsr    npp         cris-fsr_npp         0.0     1     0
+   crisfsbufr     cris-fsr    n20         cris-fsr_n20         0.0     1     0
    avhambufr      avhrr       n15         avhrr3_n15           0.0     1      0
    avhambufr      avhrr       n17         avhrr3_n17           0.0     1      0
    avhambufr      avhrr       metop-a     avhrr3_metop-a       0.0     1      0
    avhpmbufr      avhrr       n16         avhrr3_n16           0.0     1      0
    avhpmbufr      avhrr       n18         avhrr3_n18           0.0     1      0
+   avhpmbufr      avhrr       n19         avhrr3_n19          0.0     1     0
+   amsr2bufr      amsr2       gcom-w1     amsr2_gcom-w1       0.0     3     0
+   gmibufr        gmi         gpm         gmi_gpm             0.0     3     0
+   saphirbufr     saphir      meghat      saphir_meghat       0.0     3     0
+   ahibufr        ahi         himawari8   ahi_himawari8       0.0     1     0
+   abibufr        abi         g16         abi_g16             0.0     1     0
+   oscatbufr      uv          null        uv                  0.0     0     0
+   mlsbufr        mls30       aura        mls30_aura          0.0     0     0
+   rapidscatbufr  uv          null        uv                  0.0     0     0
+   ompsnpbufr     ompsnp      npp         ompsnp_npp          0.0     0     0
+   ompstcbufr     ompstc8     npp         ompstc8_npp         0.0     2     0
+   amsuabufr      amsua       metop-c     amsua_metop-c       0.0     1     1
+   mhsbufr        mhs         metop-c     mhs_metop-c         0.0     1     1
 ::
    $OBSINPUT
  /
@@ -664,6 +679,12 @@ fi
 if [[ -s $datobs/${prefix_obs}.satwnd.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.satwnd.${suffix}      ./satwndbufr
 fi
+if [[ -s $datobs/${prefix_obs}.oscatw.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.oscatw.${suffix}      ./oscatbufr
+fi
+if [[ -s $datobs/${prefix_obs}.rapidscatw.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.rapidscatw.${suffix}      ./rapidscatbufr
+fi
 fi
 
 if [[ "$NOSAT" = "NO" ]]; then
@@ -675,6 +696,12 @@ fi
 if [[ -s $datobs/${prefix_obs}.1bamua.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.1bamua.${suffix}   ./amsuabufr
 fi
+if [[ -s $datobs/${prefix_obs}.esamua.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.esamua.${suffix}   ./amsuabufrears
+fi
+if [[ -s $datobs/${prefix_obs}.amuadb.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.amuadb.${suffix}   ./amsuabufr_db
+fi
 if [[ -s $datobs/${prefix_obs}.1bmsu.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.1bmsu.${suffix}   ./msubufr
 fi
@@ -684,11 +711,20 @@ fi
 if [[ -s $datobs/${prefix_obs}.1bmhs.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.1bmhs.${suffix}    ./mhsbufr
 fi
-if [[ -s $datobs/${prefix_obs}.esamua.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.esamua.${suffix}   ./amsuabufrears
+if [[ -s $datobs/${prefix_obs}.esmhs.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.esmhs.${suffix}    ./mhsbufrears
+fi
+if [[ -s $datobs/${prefix_obs}.mhsdb.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.mhsdb.${suffix}    ./mhsbufr_db
 fi
 if [[ -s $datobs/${prefix_obs}.atms.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.atms.${suffix}      ./atmsbufr
+fi
+if [[ -s $datobs/${prefix_obs}.esatms.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.esatms.${suffix}      ./atmsbufrears
+fi
+if [[ -s $datobs/${prefix_obs}.atmsdb.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.atmsdb.${suffix}      ./atmsbufr_db
 fi
 if [[ -s $datobs/${prefix_obs}.goesnd.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.goesnd.${suffix}   ./gsnd1bufr
@@ -699,11 +735,23 @@ fi
 if [[ -s $datobs/${prefix_obs}.1bamub.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.1bamub.${suffix}   ./amsubbufr
 fi
+if [[ -s $datobs/${prefix_obs}.esamub.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.esamub.${suffix}   ./amsubbufrears
+fi
+if [[ -s $datobs/${prefix_obs}.amubdb.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.amubdb.${suffix}   ./amsubbufr_db
+fi
 if [[ -s $datobs/${prefix_obs}.1bhrs2.${suffix}  ]]; then
 $nln $datobs/${prefix_obs}.1bhrs2.${suffix}   ./hirs2bufr
 fi
 if [[ -s $datobs/${prefix_obs}.1bhrs3.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.1bhrs3.${suffix}   ./hirs3bufr
+fi
+if [[ -s $datobs/${prefix_obs}.eshrs3.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.eshrs3.${suffix}   ./hirs3bufrears
+fi
+if [[ -s $datobs/${prefix_obs}.hrs3db.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.hrs3db.${suffix}   ./hirs3bufr_db
 fi
 if [[ -s $datobs/${prefix_obs}.1bhrs4.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.1bhrs4.${suffix}   ./hirs4bufr
@@ -714,11 +762,20 @@ fi
 if [[ -s $datobs/${prefix_obs}.mtiasi.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.mtiasi.${suffix}   ./iasibufr
 fi
+if [[ -s $datobs/${prefix_obs}.esiasi.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.esiasi.${suffix}   ./iasibufrears
+fi
+if [[ -s $datobs/${prefix_obs}.iasidb.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.iasidb.${suffix}   ./iasibufr_db
+fi
 if [[ -s $datobs/${prefix_obs}.ssmit.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.ssmit.${suffix}    ./ssmitbufr
 fi
 if [[ -s  $datobs/${prefix_obs}.amsre.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.amsre.${suffix}    ./amsrebufr
+fi
+if [[ -s  $datobs/${prefix_obs}.amsr2.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.amsr2.${suffix}    ./amsr2bufr
 fi
 if [[ -s $datobs/${prefix_obs}.ssmis.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.ssmis.${suffix}    ./ssmisbufr
@@ -726,26 +783,50 @@ fi
 if [[ -s $datobs/${prefix_obs}.ssmit.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.ssmit.${suffix}    ./ssmitbufr
 fi
-if [[ -s $datobs/${prefix_obs}.eshrs3.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.eshrs3.${suffix}   ./hirs3bufrears
-fi
-if [[ -s $datobs/${prefix_obs}.esamub.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.esamub.${suffix}   ./amsubbufrears
-fi
-if [[ -s $datobs/${prefix_obs}.eshrs3.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.eshrs3.${suffix}   ./hirs3bufrears
-fi
 if [[ -s $datobs/${prefix_obs}.gome.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.gome.${suffix}     ./gomebufr
 fi
 if [[ -s $datobs/${prefix_obs}.omi.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.omi.${suffix}      ./omibufr
 fi
+if [[ -s $datobs/${prefix_obs}.mls.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.mls.${suffix}      ./mlsbufr
+fi
+if [[ -s $datobs/${prefix_obs}.ompsn8.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.ompsn8.${suffix}     ./ompsnpbufr
+fi
+if [[ -s $datobs/${prefix_obs}.ompst8.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.ompst8.${suffix}     ./ompstcbufr
+fi
 if [[ -s $datobs/${prefix_obs}.sevcsr.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.sevcsr.${suffix}      ./seviribufr
 fi
+if [[ -s $datobs/${prefix_obs}.ahicsr.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.ahicsr.${suffix}      ./ahibufr
+fi
+if [[ -s $datobs/${prefix_obs}.gsrcsr.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.gsrcsr.${suffix}      ./abibufr
+fi
+if [[ -s $datobs/${prefix_obs}.gm1cr.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.gm1cr.${suffix}      ./gmibufr
+fi
 if [[ -s $datobs/${prefix_obs}.cris.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.cris.${suffix}      ./crisbufr
+fi
+if [[ -s $datobs/${prefix_obs}.escris.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.escris.${suffix}      ./crisbufrears
+fi
+if [[ -s $datobs/${prefix_obs}.crisdb.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.crisdb.${suffix}      ./crisbufr_db
+fi
+if [[ -s $datobs/${prefix_obs}.crisf4.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.crisf4.${suffix}      ./crisfsbufr
+fi
+if [[ -s $datobs/${prefix_obs}.escrisf4.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.escrisf4.${suffix}      ./crisfsbufrears
+fi
+if [[ -s $datobs/${prefix_obs}.crisf4db.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.crisf4db.${suffix}      ./crisfsbufr_db
 fi
 if [[ -s $datobs/${prefix_obs}.spssmi.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.spssmi.${suffix}   ./ssmirrbufr
@@ -816,8 +897,8 @@ fi
 fi
 
 # make symlinks for diag files to initialize angle dependent bias correction for new channels.
-satdiag="ssu_n14 hirs2_n14 msu_n14 sndr_g08 sndr_g09 sndr_g11 sndr_g12 sndr_g13 sndr_g08_prep sndr_g11_prep sndr_g12_prep sndr_g13_prep sndrd1_g11 sndrd2_g11 sndrd3_g11 sndrd4_g11 sndrd1_g12 sndrd2_g12 sndrd3_g12 sndrd4_g12 sndrd1_g13 sndrd2_g13 sndrd3_g13 sndrd4_g13 sndrd1_g14 sndrd2_g14 sndrd3_g14 sndrd4_g14 sndrd1_g15 sndrd2_g15 sndrd3_g15 sndrd4_g15 hirs2_n14 hirs3_n15 hirs3_n16 hirs3_n17 amsua_n15 amsua_n16 amsua_n17 amsub_n15 amsub_n16 amsub_n17 hsb_aqua airs_aqua amsua_aqua imgr_g08 imgr_g11 imgr_g12 imgr_g14 imgr_g15 gome_metop-a omi_aura mls_aura ssmi_f13 ssmi_f14 ssmi_f15 hirs4_n18 hirs4_metop-a amsua_n18 amsua_metop-a mhs_n18 mhs_metop-a amsre_low_aqua amsre_mid_aqua amsre_hig_aqua ssmis_las_f16 ssmis_uas_f16 ssmis_img_f16 ssmis_env_f16 ssmis_las_f17 ssmis_uas_f17 ssmis_img_f17 ssmis_env_f17 ssmis_las_f18 ssmis_uas_f18 ssmis_img_f18 ssmis_env_f18 ssmis_las_f19 ssmis_uas_f19 ssmis_img_f19 ssmis_env_f19 ssmis_las_f20 ssmis_uas_f20 ssmis_img_f20 ssmis_env_f20 iasi_metop-a hirs4_n19 amsua_n19 mhs_n19 seviri_m08 seviri_m09 seviri_m10 cris_npp atms_npp hirs4_metop-b amsua_metop-b mhs_metop-b iasi_metop-b gome_metop-b avhrr_n18 avhrr_metop-a avhrr_n15 avhrr_n16 avhrr_n17"
-alldiag="$satdiag pcp_ssmi_dmsp pcp_tmi_trmm conv_tcp conv_gps conv_t conv_q conv_uv conv_ps sbuv2_n11 sbuv2_n14 sbuv2_n16 sbuv2_n17 sbuv2_n18 sbuv2_n19"
+satdiag="ssu_n14 hirs2_n14 msu_n14 sndr_g08 sndr_g09 sndr_g11 sndr_g12 sndr_g13 sndr_g08_prep sndr_g11_prep sndr_g12_prep sndr_g13_prep sndrd1_g11 sndrd2_g11 sndrd3_g11 sndrd4_g11 sndrd1_g12 sndrd2_g12 sndrd3_g12 sndrd4_g12 sndrd1_g13 sndrd2_g13 sndrd3_g13 sndrd4_g13 sndrd1_g14 sndrd2_g14 sndrd3_g14 sndrd4_g14 sndrd1_g15 sndrd2_g15 sndrd3_g15 sndrd4_g15 hirs2_n14 hirs3_n15 hirs3_n16 hirs3_n17 amsua_n15 amsua_n16 amsua_n17 amsub_n15 amsub_n16 amsub_n17 hsb_aqua airs_aqua amsua_aqua imgr_g08 imgr_g11 imgr_g12 imgr_g14 imgr_g15 gome_metop-a omi_aura mls_aura ssmi_f13 ssmi_f14 ssmi_f15 hirs4_n18 hirs4_metop-a amsua_n18 amsua_metop-a mhs_n18 mhs_metop-a amsre_low_aqua amsre_mid_aqua amsre_hig_aqua ssmis_las_f16 ssmis_uas_f16 ssmis_img_f16 ssmis_env_f16 ssmis_las_f17 ssmis_uas_f17 ssmis_img_f17 ssmis_env_f17 ssmis_las_f18 ssmis_uas_f18 ssmis_img_f18 ssmis_env_f18 ssmis_las_f19 ssmis_uas_f19 ssmis_img_f19 ssmis_env_f19 ssmis_las_f20 ssmis_uas_f20 ssmis_img_f20 ssmis_env_f20 iasi_metop-a hirs4_n19 amsua_n19 mhs_n19 seviri_m08 seviri_m09 seviri_m10 cris_npp atms_npp hirs4_metop-b amsua_metop-b mhs_metop-b iasi_metop-b gome_metop-b avhrr_n18 avhrr_metop-a avhrr_n15 avhrr_n16 avhrr_n17 avhrr_n19 avhrr_metop-a amsr2_gcom-w1 gmi_gpm saphir_meghat ahi_himawari8 abi_g16 amsua_metop-c mhs_metop-c iasi_metop-c avhrr_metop-c cris-fsr_npp cris-fsr_n20 atms_n20"
+alldiag="$satdiag pcp_ssmi_dmsp pcp_tmi_trmm conv_tcp conv_gps conv_t conv_q conv_uv conv_ps sbuv2_n11 sbuv2_n14 sbuv2_n16 sbuv2_n17 sbuv2_n18 sbuv2_n19 gome_metop-a gome_metop-b omi_aura mls30_aura ompsnp_npp ompstc8_npp gome-metopc pcp_ssmi_dmsp pcp_tmi_trmm"
 string='ges'
 for type in $satdiag; do
     if [[ "$cold_start_bias" = "true" ]]; then

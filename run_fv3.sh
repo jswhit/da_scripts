@@ -135,7 +135,7 @@ mkdir -p INPUT
 
 # make symlinks for fixed files and initial conditions.
 cd INPUT
-if [ "$fg_only" == "true" ]; then
+if [ "$fg_only" == "true" ] && [ $cold_start == "true" ]; then
    for file in ../*nc; do
        file2=`basename $file`
        ln -fs $file $file2
@@ -200,17 +200,24 @@ fi
 if [ "$fg_only" == "true" ]; then
    # cold start from chgres'd GFS analyes
    stochini=F
-   warm_start=F
-   make_nh=T
-   externalic=T
+   if [ $cold_start == "true" ]; then
+     warm_start=F
+     externalic=T
+     na_init=1
+     mountain=F
+     make_nh=T
+   else
+     warm_start=T
+     externalic=F
+     na_init=0
+     mountain=T
+     make_nh=F
+   fi
    reslatlondynamics=""
-   mountain=F
    readincrement=F
-   na_init=1
    FHCYC=0
    iaudelthrs=-1
    iau_inc_files=""
-   NST_SPINUP=1
 else
    # warm start from restart file with lat/lon increments ingested by the model
    if [ $niter == 1 ] ; then
@@ -272,10 +279,10 @@ snoid='SNOD'
 
 # Turn off snow analysis if it has already been used.
 # (snow analysis only available once per day at 18z)
-fntsfa=${obs_datapath}/bufr_${analdate}/gdas1.t${houra}z.sstgrb
-fnacna=${obs_datapath}/bufr_${analdate}/gdas1.t${houra}z.engicegrb
-fnsnoa=${obs_datapath}/bufr_${analdate}/gdas1.t${houra}z.snogrb
-fnsnog=${obs_datapath}/bufr_${analdatem1}/gdas1.t${hourprev}z.snogrb
+fntsfa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.rtgssthr.grb
+fnacna=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.seaice.5min.grb
+fnsnoa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.snogrb_t1534.3072.1536
+fnsnog=${obs_datapath}/gdas.${yearprev}${monprev}${dayprev}/${hourprev}/gdas.t${hourprev}z.snogrb_t1534.3072.1536
 nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
 if [ $nrecs_snow -eq 0 ]; then
    # no snow depth in file, use model
@@ -286,8 +293,8 @@ else
    # snow depth in file, but is it current?
    if [ `$WGRIB -4yr ${fnsnoa} 2>/dev/null|grep -i $snoid |\
          awk -F: '{print $3}'|awk -F= '{print $2}'` -le \
-        `$WGRIB -4yr ${fnsnog} 2>/dev/null |grep -i $snoid  |\
-               awk -F: '{print $3}'|awk -F= '{print $2}'` ] ; then
+        `$WGRIB -4yr ${fnsnog} 2>/dev/null|grep -i $snoid  |\
+         awk -F: '{print $3}'|awk -F= '{print $2}'` ] ; then
       echo "no snow analysis, use model"
       fnsnoa=' ' # no input file
       export FSNOL=99999 # use model value
