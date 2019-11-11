@@ -5,28 +5,6 @@ export mpitaskspernode=`expr $corespernode \/ $enkf_threads`
 export OMP_NUM_THREADS=$enkf_threads
 export OMP_STACKSIZE=512M
 export HOSTFILE=$datapath2/machinefile_enkf
-if [ -z $SLURM_JOB_ID ]  && [ $machine == 'theia']; then
-   if [ -z $hostfilein ]; then
-     export hostfilein=$PBS_NODEFILE
-     export NODEFILE=$datapath2/nodefile_enkf
-     cat $hostfilein | uniq > $NODEFILE
-   fi
-   /bin/rm -f $HOSTFILE
-   if [ $enkf_threads -gt 1 ]; then
-      awk "NR%${enkf_threads} == 1" ${hostfilein} > $HOSTFILE
-   else
-      export HOSTFILE=$hostfilein
-   fi
-   # only one task on root node
-   # (root node has to hold two copies of ob space ensemble for LETKF)
-   if [ $mpitaskspernode -gt 1 ]; then
-      sed -i "2,${mpitaskspernode}d" $HOSTFILE
-      export nprocs=`wc -l $HOSTFILE | cut -f1 -d" "`
-   fi
-   echo "${nprocs} cores"
-   cat $HOSTFILE
-   wc -l $HOSTFILE
-fi
 
 iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
 
@@ -199,39 +177,29 @@ cp ${enkfscripts}/vlocal_eig.dat ${datapath2}
 export PGM=$enkfbin
 echo "OMP_NUM_THREADS = $OMP_NUM_THREADS"
 
-if [ ! -z $SLURM_JOB_ID ]; then
-   echo "slurm"
-   # use srun
-   export OMP_PROC_BIND=spread
-   export OMP_PLACES=threads
-   if [ $machine == 'gaea' ]; then
-      cores2=$((cores-corespernode ))
-      export nprocs=`expr $cores2 \/ $enkf_threads`
-      totcores=`expr $nprocs \* $OMP_NUM_THREADS`
-      totnodes=`python -c "import math; print int(math.ceil(float(${totcores})/${corespernode}))"`
-      count=`python -c "import math; print int(math.floor(float(${corespernode})/${mpitaskspernode}))"` 
-      echo "running srun-multi -N 1 -n 1 -c ${OMP_NUM_THREADS} --cpu-bind cores $PGM : -N $totnodes -n $nprocs -c ${count} --cpu-bind cores $PGM" 2>&1
-      # -c: cpus per task (number of threads per mpi task)
-      # -n: number of mpi tasks
-      # -N: number of nodes to run on
-      srun-multi -N 1 -n 1 -c ${OMP_NUM_THREADS} --cpu-bind cores $PGM : -N $totnodes -n $nprocs -c ${count} --cpu-bind cores $PGM > ${current_logdir}/ensda.out 2>&1
-   else
-      python ${enkfscripts}/get_slurm_hostfile.py $mpitaskspernode $HOSTFILE
-      export SLURM_HOSTFILE=$HOSTFILE
-      nprocs=`wc -l $SLURM_HOSTFILE | cut -f1 -d " "`
-      echo "nprocs = $nprocs"
-      cat $SLURM_HOSTFILE
-      echo "srun -c ${OMP_NUM_THREADS} -n $nprocs --distribution=arbitrary --cpu-bind=cores $PGM"
-      srun -c ${OMP_NUM_THREADS} -n $nprocs --distribution=arbitrary --cpu-bind=cores $PGM > ${current_logdir}/ensda.out 2>&1
-   fi
-elif [ $machine == 'gaea' ] || [ $machine == 'wcoss' ]; then
-   # run with single task on root node using aprun
+echo "slurm"
+# use srun
+export OMP_PROC_BIND=spread
+export OMP_PLACES=threads
+if [ $machine == 'gaea' ]; then
    cores2=$((cores-corespernode ))
    export nprocs=`expr $cores2 \/ $enkf_threads`
-   aprun -n 1 -N 1 -d ${OMP_NUM_THREADS} --cc depth $PGM : -n $nprocs -N $mpitaskspernode -d ${OMP_NUM_THREADS} --cc depth $PGM > ${current_logdir}/ensda.out 2>&1
+   totcores=`expr $nprocs \* $OMP_NUM_THREADS`
+   totnodes=`python -c "import math; print int(math.ceil(float(${totcores})/${corespernode}))"`
+   count=`python -c "import math; print int(math.floor(float(${corespernode})/${mpitaskspernode}))"` 
+   echo "running srun-multi -N 1 -n 1 -c ${OMP_NUM_THREADS} --cpu-bind cores $PGM : -N $totnodes -n $nprocs -c ${count} --cpu-bind cores $PGM" 2>&1
+   # -c: cpus per task (number of threads per mpi task)
+   # -n: number of mpi tasks
+   # -N: number of nodes to run on
+   srun-multi -N 1 -n 1 -c ${OMP_NUM_THREADS} --cpu-bind cores $PGM : -N $totnodes -n $nprocs -c ${count} --cpu-bind cores $PGM > ${current_logdir}/ensda.out 2>&1
 else
-   # use mpirun/HOSTFILE to specify a single task on root node.
-   ${enkfscripts}/runmpi > ${current_logdir}/ensda.out 2>&1
+   python ${enkfscripts}/get_slurm_hostfile.py $mpitaskspernode $HOSTFILE
+   export SLURM_HOSTFILE=$HOSTFILE
+   nprocs=`wc -l $SLURM_HOSTFILE | cut -f1 -d " "`
+   echo "nprocs = $nprocs"
+   cat $SLURM_HOSTFILE
+   echo "srun -c ${OMP_NUM_THREADS} -n $nprocs --distribution=arbitrary --cpu-bind=cores $PGM"
+   srun -c ${OMP_NUM_THREADS} -n $nprocs --distribution=arbitrary --cpu-bind=cores $PGM > ${current_logdir}/ensda.out 2>&1
 fi
 if [ ! -s ${datapath2}/enkf.log ]; then
    echo "no enkf log file found"

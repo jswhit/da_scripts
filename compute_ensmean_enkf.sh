@@ -1,7 +1,5 @@
 #!/bin/sh
 
-export HOSTFILE=${datapath2}/machinesx
-
 cd ${datapath2}
 
 iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`

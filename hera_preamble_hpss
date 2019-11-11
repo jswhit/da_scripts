@@ -1,0 +1,9 @@
+#!/bin/bash
+#SBATCH --partition=service
+#SBATCH -t 06:00:00
+#SBATCH -A gsienkf
+#SBATCH -N 1    
+#SBATCH -n 1    
+#SBATCH -J tarit
+#SBATCH -e tarit.stderr
+#SBATCH -o tarit.stdout

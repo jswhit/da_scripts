@@ -52,15 +52,6 @@ export nprocs=`expr $control_proc \/ $OMP_NUM_THREADS`
 echo "nprocs = $nprocs"
 export mpitaskspernode=`expr $corespernode \/ $OMP_NUM_THREADS`
 echo "mpitaskspernode = $mpitaskspernode"
-if [ -z $SLURM_JOB_ID ] && [ $machine == 'theia' ]; then
-   if [ $OMP_NUM_THREADS -eq 1 ]; then
-      export HOSTFILE=$PBS_NODEFILE
-   else
-      export HOSTFILE=${datapath2}/hostfile_control
-      awk "NR%${OMP_NUM_THREADS} == 1" ${PBS_NODEFILE} > $HOSTFILE
-   fi
-   echo "HOSTFILE = $HOSTFILE"
-fi
 
 export RES=$RES_CTL
 echo "RES = $RES"

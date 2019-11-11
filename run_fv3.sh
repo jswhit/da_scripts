@@ -2,20 +2,7 @@
 # model was compiled with these 
 echo "starting at `date`"
 source $MODULESHOME/init/sh
-if [ "$machine" == 'theia' ]; then
-   module purge
-   module load intel/18.0.1.163
-   module load impi/5.1.2.150
-   module load netcdf/4.3.0
-   module load pnetcdf/1.5.0-impi
-   module load hdf5
-   module load wgrib
-   module load nco/4.6.0
-   module use /scratch4/NCEPDEV/nems/noscrub/emc.nemspara/soft/modulefiles
-   module load esmf/8.0.0bs21-intel18
-   module list
-   export WGRIB=`which wgrib`
-elif [ "$machine" == 'hera' ]; then
+if [ "$machine" == 'hera' ]; then
    module purge
    module load intel/18.0.5.274
    module load impi/2018.0.4
@@ -24,14 +11,10 @@ elif [ "$machine" == 'hera' ]; then
    module load esmf/8.0.0bs50
    module load wgrib
    export WGRIB=`which wgrib`
-elif [ "$machine" == 'wcoss' ]; then
-   module load grib_util/1.0.3
-   module load nco-gnu-sandybridge
 elif [ "$machine" == 'gaea' ]; then
    module load nco/4.6.4
    module load wgrib
    export WGRIB=`which wgrib`
-##   export WGRIB=/ncrc/home1/Gary.Bates/bin/wgrib
 fi
 
 export VERBOSE=${VERBOSE:-"NO"}
@@ -135,7 +118,7 @@ mkdir -p INPUT
 
 # make symlinks for fixed files and initial conditions.
 cd INPUT
-if [ "$fg_only" == "true" ] && [ $cold_start == "true" ]; then
+if [ "$fg_only" == "true" ] && [ "$cold_start" == "true" ]; then
    for file in ../*nc; do
        file2=`basename $file`
        ln -fs $file $file2
@@ -200,7 +183,7 @@ fi
 if [ "$fg_only" == "true" ]; then
    # cold start from chgres'd GFS analyes
    stochini=F
-   if [ $cold_start == "true" ]; then
+   if [ "$cold_start" == "true" ]; then
      warm_start=F
      externalic=T
      na_init=1

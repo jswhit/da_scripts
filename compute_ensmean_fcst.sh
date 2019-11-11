@@ -1,21 +1,14 @@
 #!/bin/sh
 
 source $MODULESHOME/init/sh
-if [ $machine == 'wcoss' ]; then
-   module load nco-gnu-sandybridge
-   nces=`which nces`
-elif [ $machine == 'gaea' ]; then
+if [ $machine == 'gaea' ]; then
    nces=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/bin/nces
-elif [ $machine == 'theia' ]; then
-   module load nco/4.7.0
-   nces=`which nces`
 else
    module load nco
    nces=`which nces`
 fi
 module list
-export HOSTFILE=${datapath2}/machinesx
-export OMP_STACKSIZE=2048M
+export OMP_STACKSIZE=1024M
 
 cd ${datapath2}
 
@@ -61,11 +54,6 @@ if [ $cleanup_ensmean == 'true' ] || ([ $cleanup_ensmean == 'false' ]  && [ ! -s
       files="fv_core.res.${tile}.nc fv_tracer.res.${tile}.nc fv_srf_wnd.res.${tile}.nc sfc_data.${tile}.nc phy_data.${tile}.nc"
       for file in $files; do
          export PGM="${nces} -O `ls -1 ${datapath2}/mem*/INPUT/${filename}` ${pathout}/${filename}"
-         if [ -z $SLURM_JOB_ID ] && [ $machine == 'theia' ]; then
-            host=`head -$ncount $NODEFILE | tail -1`
-            export HOSTFILE=${datapath2}/hostfile_nces_${ncount}
-            echo $host > $HOSTFILE
-         fi
          echo "computing ens mean for $filename"
          #${enkfscripts}/runmpi &
          $PGM &
@@ -97,11 +85,6 @@ if [ $controlfcst == 'false' ] && [ $cleanup_ensmean == 'true' ] && [ ! -z $copy
    for tile in $tiles; do
       filename="fv3_historyp.${tile}.nc"
       export PGM="${nces} -4 -L 5 -O `ls -1 ${datapath2}/mem*/${filename}` ${pathout}/${filename}"
-      if [ $machine == 'theia' ]; then
-         host=`head -$ncount $NODEFILE | tail -1`
-         export HOSTFILE=${datapath2}/hostfile_nces_${ncount}
-         echo $host > $HOSTFILE
-      fi
       echo "computing ens mean for $filename"
       #${enkfscripts}/runmpi &
       $PGM &

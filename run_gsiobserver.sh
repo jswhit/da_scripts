@@ -9,14 +9,6 @@ if [ ! -z $charnanal2 ]; then
   export charnanal2=$charnanal
 fi
 
-if [ -z $SLURM_JOB_ID ] && [ ${machine} == 'theia' ]; then
-   if [ -z $hostfilein ]; then
-     export hostfilein=$PBS_NODEFILE
-     export NODEFILE=$datapath2/nodefile_observer
-   fi
-   cat $hostfilein | uniq > $NODEFILE
-fi
-
 export CO2DIR=$fixgsi
 
 # charanal is an env var set in parent script
@@ -74,19 +66,6 @@ export OMP_STACKSIZE=2048M
 #cores=`python -c "print (${NODES} - 1) * ${corespernode}"`
 export nprocs=`expr $cores \/ $OMP_NUM_THREADS`
 export mpitaskspernode=`expr $corespernode \/ $OMP_NUM_THREADS`
-if [ -z $SLURM_JOB_ID ] && [ $machine == 'theia' ]; then
-   export KMP_AFFINITY=scatter
-   if [ $OMP_NUM_THREADS -gt 1 ]; then
-      export HOSTFILE=$datapath2/machinefile_observer
-      /bin/rm -f $HOSTFILE
-      awk "NR%${gsi_control_threads} == 1" ${hostfilein} > $HOSTFILE
-   else
-      export HOSTFILE=$hostfilein
-   fi
-   cat $HOSTFILE
-   wc -l $HOSTFILE
-   #export OMP_NUM_THREADS 1
-fi
 echo "running with $OMP_NUM_THREADS threads ..."
 
 if [ -z $biascorrdir ]; then # cycled bias correction files

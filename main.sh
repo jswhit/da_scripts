@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # main driver script
-# single resolution hybrid using jacobian in the EnKF
+# hybrid gain or hybrid covariance GSI EnKF
 
 # allow this script to submit other scripts with LSF
 unset LSB_SUB_RES_REQ 
@@ -23,6 +23,8 @@ source $startupenv
 #fi
 #export OZINFO=`sh ${enkfscripts}/pickinfo.sh ${analdate} ozinfo`
 #export CONVINFO=`sh ${enkfscripts}/pickinfo.sh ${analdate} convinfo`
+# if $REALTIME == "YES", use OZINFO,CONVINFO,SATINFO set in config.sh
+if [ "$REALTIME" == "NO" ]; then
 #   Set CONVINFO
 if [[ "$analdate" -ge "2018022818" ]]; then
     export CONVINFO=$fixgsi/fv3_historical/global_convinfo.txt.2018022818
@@ -78,6 +80,7 @@ else
     echo "no satinfo found"
     exit 1
 fi
+fi
 
 #------------------------------------------------------------------------
 mkdir -p $datapath
@@ -110,23 +113,6 @@ fi
 export OMP_NUM_THREADS=`expr $corespernode \/ $mpitaskspernode`
 echo "mpitaskspernode = $mpitaskspernode threads = $OMP_NUM_THREADS"
 export nprocs=$nanals
-
-
-if [ -z $SLURM_JOB_ID ] && [ $machine == 'theia' ]; then
-    # HOSTFILE is machinefile to use for programs that require $nanals tasks.
-    # if enough cores available, just one core on each node.
-    # NODEFILE is machinefile containing one entry per node.
-    export HOSTFILE=$datapath2/machinesx
-    export NODEFILE=$datapath2/nodefile
-    cat $PBS_NODEFILE | uniq > $NODEFILE
-    if [ $NODES -ge$nanals ]; then
-      ln -fs $NODEFILE $HOSTFILE
-    else
-      # otherwise, leave as many cores empty as possible
-      awk "NR%${OMP_NUM_THREADS} == 1" ${PBS_NODEFILE} > $HOSTFILE
-    fi
-    /bin/cp -f $PBS_NODEFILE $datapath2/pbs_nodefile
-fi
 
 # current analysis time.
 export analdate=$analdate
@@ -419,22 +405,10 @@ else
 fi
 cd $homedir
 if [ $save_hpss == 'true' ]; then
-if [ ! -z $SLURM_JOB_ID ]; then
-   cat ${machine}_preamble_hpss_slurm hpss.sh > job_hpss.sh
-else
    cat ${machine}_preamble_hpss hpss.sh > job_hpss.sh
 fi
-if [ ! -z $SLURM_JOB_ID ];  then
-   #sbatch --export=ALL job_hpss.sh
-   sbatch --export=machine=${machine},analdate=${analdate},datapath2=${datapath2},hsidir=${hsidir},save_hpss_full=${save_hpss_full},save_hpss_subset=${save_hpss_subset} job_hpss.sh
-elif [ $machine == 'wcoss' ]; then
-   bsub -env "all" < job_hpss.sh
-elif [ $machine == 'gaea' ]; then
-   msub -V job_hpss.sh
-else
-   qsub -V job_hpss.sh
-fi
-fi
+#sbatch --export=ALL job_hpss.sh
+sbatch --export=machine=${machine},analdate=${analdate},datapath2=${datapath2},hsidir=${hsidir},save_hpss_full=${save_hpss_full},save_hpss_subset=${save_hpss_subset} job_hpss.sh
 
 fi # skip to here if fg_only = true
 
@@ -464,20 +438,8 @@ if [ $analdate -le $analdate_end ]  && [ $resubmit == 'true' ]; then
    if [ $resubmit == 'true' ]; then
       echo "resubmit script"
       echo "machine = $machine"
-      if [ ! -z $SLURM_JOB_ID ]; then
-         cat ${machine}_preamble_slurm config.sh > job.sh
-      else
-         cat ${machine}_preamble config.sh > job.sh
-      fi
-      if [ ! -z $SLURM_JOB_ID ]; then
-          sbatch --export=ALL job.sh
-      elif [ $machine == 'wcoss' ]; then
-          bsub < job.sh
-      elif [ $machine == 'gaea' ]; then
-          msub job.sh
-      else
-          qsub job.sh
-      fi
+      cat ${machine}_preamble config.sh > job.sh
+      sbatch --export=ALL job.sh
    fi
 fi
 

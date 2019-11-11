@@ -11,10 +11,6 @@ countproc=`python -c "import math; print ${corespernode}*int(math.ceil(float(${f
 echo "countproc = $countproc"
 export mpitaskspernode=`expr $corespernode \/ $OMP_NUM_THREADS`
 
-if [ -z $SLURM_JOB_ID ] && [ $machine == 'theia' ]; then
-   hosts=`cat $PBS_NODEFILE`
-fi
-
 nhosts=$cores
 echo "nhosts = $nhosts"
 
@@ -49,18 +45,6 @@ while [ $nanal -le $nanals ]; do
  node_end=$((node_end+${countproc}-1))
  if [ $filemissing == 'yes' ]; then
    echo "nanal = ${nanal}, nhost = ${nhost}, node = ${node}, node_end = ${node_end}"
-   if [ -z $SLURM_JOB_ID ] && [ $machine == 'theia' ]; then
-      export HOSTFILE=${datapath2}/hostfile${node}
-      /bin/rm -f $HOSTFILE
-      hostindx=$nhost
-      while [ $hostindx -le $node_end ]; do
-         host1=`echo $hosts[$hostindx]`
-         echo ${host1} >> ${HOSTFILE}
-         hostindx=$((hostindx+fg_threads))
-      done
-      echo "HOSTFILE = $HOSTFILE"
-      cat $HOSTFILE
-   fi
    sh ${enkfscripts}/${rungfs} > ${current_logdir}/run_fg_${charnanal}.iter${niter}.out 2>&1 &
    nhost=$((nhost+countproc))
  else

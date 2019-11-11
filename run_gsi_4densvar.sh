@@ -7,7 +7,6 @@ if [[ "$VERBOSE" = "YES" ]]; then
 fi
 export OMP_NUM_THREADS=${OMP_NUM_THREADS:-1}
 export OMP_STACKSIZE=${OMP_STACKSIZE:-256M}
-export machine=${machine:='wcoss'}
 
 # Set experiment name and analysis date
 adate=${analdate:-2010081900}
@@ -62,7 +61,7 @@ im=`echo $adate | cut -c5-6`
 id=`echo $adate | cut -c7-8`
 ih=`echo $adate | cut -c9-10`
 echo "iy,im,id,ih = $iy $im $id $ih"
-date_fhour=`$python ${enkfscripts}/getidate.py ${datges}/bfg_${adate}_fhr03_${charnanal`
+date_fhour=`$python ${enkfscripts}/getidate.py ${datges}/bfg_${adate}_fhr03_${charnanal}`
 fdatei=`echo $date_fhour | cut -f1 -d " "`
 fhr=`echo $date_fhour | cut -f2 -d " "`
 fdatev=`${incdate} $fdatei $fhr`
@@ -1003,59 +1002,21 @@ else
   loops="01 03"
 fi
 
-#corecount=0
-## number of MPI tasks for each nc_diat_cat.x
-## must be a divisor of total number of cores
-#jobspernode=4
-#export nprocs=`expr $corespernode \/ $jobspernode`
-#export OMP_NUM_THREADS=1 # keep at 1
-#if [ "$machine" == 'theia' ]; then
-#   HOSTFILE_FULL=$PBS_NODEFILE
-#fi
-#for loop in $loops; do
-#
-#   case $loop in
-#     01) string=ges;;
-#     03) string=anl;;
-#      *) string=$loop;;
-#   esac
-#   
-#   #  Collect diagnostic files for obs types (groups) below
-#   for type in $alldiag; do
-#       count=`ls pe*${type}_${loop}* | wc -l`
-#       if [[ $count -gt 0 ]]; then
-#          export PGM="${execdir}/nc_diag_cat.x -o ${savdir}/diag_${type}_${string}.${adate}_${charnanal2}.nc4  pe*${type}_${loop}*nc4"
-#          if [ "$machine" == 'theia' ]; then
-#             export HOSTFILE=hostfile_${corecount}
-#             /bin/rm -f $HOSTFILE
-#             n=1
-#             while [ $n -le $nprocs ]; do
-#                nn=$((n+$corecount))
-#                core=`head -$nn $HOSTFILE_FULL | tail -1`
-#                echo $core >> $HOSTFILE
-#                n=$((n+1))
-#             done
-#             echo "contents of hostfile_${corecount}..."
-#             cat $HOSTFILE
-#          fi
-#          corecount=$((corecount+$nprocs))
-#          ${enkfscripts}/runmpi 1> nc_diag_cat_${type}_${string}.out 2> nc_diag_cat_${type}_${string}.out &
-#          if [ $corecount -eq $cores ]; then
-#             echo "waiting... corecount=$corecount"
-#             wait
-#             corecount=0
-#          fi       
-#       fi
-#   done
-#
-#done
-
 # run each nc_diag_cat on a separate node, concurrently
 nodecount=0
-export nprocs=$corespernode
-export mpitaskspernode=$nprocs
-export OMP_NUM_THREADS=1
+# mpi version
+#export OMP_NUM_THREADS=1
+#export nprocs=$corespernode
+# serial version
+export nprocs=1
+export OMP_NUM_THREADS=$corespernode
 totnodes=$NODES
+nnode=0
+for node in `scontrol show hostnames $SLURM_JOB_NODELIST`; do
+    let nnode+=1
+    echo "$nnode $node"
+done
+
 for loop in $loops; do
 
    case $loop in
@@ -1073,21 +1034,10 @@ for loop in $loops; do
             file=`ls -1 pe*${type}_${loop}*`
             /bin/cp -f $file ${savdir}/diag_${type}_${string}.${adate}_${charnanal2}.nc4
           else
-            export PGM="${execdir}/nc_diag_cat.x -o ${savdir}/diag_${type}_${string}.${adate}_${charnanal2}.nc4  pe*${type}_${loop}*nc4"
+            export PGM="${execdir}/nc_diag_cat_serial.x -o ${savdir}/diag_${type}_${string}.${adate}_${charnanal2}.nc4  pe*${type}_${loop}*nc4"
             ls -l pe*${type}_${loop}*nc4
             nodecount=$((nodecount+1))
-            if [ ! -z $SLURM_JOB_ID ] && [ "$machine" == 'theia' ]; then
-               node=`head -$nodecount $NODEFILE | tail -1`
-               export HOSTFILE=hostfile_${nodecount}
-               /bin/rm -f $HOSTFILE
-               n=1
-               while [ $n -le $nprocs ]; do
-                  echo $node >> $HOSTFILE
-                  n=$((n+1))
-               done
-               echo "contents of hostfile_${nodecount}..."
-               cat $HOSTFILE
-            fi
+            echo "node = $nodecount ${enkfscripts}/runmpi 1> ${current_logdir}/nc_diag_cat_${type}_${string}_${charnanal2}.out"
             ${enkfscripts}/runmpi 1> ${current_logdir}/nc_diag_cat_${type}_${string}_${charnanal2}.out 2> ${current_logdir}/nc_diag_cat_${type}_${string}_${charnanal2}.err &
             #${enkfscripts}/runmpi 1> nc_diag_cat_${type}_${string}.out &
             if [ $nodecount -eq $totnodes ]; then

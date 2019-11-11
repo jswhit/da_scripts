@@ -1,9 +1,10 @@
 #!/bin/sh
-#PBS -A nggps_psd
-##PBS -A cpo_ngrr_e
-#PBS -l partition=es,size=1,walltime=16:00:00
-#PBS -q rdtn
-#PBS -N tarit
-#PBS -e tarit.err
-#PBS -o tarit.out
-#PBS -S /bin/csh
+#SBATCH -q normal  
+#SBATCH --clusters es
+#SBATCH --partition=rdtn
+#SBATCH -t 08:00:00
+#SBATCH -A nggps_psd
+#SBATCH -N 1    
+#SBATCH -J tarit
+#SBATCH -e tarit.err
+#SBATCH -o tarit.out

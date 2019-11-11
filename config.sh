@@ -70,17 +70,7 @@ export copy_history_files=1 # save pressure level history files (and compute ens
 #export do_cleanup='false'
 #export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
  
-if [ "$machine" == 'wcoss' ]; then
-   export basedir=/gpfs/hps2/esrl/gefsrr/noscrub/${USER}
-   export datadir=/gpfs/hps2/ptmp/${USER}
-   export hsidir="/3year/NCEPDEV/GEFSRR/${USER}/${exptname}"
-   export obs_datapath=${basedir}/gdas1bufr
-elif [ "$machine" == 'theia' ]; then
-   export basedir=/scratch3/BMC/gsienkf/${USER}
-   export datadir=$basedir
-   export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   export obs_datapath=/scratch3/BMC/gsienkf/whitaker/gdas1bufr
-elif [ "$machine" == 'hera' ]; then
+if [ "$machine" == 'hera' ]; then
    export basedir=/scratch2/BMC/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
@@ -93,7 +83,7 @@ elif [ "$machine" == 'gaea' ]; then
    #export hsidir="/3year/NCEPDEV/GEFSRR/${exptname}"
    export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/fv3_reanl/gdas1bufr
 else
-   echo "machine must be 'wcoss', 'theia', or 'gaea' got $machine"
+   echo "machine must be 'hera' or 'gaea' got $machine"
    exit 1
 fi
 export datapath="${datadir}/${exptname}"
@@ -386,20 +376,7 @@ export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
 
-if [ "$machine" == 'theia' ]; then
-   export python=/contrib/anaconda/2.3.0/bin/python
-   export fv3gfspath=/scratch4/NCEPDEV/global/save/glopara/svn/fv3gfs
-   export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
-   export FIXGLOBAL=${fv3gfspath}/fix/fix_am
-   export gsipath=/scratch3/BMC/gsienkf/whitaker/gsi/ProdGSI
-   export fixgsi=${gsipath}/fix
-   export fixcrtm=/scratch3/BMC/gsienkf/whitaker/gsi/branches/EXP-enkflinhx/fix/crtm_2.2.3
-   export execdir=${enkfscripts}/exec_${machine}
-   export enkfbin=${execdir}/global_enkf
-   export FCSTEXEC=${execdir}/${fv3exec}
-   export gsiexec=${execdir}/global_gsi
-   export CHGRESEXEC=${execdir}/chgres_recenter.exe
-elif [ "$machine" == 'hera' ]; then
+if [ "$machine" == 'hera' ]; then
    export python=/contrib/anaconda/2.3.0/bin/python
    export fv3gfspath=/scratch1/NCEPDEV/global/glopara
    export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
@@ -429,18 +406,6 @@ elif [ "$machine" == 'gaea' ]; then
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
    export CHGRESEXEC=${execdir}/chgres_recenter.exe
-elif [ "$machine" == 'wcoss' ]; then
-   export python=`which python`
-   export fv3gfspath=/gpfs/hps3/emc/global/noscrub/emc.glopara/svn/fv3gfs
-   export gsipath=/gpfs/hps2/esrl/gefsrr/noscrub/Jeffrey.S.Whitaker/gsi/ProdGSI
-   export FIXFV3=${fv3gfspath}/fix_fv3
-   export FIXGLOBAL=${fv3gfspath}/fix/fix_am
-   export fixgsi=${gsipath}/fix
-   export fixcrtm=${fixgsi}/crtm_v2.2.3
-   export execdir=${enkfscripts}/exec_${machine}
-   export enkfbin=${execdir}/global_enkf
-   export FCSTEXEC=${execdir}/${fv3exec}
-   export gsiexec=${execdir}/global_gsi
 else
    echo "${machine} unsupported machine"
    exit 1
@@ -453,6 +418,10 @@ export HYBENSINFO=${enkfscripts}/global_hybens_info.l${LEVS}.txt
 # comment out next line to disable smoothing of ensemble perturbations
 # in stratosphere/mesosphere
 #export HYBENSMOOTHINFO=${fixgsi}/global_hybens_smoothinfo.l${LEVS}.txt
+export OZINFO=${fixgsi}/global_ozinfo.txt
+export CONVINFO=${fixgsi}/global_convinfo.txt
+export SATINFO=${fixgsi}/global_satinfo.txt
+export REALTIME=YES # if NO, use historical files set in main.sh
 
 # parameters for hybrid gain
 if [ $hybgain == "true" ]; then
