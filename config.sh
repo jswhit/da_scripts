@@ -421,7 +421,7 @@ export HYBENSINFO=${enkfscripts}/global_hybens_info.l${LEVS}.txt
 export OZINFO=${fixgsi}/global_ozinfo.txt
 export CONVINFO=${fixgsi}/global_convinfo.txt
 export SATINFO=${fixgsi}/global_satinfo.txt
-export REALTIME=YES # if NO, use historical files set in main.sh
+export REALTIME=NO # if NO, use historical files set in main.sh
 
 # parameters for hybrid gain
 if [ $hybgain == "true" ]; then
