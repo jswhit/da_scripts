@@ -10,8 +10,8 @@ export RES_CTL=384
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
 export alpha=500 # percentage of 3dvar increment (beta_2*1000)
 export beta=1000 # percentage of enkf increment (*10)
-export hybgain='true' # set to true for hybrid gain 3DVar/EnKF
-export exptname="C${RES}C${RES_CTL}_hybgain_expt1"
+export hybgain='false' # set to true for hybrid gain 3DVar/EnKF
+export exptname="C${RES}_hybcov_expt1"
 # for 'passive' or 'replay' cycling of control fcst 
 # control forecast files have 'control2' suffix, instead of 'control'
 # GSI observer will be run on 'control2' forecast
@@ -81,7 +81,7 @@ elif [ "$machine" == 'gaea' ]; then
    export datadir=/lustre/f2/scratch/${USER}
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    #export hsidir="/3year/NCEPDEV/GEFSRR/${exptname}"
-   export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/fv3_reanl/gdas1bufr
+   export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/dump
 else
    echo "machine must be 'hera' or 'gaea' got $machine"
    exit 1
@@ -397,7 +397,7 @@ elif [ "$machine" == 'gaea' ]; then
    export fv3gfspath=/lustre/f2/dev/Jeffrey.S.Whitaker/fv3_reanl/fv3gfs/global_shared.v15.0.0
    export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
-   export gsipath=/lustre/f2/dev/Jeffrey.S.Whitaker/fv3_reanl/ProdGSI
+   export gsipath=/lustre/f2/dev/Jeffrey.S.Whitaker/ProdGSI
    export fixgsi=${gsipath}/fix
    export fixcrtm=/lustre/f2/pdata/ncep_shared/NCEPLIBS/lib/crtm/v2.2.5/fix
    #export fixcrtm=${fixgsi}/crtm_v2.2.3
