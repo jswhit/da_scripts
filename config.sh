@@ -389,7 +389,7 @@ if [ "$machine" == 'hera' ]; then
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
-   export CHGRESEXEC=${execdir}/chgres_nc_gauss.x
+   export CHGRESEXEC=${execdir}/chgres_recenter_ncio.exe
 elif [ "$machine" == 'gaea' ]; then
    export python=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/bin/python
    export PYTHONPATH=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/lib/python2.7/site-packages
@@ -405,7 +405,7 @@ elif [ "$machine" == 'gaea' ]; then
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
-   export CHGRESEXEC=${execdir}/chgres_recenter.exe
+   export CHGRESEXEC=${execdir}/chgres_recenter_ncio.exe
 else
    echo "${machine} unsupported machine"
    exit 1
