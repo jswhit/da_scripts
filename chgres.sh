@@ -1,6 +1,6 @@
 export LEVSp1=`expr $LEVS \+ 1`
 SIGLEVEL=${SIGLEVEL:-${FIXGLOBAL}/global_hyblev.l${LEVSp1}.txt}
-export CHGRESEXEC=${CHGRESEXEC:-${execdir}/chgres_nc_gauss.x}
+export CHGRESEXEC=${CHGRESEXEC:-${execdir}/chgres_recenter_ncio.exe}
 
 DATA=$datapath2/chgrestmp$$
 mkdir -p $DATA
