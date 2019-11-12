@@ -389,7 +389,7 @@ if [ "$machine" == 'hera' ]; then
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
-   export CHGRESEXEC=${execdir}/chgres_nc_gauss.x
+   export CHGRESEXEC=${execdir}/chgres_recenter_ncio.exe
 elif [ "$machine" == 'gaea' ]; then
    export python=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/bin/python
    export PYTHONPATH=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/lib/python2.7/site-packages
@@ -397,7 +397,7 @@ elif [ "$machine" == 'gaea' ]; then
    export fv3gfspath=/lustre/f2/dev/Jeffrey.S.Whitaker/fv3_reanl/fv3gfs/global_shared.v15.0.0
    export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
-   export gsipath=/lustre/f2/dev/Jeffrey.S.Whitaker/fv3_reanl/ProdGSI
+   export gsipath=/lustre/f2/dev/Jeffrey.S.Whitaker/ProdGSI
    export fixgsi=${gsipath}/fix
    export fixcrtm=/lustre/f2/pdata/ncep_shared/NCEPLIBS/lib/crtm/v2.2.5/fix
    #export fixcrtm=${fixgsi}/crtm_v2.2.3
@@ -405,7 +405,7 @@ elif [ "$machine" == 'gaea' ]; then
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
-   export CHGRESEXEC=${execdir}/chgres_recenter.exe
+   export CHGRESEXEC=${execdir}/chgres_recenter_ncio.exe
 else
    echo "${machine} unsupported machine"
    exit 1
