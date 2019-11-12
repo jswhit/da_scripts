@@ -15,10 +15,6 @@ if [ $cleanup_ensmean == 'true' ] || ([ $cleanup_ensmean == 'false' ] && [ ! -s 
    /bin/rm -f sanl_${analdate}_${charfhr}_ensmean
    export PGM="${execdir}/getsigensmeanp_smooth.x ${datapath2}/ sanl_${analdate}_${charfhr}_ensmean sanl_${analdate}_${charfhr} ${nanals}"
    ${enkfscripts}/runmpi
-   if [ $nhr_anal -eq $ANALINC ]; then
-      export PGM="${execdir}/getsigensstatp.x ${datapath2}/ sanl_${analdate}_${charfhr} ${nanals}"
-      ${enkfscripts}/runmpi
-   fi
 fi
 
 done
