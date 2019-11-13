@@ -10,8 +10,8 @@ export RES_CTL=384
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
 export alpha=500 # percentage of 3dvar increment (beta_2*1000)
 export beta=1000 # percentage of enkf increment (*10)
-export hybgain='false' # set to true for hybrid gain 3DVar/EnKF
-export exptname="C${RES}_hybcov_expt1"
+export hybgain='true' # set to true for hybrid gain 3DVar/EnKF
+export exptname="C${RES}_hybgain_expt1"
 # for 'passive' or 'replay' cycling of control fcst 
 # control forecast files have 'control2' suffix, instead of 'control'
 # GSI observer will be run on 'control2' forecast
@@ -81,7 +81,7 @@ elif [ "$machine" == 'gaea' ]; then
    export datadir=/lustre/f2/scratch/${USER}
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    #export hsidir="/3year/NCEPDEV/GEFSRR/${exptname}"
-   export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/dump
+   export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/dumps
 else
    echo "machine must be 'hera' or 'gaea' got $machine"
    exit 1
@@ -391,7 +391,7 @@ if [ "$machine" == 'hera' ]; then
    export gsiexec=${execdir}/global_gsi
    export CHGRESEXEC=${execdir}/chgres_recenter_ncio.exe
 elif [ "$machine" == 'gaea' ]; then
-   export python=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/bin/python
+   export python=/ncrc/sw/gaea/PythonEnv-noaa/1.4.0/.spack/opt/spack/linux-sles12-x86_64/gcc-4.8/python-2.7.14-zyx34h36bfp2c6ftp5bhdsdduqjxbvp6/bin/python
    export PYTHONPATH=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/lib/python2.7/site-packages
    #export fv3gfspath=/lustre/f1/pdata/ncep_shared/fv3/fix-fv3gfs/
    export fv3gfspath=/lustre/f2/dev/Jeffrey.S.Whitaker/fv3_reanl/fv3gfs/global_shared.v15.0.0
