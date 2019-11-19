@@ -24,3 +24,5 @@ date you want the experiment to start and end.
   set controlfcst=true and replay_controlfcst=true
 * to run hybrid 4denvar as in ops, set hybgain=false, controlfcst=true, replay_controlfcst=false,
   recenter_anal=true
+* the executables in exec_<machine> are compiled by cloning out the global-workflow project and
+  running sorc/build_all.sh.
