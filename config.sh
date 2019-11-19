@@ -81,7 +81,7 @@ elif [ "$machine" == 'gaea' ]; then
    export datadir=/lustre/f2/scratch/${USER}
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    #export hsidir="/3year/NCEPDEV/GEFSRR/${exptname}"
-   export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/fv3_reanl/gdas1bufr
+   export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/dumps
 else
    echo "machine must be 'hera' or 'gaea' got $machine"
    exit 1
@@ -370,7 +370,7 @@ export saterrfact=1.0
 export deterministic=.true.
 export sortinc=.true.
                                                                     
-export nitermax=1
+export nitermax=2
 
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
@@ -391,7 +391,7 @@ if [ "$machine" == 'hera' ]; then
    export gsiexec=${execdir}/global_gsi
    export CHGRESEXEC=${execdir}/chgres_recenter_ncio.exe
 elif [ "$machine" == 'gaea' ]; then
-   export python=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/bin/python
+   export python=/ncrc/sw/gaea/PythonEnv-noaa/1.4.0/.spack/opt/spack/linux-sles12-x86_64/gcc-4.8/python-2.7.14-zyx34h36bfp2c6ftp5bhdsdduqjxbvp6/bin/python
    export PYTHONPATH=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/lib/python2.7/site-packages
    #export fv3gfspath=/lustre/f1/pdata/ncep_shared/fv3/fix-fv3gfs/
    export fv3gfspath=/lustre/f2/dev/Jeffrey.S.Whitaker/fv3_reanl/fv3gfs/global_shared.v15.0.0

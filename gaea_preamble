@@ -7,9 +7,9 @@
 #SBATCH -A nggps_psd
 ##SBATCH -A cpo_ngrr_e
 #SBATCH -N 20    
-#SBATCH -J C192_hybgain
-#SBATCH -e C192_hybgain.err
-#SBATCH -o C192_hybgain.out
+#SBATCH -J C192_hybgain_expt1
+#SBATCH -e C192_hybgain_expt1.err
+#SBATCH -o C192_hybgain_expt1.out
 
 export NODES=$SLURM_NNODES
 export corespernode=$SLURM_CPUS_ON_NODE
@@ -52,13 +52,13 @@ else
 fi
 
 # for ensemble forecast and GSI
-export enkf_threads=6
-export gsi_control_threads=3
 export fg_proc=$corespernode 
 export fg_threads=1
 export write_groups=1
 export write_tasks=6 
 if [ $corespernode -eq 36 ]; then
+export enkf_threads=9
+export gsi_control_threads=6
 export write_groups=2
 export layout="2, 2" 
 elif [ $corespernode -eq 32 ]; then

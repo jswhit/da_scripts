@@ -12,10 +12,19 @@ if [ "$machine" == 'hera' ]; then
    module load wgrib
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'gaea' ]; then
+   module purge
+   module load PrgEnv-intel/6.0.3
+   module rm intel
+   module load intel/18.0.3.222
+   module load cray-netcdf
+   module use -a /lustre/f2/pdata/ncep_shared/NCEPLIBS/lib//modulefiles
+   module load esmflocal/8_0_48b
    module load nco/4.6.4
    module load wgrib
    export WGRIB=`which wgrib`
+   export HDF5_DISABLE_VERSION_CHECK=1
 fi
+module list
 
 export VERBOSE=${VERBOSE:-"NO"}
 export quilting=${quilting:-'.true.'}
