@@ -11,7 +11,7 @@ export RES_CTL=384
 export alpha=500 # percentage of 3dvar increment (beta_2*1000)
 export beta=1000 # percentage of enkf increment (*10)
 export hybgain='true' # set to true for hybrid gain 3DVar/EnKF
-export exptname="C${RES}C${RES_CTL}_hybgain_expt1"
+export exptname="C${RES}_hybgain_expt1"
 # for 'passive' or 'replay' cycling of control fcst 
 # control forecast files have 'control2' suffix, instead of 'control'
 # GSI observer will be run on 'control2' forecast
@@ -421,7 +421,7 @@ export HYBENSINFO=${enkfscripts}/global_hybens_info.l${LEVS}.txt
 export OZINFO=${fixgsi}/global_ozinfo.txt
 export CONVINFO=${fixgsi}/global_convinfo.txt
 export SATINFO=${fixgsi}/global_satinfo.txt
-export REALTIME=NO # if NO, use historical files set in main.sh
+export REALTIME=YES # if NO, use historical files set in main.sh
 
 # parameters for hybrid gain
 if [ $hybgain == "true" ]; then

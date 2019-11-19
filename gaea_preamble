@@ -7,9 +7,9 @@
 #SBATCH -A nggps_psd
 ##SBATCH -A cpo_ngrr_e
 #SBATCH -N 20    
-#SBATCH -J C192C384_hybgain
-#SBATCH -e C192C384_hybgain.err
-#SBATCH -o C192C384_hybgain.out
+#SBATCH -J C192_hybgain
+#SBATCH -e C192_hybgain.err
+#SBATCH -o C192_hybgain.out
 
 export NODES=$SLURM_NNODES
 export corespernode=$SLURM_CPUS_ON_NODE

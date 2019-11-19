@@ -3,9 +3,9 @@
 #SBATCH -t 02:30:00
 #SBATCH -A gsienkf
 #SBATCH -N 20    
-#SBATCH -J C192C384_hybgain_expt1
-#SBATCH -e C192C384_hybgain_expt1.err
-#SBATCH -o C192C384_hybgain_expt1.out
+#SBATCH -J C192_hybgain_expt1
+#SBATCH -e C192_hybgain_expt1.err
+#SBATCH -o C192_hybgain_expt1.out
 
 export NODES=$SLURM_NNODES
 export corespernode=$SLURM_CPUS_ON_NODE
