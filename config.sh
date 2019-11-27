@@ -392,7 +392,7 @@ if [ "$machine" == 'hera' ]; then
    export CHGRESEXEC=${execdir}/chgres_recenter_ncio.exe
 elif [ "$machine" == 'gaea' ]; then
    export python=/ncrc/sw/gaea/PythonEnv-noaa/1.4.0/.spack/opt/spack/linux-sles12-x86_64/gcc-4.8/python-2.7.14-zyx34h36bfp2c6ftp5bhdsdduqjxbvp6/bin/python
-   export PYTHONPATH=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/lib/python2.7/site-packages
+   #export PYTHONPATH=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/lib/python2.7/site-packages
    #export fv3gfspath=/lustre/f1/pdata/ncep_shared/fv3/fix-fv3gfs/
    export fv3gfspath=/lustre/f2/dev/Jeffrey.S.Whitaker/fv3_reanl/fv3gfs/global_shared.v15.0.0
    export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010

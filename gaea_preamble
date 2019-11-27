@@ -6,10 +6,10 @@
 ##SBATCH -t 00:30:00
 #SBATCH -A nggps_psd
 ##SBATCH -A cpo_ngrr_e
-#SBATCH -N 20    
-#SBATCH -J C192_hybgain_expt1
-#SBATCH -e C192_hybgain_expt1.err
-#SBATCH -o C192_hybgain_expt1.out
+#SBATCH -N 21    
+#SBATCH -J C192_hybgain_expt2
+#SBATCH -e C192_hybgain_expt2.err
+#SBATCH -o C192_hybgain_expt2.out
 
 export NODES=$SLURM_NNODES
 export corespernode=$SLURM_CPUS_ON_NODE
@@ -24,7 +24,7 @@ if [ $NODES -eq 10 ]; then
   export control_proc=312
   export write_groups_ctl=4 # write groups for control forecast.
   export layout_ctl="6,8" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
-elif [ $NODES -eq 20 ]; then
+elif [ $NODES -eq 20 ] || [ $NODES -eq 21 ]; then
   # 20 nodes, 3 threads
   #export control_threads=2 # control forecast threads
   #export control_proc=444   # total number of processors for control forecast
