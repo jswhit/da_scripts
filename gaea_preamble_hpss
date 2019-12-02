@@ -2,7 +2,7 @@
 #SBATCH -q normal  
 #SBATCH --clusters es
 #SBATCH --partition=rdtn
-#SBATCH -t 08:00:00
+#SBATCH -t 16:00:00
 #SBATCH -A nggps_psd
 #SBATCH -N 1    
 #SBATCH -J tarit
