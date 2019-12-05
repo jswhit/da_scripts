@@ -3,9 +3,9 @@
 #SBATCH -t 02:30:00
 #SBATCH -A gsienkf
 #SBATCH -N 20    
-#SBATCH -J C192_hybgain_expt1
-#SBATCH -e C192_hybgain_expt1.err
-#SBATCH -o C192_hybgain_expt1.out
+#SBATCH -J C192_enkfonly
+#SBATCH -e C192_enkfonly.err
+#SBATCH -o C192_enkfonly.out
 
 export NODES=$SLURM_NNODES
 export corespernode=$SLURM_CPUS_ON_NODE
@@ -47,9 +47,10 @@ export fg_proc=$corespernode
 export fg_threads=1 
 export enkf_threads=8
 export gsi_control_threads=4
-export write_groups=2
-export write_tasks=6 
-export fg_proc=36
-export layout="2, 2"
-#export fg_proc=78
-#export layout="3, 4" 
+export write_groups=4
+# 24 cores for model, 16 for write component
+#export write_tasks=4 
+#export layout="2, 2"
+# 36 cores for model, 4 for write component
+export write_tasks=1 
+export layout="3, 2"
