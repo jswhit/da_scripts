@@ -592,6 +592,7 @@ cat > input.nml <<EOF
   iau_filter_increments = F
   iaufhrs = ${iaufhrs}
   iau_delthrs = ${iaudelthrs}
+  iau_drymassfixer = T
   iau_inc_files = ${iau_inc_files}
 /
 
