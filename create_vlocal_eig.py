@@ -14,6 +14,13 @@ if len(sys.argv) < 4:
 
 # read in localization cutoff distance in (units on lnp)
 cutoff = float(sys.argv[1])
+if cutoff < 0:
+    use_logp = True
+    use_gridpt = False
+    cutoff = -cutoff
+else:
+    use_logp = False
+    use_gridpt = True
 # read in threshold for truncating eigenspace of localization matrix (95 = 95% var explained)
 thresh = 0.01*float(sys.argv[2])
 # read in hybrid levels (hyblevs file from fix/fix_am)
@@ -64,8 +71,14 @@ logp = -np.log(presslmn) # (ranges from -2 to -11)
 
 
 covlocal = np.zeros((nlevs,nlevs),'d')
+use_gridpt = True
+use_logp = False
 for j in range(nlevs):
-    covlocal[j,:] = localization(abs(logp-logp[j])/cutoff)
+    if use_logp:
+        covlocal[j,:] = localization(abs(logp-logp[j])/cutoff)
+    elif use_gridpt:
+        covlocal[j,:] = localization(abs(np.arange(nlevs)-j)/cutoff)
+
 
 #import matplotlib.pyplot as plt
 #plt.figure(1)
