@@ -52,11 +52,16 @@ export replay_run_observer='true' # run observer on replay forecast
 # YYYYMMDDHH analysis date string to see if
 # full ensemble should be saved to HPSS (returns 0 if 
 # HPSS save should be done)
+if [ $machine == "orion" ]; then
 export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
 export save_hpss="false"
+else
+export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
+export save_hpss="true"
+export copy_history_files=1 # save pressure level history files (and compute ens mean)
+fi
 export run_long_fcst="false"  # spawn a longer control forecast at 00 UTC
 export ensmean_restart='false'
-#export copy_history_files=1 # save pressure level history files (and compute ens mean)
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
