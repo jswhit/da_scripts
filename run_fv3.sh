@@ -8,9 +8,22 @@ if [ "$machine" == 'hera' ]; then
    module load impi/2018.0.4
    module load netcdf/4.7.0
    module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
-   module load esmf/8.0.0bs50
+   module load esmflocal/8_0_0r
    module load wgrib
    export WGRIB=`which wgrib`
+elif [ "$machine" == 'orion' ]; then
+   module purge 
+   module load intel/2019.5
+   module load impi/2019.6
+   module load hdf5/1.10.5
+   module load netcdf/4.7.2
+   export HDF5_DISABLE_VERSION_CHECK=1
+   #export NCEPLIBS=/apps/contrib/NCEPLIBS/lib
+   #module use -a ${NCEPLIBS}/modulefiles
+   #module load esmflocal/8_0_0r
+   #module load hdf5/1.18
+   #module load netcdf/4.4.4.1
+   module load grib_util-intel-sandybridge # wgrib
 elif [ "$machine" == 'gaea' ]; then
    module purge
    module load PrgEnv-intel/6.0.3
@@ -108,7 +121,7 @@ if [ $? -ne 0 ]; then
   echo "cd to ${datapath2}/${charnanal} failed, stopping..."
   exit 1
 fi
-/bin/rm -f dyn*.nc phy*nc PET*
+/bin/rm -f dyn*.nc phy*nc
 export DIAG_TABLE=${DIAG_TABLE:-$enkfscripts/diag_table}
 /bin/cp -f $DIAG_TABLE diag_table
 /bin/cp -f $enkfscripts/nems.configure .
@@ -592,7 +605,6 @@ cat > input.nml <<EOF
   iau_filter_increments = F
   iaufhrs = ${iaufhrs}
   iau_delthrs = ${iaudelthrs}
-  iau_drymassfixer = T
   iau_inc_files = ${iau_inc_files}
 /
 
@@ -738,6 +750,7 @@ ls -l INPUT
 
 # run model
 export PGM=$FCSTEXEC
+ldd $PGM
 echo "start running model `date`"
 ${enkfscripts}/runmpi
 if [ $? -ne 0 ]; then

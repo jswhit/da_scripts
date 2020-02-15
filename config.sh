@@ -1,5 +1,4 @@
 echo "running on $machine using $NODES nodes"
-## ulimit -s unlimited
 
 export ndates_job=1 # number of DA cycles to run in one job submission
 # resolution of control and ensmemble.
@@ -8,10 +7,10 @@ export RES_CTL=384
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
-export alpha=500 # percentage of 3dvar increment (beta_2*1000)
+export alpha=250 # percentage of 3dvar increment (beta_2*1000)
 export beta=1000 # percentage of enkf increment (*10)
 export hybgain='true' # set to true for hybrid gain 3DVar/EnKF
-export exptname="C${RES}_hybgain_expt1"
+export exptname="C${RES}_hybgain_test"
 # for 'passive' or 'replay' cycling of control fcst 
 # control forecast files have 'control2' suffix, instead of 'control'
 # GSI observer will be run on 'control2' forecast
@@ -53,11 +52,11 @@ export replay_run_observer='true' # run observer on replay forecast
 # YYYYMMDDHH analysis date string to see if
 # full ensemble should be saved to HPSS (returns 0 if 
 # HPSS save should be done)
-export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
-export save_hpss="true"
+export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
+export save_hpss="false"
 export run_long_fcst="false"  # spawn a longer control forecast at 00 UTC
 export ensmean_restart='false'
-export copy_history_files=1 # save pressure level history files (and compute ens mean)
+#export copy_history_files=1 # save pressure level history files (and compute ens mean)
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
@@ -76,6 +75,16 @@ if [ "$machine" == 'hera' ]; then
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    #export obs_datapath=/scratch2/BMC/gsienkf/whitaker/gdas1bufr
    export obs_datapath=/scratch1/NCEPDEV/global/glopara/dump
+elif [ "$machine" == 'orion' ]; then
+   export basedir=/work/noaa/gsienkf/${USER}
+   export datadir=$basedir
+   export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
+   #export obs_datapath=/scratch2/BMC/gsienkf/whitaker/gdas1bufr
+   export obs_datapath=${basedir}/dumps
+   ulimit -s unlimited
+   module load intel/2019.5
+   module load impi/2019.6
+   module load mkl/2019.5
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f2/dev/${USER}
    export datadir=/lustre/f2/scratch/${USER}
@@ -83,7 +92,7 @@ elif [ "$machine" == 'gaea' ]; then
    #export hsidir="/3year/NCEPDEV/GEFSRR/${exptname}"
    export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/dumps
 else
-   echo "machine must be 'hera' or 'gaea' got $machine"
+   echo "machine must be 'hera', 'orion' or 'gaea' got $machine"
    exit 1
 fi
 export datapath="${datadir}/${exptname}"
@@ -385,6 +394,19 @@ if [ "$machine" == 'hera' ]; then
    export fixgsi=${gsipath}/fix
    export fixcrtm=/scratch1/NCEPDEV/global/gwv/l827h/lib/crtm/v2.2.6/fix
    export fixcrtm=/scratch1/NCEPDEV/global/glopara/crtm/v2.2.6/fix
+   export execdir=${enkfscripts}/exec_${machine}
+   export enkfbin=${execdir}/global_enkf
+   export FCSTEXEC=${execdir}/${fv3exec}
+   export gsiexec=${execdir}/global_gsi
+   export CHGRESEXEC=${execdir}/chgres_recenter_ncio.exe
+elif [ "$machine" == 'orion' ]; then
+   export python=`which python`
+   export fv3gfspath=${basedir}
+   export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
+   export FIXGLOBAL=${fv3gfspath}/fix/fix_am
+   export gsipath=${basedir}/ProdGSI
+   export fixgsi=${gsipath}/fix
+   export fixcrtm=${basedir}/fix/crtm/v2.2.6/fix
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
