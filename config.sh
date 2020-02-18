@@ -331,9 +331,9 @@ export covinflatemin=1.0
 export analpertwtnh=0.75
 export analpertwtsh=0.75
 export analpertwttr=0.75
-export analpertwtnh_rtpp=0.0
-export analpertwtsh_rtpp=0.0
-export analpertwttr_rtpp=0.0
+export analpertwtnh_rtpp=0.25
+export analpertwtsh_rtpp=0.25
+export analpertwttr_rtpp=0.25
 export pseudo_rh=.true.
 export use_correlated_oberrs=".true."
                                                                     
