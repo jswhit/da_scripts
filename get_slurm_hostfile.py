@@ -4,6 +4,7 @@ def parse_nodelist(nodeexp):
     # Convert the compressed nodelist expression into an array
     p = Popen(['scontrol', 'show', 'hostnames', nodeexp], stdout=PIPE, stderr=PIPE)
     (sout, serr) = p.communicate()
+    sout = sout.decode('ascii'); serr = serr.decode('ascii')
     if p.returncode != 0:
         errexit("Unable to parse nodelist: error %d: %s" % (p.returncode, serr.rstrip()))
     nodelist = sout.rstrip().split('\n')

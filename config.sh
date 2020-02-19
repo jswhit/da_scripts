@@ -308,7 +308,7 @@ export FHMAX=9
 export FHMAX_LONG=120 # control forecast every 00UTC in run_long_fcst=true
 export FHOUT=3
 FHMAXP1=`expr $FHMAX + 1`
-export enkfstatefhrs=`python -c "from __future__ import print_function; print(range(${FHMIN},${FHMAXP1},${FHOUT}))" | cut -f2 -d"[" | cut -f1 -d"]"`
+export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
 export iaufhrs="3,6,9"
 export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 # dump increment in one time step (for debugging)
