@@ -58,10 +58,10 @@ export save_hpss="false"
 else
 export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
 export save_hpss="true"
-export copy_history_files=1 # save pressure level history files (and compute ens mean)
 fi
 export run_long_fcst="false"  # spawn a longer control forecast at 00 UTC
 export ensmean_restart='false'
+export copy_history_files=1 # save pressure level history files (and compute ens mean)
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
@@ -90,6 +90,8 @@ elif [ "$machine" == 'orion' ]; then
    module load intel/2019.5
    module load impi/2019.6
    module load mkl/2019.5
+   module load python
+   export PYTHONPATH=/home/jwhitake/.local/lib/python3.7/site-packages
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f2/dev/${USER}
    export datadir=/lustre/f2/scratch/${USER}
@@ -306,7 +308,7 @@ export FHMAX=9
 export FHMAX_LONG=120 # control forecast every 00UTC in run_long_fcst=true
 export FHOUT=3
 FHMAXP1=`expr $FHMAX + 1`
-export enkfstatefhrs=`python -c "print range(${FHMIN},${FHMAXP1},${FHOUT})" | cut -f2 -d"[" | cut -f1 -d"]"`
+export enkfstatefhrs=`python -c "from __future__ import print_function; print(range(${FHMIN},${FHMAXP1},${FHOUT}))" | cut -f2 -d"[" | cut -f1 -d"]"`
 export iaufhrs="3,6,9"
 export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 # dump increment in one time step (for debugging)

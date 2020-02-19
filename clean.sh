@@ -62,5 +62,10 @@ fi
 /bin/rm -f *lores *mem*orig
 /bin/rm -f ozinfo convinfo satinfo scaninfo anavinfo
 /bin/rm -rf *tmp* nodefile* machinefile*
+if [ $save_hpss_subset == "false" ] && [ $save_hpss_full == "false" ]; then
+  /bin/rm -rf fgens fgens2
+  /bin/rm -f diag*cris* diag*airs* diag*iasi*
+  /bin/rm -rf control control2 ensmean
+fi
 echo "unwanted files removed `date`"
 wait

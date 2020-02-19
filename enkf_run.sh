@@ -185,8 +185,8 @@ if [ $machine == 'gaea' ]; then
    cores2=$((cores-corespernode ))
    export nprocs=`expr $cores2 \/ $enkf_threads`
    totcores=`expr $nprocs \* $OMP_NUM_THREADS`
-   totnodes=`python -c "import math; print int(math.ceil(float(${totcores})/${corespernode}))"`
-   count=`python -c "import math; print int(math.floor(float(${corespernode})/${mpitaskspernode}))"` 
+   totnodes=`python -c "from __future__ import print_function; import math; print(int(math.ceil(float(${totcores})/${corespernode})))"`
+   count=`python -c "from __future__ import print_function; import math; print(int(math.floor(float(${corespernode})/${mpitaskspernode})))"` 
    echo "running srun-multi -N 1 -n 1 -c ${OMP_NUM_THREADS} --cpu-bind cores $PGM : -N $totnodes -n $nprocs -c ${count} --cpu-bind cores $PGM" 2>&1
    # -c: cpus per task (number of threads per mpi task)
    # -n: number of mpi tasks

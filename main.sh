@@ -106,7 +106,7 @@ export datapath2="${datapath}/${analdate}/"
 /bin/cp -f ${ANAVINFO_ENKF} ${datapath2}/anavinfo
 
 # setup node parameters used in blendinc.csh, recenter_ens_anal.csh and compute_ensmean_fcst.sh
-export mpitaskspernode=`python -c "import math; print int(math.ceil(float(${nanals})/float(${NODES})))"`
+export mpitaskspernode=`python -c "from __future__ import print_function; import math; print(int(math.ceil(float(${nanals})/float(${NODES}))))"`
 if [ $mpitaskspernode -lt 1 ]; then
   export mpitaskspernode 1
 fi
