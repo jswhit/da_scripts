@@ -15,14 +15,7 @@ elif [ "$machine" == 'orion' ]; then
    module purge 
    module load intel/2019.5
    module load impi/2019.6
-   module load hdf5/1.10.5
    module load netcdf/4.7.2
-   export HDF5_DISABLE_VERSION_CHECK=1
-   #export NCEPLIBS=/apps/contrib/NCEPLIBS/lib
-   #module use -a ${NCEPLIBS}/modulefiles
-   #module load esmflocal/8_0_0r
-   #module load hdf5/1.18
-   #module load netcdf/4.4.4.1
    module load grib_util-intel-sandybridge # wgrib
 elif [ "$machine" == 'gaea' ]; then
    module purge
@@ -751,7 +744,6 @@ ls -l INPUT
 
 # run model
 export PGM=$FCSTEXEC
-ldd $PGM
 echo "start running model `date`"
 ${enkfscripts}/runmpi
 if [ $? -ne 0 ]; then
