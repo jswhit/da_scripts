@@ -87,11 +87,12 @@ elif [ "$machine" == 'orion' ]; then
    #export obs_datapath=/scratch2/BMC/gsienkf/whitaker/gdas1bufr
    export obs_datapath=${basedir}/dumps
    ulimit -s unlimited
-   module load intel/2019.5
-   module load impi/2019.6
-   module load mkl/2019.5
+   module load intel/2018.4
+   module load impi/2018.4
+   module load mkl/2018.4 
    module load python
    export PYTHONPATH=/home/jwhitake/.local/lib/python3.7/site-packages
+   export HDF5_DISABLE_VERSION_CHECK=1
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f2/dev/${USER}
    export datadir=/lustre/f2/scratch/${USER}

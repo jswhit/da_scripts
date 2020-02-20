@@ -7,6 +7,8 @@ try:
 except ImportError:
    import _pickle as cPickle
 
+python3 = sys.version_info[0] > 2
+
 # interpolate fv3 history files to lat/lon grid.
 # assumes all variables are 3d with dimensions time, grid_yt, grid_xt
 
@@ -23,7 +25,10 @@ res = int(sys.argv[3])
 refdate = sys.argv[4]
 
 # read in triangulation.
-picklefile = 'C%s_grid.pickle' % res
+if python3:
+   picklefile = 'C%s_grid.pickle.py3' % res
+else:
+   picklefile = 'C%s_grid.pickle' % res
 tri = cPickle.load(open(picklefile,'rb'))
 
 # define output grid.
