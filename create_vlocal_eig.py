@@ -71,8 +71,6 @@ logp = -np.log(presslmn) # (ranges from -2 to -11)
 
 
 covlocal = np.zeros((nlevs,nlevs),'d')
-use_gridpt = True
-use_logp = False
 for j in range(nlevs):
     if use_logp:
         covlocal[j,:] = localization(abs(logp-logp[j])/cutoff)
