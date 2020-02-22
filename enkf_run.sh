@@ -1,5 +1,12 @@
 #!/bin/sh
 
+if [ $machine == 'orion' ]; then
+   module switch intel intel/2018.4
+   module switch impi impi/2018.4
+   module switch mkl mkl/2018.4
+   module list
+fi
+
 export nprocs=`expr $cores \/ $enkf_threads`
 export mpitaskspernode=`expr $corespernode \/ $enkf_threads`
 export OMP_NUM_THREADS=$enkf_threads
