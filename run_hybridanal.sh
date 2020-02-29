@@ -3,9 +3,10 @@
 
 export CO2DIR=$fixgsi
 if [ $machine == 'orion' ]; then
-   module switch intel intel/2018.4
-   module switch impi impi/2018.4
-   module switch mkl mkl/2018.4
+   module purge
+   module load intel/2018.4
+   module load impi/2018.4
+   module load mkl/2018.4
    module list
 fi
 export SIGANL03=${datapath2}/sanl_${analdate}_fhr03_${charnanal}

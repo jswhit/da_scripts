@@ -1,9 +1,11 @@
 #!/bin/sh
 
 if [ $machine == 'orion' ]; then
-   module switch intel intel/2018.4
-   module switch impi impi/2018.4
-   module switch mkl mkl/2018.4
+   module purge
+   module load intel/2018.4
+   module load impi/2018.4
+   module load mkl/2018.4
+   module load python
    module list
 fi
 
