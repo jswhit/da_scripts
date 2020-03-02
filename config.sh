@@ -466,6 +466,7 @@ fi
 export readin_localization=.false.
 # if above is .false., these values are used in GSI (not used at all for hybgain)
 export s_ens_h=343.     # 1250 km
+#export s_ens_h=485 # produces similar increments to 1250KM LETKF R localization
 export s_ens_v=-0.58    # 1.5 scale heights
 
 # NOTE: most other GSI namelist variables are in ${rungsi}
