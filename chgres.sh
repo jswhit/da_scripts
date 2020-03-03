@@ -22,7 +22,7 @@ cat > chgres_nc_gauss.nml << EOF
   vcoord_file="$SIGLEVEL"
 /
 EOF
-cat fort.43
+cat chgres_nc_gauss.nml
 
 export OMP_NUM_THREADS=$corespernode
 export OMP_STACKSIZE=256M

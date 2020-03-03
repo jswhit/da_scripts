@@ -13,9 +13,13 @@ if [ "$machine" == 'hera' ]; then
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'orion' ]; then
    module purge 
-   module load intel/2019.5
-   module load impi/2019.6
-   module load netcdf/4.7.2
+   module load intel/2019.5 
+   module load impi/2019.6 
+   module load mkl/2019.5  
+   export NCEPLIBS=/apps/contrib/NCEPLIBS/lib
+   module use -a /apps/contrib/NCEPLIBS/lib/modulefiles
+   module load netcdfp/4.7.4
+   module load esmflocal/8.0.0.para
    module load grib_util-intel-sandybridge # wgrib
 elif [ "$machine" == 'gaea' ]; then
    module purge
@@ -525,7 +529,7 @@ cat > input.nml <<EOF
   hord_tm = ${hord_tm},
   hord_dp = ${hord_dp},
   hord_tr = 8,
-  adjust_dry_mass = F,
+  adjust_dry_mass = T,
   do_sat_adj = ${do_sat_adj:-"F"},
   consv_am = F,
   fill = T,
@@ -596,7 +600,7 @@ cat > input.nml <<EOF
   do_sppt      = $DO_SPPT
   do_shum      = $DO_SHUM
   iau_filter_increments = F
-  iau_drymassfixer = T
+  iau_drymassfixer = F
   iaufhrs = ${iaufhrs}
   iau_delthrs = ${iaudelthrs}
   iau_inc_files = ${iau_inc_files}

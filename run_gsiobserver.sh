@@ -5,6 +5,14 @@ if [ "$cold_start_bias" == "true" ]; then
   export NOSAT=YES
 fi
 
+if [ $machine == 'orion' ]; then
+   module purge
+   module load intel/2018.4
+   module load impi/2018.4
+   module load mkl/2018.4
+   module list
+fi
+
 if [ ! -z $charnanal2 ]; then
   export charnanal2=$charnanal
 fi
