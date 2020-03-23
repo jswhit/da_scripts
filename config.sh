@@ -11,7 +11,7 @@ export RES_CTL=384
 export alpha=500 # percentage of 3dvar increment (beta_2*1000)
 export beta=1000 # percentage of enkf increment (*10)
 export hybgain='true' # set to true for hybrid gain 3DVar/EnKF
-export exptname="C${RES}_hybgain_expt1"
+export exptname="C${RES}_hybgain_dl1"
 # for 'passive' or 'replay' cycling of control fcst 
 # control forecast files have 'control2' suffix, instead of 'control'
 # GSI observer will be run on 'control2' forecast
@@ -47,6 +47,8 @@ export cleanup_ensmean='true'
 export cleanup_anal='true'
 export cleanup_controlanl='true'
 export cleanup_observer='true' 
+export cleanup_hybridtmp='true'
+export cleanup_restart='true'
 export resubmit='true'
 export replay_run_observer='true' # run observer on replay forecast
 # python script checkdate.py used to check
@@ -60,6 +62,8 @@ export ensmean_restart='false'
 export copy_history_files=1 # save pressure level history files (and compute ens mean)
 
 # override values from above for debugging.
+#export cleanup_hybridtmp='false'
+#export cleanup_restart='fasle'
 #export cleanup_ensmean='false'
 #export cleanup_observer='false'
 #export cleanup_controlanl='false'
@@ -71,11 +75,11 @@ export copy_history_files=1 # save pressure level history files (and compute ens
 #export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
  
 if [ "$machine" == 'hera' ]; then
-   export basedir=/scratch2/BMC/gsienkf/${USER}
+   export basedir=/scratch2/NCEPDEV/fv3-cam/${USER}
    export datadir=$basedir
-   export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   #export obs_datapath=/scratch2/BMC/gsienkf/whitaker/gdas1bufr
-   export obs_datapath=/scratch1/NCEPDEV/global/glopara/dump
+   export hsidir="/NCEPDEV/emc-meso/5year/Donald.E.Lippi/hrlyGDAS/${exptname}"
+   export obs_datapath=/scratch2/NCEPDEV/fv3-cam/Donald.E.Lippi/hrly_gdas/uniq
+   export obs_datapath2=/scratch1/NCEPDEV/global/glopara/dump/
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f2/dev/${USER}
    export datadir=/lustre/f2/scratch/${USER}
@@ -280,21 +284,32 @@ else
 fi
 export FHCYC=0 # run global_cycle instead of gcycle inside model
 
+export HRLY_DA="YES"
+if [[ $HRLY_DA == "YES" ]]; then
+   export HRLY_BKG="YES"
+   export ANALINC=1 #The first cycle is hardcoded as 4 for hrly GDAS.
+   export FHOUT=1
+   export FHMIN=1
+   export FHMAX=5
+   export iaufhrs="1,2,3,4,5"
+   export iau_delthrs="4" #iau time interval (to scale increments) in hours
+elif [[ $HRLY_DA == "NO" ]]; then
+   export HRLY_BKG="NO"
+   export ANALINC=6
+   export FHOUT=3
+   export FHMIN=3
+   export FHMAX=9
+   export iaufhrs="3,6,9"
+   export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
+fi
 # analysis is done at ensemble resolution
 export LONA=$LONB
 export LATA=$LATB      
 
-export ANALINC=6
-
 export LEVS=64
-export FHMIN=3
-export FHMAX=9
 export FHMAX_LONG=120 # control forecast every 00UTC in run_long_fcst=true
-export FHOUT=3
 FHMAXP1=`expr $FHMAX + 1`
 export enkfstatefhrs=`python -c "print range(${FHMIN},${FHMAXP1},${FHOUT})" | cut -f2 -d"[" | cut -f1 -d"]"`
-export iaufhrs="3,6,9"
-export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 # dump increment in one time step (for debugging)
 #export iaufhrs="6"
 #export iau_delthrs=0.25
@@ -362,15 +377,15 @@ fi
 #export huber=.true.
 #export zhuberleft=1.1
 #export zhuberright=1.1
-                                                                    
-export nanals=80                                                    
-                                                                    
+
+export nanals=80
+
 export paoverpb_thresh=0.998  # set to 1.0 to use all the obs in serial EnKF
 export saterrfact=1.0
 export deterministic=.true.
 export sortinc=.true.
                                                                     
-export nitermax=2
+export nitermax=1
 
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
@@ -382,6 +397,7 @@ if [ "$machine" == 'hera' ]; then
    export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
    export gsipath=/scratch2/BMC/gsienkf/whitaker/gsi/fv3_ncio
+   #export gsipath=/scratch2/NCEPDEV/fv3-cam/Donald.E.Lippi/scripts/C192_hybgain_dl1/ProdGSI/
    export fixgsi=${gsipath}/fix
    export fixcrtm=/scratch1/NCEPDEV/global/gwv/l827h/lib/crtm/v2.2.6/fix
    export fixcrtm=/scratch1/NCEPDEV/global/glopara/crtm/v2.2.6/fix
@@ -421,7 +437,7 @@ export HYBENSINFO=${enkfscripts}/global_hybens_info.l${LEVS}.txt
 export OZINFO=${fixgsi}/global_ozinfo.txt
 export CONVINFO=${fixgsi}/global_convinfo.txt
 export SATINFO=${fixgsi}/global_satinfo.txt
-export REALTIME=NO # if NO, use historical files set in main.sh
+export REALTIME=YES # if NO, use historical files set in main.sh
 
 # parameters for hybrid gain
 if [ $hybgain == "true" ]; then

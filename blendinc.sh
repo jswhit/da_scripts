@@ -13,7 +13,11 @@ echo "recenter ensemble perturbations about new mean for ${charfhr}"
 
 /bin/mv -f sanl_${analdate}_${charfhr}_ensmean sanl_${analdate}_${charfhr}_ensmean.orig
 filename_fg=sfg_${analdate}_${charfhr}_ensmean # ens mean first guess
-filename_anal1=sanl_${analdate}_fhr06_control # 3dvar analysis
+if [[ $HRLY_DA == "YES" ]]; then
+   filename_anal1=sanl_${analdate}_fhr04_control # 3dvar analysis
+elif [[ $HRLY_DA == "NO" ]]; then
+   filename_anal1=sanl_${analdate}_fhr06_control # 3dvar analysis
+fi
 filename_anal2=sanl_${analdate}_${charfhr}_ensmean.orig # EnKF analysis
 filename_anal=sanl_${analdate}_${charfhr}_ensmean # analysis from blended increments
 filenamein=sanl_${analdate}_${charfhr}

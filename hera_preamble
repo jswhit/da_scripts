@@ -1,11 +1,13 @@
 #!/bin/sh
 ##SBATCH -q debug
+#SBATCH -q urgent
 #SBATCH -t 02:30:00
-#SBATCH -A gsienkf
+##SBATCH -A gsienkf
+#SBATCH -A fv3-cpu
 #SBATCH -N 20    
-#SBATCH -J C192C384_hybgain_expt1
-#SBATCH -e C192C384_hybgain_expt1.err
-#SBATCH -o C192C384_hybgain_expt1.out
+#SBATCH -J C192_hybgain_dl1
+#SBATCH -e C192_hybgain_dl1.err
+#SBATCH -o C192_hybgain_dl1.out
 
 export NODES=$SLURM_NNODES
 export corespernode=$SLURM_CPUS_ON_NODE
@@ -45,7 +47,7 @@ fi
 #export fg_proc=`expr 4 \* $corespernode`
 export fg_proc=$corespernode
 export fg_threads=1 
-export enkf_threads=4
+export enkf_threads=8
 export gsi_control_threads=4
 export write_groups=2
 export write_tasks=6 

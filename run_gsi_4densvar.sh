@@ -1,4 +1,5 @@
 #!/bin/sh
+set -x
 echo "Time starting at `date` "
 
 VERBOSE=${VERBOSE:-"YES"}
@@ -61,7 +62,11 @@ im=`echo $adate | cut -c5-6`
 id=`echo $adate | cut -c7-8`
 ih=`echo $adate | cut -c9-10`
 echo "iy,im,id,ih = $iy $im $id $ih"
-date_fhour=`$python ${enkfscripts}/getidate.py ${datges}/bfg_${adate}_fhr03_${charnanal}`
+if   [[ $HRLY_DA == "YES" ]]; then
+   date_fhour=`$python ${enkfscripts}/getidate.py ${datges}/bfg_${adate}_fhr01_${charnanal}`
+elif [[ $HRLY_DA == "NO" ]]; then
+   date_fhour=`$python ${enkfscripts}/getidate.py ${datges}/bfg_${adate}_fhr03_${charnanal}`
+fi
 fdatei=`echo $date_fhour | cut -f1 -d " "`
 fhr=`echo $date_fhour | cut -f2 -d " "`
 fdatev=`${incdate} $fdatei $fhr`
@@ -263,7 +268,15 @@ if [[ -s $datobs/${prefix_obs}.satwnd.${suffix} ]]; then
 else
    use_prepb_satwnd=.true.
 fi
-SETUP="reduce_diag=.true.,lwrite_peakwt=.true.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=.true.,ens_nstarthr=3,iwrtinc=-1,nhr_assimilation=6,nhr_obsbin=$FHOUT,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=$lobsdiag_forenkf,lwrite_predterms=.true.,thin4d=.true."
+
+if   [[ $HRLY_DA == "YES" ]]; then
+   nhr_assimilation=4 #$ANALINC_first_cycle #This is always 4 hour (for 1hrly da).
+elif [[ $HRLY_DA == "NO" ]]; then
+   nhr_assimilation=6
+fi
+min_offset=180
+
+SETUP="reduce_diag=.true.,lwrite_peakwt=.true.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=.true.,ens_nstarthr=1,iwrtinc=-1,min_offset=$min_offset,nhr_assimilation=$nhr_assimilation,nhr_obsbin=$FHOUT,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=$lobsdiag_forenkf,lwrite_predterms=.true.,thin4d=.true.,verbose=.false."
 
 if [[ "$HXONLY" = "YES" ]]; then
    #SETUP="$SETUP,lobserver=.true.,l4dvar=.true." # can't use reduce_diag=T
@@ -847,44 +860,67 @@ $nln $GBIAS_PC           ./satbias_pc
 $nln $GSATANG            ./satbias_angle
 $nln $GBIASAIR           ./aircftbias_in
 
-SFCG03=${SFCG03:-$datges/bfg_${adate}_fhr03_${charnanal}}
-$nln $SFCG03               ./sfcf03
-SFCG06=${SFCG06:-$datges/bfg_${adate}_fhr06_${charnanal}}
-$nln $SFCG06               ./sfcf06
-SFCG09=${SFCG09:-$datges/bfg_${adate}_fhr09_${charnanal}}
-$nln $SFCG09               ./sfcf09
+if [[ $HRLY_DA == "YES" ]]; then
+   SFCG01=${SFCG01:-$datges/bfg_${adate}_fhr01_${charnanal}}
+   $nln $SFCG01               ./sfcf01
+   SFCG02=${SFCG02:-$datges/bfg_${adate}_fhr02_${charnanal}}
+   $nln $SFCG02               ./sfcf02
+   SFCG03=${SFCG03:-$datges/bfg_${adate}_fhr03_${charnanal}}
+   $nln $SFCG03               ./sfcf03
+   SFCG04=${SFCG04:-$datges/bfg_${adate}_fhr04_${charnanal}}
+   $nln $SFCG04               ./sfcf04
+   SFCG05=${SFCG05:-$datges/bfg_${adate}_fhr05_${charnanal}}
+   $nln $SFCG05               ./sfcf05
 
-SIGG03=${SIGG03:-$datges/sfg_${adate}_fhr03_${charnanal}}
-$nln $SIGG03               ./sigf03
-SIGG06=${SIGG06:-$datges/sfg_${adate}_fhr06_${charnanal}}
-$nln $SIGG06               ./sigf06
-SIGG09=${SIGG09:-$datges/sfg_${adate}_fhr09_${charnanal}}
-$nln $SIGG09               ./sigf09
+   SIGG01=${SIGG01:-$datges/sfg_${adate}_fhr01_${charnanal}}
+   $nln $SIGG01               ./sigf01
+   SIGG02=${SIGG02:-$datges/sfg_${adate}_fhr02_${charnanal}}
+   $nln $SIGG02               ./sigf02
+   SIGG03=${SIGG03:-$datges/sfg_${adate}_fhr03_${charnanal}}
+   $nln $SIGG03               ./sigf03
+   SIGG04=${SIGG04:-$datges/sfg_${adate}_fhr04_${charnanal}}
+   $nln $SIGG04               ./sigf04
+   SIGG05=${SIGG05:-$datges/sfg_${adate}_fhr05_${charnanal}}
+   $nln $SIGG05               ./sigf05
 
-if [[ "$HRLY_BKG" = "YES" ]]; then
-SFCG04=${SFCG04:-$datges/bfg_${adate}_fhr04_${charnanal}}
-$nln $SFCG04               ./sfcf04
-SFCG05=${SFCG05:-$datges/bfg_${adate}_fhr05_${charnanal}}
-$nln $SFCG05               ./sfcf05
-SFCG07=${SFCG07:-$datges/bfg_${adate}_fhr07_${charnanal}}
-$nln $SFCG07               ./sfcf07
-SFCG08=${SFCG08:-$datges/bfg_${adate}_fhr08_${charnanal}}
-$nln $SFCG08               ./sfcf08
-SIGG04=${SIGG04:-$datges/sfg_${adate}_fhr04_${charnanal}}
-$nln $SIGG04               ./sigf04
-SIGG05=${SIGG05:-$datges/sfg_${adate}_fhr05_${charnanal}}
-$nln $SIGG05               ./sigf05
-SIGG07=${SIGG07:-$datges/sfg_${adate}_fhr07_${charnanal}}
-$nln $SIGG07               ./sigf07
-SIGG08=${SIGG08:-$datges/sfg_${adate}_fhr08_${charnanal}}
-$nln $SIGG08               ./sigf08
+elif [[ $HRLY_DA == "NO" ]]; then
+   SFCG03=${SFCG03:-$datges/bfg_${adate}_fhr03_${charnanal}}
+   $nln $SFCG03               ./sfcf03
+   SFCG06=${SFCG06:-$datges/bfg_${adate}_fhr06_${charnanal}}
+   $nln $SFCG06               ./sfcf06
+   SFCG09=${SFCG09:-$datges/bfg_${adate}_fhr09_${charnanal}}
+   $nln $SFCG09               ./sfcf09
+   SIGG03=${SIGG03:-$datges/sfg_${adate}_fhr03_${charnanal}}
+   $nln $SIGG03               ./sigf03
+   SIGG06=${SIGG06:-$datges/sfg_${adate}_fhr06_${charnanal}}
+   $nln $SIGG06               ./sigf06
+   SIGG09=${SIGG09:-$datges/sfg_${adate}_fhr09_${charnanal}}
+   $nln $SIGG09               ./sigf09
+   if [[ "$HRLY_BKG" = "YES" ]]; then
+      SFCG04=${SFCG04:-$datges/bfg_${adate}_fhr04_${charnanal}}
+      $nln $SFCG04               ./sfcf04
+      SFCG05=${SFCG05:-$datges/bfg_${adate}_fhr05_${charnanal}}
+      $nln $SFCG05               ./sfcf05
+      SFCG07=${SFCG07:-$datges/bfg_${adate}_fhr07_${charnanal}}
+      $nln $SFCG07               ./sfcf07
+      SFCG08=${SFCG08:-$datges/bfg_${adate}_fhr08_${charnanal}}
+      $nln $SFCG08               ./sfcf08
+      SIGG04=${SIGG04:-$datges/sfg_${adate}_fhr04_${charnanal}}
+      $nln $SIGG04               ./sigf04
+      SIGG05=${SIGG05:-$datges/sfg_${adate}_fhr05_${charnanal}}
+      $nln $SIGG05               ./sigf05
+      SIGG07=${SIGG07:-$datges/sfg_${adate}_fhr07_${charnanal}}
+      $nln $SIGG07               ./sigf07
+      SIGG08=${SIGG08:-$datges/sfg_${adate}_fhr08_${charnanal}}
+      $nln $SIGG08               ./sigf08
+   fi
 fi
 
 if [[ $beta1_inv < 0.999 ]]; then
 ln -s $datges/ensmem*.pe* .
 ln -s $datges/control*.pe* .
-fh=3
-while [ $fh -le 9 ] ;do
+fh=$FHMIN
+while [ $fh -le $FHMAX ] ;do
 for ensfile in $datges/sfg_${adate}*fhr0${fh}*mem???; do
  ensfilename=`basename $ensfile`
  memnum=`echo $ensfilename | cut -f4 -d"_" | cut -c4-6`
@@ -912,34 +948,60 @@ for type in $satdiag; do
 done
 
 # Run gsi.
-#if [ -s ./satbias_in ] && [ -s ./satbias_angle ] && [ -s ./sfcf03 ] && [ -s ./sfcf06 ] && [ -s ./sfcf09 ] && [ -s ./sigf03 ] && [ -s ./sigf06 ] && [ -s ./sigf09 ] ; then
-if [[ $NOSAT == "YES" ||  -s ./satbias_in ]]  && [ -s ./sfcf03 ] && [ -s ./sfcf06 ] && [ -s ./sfcf09 ] && [ -s ./sigf03 ] && [ -s ./sigf06 ] && [ -s ./sigf09 ] ; then
-cat gsiparm.anl
-ulimit -s unlimited
-
-pwd
-ls -l
-echo "Time before GSI `date` "
-export PGM=$tmpdir/gsi.x
-export FORT_BUFFERED=TRUE
-${enkfscripts}/runmpi
-rc=$?
-if [[ $rc -ne 0 ]];then
-  echo "GSI failed with exit code $rc"
-  exit $rc
-fi
-else
-echo "some input files missing, exiting ..."
-ls -l ./satbias_in
-ls -l ./satbias_angle
-ls -l ./sfcf03
-ls -l ./sfcf06
-ls -l ./sfcf09
-ls -l ./sfcanl
-ls -l ./sigf03
-ls -l ./sigf06
-ls -l ./sigf09
-exit 1
+if [[ $HRLY_DA == "YES" ]]; then
+   if [[ $NOSAT == "YES" ||  -s ./satbias_in ]]  && [ -s ./sfcf04 ] && [ -s ./sigf04 ] ; then
+      cat gsiparm.anl
+      ulimit -s unlimited
+      pwd
+      ls -l
+      echo "Time before GSI `date` "
+      export PGM=$tmpdir/gsi.x
+      export FORT_BUFFERED=TRUE
+      ${enkfscripts}/runmpi
+      rc=$?
+      if [[ $rc -ne 0 ]];then
+        echo "GSI failed with exit code $rc"
+        exit $rc
+      fi
+      else
+      echo "some input files missing, exiting ..."
+      ls -l ./satbias_in
+      ls -l ./satbias_angle
+      ls -l ./sfcf01
+      ls -l ./sfcf02
+      ls -l ./sfcf03
+      ls -l ./sfcanl
+      ls -l ./sigf05
+      exit 21
+   fi
+elif [[ $HRLY_DA == "NO" ]]; then
+   if [[ $NOSAT == "YES" ||  -s ./satbias_in ]]  && [ -s ./sfcf03 ] && [ -s ./sfcf06 ] && [ -s ./sfcf09 ] && [ -s ./sigf03 ] && [ -s ./sigf06 ] && [ -s ./sigf09 ] ; then
+      cat gsiparm.anl
+      ulimit -s unlimited
+      pwd
+      ls -l
+      echo "Time before GSI `date` "
+      export PGM=$tmpdir/gsi.x
+      export FORT_BUFFERED=TRUE
+      ${enkfscripts}/runmpi
+      rc=$?
+      if [[ $rc -ne 0 ]];then
+        echo "GSI failed with exit code $rc"
+        exit $rc
+      fi
+      else
+      echo "some input files missing, exiting ..."
+      ls -l ./satbias_in
+      ls -l ./satbias_angle
+      ls -l ./sfcf03
+      ls -l ./sfcf06
+      ls -l ./sfcf09
+      ls -l ./sfcanl
+      ls -l ./sigf03
+      ls -l ./sigf06
+      ls -l ./sigf09
+      exit 1
+   fi
 fi
 
 # Save output
@@ -950,25 +1012,22 @@ cat fort.2* > $savdir/gsistats.${adate}_${charnanal2}
 #ls -l
 if [[ "$HXONLY" = "NO" ]]; then
    if [ -s ./siganl ] && [ -s ./satbias_out ]; then
-      if [ -s ./siga03 ]; then
-         $nmv siga03          $SIGANL03
+      if [[ $HRLY_DA == "YES" ]]; then
+         if [ -s ./siga01 ]; then $nmv siga01 $SIGANL01; fi
+         if [ -s ./siga02 ]; then $nmv siga02 $SIGANL02; fi
+         if [ -s ./siga03 ]; then $nmv siga03 $SIGANL03; fi
+                                  $nmv siganl $SIGANL04
+         if [ -s ./siga05 ]; then $nmv siga05 $SIGANL05; fi
+      elif [[ $HRLY_DA == "NO" ]]; then
+         if [ -s ./siga03 ]; then $nmv siga03 $SIGANL03; fi
+         if [ -s ./siga04 ]; then $nmv siga04 $SIGANL04; fi
+         if [ -s ./siga05 ]; then $nmv siga05 $SIGANL05; fi
+                                  $nmv siganl $SIGANL06
+         if [ -s ./siga07 ]; then $nmv siga07 $SIGANL07; fi
+         if [ -s ./siga08 ]; then $nmv siga08 $SIGANL08; fi
+         if [ -s ./siga09 ]; then $nmv siga09 $SIGANL09; fi
       fi
-      if [ -s ./siga04 ]; then
-         $nmv siga04          $SIGANL04
-      fi
-      if [ -s ./siga05 ]; then
-         $nmv siga05          $SIGANL05
-      fi
-      $nmv siganl             $SIGANL06
-      if [ -s ./siga07 ]; then
-          $nmv siga07         $SIGANL07
-      fi
-      if [ -s ./siga08 ]; then
-         $nmv siga08          $SIGANL08
-      fi
-      if [ -s ./siga09 ]; then
-         $nmv siga09          $SIGANL09
-      fi
+
       $nmv satbias_out $BIASO
       $nmv satbias_pc.out $BIASO_PC
       if [ -s aircftbias_out ]; then
@@ -977,9 +1036,9 @@ if [[ "$HXONLY" = "NO" ]]; then
       if [ $DONST = "YES" ]; then
          $nmv dtfanl $DTFANL 
       fi
-  else
+   else
       exit 1
-  fi
+   fi
 fi
 # Loop over first and last outer loops to generate innovation
 # diagnostic files for indicated observation types (groups)

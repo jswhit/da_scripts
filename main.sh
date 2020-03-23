@@ -94,6 +94,7 @@ echo "DataPath: ${datapath}"
 
 env
 echo "starting the cycle (${idate_job} out of ${ndates_job})"
+set -x
 
 # substringing to get yr, mon, day, hr info
 export yr=`echo $analdate | cut -c1-4`
@@ -114,22 +115,46 @@ export OMP_NUM_THREADS=`expr $corespernode \/ $mpitaskspernode`
 echo "mpitaskspernode = $mpitaskspernode threads = $OMP_NUM_THREADS"
 export nprocs=$nanals
 
+FHOFFSET=3 #hard code this value, it should always be three??
+
 # current analysis time.
 export analdate=$analdate
-# previous analysis time.
-FHOFFSET=`expr $ANALINC \/ 2`
-export analdatem1=`${incdate} $analdate -$ANALINC`
-# next analysis time.
-export analdatep1=`${incdate} $analdate $ANALINC`
-# beginning of current assimilation window
-export analdatem3=`${incdate} $analdate -$FHOFFSET`
-# beginning of next assimilation window
-export analdatep1m3=`${incdate} $analdate $FHOFFSET`
+
+HRLY_DA=${HRLY_DA:-"NO"}
+if [[ $HRLY_DA == "YES" ]]; then
+
+   export analdatep1m3=`${incdate} $analdate -2` #p1m3=+nhr_assim-3 = 1-3 = -2
+   if [[ $fg_only == "true" ]]; then
+      ANALINC=4 #check if it is the first cycle, ANALINC=4
+      export analdatep1m3=`${incdate} $analdate 1`     #for 12z cycle, we want as 13z (for 16z), so +1 here.
+      export iau_offset=0                            #set to zero for cold start
+   else
+      export iau_offset=1
+   fi
+   export analdatem1=`${incdate} $analdate -4`       #Model start time (start date for forecast; year)
+   export analdatem1_b=`${incdate} $analdate -1`     #used to find the cycled satbias files
+   export analdatep1=`${incdate} $analdate $ANALINC` #next analysis time.
+   export analdatem3=`${incdate} $analdate -3`       #Current model time (current date in restart; year_start)
+   if [[ $first_hrly_analysis == "true" ]]; then
+      export datapathm1="${datapath}/${analdatem1}/"
+      export hrm1=`echo $analdatem1 | cut -c9-10`
+   else
+      export datapathm1="${datapath}/${analdatem1_b}/"
+      export hrm1=`echo $analdatem1_b | cut -c9-10`
+   fi
+else
+   export analdatem1=`${incdate} $analdate -$ANALINC`   #Model start time (start date for forecast; year)
+   export analdatep1=`${incdate} $analdate $ANALINC`    #next analysis time.
+   export analdatem3=`${incdate} $analdate -$FHOFFSET`  #Current model time (current date in restart; year_start)
+   export analdatep1m3=`${incdate} $analdate $FHOFFSET` #yrnext monnext etc.
+   export datapathm1="${datapath}/${analdatem1}/"
+   export hrm1=`echo $analdatem1 | cut -c9-10`
+fi
+
+
 export hrp1=`echo $analdatep1 | cut -c9-10`
-export hrm1=`echo $analdatem1 | cut -c9-10`
 export hr=`echo $analdate | cut -c9-10`
 export datapathp1="${datapath}/${analdatep1}/"
-export datapathm1="${datapath}/${analdatem1}/"
 mkdir -p $datapathp1
 export CDATE=$analdate
 
@@ -362,7 +387,7 @@ if [ $controlfcst == 'true' ]; then
       echo "$analdate high-res control first-guess completed successfully `date`"
     else
       echo "$analdate high-res control did not complete successfully, exiting `date`"
-      exit 1
+      exit 31
     fi
     # run longer forecast at 00UTC
     if [ $fg_only != "true" ] && [ $hr == '00' ] && [ $run_long_fcst == "true" ]; then
@@ -383,7 +408,7 @@ if [ $ens_done == 'yes' ]; then
   echo "$analdate enkf first-guess completed successfully `date`"
 else
   echo "$analdate enkf first-guess did not complete successfully, exiting `date`"
-  exit 1
+  exit 32
 fi
 
 if [ $fg_only == 'false' ]; then
@@ -421,6 +446,11 @@ echo "export analdate=${analdate}" > $startupenv
 echo "export analdate_end=${analdate_end}" >> $startupenv
 echo "export fg_only=false" > $datapath/fg_only.sh
 echo "export cold_start=false" >> $datapath/fg_only.sh
+if [[ $fg_only == "true" ]]; then #keep first cycle true for one more iter
+   echo "export first_hrly_analysis=true" >> $datapath/fg_only.sh
+else
+   echo "export first_hrly_analysis=false" >> $datapath/fg_only.sh
+fi
 
 cd $homedir
 

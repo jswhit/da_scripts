@@ -6,7 +6,9 @@ if [ "$machine" == 'hera' ]; then
    module purge
    module load intel/18.0.5.274
    module load impi/2018.0.4
-   module load netcdf/4.7.0
+   module load hdf5_parallel/1.10.6
+   module load netcdf_parallel/4.7.4
+   module load esmf/8.0.0_ParallelNetCDF
    module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
    module load esmf/8.0.0bs50
    module load wgrib
@@ -248,6 +250,8 @@ else
          iau_inc_files="'fv3_increment3.nc','fv3_increment4.nc','fv3_increment5.nc','fv3_increment6.nc','fv3_increment7.nc','fv3_increment8.nc','fv3_increment9.nc'"
       elif [ "$iaufhrs" == "3,6,9" ]; then
          iau_inc_files="'fv3_increment3.nc','fv3_increment6.nc','fv3_increment9.nc'"
+      elif [ "$iaufhrs" == "1,2,3,4,5" ]; then
+         iau_inc_files="'fv3_increment1.nc','fv3_increment2.nc','fv3_increment3.nc','fv3_increment4.nc','fv3_increment5.nc'"
       elif [ "$iaufhrs" == "6" ]; then
          iau_inc_files="'fv3_increment6.nc'"
       else
@@ -271,11 +275,21 @@ snoid='SNOD'
 
 # Turn off snow analysis if it has already been used.
 # (snow analysis only available once per day at 18z)
-fntsfa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.rtgssthr.grb
-fnacna=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.seaice.5min.grb
-fnsnoa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.snogrb_t1534.3072.1536
-fnsnog=${obs_datapath}/gdas.${yearprev}${monprev}${dayprev}/${hourprev}/gdas.t${hourprev}z.snogrb_t1534.3072.1536
-nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
+
+#https://stackoverflow.com/questions/12821715/convert-string-into-integer-in-bash-script-leading-zero-number-error/12821845#12821845
+if [ $(( 10#${houra}%6 )) != 0 ]; then #if not 0, 6, 12, or 18; force base-10 interprettaion.
+   fntsfa=' '
+   fnacna=' '
+   fnsnoa=' '
+   fnsnog=' '
+   nrecs_snow=0
+else
+   fntsfa=${obs_datapath2}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.rtgssthr.grb
+   fnacna=${obs_datapath2}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.seaice.5min.grb
+   fnsnoa=${obs_datapath2}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.snogrb_t1534.3072.1536
+   fnsnog=${obs_datapath2}/gdas.${yearprev}${monprev}${dayprev}/${hourprev}/gdas.t${hourprev}z.snogrb_t1534.3072.1536
+   nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
+fi
 if [ $nrecs_snow -eq 0 ]; then
    # no snow depth in file, use model
    fnsnoa=' ' # no input file
@@ -299,17 +313,32 @@ fi
 ls -l 
 
 FHRESTART=${FHRESTART:-$ANALINC}
-if [ "${iau_delthrs}" != "-1" ]; then
-   FHMAX_FCST=`expr $FHMAX + $ANALINC`
-   FHSTOCH=`expr $FHRESTART + $ANALINC \/ 2`
-   if [ "${fg_only}" == "true" ]; then
-      FHSTOCH=${FHSTOCH:-$ANALINC}
-      FHRESTART=`expr $ANALINC \/ 2`
+if [[ $HRLY_DA == "YES" ]]; then
+   export FHRESTART="1 1"
+   if [ "${iau_delthrs}" != "-1" ]; then
+      FHMAX_FCST=`expr $FHMAX + 1` #add 1 (ANALINC); hardcode only since ANALINC is sometimes 4.
+      if [[ $fg_only == "true" ]]; then
+         FHSTOCH=4 #forecast hour to dump random patterns
+      else
+         FHSTOCH=2 #forecast hour to dump random patterns
+      fi
+   else
+      FHSTOCH=$FHRESTART
       FHMAX_FCST=$FHMAX
    fi
-else
-   FHSTOCH=$FHRESTART
-   FHMAX_FCST=$FHMAX
+elif [[ $HRLY_DA == "NO" ]]; then
+   if [ "${iau_delthrs}" != "-1" ]; then
+      FHMAX_FCST=`expr $FHMAX + $ANALINC`
+      FHSTOCH=`expr $FHRESTART + $ANALINC \/ 2`
+      if [ "${fg_only}" == "true" ]; then
+         FHSTOCH=${FHSTOCH:-$ANALINC}
+         FHRESTART=`expr $ANALINC \/ 2`
+         FHMAX_FCST=$FHMAX
+      fi
+   else
+      FHSTOCH=$FHRESTART
+      FHMAX_FCST=$FHMAX
+   fi
 fi
 
 if [ "$warm_start" == "T" ] && [ -z $skip_global_cycle ]; then
@@ -402,7 +431,7 @@ nbits:                   14
 ideflate:                1
 write_fsyncflag:         .true.
 write_nemsioflip:        .true.
-iau_offset:              ${iaudelthrs}
+iau_offset:              ${iau_offset}
 imo:                     ${LONB}
 jmo:                     ${LATB}
 nfhout:                  ${FHOUT}
@@ -783,7 +812,7 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
       /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT/$file2
       if [ $? -ne 0 ]; then
         echo "restart file missing..."
-        exit 1
+        exit 14
       fi
       done
    cd ..
@@ -821,7 +850,9 @@ ls -l ${datapathp1}/${charnanal}/INPUT
 cd INPUT
 find -type l -delete
 cd ..
-/bin/rm -rf RESTART # don't need RESTART dir anymore.
+if [[ $cleanup_restart == 'true' ]]; then
+   /bin/rm -rf RESTART # don't need RESTART dir anymore.
+fi
 
 echo "all done at `date`"
 

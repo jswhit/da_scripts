@@ -3,28 +3,46 @@
 
 export CO2DIR=$fixgsi
 
-export SIGANL03=${datapath2}/sanl_${analdate}_fhr03_${charnanal}
-export SIGANL04=${datapath2}/sanl_${analdate}_fhr04_${charnanal}
-export SIGANL05=${datapath2}/sanl_${analdate}_fhr05_${charnanal}
-export SIGANL06=${datapath2}/sanl_${analdate}_fhr06_${charnanal}
-export SIGANL07=${datapath2}/sanl_${analdate}_fhr07_${charnanal}
-export SIGANL08=${datapath2}/sanl_${analdate}_fhr08_${charnanal}
-export SIGANL09=${datapath2}/sanl_${analdate}_fhr09_${charnanal}
+if [[ $HRLY_DA == "YES" ]]; then
+   export SIGANL01=${datapath2}/sanl_${analdate}_fhr01_${charnanal}
+   export SIGANL02=${datapath2}/sanl_${analdate}_fhr02_${charnanal}
+   export SIGANL03=${datapath2}/sanl_${analdate}_fhr03_${charnanal}
+   export SIGANL04=${datapath2}/sanl_${analdate}_fhr04_${charnanal}
+   export SIGANL05=${datapath2}/sanl_${analdate}_fhr05_${charnanal}
+elif [[ $HRLY_DA == "NO" ]]; then
+   export SIGANL03=${datapath2}/sanl_${analdate}_fhr03_${charnanal}
+   export SIGANL04=${datapath2}/sanl_${analdate}_fhr04_${charnanal}
+   export SIGANL05=${datapath2}/sanl_${analdate}_fhr05_${charnanal}
+   export SIGANL06=${datapath2}/sanl_${analdate}_fhr06_${charnanal}
+   export SIGANL07=${datapath2}/sanl_${analdate}_fhr07_${charnanal}
+   export SIGANL08=${datapath2}/sanl_${analdate}_fhr08_${charnanal}
+   export SIGANL09=${datapath2}/sanl_${analdate}_fhr09_${charnanal}
+fi
 export BIASO=${datapath2}/${PREINP}abias 
 export BIASO_PC=${datapath2}/${PREINP}abias_pc 
 export SATANGO=${datapath2}/${PREINP}satang
 export DTFANL=${datapath2}/${PREINP}dtfanl.nc
 
 if [ $cleanup_controlanl == 'true' ]; then
-   /bin/rm -f ${SIGANL06}
+   if [[ $HRLY_DA == "YES" ]]; then
+      /bin/rm -f ${SIGANL04}
+   elif [[ $HRLY_DA == "NO" ]]; then
+      /bin/rm -f ${SIGANL06}
+   fi
    /bin/rm -f ${datapath2}/diag*${charnanal2}*nc4
 fi
 
 niter=1
 alldone='no'
-if [ -s $SIGANL06 ] && [ -s $BIASO ] && [ -s -s $SATANGO ]; then
-   alldone="yes"
-fi 
+if [[ $HRLY_DA == "YES" ]]; then
+   if [ -s $SIGANL04 ] && [ -s $BIASO ] && [ -s $SATANGO ]; then
+      alldone="yes"
+   fi
+elif [[ $HRLY_DA == "NO" ]]; then
+   if [ -s $SIGANL06 ] && [ -s $BIASO ] && [ -s $SATANGO ]; then
+      alldone="yes"
+   fi
+fi
 
 while [ $alldone == "no" ] && [ $niter -le $nitermax ]; do
 
@@ -65,7 +83,9 @@ if [ "$cold_start_bias" == "true" ]; then
     /bin/rm -rf $tmpdir
     mkdir -p $tmpdir
     sh ${enkfscripts}/${rungsi}
-    /bin/rm -rf $tmpdir
+    if [[ $cleanup_hybridtmp == 'true' ]]; then
+       /bin/rm -rf $tmpdir
+    fi
     if [  ! -s ${datapath2}/diag_conv_uv_ges.${analdate}_${charnanal2}.nc4 ]; then
        echo "gsi observer step failed"
        exit 1
@@ -74,10 +94,18 @@ fi
 export lread_obs_save=".false."
 export lread_obs_skip=".false."
 export HXONLY 'NO'
-if [ -s $SIGANL06 ]; then
-  echo "gsi hybrid already completed"
-  echo "yes" > ${current_logdir}/run_gsi_hybrid.log
-  exit 0
+if [[ $HRLY_DA == "YES" ]]; then
+   if [ -s $SIGANL04 ]; then
+     echo "gsi hybrid already completed"
+     echo "yes" > ${current_logdir}/run_gsi_hybrid.log
+     exit 0
+   fi
+elif [[ $HRLY_DA == "NO" ]]; then
+   if [ -s $SIGANL06 ]; then
+     echo "gsi hybrid already completed"
+     echo "yes" > ${current_logdir}/run_gsi_hybrid.log
+     exit 0
+   fi
 fi
 echo "${analdate} compute gsi hybrid analysis increment `date`"
 /bin/rm -rf $tmpdir
@@ -97,12 +125,22 @@ if [ $status -ne 0 ]; then
   echo "gsi hybrid analysis did not complete sucessfully"
   exitstat=1
 else
-  if [ ! -s $SIGANL06 ]; then
-    echo "gsi hybrid analysis did not complete sucessfully"
-    exitstat=1
-  else
-    echo "gsi hybrid completed sucessfully"
-    exitstat=0
+  if [[ $HRLY_DA == "YES" ]]; then
+     if [ ! -s $SIGANL04 ]; then
+       echo "gsi hybrid analysis did not complete sucessfully"
+       exitstat=1
+     else
+       echo "gsi hybrid completed sucessfully"
+       exitstat=0
+     fi
+  elif [[ $HRLY_DA == "NO" ]]; then
+     if [ ! -s $SIGANL06 ]; then
+       echo "gsi hybrid analysis did not complete sucessfully"
+       exitstat=1
+     else
+       echo "gsi hybrid completed sucessfully"
+       exitstat=0
+     fi
   fi
 fi
 
@@ -119,5 +157,7 @@ if [ $alldone == 'no' ]; then
     echo "no" > ${current_logdir}/run_gsi_hybrid.log 2>&1
 else
     echo "yes" > ${current_logdir}/run_gsi_hybrid.log 2>&1
-    /bin/rm -rf $tmpdir
+    if [[ $cleanup_hybridtmp == 'true' ]]; then
+       /bin/rm -rf $tmpdir
+    fi
 fi

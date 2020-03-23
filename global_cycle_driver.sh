@@ -33,7 +33,7 @@ export APRUNCY=${APRUNCY:-"time"}
 export VERBOSE=${VERBOSE:-"YES"}
 
 export FHOUR=${FHOUR:-0}
-export DELTSFC=${DELTSFC:-6}
+export DELTSFC=${DELTSFC:-$ANALINC}
 
 PDY=$(echo $CDATE | cut -c1-8)
 cyc=$(echo $CDATE | cut -c9-10)

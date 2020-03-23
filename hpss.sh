@@ -1,7 +1,7 @@
 # need envars:  machine, analdate, datapath2, hsidir, save_hpss_full, save_hpss_subset
 
 hr=`echo $analdate | cut -c9-10`
-analdatem1=`${incdate} $analdate -6`
+analdatem1=`${incdate} $analdate -$ANALINC`
 exitstat=0
 source $MODULESHOME/init/sh
 if [ $machine == "gaea" ]; then
