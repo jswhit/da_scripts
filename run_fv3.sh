@@ -27,6 +27,8 @@ elif [ "$machine" == 'gaea' ]; then
    module load PrgEnv-intel/6.0.3
    module rm intel
    module load intel/18.0.3.222
+   #module load cray-netcdf-hdf5parallel/4.6.1.3
+   #module load cray-hdf5-parallel/1.10.2.0
    module load cray-netcdf
    module use -a /lustre/f2/pdata/ncep_shared/NCEPLIBS/lib//modulefiles
    module load esmflocal/8_0_48b
@@ -409,6 +411,8 @@ num_files:               2
 filename_base:           'dyn' 'phy'
 output_grid:             'gaussian_grid'
 output_file:             'netcdf'
+ichunk2d:                -1
+ichunk3d:                -1
 nbits:                   14
 ideflate:                1
 write_fsyncflag:         .true.
