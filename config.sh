@@ -348,7 +348,6 @@ export getkf=.true.
 export getkf_inflation=.false.
 export modelspace_vloc=.true.
 export letkf_novlocal=.true.
-export dfs_sort=.false.
 export nobsl_max=10000
 export sprd_tol=1.e30
 export varqc=.false.
