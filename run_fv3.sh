@@ -605,7 +605,6 @@ cat > input.nml <<EOF
   do_sppt      = $DO_SPPT
   do_shum      = $DO_SHUM
   iau_filter_increments = F
-  iau_drymassfixer = F
   iaufhrs = ${iaufhrs}
   iau_delthrs = ${iaudelthrs}
   iau_inc_files = ${iau_inc_files}
