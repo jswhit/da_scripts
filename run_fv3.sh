@@ -305,7 +305,7 @@ else
       export FSNOL=99999 # use model value
    else
       echo "current snow analysis found in snow analysis file, replace model"
-      export FSNOL=0 # use analysis value
+      export FSNOL=-2 # use analysis value
    fi
 fi
 
