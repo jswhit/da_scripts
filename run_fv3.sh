@@ -305,7 +305,7 @@ else
       export FSNOL=99999 # use model value
    else
       echo "current snow analysis found in snow analysis file, replace model"
-      export FSNOL=0 # use analysis value
+      export FSNOL=-2 # use analysis value
    fi
 fi
 
@@ -605,7 +605,6 @@ cat > input.nml <<EOF
   do_sppt      = $DO_SPPT
   do_shum      = $DO_SHUM
   iau_filter_increments = F
-  iau_drymassfixer = F
   iaufhrs = ${iaufhrs}
   iau_delthrs = ${iaudelthrs}
   iau_inc_files = ${iau_inc_files}
