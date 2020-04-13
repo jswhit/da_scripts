@@ -80,6 +80,13 @@ if [ "$machine" == 'hera' ]; then
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    #export obs_datapath=/scratch2/BMC/gsienkf/whitaker/gdas1bufr
    export obs_datapath=/scratch1/NCEPDEV/global/glopara/dump
+   module purge
+   module load intel/18.0.5.274
+   module load impi/2018.0.4 
+   module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
+   module load hdf5_parallel/1.10.6
+   module load netcdf_parallel/4.7.4
+   module load esmf/8.0.0_ParallelNetCDF
 elif [ "$machine" == 'orion' ]; then
    export basedir=/work/noaa/gsienkf/${USER}
    export datadir=$basedir
