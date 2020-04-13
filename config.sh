@@ -398,7 +398,7 @@ if [ "$machine" == 'hera' ]; then
    export fv3gfspath=/scratch1/NCEPDEV/global/glopara
    export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
-   export gsipath=/scratch2/BMC/gsienkf/whitaker/gsi/fv3_ncio
+   export gsipath=/scratch1/NCEPDEV/global/glopara/git/global-workflow/develop.sorc/gsi.fd
    export fixgsi=${gsipath}/fix
    export fixcrtm=/scratch1/NCEPDEV/global/gwv/l827h/lib/crtm/v2.2.6/fix
    export fixcrtm=/scratch1/NCEPDEV/global/glopara/crtm/v2.2.6/fix
