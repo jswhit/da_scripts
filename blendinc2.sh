@@ -3,13 +3,6 @@
 export VERBOSE=YES
 export OMP_STACKSIZE=256M
 
-if [ $machine == 'orion' ]; then
-   module purge
-   module load intel/2018.4
-   module load impi/2018.4
-   module load mkl/2018.4
-   module list
-fi
 pushd ${datapath2}
 
 iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`

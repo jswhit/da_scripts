@@ -2,13 +2,6 @@
 # do hybrid analysis.
 
 export CO2DIR=$fixgsi
-if [ $machine == 'orion' ]; then
-   module purge
-   module load intel/2018.4
-   module load impi/2018.4
-   module load mkl/2018.4
-   module list
-fi
 export SIGANL03=${datapath2}/sanl_${analdate}_fhr03_${charnanal}
 export SIGANL04=${datapath2}/sanl_${analdate}_fhr04_${charnanal}
 export SIGANL05=${datapath2}/sanl_${analdate}_fhr05_${charnanal}
