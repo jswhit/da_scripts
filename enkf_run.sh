@@ -1,14 +1,5 @@
 #!/bin/sh
 
-if [ $machine == 'orion' ]; then
-   module purge
-   module load intel/2018.4
-   module load impi/2018.4
-   module load mkl/2018.4
-   module load python
-   module list
-fi
-
 export nprocs=`expr $cores \/ $enkf_threads`
 export mpitaskspernode=`expr $corespernode \/ $enkf_threads`
 export OMP_NUM_THREADS=$enkf_threads
@@ -188,6 +179,16 @@ echo "OMP_NUM_THREADS = $OMP_NUM_THREADS"
 
 echo "slurm"
 # use srun
+
+# use same number of tasks on every node.
+#export OMP_NUM_THREADS=$enkf_threads
+#export OMP_STACKSIZE=256M
+#export nprocs=`expr $cores \/ $OMP_NUM_THREADS`
+#export mpitaskspernode=`expr $corespernode \/ $OMP_NUM_THREADS`
+#echo "running with $OMP_NUM_THREADS threads ..."
+#${enkfscripts}/runmpi > ${current_logdir}/ensda.out 2>&1
+
+# use only one task on root node.
 export OMP_PROC_BIND=spread
 export OMP_PLACES=threads
 if [ $machine == 'gaea' ]; then
