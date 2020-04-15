@@ -94,6 +94,7 @@ elif [ "$machine" == 'orion' ]; then
    #export obs_datapath=/scratch2/BMC/gsienkf/whitaker/gdas1bufr
    export obs_datapath=${basedir}/dumps
    ulimit -s unlimited
+   source $MODULESHOME/init/sh
    module purge
    module load intel/2018.4
    module load impi/2018.4
