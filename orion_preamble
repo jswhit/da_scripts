@@ -1,0 +1,60 @@
+#!/bin/sh
+##SBATCH -q debug
+#SBATCH -t 02:30:00
+##SBATCH -A gsienkf
+#SBATCH -A fv3-cam 
+#SBATCH -N 20  
+#SBATCH --ntasks-per-node=40
+#SBATCH -p orion
+#SBATCH -J C192_hybgain_netcdf-owiau-2020031306
+#SBATCH -e C192_hybgain_netcdf-owiau-2020031306.err
+#SBATCH -o C192_hybgain_netcdf-owiau-2020031306.out
+
+export NODES=$SLURM_NNODES
+export corespernode=$SLURM_CPUS_ON_NODE
+export machine='orion'
+
+# for control forecast
+if [ $NODES -eq 20 ]; then
+  # 20 nodes, 2 threads
+  export control_threads=1
+  export control_proc=800
+  export control_proc_noquilt=768
+  export write_groups_ctl=4 # write groups for control forecast.
+  export write_tasks_ctl=8
+  export layout_ctl="16,8" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+  #export control_threads=2
+  #export control_proc=792
+  #export write_groups_ctl=2 # write groups for control forecast.
+  #export layout_ctl="8,8" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+elif [ $NODES -eq 40 ]; then
+  # 40 nodes, 4 threads
+  export control_threads=4 
+  export control_proc=960  
+  export control_proc_noquilt=864  
+  export write_groups_ctl=4
+  export layout_ctl="6, 6"
+elif [ $NODES -eq 80 ]; then
+  # 80 nodes, 4 threads
+  export write_groups_ctl=16
+  export control_threads=2
+  export control_proc=1920 
+  export layout_ctl="12, 12" 
+else
+  echo "processor layout for $NODES nodes not set"
+  exit 1
+fi
+
+# for ensemble forecast and GSI
+#export fg_proc=`expr 4 \* $corespernode`
+export fg_proc=$corespernode
+export fg_threads=1 
+export enkf_threads=8
+export gsi_control_threads=4
+export write_groups=4
+# 24 cores for model, 16 for write component
+#export write_tasks=4 
+#export layout="2, 2"
+# 36 cores for model, 4 for write component
+export write_tasks=1 
+export layout="3, 2"

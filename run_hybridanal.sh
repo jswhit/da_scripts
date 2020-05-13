@@ -18,6 +18,7 @@ elif [[ $HRLY_DA == "NO" ]]; then
    export SIGANL08=${datapath2}/sanl_${analdate}_fhr08_${charnanal}
    export SIGANL09=${datapath2}/sanl_${analdate}_fhr09_${charnanal}
 fi
+
 export BIASO=${datapath2}/${PREINP}abias 
 export BIASO_PC=${datapath2}/${PREINP}abias_pc 
 export SATANGO=${datapath2}/${PREINP}satang

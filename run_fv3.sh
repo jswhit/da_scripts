@@ -6,18 +6,28 @@ if [ "$machine" == 'hera' ]; then
    module purge
    module load intel/18.0.5.274
    module load impi/2018.0.4
+   module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
    module load hdf5_parallel/1.10.6
    module load netcdf_parallel/4.7.4
    module load esmf/8.0.0_ParallelNetCDF
-   module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
-   module load esmf/8.0.0bs50
    module load wgrib
    export WGRIB=`which wgrib`
+elif [ "$machine" == 'orion' ]; then
+   module purge 
+   module load intel/2019.5
+   module load impi/2019.6
+   module load grib_util-intel-sandybridge # wgrib
+   #module load netcdf/4.7.2
+   #module load hdf5/1.10.5
+   module load python
+
 elif [ "$machine" == 'gaea' ]; then
    module purge
    module load PrgEnv-intel/6.0.3
    module rm intel
    module load intel/18.0.3.222
+   #module load cray-netcdf-hdf5parallel/4.6.1.3
+   #module load cray-hdf5-parallel/1.10.2.0
    module load cray-netcdf
    module use -a /lustre/f2/pdata/ncep_shared/NCEPLIBS/lib//modulefiles
    module load esmflocal/8_0_48b
@@ -179,7 +189,7 @@ if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
       fi
       echo "create ${increment_file}"
       /bin/rm -f ${increment_file}
-      export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file} T"
+      export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file} T F"
       nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
       if [ $? -ne 0 -o ! -s ${increment_file} ]; then
          echo "problem creating ${increment_file}, stopping .."
@@ -261,7 +271,8 @@ else
       reslatlondynamics=""
       readincrement=F
    else
-      reslatlondynamics="fv3_increment6.nc"
+      #reslatlondynamics="fv3_increment6.nc"
+      reslatlondynamics="fv3_increment2.nc" # LCS changed for no IAU
       readincrement=T
       iau_inc_files=""
    fi
@@ -277,6 +288,17 @@ snoid='SNOD'
 # (snow analysis only available once per day at 18z)
 
 #https://stackoverflow.com/questions/12821715/convert-string-into-integer-in-bash-script-leading-zero-number-error/12821845#12821845
+#fntsfa=' ' #${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.rtgssthr.grb
+#fnacna=' ' #${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.seaice.5min.grb
+#fnsnoa=' '
+#fnsnog=' '
+#echo "WARNING!!!"
+#exit
+#if [[ fnsnoa -eq ' ' ]]; then
+#   nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
+#else
+#   nrecs_snow=0
+#fi
 if [ $(( 10#${houra}%6 )) != 0 ]; then #if not 0, 6, 12, or 18; force base-10 interprettaion.
    fntsfa=' '
    fnacna=' '
@@ -306,7 +328,8 @@ else
       export FSNOL=99999 # use model value
    else
       echo "current snow analysis found in snow analysis file, replace model"
-      export FSNOL=0 # use analysis value
+      #export FSNOL=-2 # use analysis value
+      #export FSNOL=0 # use analysis value
    fi
 fi
 
@@ -314,7 +337,7 @@ ls -l
 
 FHRESTART=${FHRESTART:-$ANALINC}
 if [[ $HRLY_DA == "YES" ]]; then
-   export FHRESTART="1 1"
+      export FHRESTART="1 1"
    if [ "${iau_delthrs}" != "-1" ]; then
       FHMAX_FCST=`expr $FHMAX + 1` #add 1 (ANALINC); hardcode only since ANALINC is sometimes 4.
       if [[ $fg_only == "true" ]]; then
@@ -323,7 +346,7 @@ if [[ $HRLY_DA == "YES" ]]; then
          FHSTOCH=2 #forecast hour to dump random patterns
       fi
    else
-      FHSTOCH=$FHRESTART
+      FHSTOCH=2 # what should this be for noIAU?
       FHMAX_FCST=$FHMAX
    fi
 elif [[ $HRLY_DA == "NO" ]]; then
@@ -427,6 +450,8 @@ num_files:               2
 filename_base:           'dyn' 'phy'
 output_grid:             'gaussian_grid'
 output_file:             'netcdf'
+ichunk2d:                -1
+ichunk3d:                -1
 nbits:                   14
 ideflate:                1
 write_fsyncflag:         .true.
@@ -548,7 +573,7 @@ cat > input.nml <<EOF
   hord_tm = ${hord_tm},
   hord_dp = ${hord_dp},
   hord_tr = 8,
-  adjust_dry_mass = F,
+  adjust_dry_mass = T,
   do_sat_adj = ${do_sat_adj:-"F"},
   consv_am = F,
   fill = T,
@@ -750,7 +775,7 @@ cat > input.nml <<EOF
   SKEB_NPASS=$SKEB_NPASS,
   SKEBINT=$SKEBINT,
   ISEED_SPPT=$ISEED_SPPT,ISEED_SHUM=$ISEED_SHUM,ISEED_SKEB=$ISEED_SKEB,
-  use_zmtnblck=.true.,fhstoch=$FHSTOCH,stochini=$stochini
+  use_zmtnblck=.true.,fhstoch=$FHSTOCH,stochini=$stochini,new_lscale=.true.
 /
 
 &nam_sfcperts

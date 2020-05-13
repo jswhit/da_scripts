@@ -1,5 +1,4 @@
 echo "running on $machine using $NODES nodes"
-## ulimit -s unlimited
 
 export ndates_job=1 # number of DA cycles to run in one job submission
 # resolution of control and ensmemble.
@@ -8,10 +7,10 @@ export RES_CTL=384
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
-export alpha=500 # percentage of 3dvar increment (beta_2*1000)
+export alpha=250 # percentage of 3dvar increment (beta_2*1000)
 export beta=1000 # percentage of enkf increment (*10)
 export hybgain='true' # set to true for hybrid gain 3DVar/EnKF
-export exptname="C${RES}_hybgain_dl1"
+export exptname="C${RES}_hybgain_netcdf-owiau-2020031306"
 # for 'passive' or 'replay' cycling of control fcst 
 # control forecast files have 'control2' suffix, instead of 'control'
 # GSI observer will be run on 'control2' forecast
@@ -55,8 +54,13 @@ export replay_run_observer='true' # run observer on replay forecast
 # YYYYMMDDHH analysis date string to see if
 # full ensemble should be saved to HPSS (returns 0 if 
 # HPSS save should be done)
+if [ $machine == "orion" ]; then
+export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
+export save_hpss="false"
+else
 export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
 export save_hpss="true"
+fi
 export run_long_fcst="false"  # spawn a longer control forecast at 00 UTC
 export ensmean_restart='false'
 export copy_history_files=1 # save pressure level history files (and compute ens mean)
@@ -72,7 +76,7 @@ export copy_history_files=1 # save pressure level history files (and compute ens
 #export cleanup_fg='false'
 #export resubmit='false'
 #export do_cleanup='false'
-#export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
+#export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
  
 if [ "$machine" == 'hera' ]; then
    export basedir=/scratch2/NCEPDEV/fv3-cam/${USER}
@@ -80,6 +84,26 @@ if [ "$machine" == 'hera' ]; then
    export hsidir="/NCEPDEV/emc-meso/5year/Donald.E.Lippi/hrlyGDAS/${exptname}"
    export obs_datapath=/scratch2/NCEPDEV/fv3-cam/Donald.E.Lippi/hrly_gdas/uniq
    export obs_datapath2=/scratch1/NCEPDEV/global/glopara/dump/
+elif [ "$machine" == 'orion' ]; then
+   export noaauser=Donald.E.Lippi
+   export dump_window="short" #long, short, veryshort, 6hrly
+   export basedir=/work/noaa/fv3-cam/${USER}
+   export datadir=$basedir
+   export hsidir="/NCEPDEV/emc-meso/5year/Donald.E.Lippi/hrlyGDAS/${exptname}"
+   #export obs_datapath=/scratch2/BMC/gsienkf/whitaker/gdas1bufr
+   #export obs_datapath=${basedir}/dumps/hrlyda_bufr/
+   export obs_datapath=/work/noaa/sfc-perts/gbates/hrlyda_dumps/$dump_window/ #restricted data excluded
+   export obs_datapath2=/work/noaa/fv3-cam/dlippi/dumpssno/ #copied from hera
+   ulimit -s unlimited
+   module purge
+   module load intel/2018.4
+   module load impi/2018.4
+   module load mkl/2018.4
+   module load netcdf/4.7.2-parallel
+   module load hdf5/1.10.5-parallel
+   module load python
+   export PYTHONPATH=/home/jwhitake/.local/lib/python3.7/site-packages
+   export HDF5_DISABLE_VERSION_CHECK=1
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f2/dev/${USER}
    export datadir=/lustre/f2/scratch/${USER}
@@ -87,7 +111,7 @@ elif [ "$machine" == 'gaea' ]; then
    #export hsidir="/3year/NCEPDEV/GEFSRR/${exptname}"
    export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/dumps
 else
-   echo "machine must be 'hera' or 'gaea' got $machine"
+   echo "machine must be 'hera', 'orion' or 'gaea' got $machine"
    exit 1
 fi
 export datapath="${datadir}/${exptname}"
@@ -290,7 +314,7 @@ if [[ $HRLY_DA == "YES" ]]; then
    export ANALINC=1 #The first cycle is hardcoded as 4 for hrly GDAS.
    export FHOUT=1
    export FHMIN=1
-   export FHMAX=5
+   export FHMAX=7
    export iaufhrs="1,2,3,4,5"
    export iau_delthrs="4" #iau time interval (to scale increments) in hours
 elif [[ $HRLY_DA == "NO" ]]; then
@@ -302,6 +326,7 @@ elif [[ $HRLY_DA == "NO" ]]; then
    export iaufhrs="3,6,9"
    export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 fi
+
 # analysis is done at ensemble resolution
 export LONA=$LONB
 export LATA=$LATB      
@@ -309,7 +334,7 @@ export LATA=$LATB
 export LEVS=64
 export FHMAX_LONG=120 # control forecast every 00UTC in run_long_fcst=true
 FHMAXP1=`expr $FHMAX + 1`
-export enkfstatefhrs=`python -c "print range(${FHMIN},${FHMAXP1},${FHOUT})" | cut -f2 -d"[" | cut -f1 -d"]"`
+export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
 # dump increment in one time step (for debugging)
 #export iaufhrs="6"
 #export iau_delthrs=0.25
@@ -332,9 +357,9 @@ export covinflatemin=1.0
 export analpertwtnh=0.75
 export analpertwtsh=0.75
 export analpertwttr=0.75
-export analpertwtnh_rtpp=0.0
-export analpertwtsh_rtpp=0.0
-export analpertwttr_rtpp=0.0
+export analpertwtnh_rtpp=0.25
+export analpertwtsh_rtpp=0.25
+export analpertwttr_rtpp=0.25
 export pseudo_rh=.true.
 export use_correlated_oberrs=".true."
                                                                     
@@ -345,7 +370,6 @@ export getkf=.true.
 export getkf_inflation=.false.
 export modelspace_vloc=.true.
 export letkf_novlocal=.true.
-export dfs_sort=.false.
 export nobsl_max=10000
 export sprd_tol=1.e30
 export varqc=.false.
@@ -387,7 +411,8 @@ export sortinc=.true.
                                                                     
 export nitermax=1
 
-export enkfscripts="${basedir}/scripts/${exptname}"
+#export enkfscripts="${basedir}/scripts/${exptname}/"
+export enkfscripts="${basedir}/scripts/C192_hybgain_netcdf-owiau-2020031306/"
 export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
 
@@ -406,9 +431,22 @@ if [ "$machine" == 'hera' ]; then
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
    export CHGRESEXEC=${execdir}/chgres_recenter_ncio.exe
+elif [ "$machine" == 'orion' ]; then
+   export python=`which python`
+   export fv3gfspath=/work/noaa/gsienkf/whitaker #${basedir}
+   export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
+   export FIXGLOBAL=${fv3gfspath}/fix/fix_am
+   export gsipath=${basedir}/ProdGSI
+   export fixgsi=${gsipath}/fix
+   export fixcrtm=/work/noaa/gsienkf/whitaker/fix/crtm/v2.2.6/fix #${basedir}/fix/crtm/v2.2.6/fix
+   export execdir=${enkfscripts}/exec_${machine}
+   export enkfbin=${execdir}/global_enkf
+   export FCSTEXEC=${execdir}/${fv3exec}
+   export gsiexec=${execdir}/global_gsi
+   export CHGRESEXEC=${execdir}/chgres_recenter_ncio.exe
 elif [ "$machine" == 'gaea' ]; then
    export python=/ncrc/sw/gaea/PythonEnv-noaa/1.4.0/.spack/opt/spack/linux-sles12-x86_64/gcc-4.8/python-2.7.14-zyx34h36bfp2c6ftp5bhdsdduqjxbvp6/bin/python
-   export PYTHONPATH=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/lib/python2.7/site-packages
+   #export PYTHONPATH=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/lib/python2.7/site-packages
    #export fv3gfspath=/lustre/f1/pdata/ncep_shared/fv3/fix-fv3gfs/
    export fv3gfspath=/lustre/f2/dev/Jeffrey.S.Whitaker/fv3_reanl/fv3gfs/global_shared.v15.0.0
    export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010

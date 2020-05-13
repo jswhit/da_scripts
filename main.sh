@@ -107,7 +107,7 @@ export datapath2="${datapath}/${analdate}/"
 /bin/cp -f ${ANAVINFO_ENKF} ${datapath2}/anavinfo
 
 # setup node parameters used in blendinc.csh, recenter_ens_anal.csh and compute_ensmean_fcst.sh
-export mpitaskspernode=`python -c "import math; print int(math.ceil(float(${nanals})/float(${NODES})))"`
+export mpitaskspernode=`python -c "from __future__ import print_function; import math; print(int(math.ceil(float(${nanals})/float(${NODES}))))"`
 if [ $mpitaskspernode -lt 1 ]; then
   export mpitaskspernode 1
 fi
@@ -336,7 +336,7 @@ if [ $controlanal == 'true' ] && [ $recenter_anal == 'true' ]; then
    if [ $hybgain == 'true' ]; then
       if [ $alpha -gt 0 ]; then
          echo "$analdate blend enkf and 3dvar increments `date`"
-         sh ${enkfscripts}/blendinc.sh > ${current_logdir}/blendinc.out 2>&1
+         sh ${enkfscripts}/blendinc2.sh > ${current_logdir}/blendinc.out 2>&1
          blendinc_done=`cat ${current_logdir}/blendinc.log`
          if [ $blendinc_done == 'yes' ]; then
            echo "$analdate increment blending/recentering completed successfully `date`"
@@ -415,7 +415,11 @@ if [ $fg_only == 'false' ]; then
 
 # cleanup
 if [ $do_cleanup == 'true' ]; then
-   sh ${enkfscripts}/clean.sh > ${current_logdir}/clean.out 2>&1
+   if [ "$machine" == 'orion' ]; then
+      sh ${enkfscripts}/clean.orion.sh > ${current_logdir}/clean.out 2>&1
+   else
+      sh ${enkfscripts}/clean.sh > ${current_logdir}/clean.out 2>&1
+   fi
 fi # do_cleanup = true
 
 wait # wait for backgrounded processes to finish
