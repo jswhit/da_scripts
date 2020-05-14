@@ -328,8 +328,7 @@ else
       export FSNOL=99999 # use model value
    else
       echo "current snow analysis found in snow analysis file, replace model"
-      #export FSNOL=-2 # use analysis value
-      #export FSNOL=0 # use analysis value
+      export FSNOL=0 # use analysis value
    fi
 fi
 
@@ -337,18 +336,23 @@ ls -l
 
 FHRESTART=${FHRESTART:-$ANALINC}
 if [[ $HRLY_DA == "YES" ]]; then
+   if [[ $liau == ".true." ]]; then
       export FHRESTART="1 1"
-   if [ "${iau_delthrs}" != "-1" ]; then
       FHMAX_FCST=`expr $FHMAX + 1` #add 1 (ANALINC); hardcode only since ANALINC is sometimes 4.
+   elif [[ $liau == ".false." ]]; then
+      export FHRESTART="4"
+      FHMAX_FCST=`expr $FHMAX + 1` #add 1 (ANALINC); hardcode only since ANALINC is sometimes 4.
+   fi
+   #if [ "${iau_delthrs}" != "-1" ]; then
       if [[ $fg_only == "true" ]]; then
          FHSTOCH=4 #forecast hour to dump random patterns
       else
          FHSTOCH=2 #forecast hour to dump random patterns
       fi
-   else
-      FHSTOCH=2 # what should this be for noIAU?
-      FHMAX_FCST=$FHMAX
-   fi
+   #else
+   #   FHSTOCH=2 # what should this be for noIAU?
+   #   FHMAX_FCST=$FHMAX
+   #fi
 elif [[ $HRLY_DA == "NO" ]]; then
    if [ "${iau_delthrs}" != "-1" ]; then
       FHMAX_FCST=`expr $FHMAX + $ANALINC`

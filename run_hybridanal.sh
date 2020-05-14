@@ -4,11 +4,15 @@
 export CO2DIR=$fixgsi
 
 if [[ $HRLY_DA == "YES" ]]; then
-   export SIGANL01=${datapath2}/sanl_${analdate}_fhr01_${charnanal}
-   export SIGANL02=${datapath2}/sanl_${analdate}_fhr02_${charnanal}
-   export SIGANL03=${datapath2}/sanl_${analdate}_fhr03_${charnanal}
-   export SIGANL04=${datapath2}/sanl_${analdate}_fhr04_${charnanal}
-   export SIGANL05=${datapath2}/sanl_${analdate}_fhr05_${charnanal}
+   if [[ $liau == ".true." ]] ; then
+      export SIGANL01=${datapath2}/sanl_${analdate}_fhr01_${charnanal}
+      export SIGANL02=${datapath2}/sanl_${analdate}_fhr02_${charnanal}
+      export SIGANL03=${datapath2}/sanl_${analdate}_fhr03_${charnanal}
+      export SIGANL04=${datapath2}/sanl_${analdate}_fhr04_${charnanal}
+      export SIGANL05=${datapath2}/sanl_${analdate}_fhr05_${charnanal}
+   elif [[ $liau == ".false." ]] ; then
+      export SIGANL02=${datapath2}/sanl_${analdate}_fhr02_${charnanal}
+   fi
 elif [[ $HRLY_DA == "NO" ]]; then
    export SIGANL03=${datapath2}/sanl_${analdate}_fhr03_${charnanal}
    export SIGANL04=${datapath2}/sanl_${analdate}_fhr04_${charnanal}
@@ -26,7 +30,11 @@ export DTFANL=${datapath2}/${PREINP}dtfanl.nc
 
 if [ $cleanup_controlanl == 'true' ]; then
    if [[ $HRLY_DA == "YES" ]]; then
-      /bin/rm -f ${SIGANL04}
+      if [[ $liau == ".true." ]] ; then
+         /bin/rm -f ${SIGANL04}
+      elif [[ $liau == ".false." ]] ; then
+         /bin/rm -f ${SIGANL02}
+      fi
    elif [[ $HRLY_DA == "NO" ]]; then
       /bin/rm -f ${SIGANL06}
    fi
@@ -36,7 +44,9 @@ fi
 niter=1
 alldone='no'
 if [[ $HRLY_DA == "YES" ]]; then
-   if [ -s $SIGANL04 ] && [ -s $BIASO ] && [ -s $SATANGO ]; then
+   if [[ $liau == ".true." ]] && [ -s $SIGANL04 ] && [ -s $BIASO ] && [ -s $SATANGO ]; then
+      alldone="yes"
+   elif [[ $liau == ".false." ]] && [ -s $SIGANL02 ] && [ -s $BIASO ] && [ -s $SATANGO ]; then
       alldone="yes"
    fi
 elif [[ $HRLY_DA == "NO" ]]; then
@@ -96,7 +106,11 @@ export lread_obs_save=".false."
 export lread_obs_skip=".false."
 export HXONLY 'NO'
 if [[ $HRLY_DA == "YES" ]]; then
-   if [ -s $SIGANL04 ]; then
+   if [[ $liau == ".true." ]] && [ -s $SIGANL04 ]; then
+     echo "gsi hybrid already completed"
+     echo "yes" > ${current_logdir}/run_gsi_hybrid.log
+     exit 0
+   elif [[ $liau == ".false." ]] && [ -s $SIGANL02 ]; then
      echo "gsi hybrid already completed"
      echo "yes" > ${current_logdir}/run_gsi_hybrid.log
      exit 0
@@ -127,12 +141,22 @@ if [ $status -ne 0 ]; then
   exitstat=1
 else
   if [[ $HRLY_DA == "YES" ]]; then
-     if [ ! -s $SIGANL04 ]; then
-       echo "gsi hybrid analysis did not complete sucessfully"
-       exitstat=1
-     else
-       echo "gsi hybrid completed sucessfully"
-       exitstat=0
+     if [[ $liau == ".true." ]]; then
+        if [ ! -s $SIGANL04 ]; then
+          echo "gsi hybrid analysis did not complete sucessfully"
+          exitstat=1
+        else
+          echo "gsi hybrid completed sucessfully"
+          exitstat=0
+        fi
+     elif [[ $liau == ".false." ]]; then
+        if [ ! -s $SIGANL02 ]; then
+          echo "gsi hybrid analysis did not complete sucessfully"
+          exitstat=1
+        else
+          echo "gsi hybrid completed sucessfully"
+          exitstat=0
+        fi
      fi
   elif [[ $HRLY_DA == "NO" ]]; then
      if [ ! -s $SIGANL06 ]; then

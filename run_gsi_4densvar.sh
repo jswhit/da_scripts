@@ -270,16 +270,20 @@ else
 fi
 
 if   [[ $HRLY_DA == "YES" ]]; then
-   nhr_assimilation=4 #$ANALINC_first_cycle #This is always 4 hour (for 1hrly da).
+   if [[ $liau == ".true." ]]; then
+      nhr_assimilation=4 #$ANALINC_first_cycle #This is always 4 hour (for 1hrly da).
+   elif [[ $liau == ".false." ]]; then
+      nhr_assimilation=2 #This is always 2 hour (for 1hrly da no IAU).
+   fi
 elif [[ $HRLY_DA == "NO" ]]; then
    nhr_assimilation=6
 fi
 
-if [[ $iau_delthrs -lt 0 ]]; then #if iau_delthours is < 0, the IAU is off
-   liau=".false."
-else
-   liau=".true."
-fi
+#if [[ $iau_delthrs -lt 0 ]]; then #if iau_delthours is < 0, the IAU is off
+#   liau=".false."
+#else
+#   liau=".true."
+#fi
 
 min_offset=180
 
@@ -868,27 +872,34 @@ $nln $GSATANG            ./satbias_angle
 $nln $GBIASAIR           ./aircftbias_in
 
 if [[ $HRLY_DA == "YES" ]]; then
-   SFCG01=${SFCG01:-$datges/bfg_${adate}_fhr01_${charnanal}}
-   $nln $SFCG01               ./sfcf01
-   SFCG02=${SFCG02:-$datges/bfg_${adate}_fhr02_${charnanal}}
-   $nln $SFCG02               ./sfcf02
-   SFCG03=${SFCG03:-$datges/bfg_${adate}_fhr03_${charnanal}}
-   $nln $SFCG03               ./sfcf03
-   SFCG04=${SFCG04:-$datges/bfg_${adate}_fhr04_${charnanal}}
-   $nln $SFCG04               ./sfcf04
-   SFCG05=${SFCG05:-$datges/bfg_${adate}_fhr05_${charnanal}}
-   $nln $SFCG05               ./sfcf05
+   if [[ $liau == ".true." ]]; then
+      SFCG01=${SFCG01:-$datges/bfg_${adate}_fhr01_${charnanal}}
+      $nln $SFCG01               ./sfcf01
+      SFCG02=${SFCG02:-$datges/bfg_${adate}_fhr02_${charnanal}}
+      $nln $SFCG02               ./sfcf02
+      SFCG03=${SFCG03:-$datges/bfg_${adate}_fhr03_${charnanal}}
+      $nln $SFCG03               ./sfcf03
+      SFCG04=${SFCG04:-$datges/bfg_${adate}_fhr04_${charnanal}}
+      $nln $SFCG04               ./sfcf04
+      SFCG05=${SFCG05:-$datges/bfg_${adate}_fhr05_${charnanal}}
+      $nln $SFCG05               ./sfcf05
 
-   SIGG01=${SIGG01:-$datges/sfg_${adate}_fhr01_${charnanal}}
-   $nln $SIGG01               ./sigf01
-   SIGG02=${SIGG02:-$datges/sfg_${adate}_fhr02_${charnanal}}
-   $nln $SIGG02               ./sigf02
-   SIGG03=${SIGG03:-$datges/sfg_${adate}_fhr03_${charnanal}}
-   $nln $SIGG03               ./sigf03
-   SIGG04=${SIGG04:-$datges/sfg_${adate}_fhr04_${charnanal}}
-   $nln $SIGG04               ./sigf04
-   SIGG05=${SIGG05:-$datges/sfg_${adate}_fhr05_${charnanal}}
-   $nln $SIGG05               ./sigf05
+      SIGG01=${SIGG01:-$datges/sfg_${adate}_fhr01_${charnanal}}
+      $nln $SIGG01               ./sigf01
+      SIGG02=${SIGG02:-$datges/sfg_${adate}_fhr02_${charnanal}}
+      $nln $SIGG02               ./sigf02
+      SIGG03=${SIGG03:-$datges/sfg_${adate}_fhr03_${charnanal}}
+      $nln $SIGG03               ./sigf03
+      SIGG04=${SIGG04:-$datges/sfg_${adate}_fhr04_${charnanal}}
+      $nln $SIGG04               ./sigf04
+      SIGG05=${SIGG05:-$datges/sfg_${adate}_fhr05_${charnanal}}
+      $nln $SIGG05               ./sigf05
+   elif [[ $liau == ".false." ]]; then
+      SFCG02=${SFCG02:-$datges/bfg_${adate}_fhr02_${charnanal}}
+      $nln $SFCG02               ./sfcf02
+      SIGG02=${SIGG02:-$datges/sfg_${adate}_fhr02_${charnanal}}
+      $nln $SIGG02               ./sigf02
+   fi
 
 elif [[ $HRLY_DA == "NO" ]]; then
    SFCG03=${SFCG03:-$datges/bfg_${adate}_fhr03_${charnanal}}
@@ -957,7 +968,8 @@ done
 
 # Run gsi.
 if [[ $HRLY_DA == "YES" ]]; then
-   if [[ $NOSAT == "YES" ||  -s ./satbias_in ]]  && [ -s ./sfcf04 ] && [ -s ./sigf04 ] ; then
+   if [[ $NOSAT == "YES" ||  -s ./satbias_in ]]; then
+   if [[ $liau == ".true." && -s ./sfcf04 && -s ./sigf04 || $liau == ".false." && -s ./sfcf02 && -s ./sigf02]]; then
       cat gsiparm.anl
       ulimit -s unlimited
       pwd
@@ -975,12 +987,17 @@ if [[ $HRLY_DA == "YES" ]]; then
       echo "some input files missing, exiting ..."
       ls -l ./satbias_in
       ls -l ./satbias_angle
-      ls -l ./sfcf01
-      ls -l ./sfcf02
-      ls -l ./sfcf03
-      ls -l ./sfcanl
-      ls -l ./sigf05
+      if [[ $liau == ".true." ]]; then
+         ls -l ./sfcf01
+         ls -l ./sfcf02
+         ls -l ./sfcf03
+         ls -l ./sfcanl
+         ls -l ./sigf05
+      elif [[ $liau == ".false." ]]; then
+         ls -l ./sfcanl
+      fi
       exit 21
+   fi
    fi
 elif [[ $HRLY_DA == "NO" ]]; then
    if [[ $NOSAT == "YES" ||  -s ./satbias_in ]]  && [ -s ./sfcf03 ] && [ -s ./sfcf06 ] && [ -s ./sfcf09 ] && [ -s ./sigf03 ] && [ -s ./sigf06 ] && [ -s ./sigf09 ] ; then
@@ -1021,11 +1038,15 @@ cat fort.2* > $savdir/gsistats.${adate}_${charnanal2}
 if [[ "$HXONLY" = "NO" ]]; then
    if [ -s ./siganl ] && [ -s ./satbias_out ]; then
       if [[ $HRLY_DA == "YES" ]]; then
-         if [ -s ./siga01 ]; then $nmv siga01 $SIGANL01; fi
-         if [ -s ./siga02 ]; then $nmv siga02 $SIGANL02; fi
-         if [ -s ./siga03 ]; then $nmv siga03 $SIGANL03; fi
-                                  $nmv siganl $SIGANL04
-         if [ -s ./siga05 ]; then $nmv siga05 $SIGANL05; fi
+         if [[ $liau == ".true." ]]; then
+            $nmv siga01 $SIGANL01
+            $nmv siga02 $SIGANL02
+            $nmv siga03 $SIGANL03
+            $nmv siganl $SIGANL04
+            $nmv siga05 $SIGANL05
+         elif [[ $liau == ".false." ]]; then
+            $nmv siganl $SIGANL02
+         fi
       elif [[ $HRLY_DA == "NO" ]]; then
          if [ -s ./siga03 ]; then $nmv siga03 $SIGANL03; fi
          if [ -s ./siga04 ]; then $nmv siga04 $SIGANL04; fi

@@ -5,9 +5,9 @@
 ##SBATCH -A gsienkf
 #SBATCH -A fv3-cpu
 #SBATCH -N 20    
-#SBATCH -J C192_hybgain_netcdf-owiau-2020031306
-#SBATCH -e C192_hybgain_netcdf-owiau-2020031306.err
-#SBATCH -o C192_hybgain_netcdf-owiau-2020031306.out
+#SBATCH -J C192_hybgain_netcdf-ownoiau-2020031306
+#SBATCH -e C192_hybgain_netcdf-ownoiau-2020031306.err
+#SBATCH -o C192_hybgain_netcdf-ownoiau-2020031306.out
 
 export NODES=$SLURM_NNODES
 export corespernode=$SLURM_CPUS_ON_NODE

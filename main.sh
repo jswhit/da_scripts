@@ -122,26 +122,42 @@ export analdate=$analdate
 
 HRLY_DA=${HRLY_DA:-"NO"}
 if [[ $HRLY_DA == "YES" ]]; then
-
-   export analdatep1m3=`${incdate} $analdate -2` #p1m3=+nhr_assim-3 = 1-3 = -2
-   if [[ $fg_only == "true" ]]; then
-      ANALINC=4 #check if it is the first cycle, ANALINC=4
-      export analdatep1m3=`${incdate} $analdate 1`     #for 12z cycle, we want as 13z (for 16z), so +1 here.
-      export iau_offset=0                            #set to zero for cold start
-   else
-      export iau_offset=1
-   fi
-   export analdatem1=`${incdate} $analdate -4`       #Model start time (start date for forecast; year)
-   export analdatem1_b=`${incdate} $analdate -1`     #used to find the cycled satbias files
-   export analdatep1=`${incdate} $analdate $ANALINC` #next analysis time.
-   export analdatem3=`${incdate} $analdate -3`       #Current model time (current date in restart; year_start)
-   if [[ $first_hrly_analysis == "true" ]]; then
+######### YES IAU ######################################
+   if [[ $liau == ".true." ]]; then
+      export analdatep1m3=`${incdate} $analdate -2` #p1m3=+nhr_assim-3 = 1-3 = -2
+      if [[ $fg_only == "true" ]]; then
+         ANALINC=4 #check if it is the first cycle, ANALINC=4
+         export analdatep1m3=`${incdate} $analdate 1`     #for 12z cycle, we want as 13z (for 16z), so +1 here.
+         export iau_offset=0                            #set to zero for cold start
+      else
+         export iau_offset=1
+      fi
+      export analdatem1=`${incdate} $analdate -4`       #Model start time (start date for forecast; year)
+      export analdatem1_b=`${incdate} $analdate -1`     #used to find the cycled satbias files
+      export analdatep1=`${incdate} $analdate $ANALINC` #next analysis time.
+      export analdatem3=`${incdate} $analdate -3`       #Current model time (current date in restart; year_start)
+      if [[ $first_hrly_analysis == "true" ]]; then
+         export datapathm1="${datapath}/${analdatem1}/"
+         export hrm1=`echo $analdatem1 | cut -c9-10`
+      else
+         export datapathm1="${datapath}/${analdatem1_b}/"
+         export hrm1=`echo $analdatem1_b | cut -c9-10`
+      fi
+######### NO  IAU ######################################
+   elif [[ $liau == ".false." ]]; then
+      export analdatep1m3=`${incdate} $analdate -2` #p1m3=+nhr_assim-3 = 1-3 = -2
+      if [[ $fg_only == "true" ]]; then
+         ANALINC=4 #check if it is the first cycle, ANALINC=4
+         export analdatep1m3=`${incdate} $analdate 1`     #for 12z cycle, we want as 13z (for 16z), so +1 here.
+      fi
+      export iau_offset=0 #added for no IAU - always 0 for this.
+      export analdatem1=`${incdate} $analdate -4`       #Model start time (start date for forecast; year)
+      export analdatep1=`${incdate} $analdate $ANALINC` #next analysis time.
+      export analdatem3=`${incdate} $analdate -$ANALINC` #Current model time (current date in restart; year_start)
       export datapathm1="${datapath}/${analdatem1}/"
       export hrm1=`echo $analdatem1 | cut -c9-10`
-   else
-      export datapathm1="${datapath}/${analdatem1_b}/"
-      export hrm1=`echo $analdatem1_b | cut -c9-10`
    fi
+######### 6-hrly  ######################################
 else
    export analdatem1=`${incdate} $analdate -$ANALINC`   #Model start time (start date for forecast; year)
    export analdatep1=`${incdate} $analdate $ANALINC`    #next analysis time.

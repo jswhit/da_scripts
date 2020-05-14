@@ -13,11 +13,15 @@ export CO2DIR=$fixgsi
 
 # charanal is an env var set in parent script
 if [[ $HRLY_DA == "YES" ]]; then
-   export SIGANL01=${datapath2}/sanl_${analdate}_fhr01_${charnanal}
-   export SIGANL02=${datapath2}/sanl_${analdate}_fhr02_${charnanal}
-   export SIGANL03=${datapath2}/sanl_${analdate}_fhr03_${charnanal}
-   export SIGANL04=${datapath2}/sanl_${analdate}_fhr04_${charnanal}
-   export SIGANL05=${datapath2}/sanl_${analdate}_fhr05_${charnanal}
+   if [[ $liau == ".true." ]]; then
+      export SIGANL01=${datapath2}/sanl_${analdate}_fhr01_${charnanal}
+      export SIGANL02=${datapath2}/sanl_${analdate}_fhr02_${charnanal}
+      export SIGANL03=${datapath2}/sanl_${analdate}_fhr03_${charnanal}
+      export SIGANL04=${datapath2}/sanl_${analdate}_fhr04_${charnanal}
+      export SIGANL05=${datapath2}/sanl_${analdate}_fhr05_${charnanal}
+   elif [[ $liau == ".false." ]]; then
+      export SIGANL02=${datapath2}/sanl_${analdate}_fhr02_${charnanal}
+   fi
 elif [[ $HRLY_DA == "NO" ]]; then
    export SIGANL03=${datapath2}/sanl_${analdate}_fhr03_${charnanal}
    export SIGANL04=${datapath2}/sanl_${analdate}_fhr04_${charnanal}

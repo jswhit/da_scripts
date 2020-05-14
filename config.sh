@@ -10,7 +10,7 @@ export RES_CTL=384
 export alpha=250 # percentage of 3dvar increment (beta_2*1000)
 export beta=1000 # percentage of enkf increment (*10)
 export hybgain='true' # set to true for hybrid gain 3DVar/EnKF
-export exptname="C${RES}_hybgain_netcdf-owiau-2020031306"
+export exptname="C${RES}_hybgain_netcdf-ownoiau-2020031306"
 # for 'passive' or 'replay' cycling of control fcst 
 # control forecast files have 'control2' suffix, instead of 'control'
 # GSI observer will be run on 'control2' forecast
@@ -57,6 +57,7 @@ export replay_run_observer='true' # run observer on replay forecast
 if [ $machine == "orion" ]; then
 export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
 export save_hpss="false"
+export save_niagara="true"
 else
 export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
 export save_hpss="true"
@@ -86,6 +87,7 @@ if [ "$machine" == 'hera' ]; then
    export obs_datapath2=/scratch1/NCEPDEV/global/glopara/dump/
 elif [ "$machine" == 'orion' ]; then
    export noaauser=Donald.E.Lippi
+   export account=fv3-cam #account for unattended data transfer
    export dump_window="short" #long, short, veryshort, 6hrly
    export basedir=/work/noaa/fv3-cam/${USER}
    export datadir=$basedir
@@ -314,9 +316,9 @@ if [[ $HRLY_DA == "YES" ]]; then
    export ANALINC=1 #The first cycle is hardcoded as 4 for hrly GDAS.
    export FHOUT=1
    export FHMIN=1
-   export FHMAX=7
-   export iaufhrs="1,2,3,4,5"
-   export iau_delthrs="4" #iau time interval (to scale increments) in hours
+   export FHMAX=5
+   export iaufhrs="2"
+   export iau_delthrs="-1" #"4" #iau time interval (to scale increments) in hours
 elif [[ $HRLY_DA == "NO" ]]; then
    export HRLY_BKG="NO"
    export ANALINC=6
@@ -325,6 +327,11 @@ elif [[ $HRLY_DA == "NO" ]]; then
    export FHMAX=9
    export iaufhrs="3,6,9"
    export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
+fi
+if [[ $iau_delthrs -lt 0 ]]; then #if iau_delthours is < 0, the IAU is off
+   export liau=".false."
+else
+   export liau=".true."
 fi
 
 # analysis is done at ensemble resolution
@@ -402,7 +409,7 @@ fi
 #export zhuberleft=1.1
 #export zhuberright=1.1
 
-export nanals=80
+export nanals=3
 
 export paoverpb_thresh=0.998  # set to 1.0 to use all the obs in serial EnKF
 export saterrfact=1.0
@@ -412,7 +419,7 @@ export sortinc=.true.
 export nitermax=1
 
 #export enkfscripts="${basedir}/scripts/${exptname}/"
-export enkfscripts="${basedir}/scripts/C192_hybgain_netcdf-owiau-2020031306/"
+export enkfscripts="${basedir}/scripts/C192_hybgain_netcdf-ownoiau-2020031306/"
 export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
 
