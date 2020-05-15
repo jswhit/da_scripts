@@ -87,6 +87,7 @@ if [ "$machine" == 'hera' ]; then
 elif [ "$machine" == 'orion' ]; then
    export noaauser=Donald.E.Lippi
    export dump_window="short" #long, short, veryshort, 6hrly
+   export account=fv3-cam
    export basedir=/work/noaa/fv3-cam/${USER}
    export datadir=$basedir
    export hsidir="/NCEPDEV/emc-meso/5year/Donald.E.Lippi/hrlyGDAS/${exptname}"
@@ -314,7 +315,7 @@ if [[ $HRLY_DA == "YES" ]]; then
    export ANALINC=1 #The first cycle is hardcoded as 4 for hrly GDAS.
    export FHOUT=1
    export FHMIN=1
-   export FHMAX=7
+   export FHMAX=10
    export iaufhrs="1,2,3,4,5"
    export iau_delthrs="4" #iau time interval (to scale increments) in hours
 elif [[ $HRLY_DA == "NO" ]]; then
@@ -326,6 +327,12 @@ elif [[ $HRLY_DA == "NO" ]]; then
    export iaufhrs="3,6,9"
    export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 fi
+if [[ $iau_delthrs -lt 0 ]]; then #if iau_delthours is < 0, the IAU is off
+   export liau=".false."
+else
+   export liau=".true."
+fi
+
 
 # analysis is done at ensemble resolution
 export LONA=$LONB
