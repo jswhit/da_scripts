@@ -16,10 +16,15 @@ elif [ "$machine" == 'orion' ]; then
    module purge 
    module load intel/2019.5
    module load impi/2019.6
+   module load mkl/2019.5
+   export NCEPLIBS=/apps/contrib/NCEPLIBS/lib
+   module use -a /apps/contrib/NCEPLIBS/lib/modulefiles
+   module load netcdfp/4.7.4
+   module load esmflocal/8.0.0.para
    module load grib_util-intel-sandybridge # wgrib
    #module load netcdf/4.7.2
    #module load hdf5/1.10.5
-   module load python
+   #module load python
 
 elif [ "$machine" == 'gaea' ]; then
    module purge

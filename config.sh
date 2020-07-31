@@ -10,7 +10,7 @@ export RES_CTL=384
 export alpha=250 # percentage of 3dvar increment (beta_2*1000)
 export beta=1000 # percentage of enkf increment (*10)
 export hybgain='true' # set to true for hybrid gain 3DVar/EnKF
-export exptname="C${RES}_hybgain_netcdf-owiau-2020031306"
+export exptname="C192_hybgain_netcdf-owiau-test2"
 # for 'passive' or 'replay' cycling of control fcst 
 # control forecast files have 'control2' suffix, instead of 'control'
 # GSI observer will be run on 'control2' forecast
@@ -416,10 +416,10 @@ export saterrfact=1.0
 export deterministic=.true.
 export sortinc=.true.
                                                                     
-export nitermax=1
+export nitermax=2
 
 #export enkfscripts="${basedir}/scripts/${exptname}/"
-export enkfscripts="${basedir}/scripts/C192_hybgain_netcdf-owiau-2020031306/"
+export enkfscripts="${basedir}/scripts/C192_hybgain_netcdf-owiau-test2/"
 export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
 

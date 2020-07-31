@@ -49,7 +49,7 @@ fi
 #export fg_proc=`expr 4 \* $corespernode`
 export fg_proc=$corespernode
 export fg_threads=1 
-export enkf_threads=8
+export enkf_threads=10
 export gsi_control_threads=4
 export write_groups=4
 # 24 cores for model, 16 for write component

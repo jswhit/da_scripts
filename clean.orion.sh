@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 echo "clean up files `date`"
-cd ${datapath} #cd /work/noaa/fv3-cam/dlippi/C192_hybgain_netcdf-owiau-2020031306
+cd ${datapath} #cd /work/noaa/fv3-cam/dlippi/C192_hybgain_netcdf-owiau-test2
 # save backup of next analysis time
 tar -cvf backup_restart.tar ${analdatep1}
 # scp to niagara?
@@ -9,7 +9,7 @@ tar -cvf backup_restart.tar ${analdatep1}
 #cd ..
 #sbatch -p service -A ${account} -q batch -o ${datapath}/${analdate}/logs/backup_restart.out -n1 --wrap "rsync -R ${exptname}/backup_restart.tar  ${noaauser}@dtn-niagara.fairmont.rdhpcs.noaa.gov:/collab1/data/${noaauser}"
 
-cd $datapath2 #cd /work/noaa/fv3-cam/dlippi/C192_hybgain_netcdf-owiau-2020031306/2020031310/
+cd $datapath2 #cd /work/noaa/fv3-cam/dlippi/C192_hybgain_netcdf-owiau-test2/2020031310/
 /bin/rm -rf *mem* # get rid of every member files
 /bin/rm -f hostfile* fort* *log *lores nodefile* machinefile*
 /bin/rm -f ozinfo convinfo satinfo scaninfo anavinfo
