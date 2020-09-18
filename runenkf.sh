@@ -4,19 +4,22 @@ if [ -z $biascorrdir ]; then # cycled bias correction files
     export GBIAS=${datapathm1}/${PREINPm1}abias
     export GBIAS_PC=${datapathm1}/${PREINPm1}abias_pc
     export GBIASAIR=${datapathm1}/${PREINPm1}abias_air
-    if [ "$cold_start_bias" == "true" ]; then
+    #if [ "$cold_start_bias" == "true" ]; then
+    if [ -s ${datapath2}/${PREINP}abias ]; then
+      # if bias correction files have already been created for this analysis time, use them
       export GBIAS=${datapath2}/${PREINP}abias
       export GBIAS_PC=${datapath2}/${PREINP}abias_pc
       export GBIASAIR=${datapath2}/${PREINP}abias_air
     fi
-    export ABIAS=${datapath2}/${PREINP}abias
 else # externally specified bias correction files.
     export GBIAS=${biascorrdir}/${analdate}//${PREINP}abias
     export GBIAS_PC=${biascorrdir}/${analdate}//${PREINP}abias_pc
     export GBIASAIR=${biascorrdir}/${analdate}//${PREINP}abias_air
-    export ABIAS=${biascorrdir}/${analdate}//${PREINP}abias
 fi
 export GSATANG=$fixgsi/global_satangbias.txt # not used, but needs to exist
+if [ $lupd_satbiasc == ".true." ]; then
+   export ABIAS=${datapath2}/${PREINP}abias_enkf
+fi
 
 ln -fs $GBIAS   ${datapath2}/satbias_in
 ln -fs $GBIAS_PC   ${datapath2}/satbias_pc

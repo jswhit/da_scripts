@@ -2,23 +2,22 @@ echo "running on $machine using $NODES nodes"
 
 export ndates_job=1 # number of DA cycles to run in one job submission
 # resolution of control and ensmemble.
-export RES=192
-export RES_CTL=384 
+export RES=384
+export RES_CTL=768 
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
 export alpha=250 # percentage of 3dvar increment (beta_2*1000)
 export beta=1000 # percentage of enkf increment (*10)
 export hybgain='true' # set to true for hybrid gain 3DVar/EnKF
-export exptname="C${RES}_hybgain_test"
+export exptname="C${RES}_hybgain"
 # for 'passive' or 'replay' cycling of control fcst 
 # control forecast files have 'control2' suffix, instead of 'control'
 # GSI observer will be run on 'control2' forecast
 # this is for diagnostic purposes (to get GSI diagnostic files) 
-export replay_controlfcst='false'
+export replay_controlfcst='true'
 # for dual-res hybrid, set hybgain=false, replay_controlfcst=false
 #export hybgain='false' # set to true for hybrid gain 3DVar/EnKF
-#export exptname="C${RES}C${RES_CTL}_hybcov"
 #export replay_controlfcst='false'
 export cores=`expr $NODES \* $corespernode`
 
@@ -40,7 +39,7 @@ export rungfs='run_fv3.sh' # ensemble forecast
 export recenter_anal="true" # recenter enkf analysis around GSI hybrid 4DEnVar analysis
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
 export controlanal='true' # use gsi hybrid (if false, pure enkf is used)
-export controlfcst='false' # if true, run dual-res setup with single high-res control
+export controlfcst='true' # if true, run dual-res setup with single high-res control
 export cleanup_fg='true'
 export cleanup_ensmean='true'
 export cleanup_anal='true'
@@ -61,7 +60,7 @@ export save_hpss="true"
 fi
 export run_long_fcst="false"  # spawn a longer control forecast at 00 UTC
 export ensmean_restart='false'
-export copy_history_files=1 # save pressure level history files (and compute ens mean)
+#export copy_history_files=1 # save pressure level history files (and compute ens mean)
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
@@ -73,7 +72,9 @@ export copy_history_files=1 # save pressure level history files (and compute ens
 #export resubmit='false'
 #export do_cleanup='false'
 #export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
+#export skip_to_fcst="true" # skip to forecast step
  
+source $MODULESHOME/init/sh
 if [ "$machine" == 'hera' ]; then
    export basedir=/scratch2/BMC/gsienkf/${USER}
    export datadir=$basedir
@@ -83,10 +84,15 @@ if [ "$machine" == 'hera' ]; then
    module purge
    module load intel/18.0.5.274
    module load impi/2018.0.4 
+   #module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
+   #module load netcdf_parallel/4.7.4
+   #module load hdf5_parallel/1.10.6.release
+   module use -a /scratch1/NCEPDEV/global/gwv/lp/lib/modulefiles
+   module load netcdfp/4.7.4
+   #module load esmflocal/8.0.1.08bs
    module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
    module load hdf5_parallel/1.10.6
-   module load netcdf_parallel/4.7.4
-   module load esmf/8.0.0_ParallelNetCDF
+   #module load netcdf_parallel/4.7.4
 elif [ "$machine" == 'orion' ]; then
    export basedir=/work/noaa/gsienkf/${USER}
    export datadir=$basedir
@@ -143,22 +149,22 @@ export NOCONV="NO"
 # model NSST parameters contained within nstf_name in FV3 namelist
 # (comment out to get default - no NSST)
 # nstf_name(1) : NST_MODEL (NSST Model) : 0 = OFF, 1 = ON but uncoupled, 2 = ON and coupled
-#export DONST="YES"
-#export NST_MODEL=2
-## nstf_name(2) : NST_SPINUP : 0 = OFF, 1 = ON,
-#export NST_SPINUP=0 # (will be set to 1 if fg_only=='true')
-## nstf_name(3) : NST_RESV (Reserved, NSST Analysis) : 0 = OFF, 1 = ON
-#export NST_RESV=0
-## nstf_name(4,5) : ZSEA1, ZSEA2 the two depths to apply vertical average (bias correction)
-#export ZSEA1=0
-#export ZSEA2=0
-#export NSTINFO=0          # number of elements added in obs. data array (default = 0)
-#export NST_GSI=3          # default 0: No NST info at all;
+export DONST="YES"
+export NST_MODEL=2
+# nstf_name(2) : NST_SPINUP : 0 = OFF, 1 = ON,
+export NST_SPINUP=0 # (will be set to 1 if fg_only=='true')
+# nstf_name(3) : NST_RESV (Reserved, NSST Analysis) : 0 = OFF, 1 = ON
+export NST_RESV=0
+# nstf_name(4,5) : ZSEA1, ZSEA2 the two depths to apply vertical average (bias correction)
+export ZSEA1=0
+export ZSEA2=0
+export NSTINFO=0          # number of elements added in obs. data array (default = 0)
+export NST_GSI=3          # default 0: No NST info at all;
                           #         1: Input NST info but not used in GSI;
                           #         2: Input NST info, used in CRTM simulation, no Tr analysis
                           #         3: Input NST info, used in both CRTM simulation and Tr analysis
 
-export NST_GSI=0          # No NST 
+#export NST_GSI=0          # No NST 
 
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
@@ -168,64 +174,62 @@ if [ $imp_physics == "11" ]; then
    export nwat=6
    export cal_pre=F
    export dnats=1
-   export cal_pre=".false."
    export do_sat_adj=".true."
    export random_clds=".false."
+   export cnvcld=".false."
    export lgfdlmprad=".true."
    export effr_in=".true."
 else
    export ncld=1
    export nwat=2
+   export cal_pre=T
    export dnats=0
-   export cal_pre=".true."
-   export do_sat_adj=".false."
-   export random_clds=".true."
-   export vtdm4=0.02
-   export nord=2
-   export dddmp=0.1
-   export d4_bg=0.12
 fi
-export k_split=1
-export n_split=6
+export fv3exec='fv3-nonhydro.exe'
+export hord_mt=5
+export hord_vt=5
+export hord_tm=5
+export hord_dp=-5
+export consv_te=1
+export nord=2
+export dddmp=0.1
+export d4_bg=0.12
+export vtdm4=0.02
 export fv_sg_adj=450
-export fv_sg_adj_ctl=$fv_sg_adj
-export hydrostatic=F
-if [ $hydrostatic == 'T' ];  then
-   export fv3exec='fv3-hydro.exe'
-   export consv_te=0
-else
-   export fv3exec='fv3-nonhydro.exe'
-   export consv_te=1
-fi
-# defaults in exglobal_fcst
-if [ $hydrostatic == 'T' ];  then
-   export fv3exec='fv3-hydro.exe'
-   export hord_mt=10
-   export hord_vt=10
-   export hord_tm=10
-   export hord_dp=-10
-   export vtdm4=0.05
-   export consv_te=0
-else
-   export fv3exec='fv3-nonhydro.exe'
-   export hord_mt=5
-   export hord_vt=5
-   export hord_tm=5
-   export hord_dp=-5
-   export vtdm4=0.06
-   export consv_te=1
-fi
-# GFDL suggests this for imp_physics=11
-if [ $imp_physics -eq 11 ]; then 
-   export hord_mt=6
-   export hord_vt=6
-   export hord_tm=6
-   export hord_dp=-6
-   export nord=2
-   export dddmp=0.1
-   export d4_bg=0.12
-   export vtdm4=0.02
-fi
+
+#gfsv15
+#export satmedmf=F
+#export hybedmf=T
+#export lheatstrg=F
+#export IAER=111
+#export iovr_lw=1
+#export iovr_sw=1
+#export icliq_sw=1
+#export do_tofd=F
+#export reiflag=1
+#export adjust_dry_mass=F
+#export nord=3
+#export vtdm4=0.06
+#export tau=10.0
+#export rf_cutoff=750.0
+#export d2_bg_k1=0.15
+#export d2_bg_k2=0.02
+
+#gfsv16 (defaults in run_fv3.sh)
+export satmedmf=T
+export hybedmf=F
+export lheatstrg=T
+export IAER=5111
+export iovr_lw=3
+export iovr_sw=3
+export icliq_sw=2
+export do_tofd=T
+export reiflag=2
+export adjust_dry_mass=T
+export tau=5.0
+export rf_cutoff=1.e3
+export d2_bg_k1=0.20 
+export d2_bg_k2=0.0
 
 # stochastic physics parameters.
 export DO_SPPT=.true.
@@ -239,7 +243,7 @@ export SHUM_LSCALE=500.e3
 export DO_SKEB=.true.
 export SKEB=0.3
 export SKEB_TSCALE=21600.
-export SKEB_LSCALE=500.e3
+export SKEB_LSCALE=250.e3
 export SKEBINT=1800
 export SKEBNORM=0
 export SKEB_NPASS=30
@@ -251,13 +255,13 @@ if [ $RES -eq 384 ]; then
    export LONB=1536
    export LATB=768
    export dt_atmos=225 # for n_split=6
-   export cdmbgwd="1.0,1.2"
+   export cdmbgwd="1.1,0.72,1.0,1.0"
 elif [ $RES -eq 192 ]; then
    export JCAP=382 
    export LONB=768   
    export LATB=384  
    export dt_atmos=450
-   export cdmbgwd="0.2,2.5"
+   export cdmbgwd="0.23,1.5,1.0,1.0"
 elif [ $RES -eq 128 ]; then
    export JCAP=254 
    export LONB=512   
@@ -276,23 +280,22 @@ else
 fi
 
 if [ $RES_CTL -eq 768 ]; then
-   export cdmbgwd_ctl="3.5,0.25"
+   export cdmbgwd_ctl="4.0,0.15,1.0,1.0"
    export JCAP_CTL=1534
    export LONB_CTL=3072
    export LATB_CTL=1536
    export k_split_ctl=2
    export n_split_ctl=6
-   export dt_atmos_ctl=225
-   #export dt_atmos_ctl=112.5
+   export dt_atmos_ctl=120    
 elif [ $RES_CTL -eq 384 ]; then
    export dt_atmos_ctl=225
-   export cdmbgwd_ctl="1.0,1.2"
+   export cdmbgwd_ctl="1.1,0.72,1.0,1.0"
    export JCAP_CTL=766
    export LONB_CTL=1536
    export LATB_CTL=768
 elif [ $RES_CTL -eq 192 ]; then
    export dt_atmos_ctl=450
-   export cdmbgwd_ctl="0.25,2.0"
+   export cdmbgwd_ctl="0.23,1.5,1.0,1.0"
    export JCAP_CTL=382
    export LONB_CTL=768  
    export LATB_CTL=384
@@ -314,7 +317,7 @@ export LATA=$LATB
 
 export ANALINC=6
 
-export LEVS=64
+export LEVS=127
 export FHMIN=3
 export FHMAX=9
 export FHMAX_LONG=120 # control forecast every 00UTC in run_long_fcst=true
@@ -342,17 +345,17 @@ export iassim_order=0
 
 export covinflatemax=1.e2
 export covinflatemin=1.0                                            
-export analpertwtnh=0.75
-export analpertwtsh=0.75
-export analpertwttr=0.75
-export analpertwtnh_rtpp=0.25
-export analpertwtsh_rtpp=0.25
-export analpertwttr_rtpp=0.25
+export analpertwtnh=0.85
+export analpertwtsh=0.85
+export analpertwttr=0.85
+export analpertwtnh_rtpp=0.0
+export analpertwtsh_rtpp=0.0
+export analpertwttr_rtpp=0.0
 export pseudo_rh=.true.
 export use_correlated_oberrs=".true."
                                                                     
 export letkf_flag=.true.
-export letkf_bruteforce_search=.true.
+export letkf_bruteforce_search=.false.
 export denkf=.true.
 export getkf=.true.
 export getkf_inflation=.false.
@@ -454,7 +457,7 @@ fi
 #export ANAVINFO=${enkfscripts}/global_anavinfo.l${LEVS}.txt
 export ANAVINFO=${fixgsi}/global_anavinfo.l${LEVS}.txt
 export ANAVINFO_ENKF=${ANAVINFO}
-export HYBENSINFO=${enkfscripts}/global_hybens_info.l${LEVS}.txt
+export HYBENSINFO=${fixgsi}/global_hybens_info.l${LEVS}.txt
 # comment out next line to disable smoothing of ensemble perturbations
 # in stratosphere/mesosphere
 #export HYBENSMOOTHINFO=${fixgsi}/global_hybens_smoothinfo.l${LEVS}.txt

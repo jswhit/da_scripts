@@ -13,7 +13,7 @@ def splitdate(yyyymmddhh):
 date = sys.argv[1]
 yyyy,mm,dd,hh = splitdate(date)
 #if dd%2 and hh == 6:
-if dd in [1,5,10,15,20,25] and hh == 6:
+if dd in [1,5,10,15,20,25] and hh == 0:
     sys.stdout.write('0')
 else:
     sys.stdout.write('1')

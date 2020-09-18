@@ -4,7 +4,8 @@ export nprocs=`expr $cores \/ $enkf_threads`
 export mpitaskspernode=`expr $corespernode \/ $enkf_threads`
 export OMP_NUM_THREADS=$enkf_threads
 export OMP_STACKSIZE=512M
-export HOSTFILE=$datapath2/machinefile_enkf
+source $MODULESHOME/init/sh
+module list
 
 iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
 
@@ -59,7 +60,7 @@ cat <<EOF > enkf.nml
   reducedgrid=${reducedgrid},nlevs=$LEVS,nanals=$nanals,deterministic=$deterministic,imp_physics=$imp_physics,
   npefiles=$npefiles,lobsdiag_forenkf=.true.,write_spread_diag=.false.,netcdf_diag=.true.,
   sortinc=$sortinc,univaroz=$univaroz,nhr_anal=$iaufhrs,nhr_state=$enkfstatefhrs,getkf=$getkf,
-  use_correlated_oberrs=${use_correlated_oberrs},use_gfs_ncio=.true.,
+  use_correlated_oberrs=${use_correlated_oberrs},use_gfs_ncio=.true.,nccompress=T,paranc=F,
   adp_anglebc=.true.,angord=4,newpc4pred=.true.,use_edges=.false.,emiss_bc=.true.,biasvar=-500,nobsl_max=$nobsl_max,use_qsatensmean=.true.
  /
  &satobs_enkf
@@ -181,30 +182,6 @@ export nprocs=`expr $cores \/ $OMP_NUM_THREADS`
 export mpitaskspernode=`expr $corespernode \/ $OMP_NUM_THREADS`
 echo "running with $OMP_NUM_THREADS threads ..."
 ${enkfscripts}/runmpi > ${current_logdir}/ensda.out 2>&1
-
-# use only one task on root node.
-#export OMP_PROC_BIND=spread
-#export OMP_PLACES=threads
-#if [ $machine == 'gaea' ]; then
-#   cores2=$((cores-corespernode ))
-#   export nprocs=`expr $cores2 \/ $enkf_threads`
-#   totcores=`expr $nprocs \* $OMP_NUM_THREADS`
-#   totnodes=`python -c "from __future__ import print_function; import math; print(int(math.ceil(float(${totcores})/${corespernode})))"`
-#   count=`python -c "from __future__ import print_function; import math; print(int(math.floor(float(${corespernode})/${mpitaskspernode})))"` 
-#   echo "running srun-multi -N 1 -n 1 -c ${OMP_NUM_THREADS} --cpu-bind cores $PGM : -N $totnodes -n $nprocs -c ${count} --cpu-bind cores $PGM" 2>&1
-#   # -c: cpus per task (number of threads per mpi task)
-#   # -n: number of mpi tasks
-#   # -N: number of nodes to run on
-#   srun-multi -N 1 -n 1 -c ${OMP_NUM_THREADS} --cpu-bind cores $PGM : -N $totnodes -n $nprocs -c ${count} --cpu-bind cores $PGM > ${current_logdir}/ensda.out 2>&1
-#else
-#   python ${enkfscripts}/get_slurm_hostfile.py $mpitaskspernode $HOSTFILE
-#   export SLURM_HOSTFILE=$HOSTFILE
-#   nprocs=`wc -l $SLURM_HOSTFILE | cut -f1 -d " "`
-#   echo "nprocs = $nprocs"
-#   cat $SLURM_HOSTFILE
-#   echo "srun -c ${OMP_NUM_THREADS} -n $nprocs --distribution=arbitrary --cpu-bind=cores $PGM"
-#   srun -c ${OMP_NUM_THREADS} -n $nprocs --distribution=arbitrary --cpu-bind=cores $PGM > ${current_logdir}/ensda.out 2>&1
-#fi
 
 if [ ! -s ${datapath2}/enkf.log ]; then
    echo "no enkf log file found"

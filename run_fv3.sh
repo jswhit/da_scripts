@@ -7,10 +7,17 @@ if [ "$machine" == 'hera' ]; then
    module load intel/18.0.5.274
    module load impi/2018.0.4
    module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
-   module load hdf5_parallel/1.10.6
-   module load netcdf_parallel/4.7.4
-   module load esmf/8.0.0_ParallelNetCDF
+   module load netcdf_parallel/4.7.4.release
+   module load esmf/8.1.0bs25_ParallelNetCDF.release
+   module load hdf5_parallel/1.10.6.release
    module load wgrib
+   #module use -a /scratch1/NCEPDEV/global/gwv/lp/lib/modulefiles
+   #module load netcdfp/4.7.4
+   #module load esmflocal/8.0.1.08bs
+   #module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
+   #module load hdf5_parallel/1.10.6
+   #module load wgrib
+   #export LD_LIBRARY_PATH="/scratch2/BMC/gsienkf/whitaker/ufs-weather-model/FV3/ccpp/lib:${LD_LIBRARY_PATH}"
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'orion' ]; then
    module purge 
@@ -71,7 +78,9 @@ export yearprev=`echo $analdatem1 |cut -c 1-4`
 export monprev=`echo $analdatem1 |cut -c 5-6`
 export dayprev=`echo $analdatem1 |cut -c 7-8`
 export hourprev=`echo $analdatem1 |cut -c 9-10`
-if [ "${iau_delthrs}" != "-1" ]  && [ "${fg_only}" == "false" ]; then
+if [ "${iau_delthrs}" != "-1" ] && [ "${fg_only}" == "false" ]; then
+# assume model is started at beginning of analysis window
+# (if IAU on or initial cold start)
    # start date for forecast (previous analysis time)
    export year=`echo $analdatem1 |cut -c 1-4`
    export mon=`echo $analdatem1 |cut -c 5-6`
@@ -129,9 +138,14 @@ export DIAG_TABLE=${DIAG_TABLE:-$enkfscripts/diag_table}
 sed -i -e "s/YYYY MM DD HH/${year} ${mon} ${day} ${hour}/g" diag_table
 sed -i -e "s/FHOUT/${FHOUT}/g" diag_table
 if [ "$imp_physics" == '99' ]; then
-/bin/cp -f $enkfscripts/field_table .
+   /bin/cp -f $enkfscripts/field_table .
 else
-/bin/cp -f $enkfscripts/field_table_ncld5 field_table
+   echo "satmedmf = $satmedmf"
+   if [ $satmedmf == "T" ] ||  [ $satmedmf == ".true." ]; then
+      /bin/cp -f $enkfscripts/field_table_ncld5.satmedmf field_table
+   else
+      /bin/cp -f $enkfscripts/field_table_ncld5.hybedmf field_table
+   fi
 fi
 /bin/cp -f $enkfscripts/data_table . 
 /bin/rm -rf RESTART
@@ -285,7 +299,9 @@ snoid='SNOD'
 # Turn off snow analysis if it has already been used.
 # (snow analysis only available once per day at 18z)
 fntsfa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.rtgssthr.grb
+#fntsfa=/scratch2/BMC/gsienkf/Philip.Pegion/obs/ostia/grb_files/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.ostia_sst.grb
 fnacna=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.seaice.5min.grb
+#fnacna=/scratch2/BMC/gsienkf/Philip.Pegion/obs/ostia/grb_files/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.ostia_ice_fraction.grb
 fnsnoa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.snogrb_t1534.3072.1536
 fnsnog=${obs_datapath}/gdas.${yearprev}${monprev}${dayprev}/${hourprev}/gdas.t${hourprev}z.snogrb_t1534.3072.1536
 nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
@@ -371,6 +387,9 @@ fi
 # nst_anl      : .true. or .false., NSST analysis over lake
 NST_MODEL=${NST_MODEL:-0}
 NST_SPINUP=${NST_SPINUP:-0}
+if [ "$fg_only" == "true" ] && [ $NST_GSI -gt 0 ]; then
+   NST_SPINUP=1
+fi
 NST_RESV=${NST_RESV-0}
 ZSEA1=${ZSEA1:-0}
 ZSEA2=${ZSEA2:-0}
@@ -410,11 +429,14 @@ write_tasks_per_group:   ${write_tasks}
 num_files:               2
 filename_base:           'dyn' 'phy'
 output_grid:             'gaussian_grid'
-output_file:             'netcdf'
-ichunk2d:                -1
-ichunk3d:                -1
+output_file:             'netcdf_parallel' 'netcdf'
 nbits:                   14
 ideflate:                1
+ichunk2d:                ${LONB}
+jchunk2d:                ${LATB}
+ichunk3d:                0
+jchunk3d:                0
+kchunk3d:                0
 write_fsyncflag:         .true.
 write_nemsioflip:        .true.
 iau_offset:              ${iaudelthrs}
@@ -470,7 +492,7 @@ cat > input.nml <<EOF
 
 &fms_nml
   clock_grain = "ROUTINE",
-  domains_stack_size = 6000000,
+  domains_stack_size = 4000000,
   print_memory_usage = F,
 /
 
@@ -490,18 +512,18 @@ cat > input.nml <<EOF
   n_sponge = 10,
   nudge_qv = T,
   nudge_dz = F,
-  tau = 10.0,
-  rf_cutoff = 750.0,
-  d2_bg_k1 = 0.15,
-  d2_bg_k2 = 0.02,
-  d2_bg = 0.
+  tau = 5.0,
+  rf_cutoff = 1000.0,
+  d2_bg_k1 = 0.20,
+  d2_bg_k2 = 0.0,
+  d2_bg = 0.,
   kord_tm = -9,
   kord_mt = 9,
   kord_wz = 9,
   kord_tr = 9,
-  hydrostatic = ${hydrostatic},
+  hydrostatic = F,
   phys_hydrostatic = F,
-  use_hydro_pressure = ${hydrostatic},
+  use_hydro_pressure = F,
   beta = 0,
   a_imp = 1.0,
   p_fac = 0.1,
@@ -515,7 +537,7 @@ cat > input.nml <<EOF
   d2_bg = 0.0,
   nord = ${nord:-3},
   dddmp = ${dddmp:-0.2},
-  d4_bg = ${d4_bg:-0.12},
+  d4_bg = ${d4_bg:-0.15},
   delt_max = 0.002,
   vtdm4 = ${vtdm4},
   ke_bg = 0.0,
@@ -535,8 +557,10 @@ cat > input.nml <<EOF
   hord_dp = ${hord_dp},
   hord_tr = 8,
   adjust_dry_mass = T,
+  dry_mass=98320.0,
   do_sat_adj = ${do_sat_adj:-"F"},
   consv_am = F,
+  consv_te = 1,
   fill = T,
   dwind_2d = F,
   print_freq = 6,
@@ -554,11 +578,9 @@ cat > input.nml <<EOF
 /
 
 &gfs_physics_nml
-  iccn           = F
   fhzero         = ${FHOUT}
   ldiag3d        = F
   fhcyc          = ${FHCYC}
-  nst_anl        = ${nst_anl}
   use_ufo        = T
   pre_rad        = F
   ncld           = ${ncld}
@@ -568,7 +590,10 @@ cat > input.nml <<EOF
   fhlwr          = 3600.
   ialb           = 1
   iems           = 1
-  IAER           = 111
+  IAER           = ${IAER:-5111}
+  iovr_lw        = ${iovr_lw:-3}
+  iovr_sw        = ${iovr_sw:-3}
+  icliq_sw       = ${icliq_sw:-2}
   ico2           = 2
   isubc_sw       = 2
   isubc_lw       = 2
@@ -580,8 +605,11 @@ cat > input.nml <<EOF
   cal_pre        = ${cal_pre:-"T"}
   redrag         = T
   dspheat        = ${dspheat:-"T"}
-  hybedmf        = T
-  random_clds    = ${random_clds:-"T"}
+  hybedmf        = ${hybedmf:-"F"}
+  satmedmf       = ${satmedmf:-"T"}
+  isatmedmf      = 1
+  lheatstrg      = ${lheatstrg:="T"}
+  random_clds    = ${random_clds:-"F"}
   trans_trac     = ${trans_trac:-"T"}
   cnvcld         = ${cnvcld:-"T"}
   imfshalcnv     = 2
@@ -589,18 +617,32 @@ cat > input.nml <<EOF
   prslrd0        = 0
   ivegsrc        = 1
   isot           = 1
+  lsoil          = 4
+  lsm            = 1
+  iopt_dveg      = ${iopt_dveg:-"1"}
+  iopt_crs       = ${iopt_crs:-"1"}
+  iopt_btr       = ${iopt_btr:-"1"}
+  iopt_run       = ${iopt_run:-"1"}
+  iopt_sfc       = ${iopt_sfc:-"1"}
+  iopt_frz       = ${iopt_frz:-"1"}
+  iopt_inf       = ${iopt_inf:-"1"}
+  iopt_rad       = ${iopt_rad:-"1"}
+  iopt_alb       = ${iopt_alb:-"2"}
+  iopt_snf       = ${iopt_snf:-"4"}
+  iopt_tbot      = ${iopt_tbot:-"2"}
+  iopt_stc       = ${iopt_stc:-"1"}
   debug          = T
-  nstf_name      = 0
   lgfdlmprad     = ${lgfdlmprad:-"F"}
   effr_in        = ${effr_in:-"F"}
   cdmbgwd        = ${cdmbgwd}
   psautco        = ${psautco}
   prautco        = ${prautco}
   h2o_phys       = ${h2o_phys:-"T"}
-  nstf_name      = ${nstf_name}
+  nstf_name      = ${nstf_name:-"0,0,0,0,0"}
   nst_anl        = ${nst_anl}
-  ldiag_ugwp   = .false.
-  do_ugwp      = .false.
+  ldiag_ugwp     = .false.
+  do_ugwp        = ${do_ugwp:-"F"}
+  do_tofd        = ${do_tofd:-"T"}
   do_skeb      = $DO_SKEB
   do_sppt      = $DO_SPPT
   do_shum      = $DO_SHUM
@@ -657,6 +699,7 @@ cat > input.nml <<EOF
   fix_negative = .true.
   icloud_f = 1
   mp_time = 150.
+  reiflag = ${reiflag:-"2"}
 /
 
 &cires_ugwp_nml
@@ -743,6 +786,7 @@ cat > input.nml <<EOF
 /
 EOF
 
+
 # ftsfs = 99999 means all climo or all model, 0 means all analysis,
 # 90 mean relax to climo
 # with an e-folding time scale of 90 days.
@@ -800,7 +844,7 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
         echo "restart file missing..."
         exit 1
       fi
-      done
+   done
    cd ..
 fi
 

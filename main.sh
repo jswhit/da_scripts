@@ -158,6 +158,9 @@ export PREINP="${RUN}.t${hr}z."
 export PREINP1="${RUN}.t${hrp1}z."
 export PREINPm1="${RUN}.t${hrm1}z."
 
+if [ $skip_to_fcst == "true" ]; then
+   fg_only="true"
+fi
 if [ $fg_only ==  'false' ]; then
 
 echo "$analdate starting ens mean computation `date`"
@@ -167,7 +170,7 @@ echo "$analdate done computing ensemble mean `date`"
 # change orography in high-res control forecast nemsio file so it matches enkf ensemble,
 # adjust surface pressure accordingly.
 # this file only used to calculate analysis increment for replay
-if [ $controlfcst == 'true' ] && [ $cleanup_ensmean == 'true' ] && [ $replay_controlfcst == 'true' ]; then
+if [ $controlfcst == 'true' ] && [ $replay_controlfcst == 'true' ]; then
    charnanal='control2'
    echo "$analdate adjust orog/ps of control forecast on ens grid `date`"
    fh=$FHMIN
@@ -243,7 +246,7 @@ if [ $controlanal == 'true' ]; then
      echo "$analdate $type analysis did not complete successfully, exiting `date`"
      exit 1
    fi
-fi
+fi 
 # if high res control forecast is run, run observer on ens mean
 if [ $controlanal == 'true' ] && [ $replay_controlfcst == 'false' ] && [ $controlfcst == 'true' ]; then
    # run gsi observer with ens mean fcst background, saving jacobian.
@@ -352,7 +355,10 @@ if [ $controlfcst == 'true' ] && [ $replay_controlfcst == 'true' ] && [ $replay_
    fi
 fi
 
-fi # skip to here if fg_only = true or fg_only == true
+fi # skip to here if fg_only = true
+if [ $skip_to_fcst == "true" ]; then
+   export fg_only="false"
+fi
 
 if [ $controlfcst == 'true' ]; then
     echo "$analdate run high-res control first guess `date`"

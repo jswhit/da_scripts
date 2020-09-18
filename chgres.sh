@@ -1,6 +1,6 @@
 export LEVSp1=`expr $LEVS \+ 1`
 SIGLEVEL=${SIGLEVEL:-${FIXGLOBAL}/global_hyblev.l${LEVSp1}.txt}
-export CHGRESEXEC=${CHGRESEXEC:-${execdir}/chgres_recenter_ncio.exe}
+export CHGRESEXEC=${CHGRESEXEC:-${execdir}/enkf_chgres_recenter_nc.x}
 
 DATA=$datapath2/chgrestmp$$
 mkdir -p $DATA
@@ -11,15 +11,19 @@ ls -l $2
 ln -fs $1       atmanl_gsi
 ln -fs $2       atmanl_ensmean
 
-rm -f chgres_nc_gauss.nml
+# namelist /chgres_setup/ i_output, j_output, input_file, output_file, &
+#                      terrain_file, cld_amt, ref_file
+
+/bin/rm -f chgres_nc_gauss.nml
+/bin/rm -f $3
 cat > chgres_nc_gauss.nml << EOF
 &chgres_setup
   i_output=$LONB
   j_output=$LATB
   input_file="atmanl_gsi"
-  output_file="atmanl_gsi_ensres"
+  output_file="${3}"
   terrain_file="atmanl_ensmean"
-  vcoord_file="$SIGLEVEL"
+  ref_file="atmanl_ensmean"
 /
 EOF
 cat chgres_nc_gauss.nml
@@ -27,23 +31,21 @@ cat chgres_nc_gauss.nml
 export OMP_NUM_THREADS=$corespernode
 export OMP_STACKSIZE=256M
 #$CHGRESEXEC
-export PGM=$CHGRESEXEC
+export PGM="$CHGRESEXEC chgres_nc_gauss.nml"
 export nprocs=1
 export mpitaskspernode=1
 ${enkfscripts}/runmpi
+ls -l
 
 if [ $? -ne 0 ]; then
   exit 1
 fi
 
-if [ -s atmanl_gsi_ensres ]; then
-   mv atmanl_gsi_ensres $3
-else
-   popd
-   #/bin/rm -rf $DATA
+if [ ! -s "${3}" ]; then
+   echo "output file ${3} not created"
    exit 1
 fi
 
 popd
-#/bin/rm -rf $DATA
+/bin/rm -rf $DATA
 exit 0
