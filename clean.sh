@@ -66,7 +66,11 @@ echo "files moved to fgens, fgens2 `date`"
 if [ $save_hpss_subset == "false" ] && [ $save_hpss_full == "false" ]; then
   /bin/rm -rf fgens fgens2
   /bin/rm -f diag*cris* diag*airs* diag*iasi*
-  /bin/rm -rf control control2 ensmean
+  /bin/rm -f *fhr03* *fhr09* *chgres
+  /bin/rm -rf control ensmean
+  if [ $hr != '00' ]; then
+      /bin/rm -rf control2
+  fi
   # save backup of next analysis time once per day
   # so analysis can be restarted
   hr=`echo $analdatep1 | cut -c9-10`

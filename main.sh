@@ -314,7 +314,7 @@ if [ $controlanal == 'true' ] && [ $recenter_anal == 'true' ]; then
    if [ $hybgain == 'true' ]; then
       if [ $alpha -gt 0 ]; then
          echo "$analdate blend enkf and 3dvar increments `date`"
-         sh ${enkfscripts}/blendinc2.sh > ${current_logdir}/blendinc.out 2>&1
+         sh ${enkfscripts}/blendinc.sh > ${current_logdir}/blendinc.out 2>&1
          blendinc_done=`cat ${current_logdir}/blendinc.log`
          if [ $blendinc_done == 'yes' ]; then
            echo "$analdate increment blending/recentering completed successfully `date`"

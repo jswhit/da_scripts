@@ -108,8 +108,11 @@ else
    # remove files to save space
    cd ${analdate}
    /bin/rm -f diag*cris* diag*airs* diag*iasi*
-   /bin/rm -rf control control2 ensmean
-   #/bin/rm -f *fhr03* *fhr09*
+   /bin/rm -f *fhr03* *fhr09* *chgres
+   /bin/rm -rf control  ensmean
+   if [ $hr != '00' ]; then
+       /bin/rm -rf control2
+   fi
 fi
 
 exit $exitstat
