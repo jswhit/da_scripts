@@ -234,16 +234,16 @@ export d2_bg_k2=0.0
 # stochastic physics parameters.
 export DO_SPPT=.true.
 export SPPT=0.5
-export SPPT_TSCALE=21600.
-export SPPT_LSCALE=500.e3
+export SPPT_TSCALE=21600
+export SPPT_LSCALE=500000
 export DO_SHUM=.true.
 export SHUM=0.005
-export SHUM_TSCALE=21600.
-export SHUM_LSCALE=500.e3
+export SHUM_TSCALE=21600
+export SHUM_LSCALE=500000
 export DO_SKEB=.true.
 export SKEB=0.3
-export SKEB_TSCALE=21600.
-export SKEB_LSCALE=250.e3
+export SKEB_TSCALE=21600
+export SKEB_LSCALE=250000
 export SKEBINT=1800
 export SKEBNORM=0
 export SKEB_NPASS=30
@@ -267,15 +267,21 @@ elif [ $RES -eq 128 ]; then
    export LONB=512   
    export LATB=256  
    export dt_atmos=720
-   export cdmbgwd="0.15,2.75"
+   export cdmbgwd="0.19,1.6,1.0,1.0"  
 elif [ $RES -eq 96 ]; then
    export JCAP=188 
    export LONB=384   
    export LATB=190  
    export dt_atmos=900
-   export cdmbgwd="0.125,3.0"
+   export cdmbgwd="0.14,1.8,1.0,1.0"  # mountain blocking, ogwd, cgwd, cgwd src scaling
+elif [ $RES -eq 96 ]; then
+   export JCAP=94
+   export LONB=192   
+   export LATB=96   
+   export dt_atmos=1800
+   export cdmbgwd="0.071,2.1,1.0,1.0"  
 else
-   echo "model parameters for ensemble resolution C$RES_CTL not set"
+   echo "model parameters for ensemble resolution C$RES not set"
    exit 1
 fi
 
@@ -286,7 +292,7 @@ if [ $RES_CTL -eq 768 ]; then
    export LATB_CTL=1536
    export k_split_ctl=2
    export n_split_ctl=6
-   export dt_atmos_ctl=120    
+   export dt_atmos_ctl=150    
 elif [ $RES_CTL -eq 384 ]; then
    export dt_atmos_ctl=225
    export cdmbgwd_ctl="1.1,0.72,1.0,1.0"
@@ -301,7 +307,7 @@ elif [ $RES_CTL -eq 192 ]; then
    export LATB_CTL=384
 elif [ $RES_CTL -eq 96 ]; then
    export dt_atmos_ctl=900
-   export cdmbgwd_ctl="0.125,3.0"
+   export cdmbgwd="0.14,1.8,1.0,1.0"  # mountain blocking, ogwd, cgwd, cgwd src scaling
    export JCAP_CTL=188
    export LONB_CTL=384  
    export LATB_CTL=192

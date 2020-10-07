@@ -2,6 +2,7 @@
 
 export VERBOSE=YES
 export OMP_STACKSIZE=256M
+
 pushd ${datapath2}
 
 iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
@@ -13,14 +14,14 @@ echo "recenter ensemble perturbations about new mean for ${charfhr}"
 
 /bin/mv -f sanl_${analdate}_${charfhr}_ensmean sanl_${analdate}_${charfhr}_ensmean.orig
 filename_fg=sfg_${analdate}_${charfhr}_ensmean # ens mean first guess
+filename_fg1=sfg_${analdate}_fhr06_control # 3dvar background
 filename_anal1=sanl_${analdate}_fhr06_control # 3dvar analysis
 filename_anal2=sanl_${analdate}_${charfhr}_ensmean.orig # EnKF analysis
 filename_anal=sanl_${analdate}_${charfhr}_ensmean # analysis from blended increments
 filenamein=sanl_${analdate}_${charfhr}
 filenameout=sanlr_${analdate}_${charfhr}
-# new_anal (filename_anal) = fg + alpha*(anal_3dvar-fg) + beta*(anal_enkf-fg)
-#                          = (1.-alpha-beta)*fg + alpha*anal_3dvar + beta*anal_enkf
-export PGM="${execdir}/recenterncio_hybgain.x $filename_fg $filename_anal1 $filename_anal2 $filename_anal $filenamein $filenameout $alpha $beta $nanals"
+# new_anal (filename_anal) = fg_enkf+alpha*(anal_3dvar-fg_3dvar)+beta*(anal_enkf-fg_enkf)
+export PGM="${execdir}/recenterncio_hybgain.x $filename_fg $filename_anal1 $filename_anal2 $filename_anal $filenamein $filenameout $alpha $beta -1 $nanals"
 errorcode=0
 ${enkfscripts}/runmpi
 status=$?
