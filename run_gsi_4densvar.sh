@@ -1000,6 +1000,7 @@ nodecount=0
 # serial version
 export nprocs=1
 export OMP_NUM_THREADS=$corespernode
+export mpitaskspernode=1
 totnodes=$NODES
 nnode=0
 for node in `scontrol show hostnames $SLURM_JOB_NODELIST`; do
