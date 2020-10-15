@@ -61,6 +61,7 @@ fi
 export run_long_fcst="false"  # spawn a longer control forecast at 00 UTC
 export ensmean_restart='false'
 #export copy_history_files=1 # save pressure level history files (and compute ens mean)
+export skip_to_fcst="false" # skip to forecast step
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
@@ -417,7 +418,7 @@ if [ "$machine" == 'hera' ]; then
    export fv3gfspath=/scratch1/NCEPDEV/global/glopara
    export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
-   export gsipath=/scratch1/NCEPDEV/global/glopara/git/global-workflow/develop/sorc/gsi.fd
+   export gsipath=/scratch1/NCEPDEV/global/glopara/git/global-workflow/gfsv16b/sorc/gsi.fd
    export fixgsi=${gsipath}/fix
    export fixcrtm=/scratch1/NCEPDEV/global/gwv/l827h/lib/crtm/v2.2.6/fix
    export fixcrtm=/scratch1/NCEPDEV/global/glopara/crtm/v2.2.6/fix
