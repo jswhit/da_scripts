@@ -161,6 +161,7 @@ export PREINPm1="${RUN}.t${hrm1}z."
 if [ $skip_to_fcst == "true" ]; then
    fg_only="true"
 fi
+
 if [ $fg_only ==  'false' ]; then
 
 echo "$analdate starting ens mean computation `date`"
@@ -246,6 +247,40 @@ if [ $controlanal == 'true' ]; then
      echo "$analdate $type analysis did not complete successfully, exiting `date`"
      exit 1
    fi
+   if [ $DO_CALC_INCREMENT = "NO" ]; then
+    if [ $hybgain == "false" ]; then # change resolution of control fcst to ens resolution
+    echo "$analdate chgres control forecast to ens resolution `date`"
+    fh=$FHMIN
+    while [ $fh -le $FHMAX ]; do
+      fhr=`printf %02i $fh`
+      # run concurrently, wait
+      sh ${enkfscripts}/chgres.sh $datapath2/sfg_${analdate}_fhr${fhr}_control $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_control.chgres > ${current_logdir}/chgres_${fhr}.out 2>&1 &
+      fh=$((fh+FHOUT))
+    done
+    wait
+    if [ $? -ne 0 ]; then
+       echo "chgres control forecast to ens resolution failed, exiting...."
+       exit 1
+    fi
+    echo "$analdate chgres control forecast to ens resolution completed `date`"
+    fi
+#  add the increment to the control forecast at ens resolution to create analysis at ens resolution
+#  (needed for ens recentering step)
+    echo "$analdate calculate analysis from background + anal incr `date`"
+    fh=$FHMIN
+    while [ $fh -le $FHMAX ]; do
+      fhr=`printf %02i $fh`
+      # run concurrently, wait
+      sh ${enkfscripts}/calcanl.sh sfg_${analdate}_fhr${fhr}_control.chgres incr_${analdate}_fhr${fhr}_control sanl_${analdate}_fhr${fhr}_control.chgres > ${current_logdir}/calcanal_${fhr}.out 2>&1 &
+      fh=$((fh+FHOUT))
+    done
+    wait
+    if [ $? -ne 0 ]; then
+       echo "calculate analysis step failed, exiting...."
+       exit 1
+    fi
+    echo "$analdate done calculating analysis from background + anal incr `date`"
+    fi
 fi 
 # if high res control forecast is run, run observer on ens mean
 if [ $controlanal == 'true' ] && [ $replay_controlfcst == 'false' ] && [ $controlfcst == 'true' ]; then
@@ -305,9 +340,11 @@ else
 fi
 
 # compute ensemble mean analyses.
+if [ $write_ensmean == ".false." ]; then
 echo "$analdate starting ens mean analysis computation `date`"
 sh ${enkfscripts}/compute_ensmean_enkf.sh > ${current_logdir}/compute_ensmean_anal.out 2>&1
 echo "$analdate done computing ensemble mean analyses `date`"
+fi
 
 # recenter enkf analyses around control analysis
 if [ $controlanal == 'true' ] && [ $recenter_anal == 'true' ]; then

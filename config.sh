@@ -2,7 +2,7 @@ echo "running on $machine using $NODES nodes"
 
 export ndates_job=1 # number of DA cycles to run in one job submission
 # resolution of control and ensmemble.
-export RES=384
+export RES=384 
 export RES_CTL=768 
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
@@ -361,6 +361,28 @@ export analpertwttr_rtpp=0.0
 export pseudo_rh=.true.
 export use_correlated_oberrs=".true."
                                                                     
+# determine if writing or calculating increment
+export DO_CALC_INCREMENT="YES"
+if [ $hybgain == "true" ]; then
+  # DO_CALC_INCREMENT should always be true for hybgain
+  export DO_CALC_INCREMENT="YES"
+fi
+# Analysis increments to zero out
+export INCREMENTS_TO_ZERO="'liq_wat_inc','icmr_inc'"
+# Stratospheric increments to zero
+export INCVARS_ZERO_STRAT="'sphum_inc','liq_wat_inc','icmr_inc'"
+export INCVARS_EFOLD="5"
+if [ $DO_CALC_INCREMENT = "YES" ]; then
+  export write_fv3_increment=".false."
+  export analfileprefix='sanl'
+else
+  export analfileprefix='incr'
+  export write_fv3_increment=".true."
+fi
+export WRITE_INCR_ZERO="incvars_to_zero= $INCREMENTS_TO_ZERO,"
+export WRITE_ZERO_STRAT="incvars_zero_strat= $INCVARS_ZERO_STRAT,"
+export WRITE_STRAT_EFOLD="incvars_efold= $INCVARS_EFOLD,"
+export write_ensmean=.true. # write out ens analysis (or anal incr) in EnKF
 export letkf_flag=.true.
 export letkf_bruteforce_search=.false.
 export denkf=.true.
@@ -420,8 +442,8 @@ if [ "$machine" == 'hera' ]; then
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
    export gsipath=/scratch1/NCEPDEV/global/glopara/git/global-workflow/gfsv16b/sorc/gsi.fd
    export fixgsi=${gsipath}/fix
-   export fixcrtm=/scratch1/NCEPDEV/global/gwv/l827h/lib/crtm/v2.2.6/fix
-   export fixcrtm=/scratch1/NCEPDEV/global/glopara/crtm/v2.2.6/fix
+   #export fixcrtm=/scratch1/NCEPDEV/global/glopara/crtm/v2.2.6/fix
+   export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}

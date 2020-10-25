@@ -1,6 +1,12 @@
 #!/bin/sh
 echo "Time starting at `date` "
 
+#if [ $machine == "hera" ]; then
+#   source $MODULESHOME/init/sh
+#   module switch intel intel/19.0.4.243
+#   module switch impi impi/2019.0.5 
+#fi
+
 VERBOSE=${VERBOSE:-"YES"}
 if [[ "$VERBOSE" = "YES" ]]; then
    set -x
@@ -92,44 +98,14 @@ ncp="/bin/cp -f"
 nmv="/bin/mv -f"
 nln="/bin/ln -fs"
 
-# copy symlinks if needed.
-#if [[ "$lread_obs_save" = ".false." && "$HXONLY" = "YES" ]]; then
-#tmpdir_ensmean=${datges}/gsitmp_${charnanal2}
-#mkdir -p $tmpdir
-#for filein in ${tmpdir_ensmean}/obs_input*; do
-#  file=`basename ${filein}`
-#  ln -fs $filein ${tmpdir}/${file}
-#done
-#for filein in ${tmpdir_ensmean}/*bin; do
-#  file=`basename ${filein}`
-#  /bin/cp -a $filein ${tmpdir}/${file}
-#done
-#for filein in ${tmpdir_ensmean}/*bufr; do
-#  file=`basename ${filein}`
-#  /bin/cp -a $filein ${tmpdir}/${file}
-#done
-#for filein in ${tmpdir_ensmean}/*bufrears; do
-#  file=`basename ${filein}`
-#  /bin/cp -a $filein ${tmpdir}/${file}
-#done
-#for filein in ${tmpdir_ensmean}/*bufr_db do
-#  file=`basename ${filein}`
-#  /bin/cp -a $filein ${tmpdir}/${file}
-#done
-#/bin/cp -a ${tmpdir_ensmean}/tcvitals ${tmpdir}/tcvitals
-#/bin/cp -a ${tmpdir_ensmean}/satbias_in ${tmpdir}/satbias_in
-#/bin/cp -a ${tmpdir_ensmean}/satbias_angle ${tmpdir}/satbias_angle
-#fi
-
 # go to $tmpdir
 cd $tmpdir
 
 echo "Time before global cycle `date` "
 
 # Set the JCAP resolution which you want.
-# All resolutions use LEVS=64
 export JCAP_A=${JCAP_A:-$JCAP}
-export LEVS=${LEVS:-64}
+export LEVS=${LEVS:-127}
 export JCAP_B=${JCAP_B:-$JCAP}
 export lobsdiag_forenkf=${lobsdiag_forenkf:-".false."}
 
@@ -145,109 +121,6 @@ SATANGO=${SATANGO:-$savdir/${RUN}.t${hha}z.satang}
 BIASO=${BIASO:-$savdir/${RUN}.t${hha}z.abias}
 BIASOAIR=${BIASOAIR:-$savdir/${RUN}.t${hha}z.abias_air}
 BIASO_PC=${BIASO_PC:-$savdir/${RUN}.t${hha}z.abias_pc}
-
-
-# Make gsi namelist
-# CO2 namelist and file decisions
-#ICO2=${ICO2:-0}
-#if [ $ICO2 -gt 0 ] ; then
-#        # Copy co2 files to $tmpdir
-#        co2dir=${CO2DIR:-$fixgsi}
-#        yyyy=$(echo ${CDATE:-$adate}|cut -c1-4)
-#        rm ./global_co2_data.txt
-#        while [ $yyyy -ge 1957 ] ;do
-#                co2=$co2dir/global_co2historicaldata_$yyyy.txt
-#                #co2=$co2dir/global_co2.gcmscl_$yyyy.txt
-#                if [ -s $co2 ] ; then
-#                        $ncp $co2 ./global_co2_data.txt
-#                break
-#                fi
-#                ((yyyy-=1))
-#        done
-#        if [ ! -s ./global_co2_data.txt ] ; then
-#                echo "\./global_co2_data.txt" not created
-#                exit 1
-#   fi
-#fi
-
-# CO2 namelist and file decisions
-ICO2=${ICO2:-0}
-if [ $ICO2 -gt 0 ] ; then
-        # Copy co2 files to $tmpdir
-        co2dir=${CO2DIR:-$fixgsi}
-        yyyy=$(echo ${CDATE:-$adate}|cut -c1-4)
-        rm ./global_co2_data.txt
-        co2=$co2dir/global_co2.gcmscl_$yyyy.txt
-        while [ ! -s $co2 ] ; do
-                ((yyyy-=1))
-                co2=$co2dir/global_co2.gcmscl_$yyyy.txt
-        done
-        if [ -s $co2 ] ; then
-                $ncp $co2 ./global_co2_data.txt
-        fi
-        if [ ! -s ./global_co2_data.txt ] ; then
-                echo "\./global_co2_data.txt" not created
-                exit 1
-   fi
-fi
-#CH4 file decision
-ICH4=${ICH4:-0}
-if [ $ICH4 -gt 0 ] ; then
-#        # Copy ch4 files to $tmpdir
-        ch4dir=${CH4DIR:-$fixgsi}
-        yyyy=$(echo ${CDATE:-$adate}|cut -c1-4)
-        rm ./ch4globaldata.txt
-        ch4=$ch4dir/global_ch4_esrlctm_$yyyy.txt
-        while [ ! -s $ch4 ] ; do
-                ((yyyy-=1))
-                ch4=$ch4dir/global_ch4_esrlctm_$yyyy.txt
-        done
-        if [ -s $ch4 ] ; then
-                $ncp $ch4 ./ch4globaldata.txt
-        fi
-        if [ ! -s ./ch4globaldata.txt ] ; then
-                echo "\./ch4globaldata.txt" not created
-                exit 1
-   fi
-fi
-IN2O=${IN2O:-0}
-if [ $IN2O -gt 0 ] ; then
-#        # Copy n2o files to $tmpdir
-        n2odir=${N2ODIR:-$fixgsi}
-        yyyy=$(echo ${CDATE:-$adate}|cut -c1-4)
-        rm ./n2oglobaldata.txt
-        n2o=$n2odir/global_n2o_esrlctm_$yyyy.txt
-        while [ ! -s $n2o ] ; do
-                ((yyyy-=1))
-                n2o=$n2odir/global_n2o_esrlctm_$yyyy.txt
-        done
-        if [ -s $n2o ] ; then
-                $ncp $n2o ./n2oglobaldata.txt
-        fi
-        if [ ! -s ./n2oglobaldata.txt ] ; then
-                echo "\./n2oglobaldata.txt" not created
-                exit 1
-   fi
-fi
-ICO=${ICO:-0}
-if [ $ICO -gt 0 ] ; then
-#        # Copy CO files to $tmpdir
-        codir=${CODIR:-$fixgsi}
-        yyyy=$(echo ${CDATE:-$adate}|cut -c1-4)
-        rm ./coglobaldata.txt
-        co=$codir/global_co_esrlctm_$yyyy.txt
-        while [ ! -s $co ] ; do
-                ((yyyy-=1))
-                co=$codir/global_co_esrlctm_$yyyy.txt
-        done
-        if [ -s $co ] ; then
-                $ncp $co ./coglobaldata.txt
-        fi
-        if [ ! -s ./coglobaldata.txt ] ; then
-                echo "\./coglobaldata.txt" not created
-                exit 1
-   fi
-fi
 
 if [ "${iau_delthrs}" != "-1" ]; then
    lwrite4danl=.true.
@@ -279,7 +152,7 @@ if [[ "$HXONLY" != "YES" ]]; then
       #STRONGOPTS="tlnmc_option=4,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
       # no strong bal constraint
       #STRONGOPTS="tlnmc_option=0,nstrong=0,nvmodes_keep=0,baldiag_full=.false.,baldiag_inc=.false.,"
-      SETUP="$SETUP,miter=2,niter(1)=50,niter(2)=150"
+      SETUP="$SETUP,miter=2,niter(1)=100,niter(2)=100"
    fi
 else
    STRONGOPTS="tlnmc_option=0,nstrong=0,nvmodes_keep=0,baldiag_full=.false.,baldiag_inc=.false.,"
@@ -288,8 +161,7 @@ GRIDOPTS=""
 BKGVERR=""
 ANBKGERR=""
 JCOPTS=""
-#  use tcv_mod, only: init_tcps_errvals,tcp_refps,tcp_width,tcp_ermin,tcp_ermax
-OBSQC="tcp_width=60.0,tcp_ermin=2.0,tcp_ermax=12.0,aircraft_t_bc=$aircraft_bc,biaspredt=1000.0,upd_aircraft=$aircraft_bc,cleanup_tail=.true." # error variance goes from tcp_ermin (when O-F=0) to tcp_ermax (when O-F=tcp_width=50)
+OBSQC=""
 # GSI defaults
 #   tcp_width=50.0_r_kind
 #   tcp_ermin=0.75_r_kind  
@@ -330,7 +202,7 @@ fi
 # Create global_gsi namelist
 cat <<EOF > gsiparm.anl
  &SETUP
-   niter_no_qc(1)=25,niter_no_qc(2)=0,
+   niter_no_qc(1)=50,niter_no_qc(2)=0,
    write_diag(1)=.true.,write_diag(2)=.false.,write_diag(3)=.true.,
    netcdf_diag=.true.,binary_diag=.false.,
    qoption=2,
@@ -338,7 +210,12 @@ cat <<EOF > gsiparm.anl
    tzr_qc=1,iguess=-1,
    oneobtest=.false.,retrieval=.false.,l_foto=.false.,
    use_pbl=.false.,use_compress=.true.,nsig_ext=56,gpstop=55.,
-   write_fv3_incr=.false.,use_gfs_ncio=.true.,sfcnst_comb=.true.,cwoption=3,imp_physics=${imp_physics},
+   use_gfs_ncio=.true.,sfcnst_comb=.true.,cwoption=3,imp_physics=${imp_physics},
+   write_fv3_incr=$write_fv3_increment,
+   crtm_coeffs_path='./crtm_coeffs/',
+   $WRITE_INCR_ZERO
+   $WRITE_ZERO_STRAT
+   $WRITE_STRAT_EFOLD
    $SETUP
  /
  &GRIDOPTS
@@ -368,8 +245,10 @@ cat <<EOF > gsiparm.anl
    $STRONGOPTS
  /
  &OBSQC
-   dfact=0.75,dfact1=3.0,noiqc=.true.,oberrflg=.false.,c_varqc=0.02,
-   use_poq7=.true.,qc_noirjaco3_pole=.true.,vqc=.true.,
+   dfact=0.75,dfact1=3.0,noiqc=.true.,oberrflg=.false.,c_varqc=0.04,
+   use_poq7=.true.,qc_noirjaco3_pole=.true.,vqc=.false.,nvqc=.true.,
+   aircraft_t_bc=.true.,biaspredt=1.0e5,upd_aircraft=.true.,cleanup_tail=.true.,
+   tcp_width=60.0,tcp_ermin=2.0,tcp_ermax=12.0,
    $OBSQC
  /
  /
@@ -508,11 +387,6 @@ EOF
 
 # Set fixed files
 #   berror   = forecast model background error statistics
-#   specoef  = CRTM spectral coefficients
-#   trncoef  = CRTM transmittance coefficients
-#   emiscoef = CRTM coefficients for IR sea surface emissivity model
-#   aerocoef = CRTM coefficients for aerosol effects
-#   cldcoef  = CRTM coefficients for cloud effects
 #   satinfo  = text file with information about assimilation of brightness temperatures
 #   satangl  = angle dependent bias correction file (fixed in time)
 #   pcpinfo  = text file with information about assimilation of prepcipitation rates
@@ -522,32 +396,9 @@ EOF
 #   bufrtable= text file ONLY needed for single obs test (oneobstest=.true.)
 #   bftab_sst= bufr table for sst ONLY needed for sst retrieval (retrieval=.true.)
 
-berror=$fixgsi/Big_Endian/global_berror.l${LEVS}y${NLAT}.f77
+#berror=$fixgsi/Big_Endian/global_berror.l${LEVS}y${NLAT}.f77
 berror=/scratch2/BMC/gsienkf/whitaker/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_janjulysmooth0p5
-# temporary fix until jeff moved this file into the master location
-#if [ $JCAP -eq 1152 ]; then
-#   berror=/lfs1/projects/gfsenkf/fix/global_berror.l64y1154.f77
-#fi
-#emiscoef_IRwater=$fixcrtm/EmisCoeff/IR_Water/Big_Endian/Nalli.IRwater.EmisCoeff.bin   
-#emiscoef_IRice=$fixcrtm/EmisCoeff/IR_Ice/SEcategory/Big_Endian/NPOESS.IRice.EmisCoeff.bin               
-#emiscoef_IRland=$fixcrtm/EmisCoeff/IR_Land/SEcategory/Big_Endian/NPOESS.IRland.EmisCoeff.bin
-#emiscoef_IRsnow=$fixcrtm/EmisCoeff/IR_Snow/SEcategory/Big_Endian/NPOESS.IRsnow.EmisCoeff.bin             
-#emiscoef_VISice=$fixcrtm/EmisCoeff/VIS_Ice/SEcategory/Big_Endian/NPOESS.VISice.EmisCoeff.bin             
-#emiscoef_VISland=$fixcrtm/EmisCoeff/VIS_Land/SEcategory/Big_Endian/NPOESS.VISland.EmisCoeff.bin                   
-#emiscoef_VISsnow=$fixcrtm/EmisCoeff/VIS_Snow/SEcategory/Big_Endian/NPOESS.VISsnow.EmisCoeff.bin                   
-#emiscoef_VISwater=$fixcrtm/EmisCoeff/VIS_Water/SEcategory/Big_Endian/NPOESS.VISwater.EmisCoeff.bin                 
-#emiscoef_MWwater=$fixcrtm/EmisCoeff/MW_Water/Big_Endian/FASTEM6.MWwater.EmisCoeff.bin
-emiscoef_IRwater=$fixcrtm/Nalli.IRwater.EmisCoeff.bin   
-emiscoef_IRice=$fixcrtm/NPOESS.IRice.EmisCoeff.bin               
-emiscoef_IRland=$fixcrtm/NPOESS.IRland.EmisCoeff.bin
-emiscoef_IRsnow=$fixcrtm/NPOESS.IRsnow.EmisCoeff.bin             
-emiscoef_VISice=$fixcrtm/NPOESS.VISice.EmisCoeff.bin             
-emiscoef_VISland=$fixcrtm/NPOESS.VISland.EmisCoeff.bin                   
-emiscoef_VISsnow=$fixcrtm/NPOESS.VISsnow.EmisCoeff.bin                   
-emiscoef_VISwater=$fixcrtm/NPOESS.VISwater.EmisCoeff.bin                 
-emiscoef_MWwater=$fixcrtm/FASTEM6.MWwater.EmisCoeff.bin
-aercoef=$fixcrtm/AerosolCoeff.bin
-cldcoef=$fixcrtm/CloudCoeff.bin
+
 satinfo=${SATINFO:-$fixgsi/global_satinfo.txt}
 atmsfilter=${ATMSFILTER:-$fixgsi/atms_beamwidth.txt}
 scaninfo=$fixgsi/global_scaninfo.txt
@@ -555,9 +406,12 @@ satangl=$fixgsi/global_satangbias.txt
 pcpinfo=$fixgsi/global_pcpinfo.txt
 ozinfo=${OZINFO:-$fixgsi/global_ozinfo.txt}
 convinfo=${CONVINFO:-$fixgsi/global_convinfo.txt}
+insituinfo=${INSITUINFO:-$fixgsi/global_insituinfo.txt}
+aeroinfo=${AEROINFO:-$fixgsi/global_aeroinfo.txt}
 errtable=$fixgsi/prepobs_errtable.global
-anavinfo=${ANAVINFO:-$fixgsi/global_anavinfo.l64.txt}
+anavinfo=${ANAVINFO:-$fixgsi/global_anavinfo.l${LEVS}txt}
 radcloudinfo=${RADCLOUDINFO:-${fixgsi}/cloudy_radiance_info.txt}
+vqcdat=${vqcdat:-${fixgsi}/vqctp001.dat}
 
 # Only need this file for single obs test
 bufrtable=$fixgsi/prepobs_prep.bufrtable
@@ -573,17 +427,6 @@ $nln $gsiexec ./gsi.x
 $ncp $anavinfo ./anavinfo
 $ncp $radcloudinfo ./cloudy_radiance_info.txt
 $nln $berror   ./berror_stats
-$ncp $emiscoef_IRwater ./Nalli.IRwater.EmisCoeff.bin
-$ncp $emiscoef_IRice ./NPOESS.IRice.EmisCoeff.bin               
-$ncp $emiscoef_IRsnow ./NPOESS.IRsnow.EmisCoeff.bin             
-$ncp $emiscoef_IRland ./NPOESS.IRland.EmisCoeff.bin             
-$ncp $emiscoef_VISice ./NPOESS.VISice.EmisCoeff.bin             
-$ncp $emiscoef_VISland ./NPOESS.VISland.EmisCoeff.bin           
-$ncp $emiscoef_VISsnow ./NPOESS.VISsnow.EmisCoeff.bin           
-$ncp $emiscoef_VISwater ./NPOESS.VISwater.EmisCoeff.bin                 
-$ncp $emiscoef_MWwater ./FASTEM6.MWwater.EmisCoeff.bin
-$nln $aercoef  ./AerosolCoeff.bin
-$nln $cldcoef  ./CloudCoeff.bin
 $nln $satangl  ./satbias_angle
 $nln $satinfo  ./satinfo
 $nln $atmsfilter ./atms_beamwidth.txt
@@ -591,7 +434,10 @@ $nln $scaninfo ./scaninfo
 $nln $pcpinfo  ./pcpinfo
 $nln $ozinfo   ./ozinfo
 $nln $convinfo ./convinfo
+$nln $insituinfo ./insituinfo
+$nln $aeroinfo ./aeroinfo
 $nln $errtable ./errtable
+$nln $vqcdat   ./vqctp001.dat
 
 $nln $bufrtable ./prepobs_prep.bufrtable
 $nln $bftab_sst ./bftab_sstphr
@@ -621,31 +467,27 @@ GBIAS_PC=${GBIAS_PC:-$datgesm1/${prefix_tbc}.abias_pc}
 GBIASAIR=${GBIASAIR:-$datgesm1/${prefix_tbc}.abias_air}
 GSATANG=${GSATANG:-$datgesm1/${prefix_tbc}.satang}
 
-#coeffiles=`ls -1 ${fixcrtm}/SpcCoeff/Big_Endian/*.SpcCoeff.bin`
-#for coeffile in $coeffiles;  do
-#for coeffile in ${fixcrtm}/SpcCoeff/Big_Endian/*.SpcCoeff.bin;  do
-for coeffile in ${fixcrtm}/*.SpcCoeff.bin;  do
-    satsen=`basename $coeffile .SpcCoeff.bin`
-    count=`grep -c $satsen $satinfo`
-    if [[ $count -gt 0 ]]; then
-    spccoeff=${satsen}.SpcCoeff.bin
-    #if  [[ -s $fixcrtm/SpcCoeff/Big_Endian/$spccoeff ]]; then
-    #   #$nln $fixcrtm/SpcCoeff/Big_Endian/$spccoeff ./
-    if  [[ -s $fixcrtm/$spccoeff ]]; then
-       $nln $fixcrtm/$spccoeff ./
-    fi
-    taucoeff=${satsen}.TauCoeff.bin
-    #if  [[ -s $fixcrtm/TauCoeff/Big_Endian/$taucoeff ]]; then
-       #$nln $fixcrtm/TauCoeff/Big_Endian/$taucoeff ./
-    if  [[ -s $fixcrtm/$taucoeff ]]; then
-       $nln $fixcrtm/$taucoeff ./
-    fi
-    fi
+##############################################################
+# CRTM Spectral and Transmittance coefficients
+mkdir -p crtm_coeffs
+for file in $(awk '{if($1!~"!"){print $1}}' satinfo | sort | uniq); do
+   $nln $fixcrtm/${file}.SpcCoeff.bin ./crtm_coeffs/
+   $nln $fixcrtm/${file}.TauCoeff.bin ./crtm_coeffs/
 done
-#ls -l *bin
 
+$nln $fixcrtm/Nalli.IRwater.EmisCoeff.bin   ./crtm_coeffs/Nalli.IRwater.EmisCoeff.bin
+$nln $fixcrtm/NPOESS.IRice.EmisCoeff.bin    ./crtm_coeffs/NPOESS.IRice.EmisCoeff.bin
+$nln $fixcrtm/NPOESS.IRland.EmisCoeff.bin   ./crtm_coeffs/NPOESS.IRland.EmisCoeff.bin
+$nln $fixcrtm/NPOESS.IRsnow.EmisCoeff.bin   ./crtm_coeffs/NPOESS.IRsnow.EmisCoeff.bin
+$nln $fixcrtm/NPOESS.VISice.EmisCoeff.bin   ./crtm_coeffs/NPOESS.VISice.EmisCoeff.bin
+$nln $fixcrtm/NPOESS.VISland.EmisCoeff.bin  ./crtm_coeffs/NPOESS.VISland.EmisCoeff.bin
+$nln $fixcrtm/NPOESS.VISsnow.EmisCoeff.bin  ./crtm_coeffs/NPOESS.VISsnow.EmisCoeff.bin
+$nln $fixcrtm/NPOESS.VISwater.EmisCoeff.bin ./crtm_coeffs/NPOESS.VISwater.EmisCoeff.bin
+$nln $fixcrtm/FASTEM6.MWwater.EmisCoeff.bin ./crtm_coeffs/FASTEM6.MWwater.EmisCoeff.bin
+$nln $fixcrtm/AerosolCoeff.bin              ./crtm_coeffs/AerosolCoeff.bin
+$nln $fixcrtm/CloudCoeff.bin                ./crtm_coeffs/CloudCoeff.bin
 
-# Copy observational data to $tmpdir
+# link observational data to $tmpdir
 if [[ ! -s $datobs/${prefix_obs}.prepbufr ]]; then
  echo "no prepbufr file!"
  exit 1
@@ -700,12 +542,12 @@ fi
 if [[ -s $datobs/${prefix_obs}.1bmhs.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.1bmhs.${suffix}    ./mhsbufr
 fi
-if [[ -s $datobs/${prefix_obs}.esmhs.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.esmhs.${suffix}    ./mhsbufrears
-fi
-if [[ -s $datobs/${prefix_obs}.mhsdb.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.mhsdb.${suffix}    ./mhsbufr_db
-fi
+#if [[ -s $datobs/${prefix_obs}.esmhs.${suffix} ]]; then
+#$nln $datobs/${prefix_obs}.esmhs.${suffix}    ./mhsbufrears
+#fi
+#if [[ -s $datobs/${prefix_obs}.mhsdb.${suffix} ]]; then
+#$nln $datobs/${prefix_obs}.mhsdb.${suffix}    ./mhsbufr_db
+#fi
 if [[ -s $datobs/${prefix_obs}.atms.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.atms.${suffix}      ./atmsbufr
 fi
@@ -958,6 +800,34 @@ if [[ "$HXONLY" = "NO" ]]; then
       fi
       if [ -s ./siga09 ]; then
          $nmv siga09          $SIGANL09
+      fi
+      $nmv satbias_out $BIASO
+      $nmv satbias_pc.out $BIASO_PC
+      if [ -s aircftbias_out ]; then
+      $nmv aircftbias_out $BIASOAIR
+      fi
+      if [ $DONST = "YES" ]; then
+         $nmv dtfanl $DTFANL 
+      fi
+   elif [ -s ./siginc.nc ] && [ -s ./satbias_out ]; then
+      if [ -s ./sigi03.nc ]; then
+         $nmv sigi03.nc          $SIGANL03
+      fi
+      if [ -s ./sigi04.nc ]; then
+         $nmv sigi04.nc          $SIGANL04
+      fi
+      if [ -s ./sigi05.nc ]; then
+         $nmv sigi05.nc          $SIGANL05
+      fi
+      $nmv siginc.nc             $SIGANL06
+      if [ -s ./sigi07.nc ]; then
+          $nmv sigi07.nc         $SIGANL07
+      fi
+      if [ -s ./sigi08.nc ]; then
+         $nmv sigi08.nc          $SIGANL08
+      fi
+      if [ -s ./sigi09.nc ]; then
+         $nmv sigi09.nc          $SIGANL09
       fi
       $nmv satbias_out $BIASO
       $nmv satbias_pc.out $BIASO_PC

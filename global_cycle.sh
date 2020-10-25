@@ -386,6 +386,7 @@ cat << EOF > fort.37
  /
 EOF
 
+/bin/cp fort.35 fort.36 fort.37 $enkfscripts
 #$APRUNCY $CYCLEXEC $REDOUT$PGMOUT $REDERR$PGMERR
 export OMP_NUM_THREADS=`expr $corespernode \/ 6`
 nprocs=6 mpitaskspernode=6 OMP_NUM_THREADS=$OMP_NUM_THREADS ${enkfscripts}/runmpi

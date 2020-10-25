@@ -39,7 +39,7 @@ ln -fs ${current_logdir}/convinfo.out ${datapath2}/fort.205
 
 # remove previous analyses
 if [ $cleanup_anal == 'true' ]; then
-   /bin/rm -f ${datapath2}/sanl_*mem*
+   /bin/rm -f ${datapath2}/${analfileprefix}_*mem*
 fi
 
 niter=1

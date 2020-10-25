@@ -95,16 +95,16 @@ echo "SKEB SPPT SHUM = $SKEB $SPPT $SHUM"
 
 sh ${enkfscripts}/${rungfs}
 
-# interpolate pressure level history files to 1x1 grid
-echo "interpolate pressure level history files to 1x1 deg grid `date`"
-cd ${enkfscripts}
-$python ncinterp.py ${DATOUT}/${charnanal} ${datapath2}/fv3long${charnanal}_historyp_${analdate}_latlon.nc $RES_CTL ${analdate}
-status=$?
-if [ $status -eq 0 ]; then
-   /bin/rm -rf ${DATOUT} 
-   echo "yes" > ${current_logdir}/run_long_fcst.log
-   echo "all done `date`"
-else
-   echo "no" > ${current_logdir}/run_long_fcst.log
-   echo "failed `date`"
-fi
+## interpolate pressure level history files to 1x1 grid
+#echo "interpolate pressure level history files to 1x1 deg grid `date`"
+#cd ${enkfscripts}
+#$python ncinterp.py ${DATOUT}/${charnanal} ${datapath2}/fv3long${charnanal}_historyp_${analdate}_latlon.nc $RES_CTL ${analdate}
+#status=$?
+#if [ $status -eq 0 ]; then
+#   /bin/rm -rf ${DATOUT} 
+#   echo "yes" > ${current_logdir}/run_long_fcst.log
+#   echo "all done `date`"
+#else
+#   echo "no" > ${current_logdir}/run_long_fcst.log
+#   echo "failed `date`"
+#fi

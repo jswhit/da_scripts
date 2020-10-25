@@ -16,7 +16,7 @@ for nfhr in $iaufhrs2; do
   filemissing='no'
   while [ $nanal -le $nanals ]; do
      charnanal="mem"`printf %03i $nanal`
-     analfile="${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}"
+     analfile="${datapath2}/${analfileprefix}_${analdate}_${charfhr}_${charnanal}"
      if [ ! -s $analfile ]; then
         filemissing='yes'
      fi
@@ -60,8 +60,9 @@ cat <<EOF > enkf.nml
   reducedgrid=${reducedgrid},nlevs=$LEVS,nanals=$nanals,deterministic=$deterministic,imp_physics=$imp_physics,
   npefiles=$npefiles,lobsdiag_forenkf=.true.,write_spread_diag=.false.,netcdf_diag=.true.,
   sortinc=$sortinc,univaroz=$univaroz,nhr_anal=$iaufhrs,nhr_state=$enkfstatefhrs,getkf=$getkf,
-  use_correlated_oberrs=${use_correlated_oberrs},use_gfs_ncio=.true.,nccompress=T,paranc=F,
-  adp_anglebc=.true.,angord=4,newpc4pred=.true.,use_edges=.false.,emiss_bc=.true.,biasvar=-500,nobsl_max=$nobsl_max,use_qsatensmean=.true.
+  use_correlated_oberrs=${use_correlated_oberrs},use_gfs_ncio=.true.,nccompress=T,paranc=F,write_fv3_incr=${write_fv3_increment},write_ensmean=${write_ensmean},
+  adp_anglebc=.true.,angord=4,newpc4pred=.true.,use_edges=.false.,emiss_bc=.true.,biasvar=-500,nobsl_max=$nobsl_max,use_qsatensmean=.true.,
+  ${WRITE_INCR_ZERO}
  /
  &satobs_enkf
   sattypes_rad(1) = 'amsua_n15',     dsis(1) = 'amsua_n15',
@@ -200,7 +201,7 @@ nanal=1
 filemissing='no'
 while [ $nanal -le $nanals ]; do
    charnanal="mem"`printf %03i $nanal`
-   analfile=${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}
+   analfile=${datapath2}/${analfileprefix}_${analdate}_${charfhr}_${charnanal}
    if [ ! -s $analfile ]; then
      filemissing='yes'
    fi
