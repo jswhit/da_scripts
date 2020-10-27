@@ -19,6 +19,8 @@ export replay_controlfcst='true'
 # for dual-res hybrid, set hybgain=false, replay_controlfcst=false
 #export hybgain='false' # set to true for hybrid gain 3DVar/EnKF
 #export replay_controlfcst='false'
+# determine if writing or calculating increment 
+export DO_CALC_INCREMENT="YES" # always YES if hybgain="true"
 export cores=`expr $NODES \* $corespernode`
 
 ## check that value of NODES is consistent with PBS_NP on theia.
@@ -361,8 +363,6 @@ export analpertwttr_rtpp=0.0
 export pseudo_rh=.true.
 export use_correlated_oberrs=".true."
                                                                     
-# determine if writing or calculating increment
-export DO_CALC_INCREMENT="YES"
 if [ $hybgain == "true" ]; then
   # DO_CALC_INCREMENT should always be true for hybgain
   export DO_CALC_INCREMENT="YES"
