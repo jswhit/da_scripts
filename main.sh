@@ -341,9 +341,9 @@ fi
 
 # compute ensemble mean analyses.
 if [ $write_ensmean == ".false." ]; then
-echo "$analdate starting ens mean analysis computation `date`"
-sh ${enkfscripts}/compute_ensmean_enkf.sh > ${current_logdir}/compute_ensmean_anal.out 2>&1
-echo "$analdate done computing ensemble mean analyses `date`"
+   echo "$analdate starting ens mean analysis computation `date`"
+   sh ${enkfscripts}/compute_ensmean_enkf.sh > ${current_logdir}/compute_ensmean_anal.out 2>&1
+   echo "$analdate done computing ensemble mean analyses `date`"
 fi
 
 # recenter enkf analyses around control analysis

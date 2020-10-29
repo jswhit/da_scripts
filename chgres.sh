@@ -6,10 +6,11 @@ DATA=$datapath2/chgrestmp$$
 mkdir -p $DATA
 pushd $DATA
 
-ls -l $1
-ls -l $2
 ln -fs $1       atmanl_gsi
 ln -fs $2       atmanl_ensmean
+echo "terrain file/ref file atmanl_ensmean symlinked to $2"
+echo "input file atmanl_gsi symlinked to $1"
+echo "output file $3"
 
 # namelist /chgres_setup/ i_output, j_output, input_file, output_file, &
 #                      terrain_file, cld_amt, ref_file

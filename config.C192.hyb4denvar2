@@ -277,7 +277,7 @@ elif [ $RES -eq 96 ]; then
    export LATB=190  
    export dt_atmos=900
    export cdmbgwd="0.14,1.8,1.0,1.0"  # mountain blocking, ogwd, cgwd, cgwd src scaling
-elif [ $RES -eq 96 ]; then
+elif [ $RES -eq 48 ]; then
    export JCAP=94
    export LONB=192   
    export LATB=96   
