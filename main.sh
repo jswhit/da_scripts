@@ -172,7 +172,7 @@ echo "$analdate done computing ensemble mean `date`"
 # adjust surface pressure accordingly.
 # this file only used to calculate analysis increment for replay
 if [ $replay_controlfcst == 'true' ]; then
-   charnanal='control2'
+   charnanal='control'
    echo "$analdate change resolution of control forecast to ens resolution `date`"
    fh=$FHMIN
    while [ $fh -le $FHMAX ]; do
@@ -189,19 +189,6 @@ if [ $replay_controlfcst == 'true' ]; then
    echo "$analdate done adjusting orog/ps of control forecast on ens grid `date`"
 fi
 
-# for pure enkf or if replay cycle used for control forecast, symlink
-# ensmean files to 'control'
-if [ $replay_controlfcst == 'true' ]; then
-   # single res gsi, just symlink ensmean to control (no separate control forecast)
-   fh=$FHMIN
-   while [ $fh -le $FHMAX ]; do
-     fhr=`printf %02i $fh`
-     ln -fs $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_control
-     ln -fs $datapath2/bfg_${analdate}_fhr${fhr}_ensmean $datapath2/bfg_${analdate}_fhr${fhr}_control
-     fh=$((fh+FHOUT))
-   done
-fi
-
 # if ${datapathm1}/cold_start_bias exists, GSI run in 'observer' mode
 # to generate diag_rad files to initialize angle-dependent 
 # bias correction.
@@ -212,7 +199,7 @@ else
 fi
 
 # use ensmean mean background for 3dvar analysis/observer calculatino
-export charnanal='control' # control is symlink to ens mean
+export charnanal='ensmean' 
 export charnanal2='ensmean'
 export lobsdiag_forenkf='.true.'
 export skipcat="false"
@@ -227,6 +214,8 @@ else
  echo "$analdate 3DVar analysis did not complete successfully, exiting `date`"
  exit 1
 fi
+# rename 3dvar analysis
+/bin/mv -f ${datapath}/sanl_${analdate}_fhr06_ensmean ${datapath}/sanl_${analdate}_fhr06_control
 
 # run enkf analysis.
 echo "$analdate run enkf `date`"
@@ -267,10 +256,10 @@ if [ $alpha -gt 0 ]; then
 fi
 
 # for passive (replay) cycling of control forecast, optionally run GSI observer
-# on control forecast background (diag files saved with 'control2' suffix)
+# on control forecast background (diag files saved with 'control' suffix)
 if [ $replay_controlfcst == 'true' ] && [ $replay_run_observer == "true" ]; then
-   export charnanal='control2' 
-   export charnanal2='control2' 
+   export charnanal='control' 
+   export charnanal2='control' 
    export lobsdiag_forenkf='.false.'
    export skipcat="false"
    echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"

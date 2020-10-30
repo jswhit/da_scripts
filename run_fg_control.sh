@@ -1,11 +1,7 @@
 # run high-res control first guess.
 # first, clean up old first guesses.
 
-if [ $replay_controlfcst == 'true' ]; then
-   export charnanal="control2"
-else
-   export charnanal="control"
-fi
+export charnanal="control"
 echo "charnanal = $charnanal"
 export DATOUT="${datapath}/${analdatep1}"
 echo "DATOUT = $DATOUT"

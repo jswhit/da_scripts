@@ -54,7 +54,7 @@ if [ "$VERBOSE" == "YES" ]; then
 fi
 
 niter=${niter:-1}
-if [ "$charnanal" != "control" ] && [ "$charnanal" != "ensmean" ] && [ "$charnanal" != "control2" ]; then
+if [ "$charnanal" != "control" ] && [ "$charnanal" != "ensmean" ]; then
    nmem=`echo $charnanal | cut -f3 -d"m"`
    nmem=$(( 10#$nmem )) # convert to decimal (remove leading zeros)
 else
@@ -196,7 +196,7 @@ if [ "$DO_CALC_INCREMENT" == "YES" ]; then
 # IAU - multiple increments.
       for fh in $iaufhrs2; do
          export increment_file="fv3_increment${fh}.nc"
-         if [ "$replay_controlfcst" == 'true' ] && [ "$charnanal" == 'control2' ]; then
+         if [ "$replay_controlfcst" == 'true' ]; then
             export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_ensmean"
             export fgfile="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}.chgres"
          else

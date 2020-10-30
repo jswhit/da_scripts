@@ -12,9 +12,6 @@ export alpha=250 # percentage of 3dvar increment (beta_2*1000)
 export beta=1000 # percentage of enkf increment (*10)
 export exptname="C${RES}_hybgain"
 # for 'passive' or 'replay' cycling of control fcst 
-# control forecast files have 'control2' suffix, instead of 'control'
-# GSI observer will be run on 'control2' forecast
-# this is for diagnostic purposes (to get GSI diagnostic files) 
 export replay_controlfcst='true'
 
 export fg_gfs="run_ens_fv3.sh"
@@ -29,7 +26,7 @@ export cleanup_anal='true'
 export cleanup_controlanl='true'
 export cleanup_observer='true' 
 export resubmit='true'
-export replay_run_observer='true' # run observer on replay forecast
+export replay_run_observer='true' # run observer on replay control forecast
 # python script checkdate.py used to check
 # YYYYMMDDHH analysis date string to see if
 # full ensemble should be saved to HPSS (returns 0 if 

@@ -19,22 +19,14 @@ cd $datapath2
 /bin/rm -rf fgens fgens2
 mkdir fgens
 mkdir fgens2
-if [ $replay_controlfcst == 'true' ]; then
-   charnanal='control2'
-else
-   charnanal='control'
-fi
+charnanal='control'
 /bin/rm -f mem*/*nc mem*/*txt mem*/*grb mem*/*dat mem*/co2*
 /bin/rm -f ${charnanal}/*nc ${charnanal}/*txt ${charnanal}/*grb ${charnanal}/*dat ${charnanal}/co2*
 /bin/mv -f mem* fgens
 /bin/mv -f sfg*mem* fgens2
 /bin/mv -f bfg*mem* fgens2
 /bin/cp -f sfg*ensmean fgens2
-if [ $replay_controlfcst == 'true' ]; then
-/bin/cp -f sfg*control2 bfg*control2 fgens2
-else
 /bin/cp -f sfg*control bfg*control fgens2
-fi
 
 #mkdir analens
 #/bin/mv -f sanl_*mem* analens # save analysis ensemble
@@ -67,9 +59,9 @@ if [ $save_hpss_subset == "false" ] && [ $save_hpss_full == "false" ]; then
   /bin/rm -rf fgens fgens2
   /bin/rm -f diag*cris* diag*airs* diag*iasi*
   /bin/rm -f *fhr03* *fhr09* *chgres
-  /bin/rm -rf control ensmean
+  /bin/rm -rf ensmean
   if [ $hr != '00' ]; then
-      /bin/rm -rf control2
+      /bin/rm -rf control
   fi
   # save backup of next analysis time once per day
   # so analysis can be restarted

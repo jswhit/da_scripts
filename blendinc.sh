@@ -14,7 +14,6 @@ echo "recenter ensemble perturbations about new mean for ${charfhr}"
 
 /bin/mv -f sanl_${analdate}_${charfhr}_ensmean sanl_${analdate}_${charfhr}_ensmean.orig
 filename_fg=sfg_${analdate}_${charfhr}_ensmean # ens mean first guess
-filename_fg1=sfg_${analdate}_fhr06_control # 3dvar background
 filename_anal1=sanl_${analdate}_fhr06_control # 3dvar analysis
 filename_anal2=sanl_${analdate}_${charfhr}_ensmean.orig # EnKF analysis
 filename_anal=sanl_${analdate}_${charfhr}_ensmean # analysis from blended increments
