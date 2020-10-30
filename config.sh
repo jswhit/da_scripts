@@ -1,4 +1,5 @@
-echo "running on $machine using $NODES nodes"
+export cores=`expr $NODES \* $corespernode`
+echo "running on $machine using $NODES nodes and $cores CORES"
 
 export ndates_job=1 # number of DA cycles to run in one job submission
 # resolution of control and ensmemble.
@@ -9,39 +10,19 @@ export RES_CTL=768
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
 export alpha=250 # percentage of 3dvar increment (beta_2*1000)
 export beta=1000 # percentage of enkf increment (*10)
-export hybgain='true' # set to true for hybrid gain 3DVar/EnKF
 export exptname="C${RES}_hybgain"
 # for 'passive' or 'replay' cycling of control fcst 
 # control forecast files have 'control2' suffix, instead of 'control'
 # GSI observer will be run on 'control2' forecast
 # this is for diagnostic purposes (to get GSI diagnostic files) 
 export replay_controlfcst='true'
-# for dual-res hybrid, set hybgain=false, replay_controlfcst=false
-#export hybgain='false' # set to true for hybrid gain 3DVar/EnKF
-#export replay_controlfcst='false'
-# determine if writing or calculating increment 
-export DO_CALC_INCREMENT="YES" # always YES if hybgain="true"
-export cores=`expr $NODES \* $corespernode`
-
-## check that value of NODES is consistent with PBS_NP on theia.
-#if [ "$machine" == 'theia' ]; then
-#   if [ $PBS_NP -ne $cores ]; then
-#     echo "NODES = ${NODES} PBS_NP = ${PBS_NP} cores = ${cores}"
-#     echo "NODES set incorrectly in preamble"
-#     exit 1
-#   fi
-#fi
-#export KMP_AFFINITY=disabled
 
 export fg_gfs="run_ens_fv3.sh"
 export ensda="enkf_run.sh"
 export rungsi='run_gsi_4densvar.sh'
 export rungfs='run_fv3.sh' # ensemble forecast
 
-export recenter_anal="true" # recenter enkf analysis around GSI hybrid 4DEnVar analysis
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
-export controlanal='true' # use gsi hybrid (if false, pure enkf is used)
-export controlfcst='true' # if true, run dual-res setup with single high-res control
 export cleanup_fg='true'
 export cleanup_ensmean='true'
 export cleanup_anal='true'
@@ -372,20 +353,18 @@ export INCREMENTS_TO_ZERO="'liq_wat_inc','icmr_inc'"
 # Stratospheric increments to zero
 export INCVARS_ZERO_STRAT="'sphum_inc','liq_wat_inc','icmr_inc'"
 export INCVARS_EFOLD="5"
-if [ $DO_CALC_INCREMENT = "YES" ]; then
-  export write_fv3_increment=".false."
-  export analfileprefix='sanl'
-else
-  export analfileprefix='incr'
-  export write_fv3_increment=".true."
-fi
+export write_fv3_increment=".false."
+export analfileprefix='sanl'
 export WRITE_INCR_ZERO="incvars_to_zero= $INCREMENTS_TO_ZERO,"
 export WRITE_ZERO_STRAT="incvars_zero_strat= $INCVARS_ZERO_STRAT,"
 export WRITE_STRAT_EFOLD="incvars_efold= $INCVARS_EFOLD,"
-export write_ensmean=.true. # write out ens analysis (or anal incr) in EnKF
+# NOTE: most other GSI namelist variables are in ${rungsi}
+export aircraft_bc=.true.
+export use_prepb_satwnd=.false.
+export write_ensmean=.true. # write out ens mean analysis in EnKF
 export letkf_flag=.true.
 export letkf_bruteforce_search=.false.
-export denkf=.true.
+export denkf=.truee.
 export getkf=.true.
 export getkf_inflation=.false.
 export modelspace_vloc=.true.
@@ -496,23 +475,13 @@ export SATINFO=${fixgsi}/global_satinfo.txt
 export REALTIME=YES # if NO, use historical files set in main.sh
 
 # parameters for hybrid gain
-if [ $hybgain == "true" ]; then
-   export beta1_inv=1.000
-   export readin_beta=.false.
-else
-   export beta1_inv=0.125   # 0 means all ensemble, 1 means all 3DVar.
-   export readin_beta=.true.
-fi
-# change the next line to .true. to read in from hybens_info file.
+export beta1_inv=1.000
+export readin_beta=.false.
 export readin_localization=.false.
+
 # if above is .false., these values are used in GSI (not used at all for hybgain)
 export s_ens_h=343.     # 1250 km
-#export s_ens_h=485 # produces similar increments to 1250KM LETKF R localization
 export s_ens_v=-0.58    # 1.5 scale heights
-
-# NOTE: most other GSI namelist variables are in ${rungsi}
-export aircraft_bc=.true.
-export use_prepb_satwnd=.false.
 
 cd $enkfscripts
 echo "run main driver script"

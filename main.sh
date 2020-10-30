@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # main driver script
-# hybrid gain or hybrid covariance GSI EnKF
+# gsi gain or gsi covariance GSI EnKF
 
 # allow this script to submit other scripts with LSF
 unset LSB_SUB_RES_REQ 
@@ -171,9 +171,9 @@ echo "$analdate done computing ensemble mean `date`"
 # change orography in high-res control forecast nemsio file so it matches enkf ensemble,
 # adjust surface pressure accordingly.
 # this file only used to calculate analysis increment for replay
-if [ $controlfcst == 'true' ] && [ $replay_controlfcst == 'true' ]; then
+if [ $replay_controlfcst == 'true' ]; then
    charnanal='control2'
-   echo "$analdate adjust orog/ps of control forecast on ens grid `date`"
+   echo "$analdate change resolution of control forecast to ens resolution `date`"
    fh=$FHMIN
    while [ $fh -le $FHMAX ]; do
      fhr=`printf %02i $fh`
@@ -191,8 +191,8 @@ fi
 
 # for pure enkf or if replay cycle used for control forecast, symlink
 # ensmean files to 'control'
-if [ $controlfcst == 'false' ] || [ $replay_controlfcst == 'true' ]; then
-   # single res hybrid, just symlink ensmean to control (no separate control forecast)
+if [ $replay_controlfcst == 'true' ]; then
+   # single res gsi, just symlink ensmean to control (no separate control forecast)
    fh=$FHMIN
    while [ $fh -le $FHMAX ]; do
      fhr=`printf %02i $fh`
@@ -211,114 +211,21 @@ else
    export cold_start_bias "false"
 fi
 
-# do hybrid control analysis if controlanal=true
-# uses control forecast background, except if replay_controlfcst=true
-# ens mean background is used ("control" symlinked to "ensmean", control
-# forecast uses "control2")
-if [ $controlanal == 'true' ]; then
-   if [ $hybgain == 'true' ] || [ $replay_controlfcst == 'true' ] || [ $controlfcst == 'false' ]; then
-      # use ensmean mean background if no control forecast is run, or 
-      # control forecast is replayed to ens mean increment
-      export charnanal='control' # control is symlink to ens mean
-      export charnanal2='ensmean'
-      export lobsdiag_forenkf='.true.'
-      export skipcat="false"
-   else
-      # use control forecast background if control forecast is run, and it is
-      # not begin replayed to ensemble mean increment.
-      export charnanal='control' # sfg files 
-      export charnanal2='control' # for diag files
-      export lobsdiag_forenkf='.false.'
-      export skipcat="false"
-   fi
-   if [ $hybgain == 'true' ]; then
-      type='3DVar'
-   else
-      type='hybrid 4DEnVar'
-   fi
-   # run Var analysis
-   echo "$analdate run $type `date`"
-   sh ${enkfscripts}/run_hybridanal.sh > ${current_logdir}/run_gsi_hybrid.out 2>&1
-   # once hybrid has completed, check log files.
-   hybrid_done=`cat ${current_logdir}/run_gsi_hybrid.log`
-   if [ $hybrid_done == 'yes' ]; then
-     echo "$analdate $type analysis completed successfully `date`"
-   else
-     echo "$analdate $type analysis did not complete successfully, exiting `date`"
-     exit 1
-   fi
-   if [ $DO_CALC_INCREMENT = "NO" ]; then
-    if [ $hybgain == "false" ]; then # change resolution of control fcst to ens resolution
-    echo "$analdate chgres control forecast to ens resolution `date`"
-    fh=$FHMIN
-    while [ $fh -le $FHMAX ]; do
-      fhr=`printf %02i $fh`
-      # run concurrently, wait
-      sh ${enkfscripts}/chgres.sh $datapath2/sfg_${analdate}_fhr${fhr}_control $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_control.chgres > ${current_logdir}/chgres_${fhr}.out 2>&1 &
-      fh=$((fh+FHOUT))
-    done
-    wait
-    if [ $? -ne 0 ]; then
-       echo "chgres control forecast to ens resolution failed, exiting...."
-       exit 1
-    fi
-    echo "$analdate chgres control forecast to ens resolution completed `date`"
-    fi
-#  add the increment to the control forecast at ens resolution to create analysis at ens resolution
-#  (needed for ens recentering step)
-    echo "$analdate calculate analysis from background + anal incr `date`"
-    fh=$FHMIN
-    while [ $fh -le $FHMAX ]; do
-      fhr=`printf %02i $fh`
-      # run concurrently, wait
-      sh ${enkfscripts}/calcanl.sh sfg_${analdate}_fhr${fhr}_control.chgres incr_${analdate}_fhr${fhr}_control sanl_${analdate}_fhr${fhr}_control.chgres > ${current_logdir}/calcanal_${fhr}.out 2>&1 &
-      fh=$((fh+FHOUT))
-    done
-    wait
-    if [ $? -ne 0 ]; then
-       echo "calculate analysis step failed, exiting...."
-       exit 1
-    fi
-    echo "$analdate done calculating analysis from background + anal incr `date`"
-    fi
-fi 
-# if high res control forecast is run, run observer on ens mean
-if [ $controlanal == 'true' ] && [ $replay_controlfcst == 'false' ] && [ $controlfcst == 'true' ]; then
-   # run gsi observer with ens mean fcst background, saving jacobian.
-   # generated diag files used by EnKF. No control analysis.
-   export charnanal='ensmean' 
-   export charnanal2='ensmean'
-   export lobsdiag_forenkf='.true.'
-   export skipcat="false"
-   echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
-   sh ${enkfscripts}/run_gsiobserver.sh > ${current_logdir}/run_gsi_observer.out 2>&1
-   # once observer has completed, check log files.
-   hybrid_done=`cat ${current_logdir}/run_gsi_observer.log`
-   if [ $hybrid_done == 'yes' ]; then
-     echo "$analdate gsi observer completed successfully `date`"
-   else
-     echo "$analdate gsi observer did not complete successfully, exiting `date`"
-     exit 1
-   fi
-   ## loop over members run observer sequentially (for testing)
-   #nanal=1
-   #while [ $nanal -le $nanals ]; do
-   #   export charnanal="mem"`printf %03i $nanal`
-   #   export charnanal2=$charnanal 
-   #   export lobsdiag_forenkf='.true.'
-   #   export skipcat="false"
-   #   echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
-   #   sh ${enkfscripts}/run_gsiobserver.sh > ${current_logdir}/run_gsi_observer_${charnanal}.out 2>&1
-   #   # once observer has completed, check log files.
-   #   hybrid_done=`cat ${current_logdir}/run_gsi_observer.log`
-   #   if [ $hybrid_done == 'yes' ]; then
-   #     echo "$analdate gsi observer completed successfully `date`"
-   #   else
-   #     echo "$analdate gsi observer did not complete successfully, exiting `date`"
-   #     exit 1
-   #   fi
-   #   nanal=$((nanal+1))
-   #done
+# use ensmean mean background for 3dvar analysis/observer calculatino
+export charnanal='control' # control is symlink to ens mean
+export charnanal2='ensmean'
+export lobsdiag_forenkf='.true.'
+export skipcat="false"
+# run Var analysis
+echo "$analdate run 3DVar `date`"
+sh ${enkfscripts}/run_gsianal.sh > ${current_logdir}/run_gsianal.out 2>&1
+# once gsi has completed, check log files.
+gsi_done=`cat ${current_logdir}/run_gsi_gsi.log`
+if [ $gsi_done == 'yes' ]; then
+ echo "$analdate 3DVar analysis completed successfully `date`"
+else
+ echo "$analdate 3DVar analysis did not complete successfully, exiting `date`"
+ exit 1
 fi
 
 # run enkf analysis.
@@ -346,45 +253,31 @@ if [ $write_ensmean == ".false." ]; then
    echo "$analdate done computing ensemble mean analyses `date`"
 fi
 
-# recenter enkf analyses around control analysis
-if [ $controlanal == 'true' ] && [ $recenter_anal == 'true' ]; then
-   if [ $hybgain == 'true' ]; then
-      if [ $alpha -gt 0 ]; then
-         echo "$analdate blend enkf and 3dvar increments `date`"
-         sh ${enkfscripts}/blendinc.sh > ${current_logdir}/blendinc.out 2>&1
-         blendinc_done=`cat ${current_logdir}/blendinc.log`
-         if [ $blendinc_done == 'yes' ]; then
-           echo "$analdate increment blending/recentering completed successfully `date`"
-         else
-           echo "$analdate increment blending/recentering did not complete successfully, exiting `date`"
-           exit 1
-         fi
-      fi
+# blend enkf mean and 3dvar increments, recenter ensemble
+if [ $alpha -gt 0 ]; then
+   echo "$analdate blend enkf and 3dvar increments `date`"
+   sh ${enkfscripts}/blendinc.sh > ${current_logdir}/blendinc.out 2>&1
+   blendinc_done=`cat ${current_logdir}/blendinc.log`
+   if [ $blendinc_done == 'yes' ]; then
+     echo "$analdate increment blending/recentering completed successfully `date`"
    else
-      echo "$analdate recenter enkf analysis ensemble around control analysis `date`"
-      sh ${enkfscripts}/recenter_ens_anal.sh > ${current_logdir}/recenter_ens_anal.out 2>&1
-      recenter_done=`cat ${current_logdir}/recenter_ens.log`
-      if [ $recenter_done == 'yes' ]; then
-        echo "$analdate recentering enkf analysis completed successfully `date`"
-      else
-        echo "$analdate recentering enkf analysis did not complete successfully, exiting `date`"
-        exit 1
-      fi
+     echo "$analdate increment blending/recentering did not complete successfully, exiting `date`"
+     exit 1
    fi
 fi
 
 # for passive (replay) cycling of control forecast, optionally run GSI observer
 # on control forecast background (diag files saved with 'control2' suffix)
-if [ $controlfcst == 'true' ] && [ $replay_controlfcst == 'true' ] && [ $replay_run_observer == "true" ]; then
+if [ $replay_controlfcst == 'true' ] && [ $replay_run_observer == "true" ]; then
    export charnanal='control2' 
    export charnanal2='control2' 
    export lobsdiag_forenkf='.false.'
    export skipcat="false"
    echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
-   sh ${enkfscripts}/run_gsiobserver.sh > ${current_logdir}/run_gsi_observer2.out 2>&1
+   sh ${enkfscripts}/run_gsiobserver.sh > ${current_logdir}/run_gsi_observer.out 2>&1
    # once observer has completed, check log files.
-   hybrid_done=`cat ${current_logdir}/run_gsi_observer.log`
-   if [ $hybrid_done == 'yes' ]; then
+   gsi_done=`cat ${current_logdir}/run_gsi_observer.log`
+   if [ $gsi_done == 'yes' ]; then
      echo "$analdate gsi observer completed successfully `date`"
    else
      echo "$analdate gsi observer did not complete successfully, exiting `date`"
@@ -397,7 +290,7 @@ if [ $skip_to_fcst == "true" ]; then
    export fg_only="false"
 fi
 
-if [ $controlfcst == 'true' ]; then
+if [ $replay_controlfcst == 'true' ]; then
     echo "$analdate run high-res control first guess `date`"
     sh ${enkfscripts}/run_fg_control.sh  > ${current_logdir}/run_fg_control.out  2>&1
     control_done=`cat ${current_logdir}/run_fg_control.log`
@@ -407,18 +300,8 @@ if [ $controlfcst == 'true' ]; then
       echo "$analdate high-res control did not complete successfully, exiting `date`"
       exit 1
     fi
-    # run longer forecast at 00UTC
-    if [ $fg_only != "true" ] && [ $hr == '00' ] && [ $run_long_fcst == "true" ]; then
-       echo "$analdate run high-res control long forecast `date`"
-       sh ${enkfscripts}/run_long_fcst.sh > ${current_logdir}/run_long_fcst.out  2>&1
-       control_done=`cat ${current_logdir}/run_long_fcst.log`
-       if [ $control_done == 'yes' ]; then
-         echo "$analdate high-res control long forecast completed successfully `date`"
-       else
-         echo "$analdate high-res control long forecast did not complete successfully `date`"
-       fi
-    fi
 fi
+
 echo "$analdate run enkf ens first guess `date`"
 sh ${enkfscripts}/run_fg_ens.sh > ${current_logdir}/run_fg_ens.out  2>&1
 ens_done=`cat ${current_logdir}/run_fg_ens.log`
