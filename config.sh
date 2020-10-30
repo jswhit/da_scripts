@@ -1,3 +1,4 @@
+# hybrid gain GSI(3DVar)/EnKF workflow
 export cores=`expr $NODES \* $corespernode`
 echo "running on $machine using $NODES nodes and $cores CORES"
 

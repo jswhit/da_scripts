@@ -215,7 +215,7 @@ else
  exit 1
 fi
 # rename 3dvar analysis
-/bin/mv -f ${datapath}/sanl_${analdate}_fhr06_ensmean ${datapath}/sanl_${analdate}_fhr06_control
+/bin/mv -f ${datapath2}/sanl_${analdate}_fhr06_ensmean ${datapath2}/sanl_${analdate}_fhr06_control
 
 # run enkf analysis.
 echo "$analdate run enkf `date`"
