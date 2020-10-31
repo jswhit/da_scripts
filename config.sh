@@ -45,7 +45,7 @@ export ensmean_restart='false'
 export skip_to_fcst="false" # skip to forecast step
 
 # override values from above for debugging.
-#export cleanup_ensmean='false'
+export cleanup_ensmean='false'
 #export cleanup_observer='false'
 #export cleanup_controlanl='false'
 #export cleanup_anal='false'
@@ -80,6 +80,7 @@ elif [ "$machine" == 'orion' ]; then
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    #export obs_datapath=/scratch2/BMC/gsienkf/whitaker/gdas1bufr
+   #export obs_datapath=/work/noaa/global/glopara/dump/gdasur.YYYYMMDD
    export obs_datapath=${basedir}/dumps
    ulimit -s unlimited
    source $MODULESHOME/init/sh
@@ -428,17 +429,18 @@ if [ "$machine" == 'hera' ]; then
    export CHGRESEXEC=${execdir}/chgres_recenter_ncio.exe
 elif [ "$machine" == 'orion' ]; then
    export python=`which python`
-   export fv3gfspath=${basedir}
-   export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
-   export FIXGLOBAL=${fv3gfspath}/fix/fix_am
+   export fv3gfspath=/work/noaa/global/glopara
+   export FIXFV3=$fv3gfspath/fix/fix_fv3_gmted2010
+   export FIXGLOBAL=$fv3gfspath/fix/fix/fix_am
    export gsipath=${basedir}/ProdGSI
    export fixgsi=${gsipath}/fix
-   export fixcrtm=${basedir}/fix/crtm/v2.2.6/fix
+   #export fixcrtm=${basedir}/fix/crtm/v2.2.6/fix
+   export fixcrtm=$fv3gfspath/crtm/crtm_v2.3.0
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
-   export CHGRESEXEC=${execdir}/chgres_recenter_ncio.exe
+   export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
 elif [ "$machine" == 'gaea' ]; then
    export python=/ncrc/sw/gaea/PythonEnv-noaa/1.4.0/.spack/opt/spack/linux-sles12-x86_64/gcc-4.8/python-2.7.14-zyx34h36bfp2c6ftp5bhdsdduqjxbvp6/bin/python
    #export PYTHONPATH=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/lib/python2.7/site-packages
@@ -470,6 +472,8 @@ export HYBENSINFO=${fixgsi}/global_hybens_info.l${LEVS}.txt
 export OZINFO=${fixgsi}/global_ozinfo.txt
 export CONVINFO=${fixgsi}/global_convinfo.txt
 export SATINFO=${fixgsi}/global_satinfo.txt
+export NLAT=$((${LATA}+2))
+export BERROR=/work/noaa/gsienkf/whitaker/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_janjulysmooth0p5
 export REALTIME=YES # if NO, use historical files set in main.sh
 
 # parameters for hybrid gain
