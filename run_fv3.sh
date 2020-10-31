@@ -862,22 +862,6 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
    cd ..
 fi
 
-# also move history files if copy_history_files is set.
-if [ ! -z $copy_history_files ]; then
-  mkdir -p ${DATOUT}/${charnanal}
-  /bin/mv -f fv3_historyp*.nc ${DATOUT}/${charnanal}
-  # copy with compression
-  #n=1
-  #while [ $n -le 6 ]; do
-  #   # lossless compression
-  #   ncks -4 -L 5 -O fv3_historyp.tile${n}.nc ${DATOUT}/${charnanal}/fv3_historyp.tile${n}.nc
-  #   # lossy compression
-  #   #ncks -4 --ppc default=5 -O fv3_history.tile${n}.nc ${DATOUT}/${charnanal}/fv3_history.tile${n}.nc
-  #   /bin/rm -f fv3_historyp.tile${n}.nc
-  #   n=$((n+1))
-  #done
-fi
-
 # if random pattern restart file exists for end of IAU window, copy it.
 ls -l stoch_out*
 charfh="F"`printf %06i $FHSTOCH`

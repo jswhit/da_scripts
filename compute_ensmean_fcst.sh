@@ -72,35 +72,4 @@ if [ $cleanup_ensmean == 'true' ] || ([ $cleanup_ensmean == 'false' ]  && [ ! -s
 fi
 fi
 
-if [ $controlfcst == 'false' ] && [ $cleanup_ensmean == 'true' ] && [ ! -z $copy_history_files ];  then
-   echo "compute ensemble mean history files `date`"
-   export nprocs=1
-   export mpitaskspernode=1
-   export OMP_NUM_THREADS=$corespernode
-   pathout=${datapath2}/ensmean
-   mkdir -p $pathout
-   ncount=1
-   tiles="tile1 tile2 tile3 tile4 tile5 tile6"
-   for tile in $tiles; do
-      filename="fv3_historyp.${tile}.nc"
-      export PGM="${nces} -4 -L 5 -O `ls -1 ${datapath2}/mem*/${filename}` ${pathout}/${filename}"
-      echo "computing ens mean for $filename"
-      #${enkfscripts}/runmpi &
-      $PGM &
-      if [ $ncount == $NODES ]; then
-         echo "waiting for backgrounded jobs to finish..."
-         wait
-         ncount=1
-      else
-         ncount=$((ncount+1))
-      fi
-   done
-   wait
-   /bin/rm -f ${datapath2}/hostfile_nces*
-   echo "done computing ensemble mean history files `date`"
-   # interpolate to 1x1 grid
-   cd ${enkfscripts}
-   $python ncinterp.py ${datapath2}/ensmean ${datapath2}/fv3ensmean_historyp_${analdatem1}_latlon.nc $RES $analdatem1
-fi
-
 echo "all done `date`"

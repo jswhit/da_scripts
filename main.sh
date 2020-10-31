@@ -105,7 +105,7 @@ export ANALHR=$hr
 export datapath2="${datapath}/${analdate}/"
 /bin/cp -f ${ANAVINFO_ENKF} ${datapath2}/anavinfo
 
-# setup node parameters used in blendinc.csh, recenter_ens_anal.csh and compute_ensmean_fcst.sh
+# setup node parameters used in blendinc.csh and compute_ensmean_fcst.sh
 export mpitaskspernode=`python -c "from __future__ import print_function; import math; print(int(math.ceil(float(${nanals})/float(${NODES}))))"`
 if [ $mpitaskspernode -lt 1 ]; then
   export mpitaskspernode 1
@@ -171,6 +171,7 @@ echo "$analdate done computing ensemble mean `date`"
 # change orography in high-res control forecast nemsio file so it matches enkf ensemble,
 # adjust surface pressure accordingly.
 # this file only used to calculate analysis increment for replay
+errexit=0
 if [ $replay_controlfcst == 'true' ]; then
    charnanal='control'
    echo "$analdate change resolution of control forecast to ens resolution `date`"
@@ -179,14 +180,18 @@ if [ $replay_controlfcst == 'true' ]; then
      fhr=`printf %02i $fh`
      # run concurrently, wait
      sh ${enkfscripts}/chgres.sh $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal}.chgres > ${current_logdir}/chgres_${fhr}.out 2>&1 &
+     errstatus=$?
+     if [ $errstatus -ne 0 ]; then
+       errexit=$errstatus
+     fi
      fh=$((fh+FHOUT))
    done
    wait
-   if [ $? -ne 0 ]; then
+   if [ $errexit -ne 0 ]; then
       echo "adjustps/chgres step failed, exiting...."
       exit 1
    fi
-   echo "$analdate done adjusting orog/ps of control forecast on ens grid `date`"
+   echo "$analdate done changing resolution of control forecast to ens resolution `date`"
 fi
 
 # if ${datapathm1}/cold_start_bias exists, GSI run in 'observer' mode
@@ -207,7 +212,7 @@ export skipcat="false"
 echo "$analdate run 3DVar `date`"
 sh ${enkfscripts}/run_gsianal.sh > ${current_logdir}/run_gsianal.out 2>&1
 # once gsi has completed, check log files.
-gsi_done=`cat ${current_logdir}/run_gsi_gsi.log`
+gsi_done=`cat ${current_logdir}/run_gsi_hybrid.log`
 if [ $gsi_done == 'yes' ]; then
  echo "$analdate 3DVar analysis completed successfully `date`"
 else

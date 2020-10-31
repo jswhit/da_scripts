@@ -41,11 +41,10 @@ export save_hpss="true"
 fi
 export run_long_fcst="false"  # spawn a longer control forecast at 00 UTC
 export ensmean_restart='false'
-#export copy_history_files=1 # save pressure level history files (and compute ens mean)
 export skip_to_fcst="false" # skip to forecast step
 
 # override values from above for debugging.
-export cleanup_ensmean='false'
+#export cleanup_ensmean='false'
 #export cleanup_observer='false'
 #export cleanup_controlanl='false'
 #export cleanup_anal='false'
@@ -80,7 +79,6 @@ elif [ "$machine" == 'orion' ]; then
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    #export obs_datapath=/scratch2/BMC/gsienkf/whitaker/gdas1bufr
-   #export obs_datapath=/work/noaa/global/glopara/dump/gdasur.YYYYMMDD
    export obs_datapath=${basedir}/dumps
    ulimit -s unlimited
    source $MODULESHOME/init/sh
@@ -88,11 +86,14 @@ elif [ "$machine" == 'orion' ]; then
    module load intel/2018.4
    module load impi/2018.4
    module load mkl/2018.4
-   module load netcdf/4.7.2-parallel
-   module load hdf5/1.10.5-parallel
-   module load python
+   export NCEPLIBS=/apps/contrib/NCEPLIBS/lib
+   module use -a $NCEPLIBS/modulefiles
+   module unload netcdf/4.7.4 
+   module unload hdf5/1.10.6
+   module load netcdfp/4.7.4
    export PYTHONPATH=/home/jwhitake/.local/lib/python3.7/site-packages
    export HDF5_DISABLE_VERSION_CHECK=1
+   module list
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f2/dev/${USER}
    export datadir=/lustre/f2/scratch/${USER}
@@ -456,7 +457,7 @@ elif [ "$machine" == 'gaea' ]; then
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
-   export CHGRESEXEC=${execdir}/chgres_recenter_ncio.exe
+   export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
 else
    echo "${machine} unsupported machine"
    exit 1
