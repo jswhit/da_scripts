@@ -193,7 +193,7 @@ if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
 # IAU - multiple increments.
    for fh in $iaufhrs2; do
       export increment_file="fv3_increment${fh}.nc"
-      if [ "$replay_controlfcst" == 'true' ]; then
+      if [ $charnanal == "control" ] && [ "$replay_controlfcst" == 'true' ]; then
          export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_ensmean"
          export fgfile="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}.chgres"
       else
