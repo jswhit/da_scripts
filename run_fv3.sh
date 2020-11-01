@@ -20,14 +20,13 @@ if [ "$machine" == 'hera' ]; then
    #export LD_LIBRARY_PATH="/scratch2/BMC/gsienkf/whitaker/ufs-weather-model/FV3/ccpp/lib:${LD_LIBRARY_PATH}"
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'orion' ]; then
-   module purge 
-   module load intel/2019.5 
-   module load impi/2019.6 
-   module load mkl/2019.5  
-   export NCEPLIBS=/apps/contrib/NCEPLIBS/lib
-   module use -a /apps/contrib/NCEPLIBS/lib/modulefiles
+   module purge
+   module load intel/2018
+   module load impi/2018
+   export NCEPLIBS=/work/noaa/noaatest/gwv/l530/lib
+   module use /work/noaa/noaatest/gwv/l530/lib/modulefiles
    module load netcdfp/4.7.4
-   module load esmflocal/8.0.0.para
+   module load esmflocal/8_0_1
    module load grib_util-intel-sandybridge # wgrib
 elif [ "$machine" == 'gaea' ]; then
    module purge

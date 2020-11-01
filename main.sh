@@ -212,7 +212,7 @@ export skipcat="false"
 echo "$analdate run 3DVar `date`"
 sh ${enkfscripts}/run_gsianal.sh > ${current_logdir}/run_gsianal.out 2>&1
 # once gsi has completed, check log files.
-gsi_done=`cat ${current_logdir}/run_gsi_hybrid.log`
+gsi_done=`cat ${current_logdir}/run_gsi_anal.log`
 if [ $gsi_done == 'yes' ]; then
  echo "$analdate 3DVar analysis completed successfully `date`"
 else
@@ -248,7 +248,7 @@ if [ $write_ensmean == ".false." ]; then
 fi
 
 # blend enkf mean and 3dvar increments, recenter ensemble
-if [ $alpha -gt 0 ]; then
+if [ $alpha -gt 0 ] && [ $recenter_anal == "true" ]; then
    echo "$analdate blend enkf and 3dvar increments `date`"
    sh ${enkfscripts}/blendinc.sh > ${current_logdir}/blendinc.out 2>&1
    blendinc_done=`cat ${current_logdir}/blendinc.log`

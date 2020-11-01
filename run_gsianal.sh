@@ -81,7 +81,7 @@ export lread_obs_skip=".false."
 export HXONLY 'NO'
 if [ -s $SIGANL06 ]; then
   echo "gsi already completed"
-  echo "yes" > ${current_logdir}/run_gsi_hybrid.log
+  echo "yes" > ${current_logdir}/run_gsi_anal.log
   exit 0
 fi
 echo "${analdate} compute gsi analysis increment `date`"
@@ -121,8 +121,8 @@ done
 
 if [ $alldone == 'no' ]; then
     echo "Tried ${nitermax} times and to do gsi analysis and failed"
-    echo "no" > ${current_logdir}/run_gsi_hybrid.log 2>&1
+    echo "no" > ${current_logdir}/run_gsi_anal.log 2>&1
 else
-    echo "yes" > ${current_logdir}/run_gsi_hybrid.log 2>&1
+    echo "yes" > ${current_logdir}/run_gsi_anal.log 2>&1
     /bin/rm -rf $tmpdir
 fi

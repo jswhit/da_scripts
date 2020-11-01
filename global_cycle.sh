@@ -273,6 +273,7 @@ MAX_TASKS_CY=${MAX_TASKS_CY:-99999}
 FNGLAC=${FNGLAC:-${FIXgsm}/global_glacier.2x2.grb}
 FNMXIC=${FNMXIC:-${FIXgsm}/global_maxice.2x2.grb}
 FNTSFC=${FNTSFC:-${FIXgsm}/RTGSST.1982.2012.monthly.clim.grb}
+FNSALC=${FNSALC:-${FIXgsm}/global_salclm.t1534.3072.1536.nc}
 FNSNOC=${FNSNOC:-${FIXgsm}/global_snoclim.1.875.grb}
 FNZORC=${FNZORC:-igbp}
 FNALBC2=${FNALBC2:-${FIXgsm}/global_albedo4.1x1.grb}
@@ -315,6 +316,9 @@ else
 fi
 cd $DATA||exit 99
 [[ -d $COMOUT ]]||mkdir -p $COMOUT
+
+ln -fs $FNTSFC sstclm
+ln -fs $FNSALC salclm
 
 # If the appropriate resolution fix file is not present, use the highest resolution available (T1534)
 [[ ! -f $FNALBC ]] && FNALBC="$FIXgsm/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb"
@@ -386,7 +390,6 @@ cat << EOF > fort.37
  /
 EOF
 
-/bin/cp fort.35 fort.36 fort.37 $enkfscripts
 #$APRUNCY $CYCLEXEC $REDOUT$PGMOUT $REDERR$PGMERR
 export OMP_NUM_THREADS=`expr $corespernode \/ 6`
 nprocs=6 mpitaskspernode=6 OMP_NUM_THREADS=$OMP_NUM_THREADS ${enkfscripts}/runmpi

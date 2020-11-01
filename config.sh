@@ -431,8 +431,8 @@ if [ "$machine" == 'hera' ]; then
 elif [ "$machine" == 'orion' ]; then
    export python=`which python`
    export fv3gfspath=/work/noaa/global/glopara
-   export FIXFV3=$fv3gfspath/fix/fix_fv3_gmted2010
-   export FIXGLOBAL=$fv3gfspath/fix/fix/fix_am
+   export FIXFV3=$fv3gfspath/fix_nco_gfsv16/fix_fv3_gmted2010
+   export FIXGLOBAL=$fv3gfspath/fix_nco_gfsv16/fix_am
    export gsipath=${basedir}/ProdGSI
    export fixgsi=${gsipath}/fix
    #export fixcrtm=${basedir}/fix/crtm/v2.2.6/fix
