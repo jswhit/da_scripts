@@ -4,8 +4,8 @@ echo "running on $machine using $NODES nodes and $cores CORES"
 
 export ndates_job=1 # number of DA cycles to run in one job submission
 # resolution of control and ensmemble.
-export RES=192 
-export RES_CTL=384 
+export RES=384 
+export RES_CTL=768 
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
@@ -412,11 +412,10 @@ export incdate="${enkfscripts}/incdate.sh"
 if [ "$machine" == 'hera' ]; then
    export python=/contrib/anaconda/2.3.0/bin/python
    export fv3gfspath=/scratch1/NCEPDEV/global/glopara
-   export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
-   export FIXGLOBAL=${fv3gfspath}/fix/fix_am
+   export FIXFV3=${fv3gfspath}/fix_nco_gfsv16/fix_fv3_gmted2010
+   export FIXGLOBAL=${fv3gfspath}/fix_nco_gfsv16/fix_am
    export gsipath=/scratch1/NCEPDEV/global/glopara/git/global-workflow/gfsv16b/sorc/gsi.fd
    export fixgsi=${gsipath}/fix
-   #export fixcrtm=/scratch1/NCEPDEV/global/glopara/crtm/v2.2.6/fix
    export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
@@ -469,7 +468,8 @@ export OZINFO=${fixgsi}/global_ozinfo.txt
 export CONVINFO=${fixgsi}/global_convinfo.txt
 export SATINFO=${fixgsi}/global_satinfo.txt
 export NLAT=$((${LATA}+2))
-export BERROR=/work/noaa/gsienkf/whitaker/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_janjulysmooth0p5
+# default is to use berror file in gsi fix dir.
+export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_janjulysmooth0p5
 export REALTIME=YES # if NO, use historical files set in main.sh
 
 # parameters for hybrid gain
