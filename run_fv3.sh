@@ -187,34 +187,30 @@ for file in `ls $FIXGLOBAL/global_volcanic_aerosols* ` ; do
 done
 
 # create netcdf increment files.
-echo "DO_CALC_INCREMENT = $DO_CALC_INCREMENT"
-if [ "$DO_CALC_INCREMENT" == "YES" ]; then
-   if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
-      cd INPUT
-      iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
+if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
+   cd INPUT
+   iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
 # IAU - multiple increments.
-      for fh in $iaufhrs2; do
-         export increment_file="fv3_increment${fh}.nc"
-         if [ "$replay_controlfcst" == 'true' ]; then
-            export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_ensmean"
-            export fgfile="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}.chgres"
-         else
-            export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_${charnanal}"
-            export fgfile="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}"
-         fi
-         echo "create ${increment_file}"
-         /bin/rm -f ${increment_file}
-         # last two args:  no_mpinc no_delzinc
-         export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file} T F"
-         nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
-         if [ $? -ne 0 -o ! -s ${increment_file} ]; then
-            echo "problem creating ${increment_file}, stopping .."
-            exit 1
-         fi
-      done # do next forecast
-   
-      cd ..
-   fi
+   for fh in $iaufhrs2; do
+      export increment_file="fv3_increment${fh}.nc"
+      if [ "$replay_controlfcst" == 'true' ]; then
+         export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_ensmean"
+         export fgfile="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}.chgres"
+      else
+         export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_${charnanal}"
+         export fgfile="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}"
+      fi
+      echo "create ${increment_file}"
+      /bin/rm -f ${increment_file}
+      # last two args:  no_mpinc no_delzinc
+      export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file} T F"
+      nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
+      if [ $? -ne 0 -o ! -s ${increment_file} ]; then
+         echo "problem creating ${increment_file}, stopping .."
+         exit 1
+      fi
+   done # do next forecast
+   cd ..
 else
    if [ $fg_only == "false" ] ; then
       cd INPUT

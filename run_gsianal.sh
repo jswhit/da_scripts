@@ -2,23 +2,13 @@
 # do hybrid analysis.
 
 export CO2DIR=$fixgsi
-if [ $DO_CALC_INCREMENT = "YES" ]; then
-   export SIGANL03=${datapath2}/sanl_${analdate}_fhr03_${charnanal}
-   export SIGANL04=${datapath2}/sanl_${analdate}_fhr04_${charnanal}
-   export SIGANL05=${datapath2}/sanl_${analdate}_fhr05_${charnanal}
-   export SIGANL06=${datapath2}/sanl_${analdate}_fhr06_${charnanal}
-   export SIGANL07=${datapath2}/sanl_${analdate}_fhr07_${charnanal}
-   export SIGANL08=${datapath2}/sanl_${analdate}_fhr08_${charnanal}
-   export SIGANL09=${datapath2}/sanl_${analdate}_fhr09_${charnanal}
-else
-   export SIGANL03=${datapath2}/incr_${analdate}_fhr03_${charnanal}
-   export SIGANL04=${datapath2}/incr_${analdate}_fhr04_${charnanal}
-   export SIGANL05=${datapath2}/incr_${analdate}_fhr05_${charnanal}
-   export SIGANL06=${datapath2}/incr_${analdate}_fhr06_${charnanal}
-   export SIGANL07=${datapath2}/incr_${analdate}_fhr07_${charnanal}
-   export SIGANL08=${datapath2}/incr_${analdate}_fhr08_${charnanal}
-   export SIGANL09=${datapath2}/incr_${analdate}_fhr09_${charnanal}
-fi
+export SIGANL03=${datapath2}/sanl_${analdate}_fhr03_${charnanal}
+export SIGANL04=${datapath2}/sanl_${analdate}_fhr04_${charnanal}
+export SIGANL05=${datapath2}/sanl_${analdate}_fhr05_${charnanal}
+export SIGANL06=${datapath2}/sanl_${analdate}_fhr06_${charnanal}
+export SIGANL07=${datapath2}/sanl_${analdate}_fhr07_${charnanal}
+export SIGANL08=${datapath2}/sanl_${analdate}_fhr08_${charnanal}
+export SIGANL09=${datapath2}/sanl_${analdate}_fhr09_${charnanal}
 export BIASO=${datapath2}/${PREINP}abias 
 export BIASO_PC=${datapath2}/${PREINP}abias_pc 
 export SATANGO=${datapath2}/${PREINP}satang
