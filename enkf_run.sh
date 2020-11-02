@@ -24,15 +24,6 @@ for nfhr in $iaufhrs2; do
   done
 done
 
-if [ $lupd_satbiasc == ".true." ]; then
-   satbiasc=".true."
-else
-   satbiasc=".false."
-fi
-if [ $satbiasc == ".true." ] &&  [ ! -s $ABIAS ]; then
-  filemissing='yes'
-fi
-
 
 if [ $filemissing == 'yes' ]; then
 
@@ -46,7 +37,7 @@ cat <<EOF > enkf.nml
   datestring="$analdate",datapath="$datapath2",
   analpertwtnh=$analpertwtnh,analpertwtsh=$analpertwtsh,analpertwttr=$analpertwttr,
   analpertwtnh_rtpp=$analpertwtnh_rtpp,analpertwtsh_rtpp=$analpertwtsh_rtpp,analpertwttr_rtpp=$analpertwttr_rtpp,
-  lupd_satbiasc=$satbiasc,zhuberleft=$zhuberleft,zhuberright=$zhuberright,huber=$huber,varqc=$varqc,
+  lupd_satbiasc=$lupd_satbiasc,zhuberleft=$zhuberleft,zhuberright=$zhuberright,huber=$huber,varqc=$varqc,
   covinflatemax=$covinflatemax,covinflatemin=$covinflatemin,pseudo_rh=$pseudo_rh,
   corrlengthnh=$corrlengthnh,corrlengthsh=$corrlengthsh,corrlengthtr=$corrlengthtr,
   obtimelnh=$obtimelnh,obtimelsh=$obtimelsh,obtimeltr=$obtimeltr,iassim_order=$iassim_order,
@@ -58,7 +49,7 @@ cat <<EOF > enkf.nml
   sprd_tol=$sprd_tol,paoverpb_thresh=$paoverpb_thresh,letkf_flag=$letkf_flag,denkf=$denkf,
   getkf_inflation=$getkf_inflation,letkf_novlocal=$letkf_novlocal,modelspace_vloc=$modelspace_vloc,save_inflation=.false.,
   reducedgrid=${reducedgrid},nlevs=$LEVS,nanals=$nanals,deterministic=$deterministic,imp_physics=$imp_physics,
-  npefiles=$npefiles,lobsdiag_forenkf=.true.,write_spread_diag=.false.,netcdf_diag=.true.,
+  lobsdiag_forenkf=.true.,write_spread_diag=.false.,netcdf_diag=.true.,
   sortinc=$sortinc,univaroz=$univaroz,nhr_anal=$iaufhrs,nhr_state=$enkfstatefhrs,getkf=$getkf,
   use_correlated_oberrs=${use_correlated_oberrs},use_gfs_ncio=.true.,nccompress=T,paranc=F,write_fv3_incr=${write_fv3_increment},write_ensmean=${write_ensmean},
   adp_anglebc=.true.,angord=4,newpc4pred=.true.,use_edges=.false.,emiss_bc=.true.,biasvar=-500,nobsl_max=$nobsl_max,use_qsatensmean=.true.,
@@ -188,9 +179,6 @@ if [ ! -s ${datapath2}/enkf.log ]; then
    echo "no enkf log file found"
    exit 1
 fi
-if [ $satbiasc == '.true.' ]; then
-  /bin/cp -f ${datapath2}/satbias_out $ABIAS
-fi
 
 else
 echo "enkf update already done..."
@@ -207,9 +195,6 @@ while [ $nanal -le $nanals ]; do
    fi
    nanal=$((nanal+1))
 done
-if [ $satbiasc == ".true." ] &&  [ ! -s $ABIAS ]; then
-  filemissing='yes'
-fi
 
 if [ $filemissing == 'yes' ]; then
     echo "there are output files missing!"

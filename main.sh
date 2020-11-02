@@ -143,17 +143,6 @@ export current_logdir="${datapath2}/logs"
 echo "Current LogDir: ${current_logdir}"
 mkdir -p ${current_logdir}
 
-if [ $fg_only == 'false' ]; then
-/bin/rm -f $datapath2/hybens_info
-/bin/rm -f $datapath2/hybens_smoothinfo
-if [ ! -z $HYBENSINFO ]; then
-   /bin/cp -f ${HYBENSINFO} ${datapath2}/hybens_info
-fi
-if [ ! -z $HYBENSMOOTHINFO ];  then
-   /bin/cp -f ${HYBENSMOOTHINFO} $datapath2/hybens_smoothinfo
-fi
-fi
-
 export PREINP="${RUN}.t${hr}z."
 export PREINP1="${RUN}.t${hrp1}z."
 export PREINPm1="${RUN}.t${hrm1}z."
@@ -224,12 +213,6 @@ fi
 
 # run enkf analysis.
 echo "$analdate run enkf `date`"
-if [ $skipcat == "true" ]; then
-  # read un-concatenated pe files (set npefiles to number of mpi tasks used by gsi observer)
-  export npefiles=`expr $cores \/ $gsi_control_threads`
-else
-  export npefiles=0
-fi
 sh ${enkfscripts}/runenkf.sh > ${current_logdir}/run_enkf.out 2>&1
 # once enkf has completed, check log files.
 enkf_done=`cat ${current_logdir}/run_enkf.log`

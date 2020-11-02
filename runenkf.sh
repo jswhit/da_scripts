@@ -17,9 +17,6 @@ else # externally specified bias correction files.
     export GBIASAIR=${biascorrdir}/${analdate}//${PREINP}abias_air
 fi
 export GSATANG=$fixgsi/global_satangbias.txt # not used, but needs to exist
-if [ $lupd_satbiasc == ".true." ]; then
-   export ABIAS=${datapath2}/${PREINP}abias_enkf
-fi
 
 ln -fs $GBIAS   ${datapath2}/satbias_in
 ln -fs $GBIAS_PC   ${datapath2}/satbias_pc

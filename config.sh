@@ -358,7 +358,7 @@ export use_prepb_satwnd=.false.
 export write_ensmean=.true. # write out ens mean analysis in EnKF
 export letkf_flag=.true.
 export letkf_bruteforce_search=.false.
-export denkf=.true.
+export denkf=.false.
 export getkf=.true.
 export getkf_inflation=.false.
 export modelspace_vloc=.true.
@@ -370,31 +370,11 @@ export huber=.false.
 export zhuberleft=1.e10
 export zhuberright=1.e10
 
-export biasvar=-500
-if [ $controlanal == 'false' ] && [ $NOSAT == "NO" ];  then
-   export lupd_satbiasc=.true.
-   export numiter=4
-else
-   export lupd_satbiasc=.false.
-   export numiter=0
-fi
-# iterate enkf in obspace for varqc
-if [ $varqc == ".true." ]; then
-  export numiter=5
-fi
+export lupd_satbiasc=.false.
+export numiter=0
 # use pre-generated bias files.
-#export lupd_satbiasc=.false.
-#export numiter=0
 #export biascorrdir=${datadir}/C192C192_skeb2
 
-
-# turn on enkf analog of VarQC
-#export sprd_tol=10.
-#export varqc=.true.
-#export huber=.true.
-#export zhuberleft=1.1
-#export zhuberright=1.1
-                                                                    
 export nanals=80                                                    
                                                                     
 export paoverpb_thresh=0.998  # set to 1.0 to use all the obs in serial EnKF
@@ -456,13 +436,8 @@ else
    exit 1
 fi
 
-#export ANAVINFO=${enkfscripts}/global_anavinfo.l${LEVS}.txt
 export ANAVINFO=${fixgsi}/global_anavinfo.l${LEVS}.txt
 export ANAVINFO_ENKF=${ANAVINFO}
-export HYBENSINFO=${fixgsi}/global_hybens_info.l${LEVS}.txt
-# comment out next line to disable smoothing of ensemble perturbations
-# in stratosphere/mesosphere
-#export HYBENSMOOTHINFO=${fixgsi}/global_hybens_smoothinfo.l${LEVS}.txt
 export OZINFO=${fixgsi}/global_ozinfo.txt
 export CONVINFO=${fixgsi}/global_convinfo.txt
 export SATINFO=${fixgsi}/global_satinfo.txt
@@ -472,13 +447,9 @@ export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_janjulys
 export REALTIME=YES # if NO, use historical files set in main.sh
 
 # parameters for hybrid gain
-export beta1_inv=1.000
-export readin_beta=.false.
-export readin_localization=.false.
-
-# if above is .false., these values are used in GSI (not used at all for hybgain)
-export s_ens_h=343.     # 1250 km
-export s_ens_v=-0.58    # 1.5 scale heights
+export beta1_inv=1.000 # 3dvar
+export readin_beta=.false. # not relevant for 3dvar
+export readin_localization=.false. # use fixed localization in EnKF.
 
 cd $enkfscripts
 echo "run main driver script"
