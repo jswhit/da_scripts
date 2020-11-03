@@ -122,6 +122,7 @@ export obtimeltr=1.e30
 export obtimelsh=1.e30       
 
 # model physics parameters.
+export LEVS=127 # 127 for gfsv16, 64 for gfsv15
 export psautco="0.0008,0.0005"
 export prautco="0.00015,0.00015"
 #export imp_physics=99 # zhao-carr
@@ -174,45 +175,49 @@ export hord_vt=5
 export hord_tm=5
 export hord_dp=-5
 export consv_te=1
-export nord=2
 export dddmp=0.1
 export d4_bg=0.12
 export vtdm4=0.02
 export fv_sg_adj=450
+export nord=2
 
 #gfsv15
-#export satmedmf=F
-#export hybedmf=T
-#export lheatstrg=F
-#export IAER=111
-#export iovr_lw=1
-#export iovr_sw=1
-#export icliq_sw=1
-#export do_tofd=F
-#export reiflag=1
-#export adjust_dry_mass=F
-#export nord=3
-#export vtdm4=0.06
-#export tau=10.0
-#export rf_cutoff=750.0
-#export d2_bg_k1=0.15
-#export d2_bg_k2=0.02
-
-#gfsv16 (defaults in run_fv3.sh)
-export satmedmf=T
-export hybedmf=F
-export lheatstrg=T
-export IAER=5111
-export iovr_lw=3
-export iovr_sw=3
-export icliq_sw=2
-export do_tofd=T
-export reiflag=2
-export adjust_dry_mass=T
-export tau=5.0
-export rf_cutoff=1.e3
-export d2_bg_k1=0.20 
-export d2_bg_k2=0.0
+if [ $LEVS -eq '64' ]; then
+   export satmedmf=F
+   export hybedmf=T
+   export lheatstrg=F
+   export IAER=111
+   export iovr_lw=1
+   export iovr_sw=1
+   export icliq_sw=1
+   export do_tofd=F
+   export reiflag=1
+   export adjust_dry_mass=F
+   export vtdm4=0.06
+   export tau=10.0
+   export rf_cutoff=750.0
+   export d2_bg_k1=0.15
+   export d2_bg_k2=0.02
+elif [ $LEVS -eq 127 ]; then
+#gfsv16
+   export satmedmf=T
+   export hybedmf=F
+   export lheatstrg=T
+   export IAER=5111
+   export iovr_lw=3
+   export iovr_sw=3
+   export icliq_sw=2
+   export do_tofd=T
+   export reiflag=2
+   export adjust_dry_mass=T
+   export tau=5.0
+   export rf_cutoff=1.e3
+   export d2_bg_k1=0.20 
+   export d2_bg_k2=0.0
+else
+   echo "LEVS must be 64 or 127"
+   exit 1
+fi
 
 # stochastic physics parameters.
 export DO_SPPT=.true.
@@ -306,19 +311,17 @@ export LATA=$LATB
 
 export ANALINC=6
 
-export LEVS=127
 export FHMIN=3
 export FHMAX=9
 export FHMAX_LONG=120 # control forecast every 00UTC in run_long_fcst=true
 export FHOUT=3
 FHMAXP1=`expr $FHMAX + 1`
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
+
 export iaufhrs="3,6,9"
 export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
-# dump increment in one time step (for debugging)
+# NO IAU.
 #export iaufhrs="6"
-#export iau_delthrs=0.25
-# to turn off iau, use iau_delthrs=-1
 #export iau_delthrs=-1
 
 # other model variables set in ${rungfs}
@@ -444,6 +447,7 @@ export SATINFO=${fixgsi}/global_satinfo.txt
 export NLAT=$((${LATA}+2))
 # default is to use berror file in gsi fix dir.
 export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_janjulysmooth0p5
+#export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_annmeansmooth0p5
 export REALTIME=YES # if NO, use historical files set in main.sh
 
 # parameters for hybrid gain
