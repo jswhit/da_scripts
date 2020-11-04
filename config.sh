@@ -4,13 +4,18 @@ echo "running on $machine using $NODES nodes and $cores CORES"
 
 export ndates_job=1 # number of DA cycles to run in one job submission
 # resolution of control and ensmemble.
-export RES=384 
-export RES_CTL=768 
+export RES=192 
+export RES_CTL=384 
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
 export alpha=250 # percentage of 3dvar increment (beta_2*1000)
 export beta=1000 # percentage of enkf increment (*10)
+# if replay_controlfcast='true', weight given to ens mean vs control 
+# forecast in recentered backgrond ensemble (x100).  if recenter_control_wgt=0, then
+# no recentering is done.. if replay_controlfcst='false', not used.
+export recenter_control_wgt=0
+export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
 export exptname="C${RES}_hybgain"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='true'
@@ -42,6 +47,8 @@ fi
 export run_long_fcst="false"  # spawn a longer control forecast at 00 UTC
 export ensmean_restart='false'
 export skip_to_fcst="false" # skip to forecast step
+export recenter_anal="true"
+export recenter_fcst="true"
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
@@ -49,6 +56,7 @@ export skip_to_fcst="false" # skip to forecast step
 #export cleanup_controlanl='false'
 #export cleanup_anal='false'
 #export recenter_anal="false"
+#export recenter_fcst="false"
 #export cleanup_fg='false'
 #export resubmit='false'
 #export do_cleanup='false'
@@ -122,7 +130,8 @@ export obtimeltr=1.e30
 export obtimelsh=1.e30       
 
 # model physics parameters.
-export LEVS=127 # 127 for gfsv16, 64 for gfsv15
+#export LEVS=127 # 127 for gfsv16, 64 for gfsv15
+export LEVS=64 
 export psautco="0.0008,0.0005"
 export prautco="0.00015,0.00015"
 #export imp_physics=99 # zhao-carr
@@ -362,7 +371,7 @@ export write_ensmean=.true. # write out ens mean analysis in EnKF
 export letkf_flag=.true.
 export letkf_bruteforce_search=.false.
 export denkf=.false.
-export getkf=.true.
+export getkf=.false.
 export getkf_inflation=.false.
 export modelspace_vloc=.true.
 export letkf_novlocal=.true.

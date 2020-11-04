@@ -183,6 +183,19 @@ if [ $replay_controlfcst == 'true' ]; then
    echo "$analdate done changing resolution of control forecast to ens resolution `date`"
 fi
 
+# optionally (partically) recenter ensemble around control forecast.
+if [ $replay_controlfcst == 'true' ] && [ $recenter_control_wgt -gt 0 ] && [ $recenter_fcst == "true" ]; then
+   echo "$analdate (partially) recenter background ensemble around control `date`"
+   sh ${enkfscripts}/recenter_ens.sh > ${current_logdir}/recenter_ens.out 2>&1
+   recenter_done=`cat ${current_logdir}/recenter.log`
+   if [ $recenter_done == 'yes' ]; then
+     echo "$analdate recentering completed successfully `date`"
+   else
+     echo "$analdate recentering did not complete successfully, exiting `date`"
+     exit 1
+   fi
+fi
+
 # if ${datapathm1}/cold_start_bias exists, GSI run in 'observer' mode
 # to generate diag_rad files to initialize angle-dependent 
 # bias correction.
