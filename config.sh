@@ -52,11 +52,11 @@ export recenter_fcst="true"
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
+#export recenter_fcst="false"
 #export cleanup_observer='false'
 #export cleanup_controlanl='false'
 #export cleanup_anal='false'
 #export recenter_anal="false"
-#export recenter_fcst="false"
 #export cleanup_fg='false'
 #export resubmit='false'
 #export do_cleanup='false'
@@ -455,7 +455,7 @@ export CONVINFO=${fixgsi}/global_convinfo.txt
 export SATINFO=${fixgsi}/global_satinfo.txt
 export NLAT=$((${LATA}+2))
 # default is to use berror file in gsi fix dir.
-export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_janjulysmooth0p5
+#export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_janjulysmooth0p5
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_annmeansmooth0p5
 export REALTIME=YES # if NO, use historical files set in main.sh
 
