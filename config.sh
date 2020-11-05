@@ -103,6 +103,7 @@ elif [ "$machine" == 'orion' ]; then
    module unload netcdf/4.7.4 
    module unload hdf5/1.10.6
    module load netcdfp/4.7.4
+   module load intelpython3/2020.2
    export PYTHONPATH=/home/jwhitake/.local/lib/python3.7/site-packages
    export HDF5_DISABLE_VERSION_CHECK=1
    module list
