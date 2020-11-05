@@ -13,7 +13,12 @@ export alpha=250 # percentage of 3dvar increment (beta_2*1000)
 export beta=1000 # percentage of enkf increment (*10)
 # if replay_controlfcast='true', weight given to ens mean vs control 
 # forecast in recentered backgrond ensemble (x100).  if recenter_control_wgt=0, then
-# no recentering is done.. if replay_controlfcst='false', not used.
+# no recentering is done. If recenter_control_wgt=100, then the background
+# ensemble is recentered around the control forecast.
+# recenter_control_wgt=recenter_ensmean_wgt=50, then the background ensemble
+# is recentered around the average of the (upscaled) control forecast and the
+# original ensemble mean.
+# if replay_controlfcst='false', not used.
 export recenter_control_wgt=0
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
 export exptname="C${RES}_hybgain"
@@ -418,7 +423,7 @@ elif [ "$machine" == 'orion' ]; then
    export fv3gfspath=/work/noaa/global/glopara
    export FIXFV3=$fv3gfspath/fix_nco_gfsv16/fix_fv3_gmted2010
    export FIXGLOBAL=$fv3gfspath/fix_nco_gfsv16/fix_am
-   export gsipath=${basedir}/ProdGSI
+   export gsipath=${basedir}/ProdGSI.jswhit
    export fixgsi=${gsipath}/fix
    #export fixcrtm=${basedir}/fix/crtm/v2.2.6/fix
    export fixcrtm=$fv3gfspath/crtm/crtm_v2.3.0
