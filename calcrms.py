@@ -1,4 +1,3 @@
-from netCDF4 import Dataset
 import numpy as np
 import sys, os
 import dateutils
@@ -15,100 +14,83 @@ expt2 = sys.argv[2]
 date1 = sys.argv[3]
 date2 = sys.argv[4]
 
-fhour = 6
+fhour = 120
 var = 'z'
 level = 500 
 
 vargrb = var
-varnc = '%s_plev' % var
 if var == 'z': 
     vargrb = 'gh'
     varnc = 'h_plev'
 
 latbound = 20 # boundary between tropics and extra-tropics 
-analpath = '/scratch3/BMC/gsienkf/whitaker/ecanl'
-datapath1 = '/scratch3/BMC/gsienkf/whitaker/%s' % expt1
-datapath2 = '/scratch3/BMC/gsienkf/whitaker/%s' % expt2
-climopath =  '/scratch4/NCEPDEV/global/save/Fanglin.Yang/VRFY/vsdb/nwprod/fix/'
+analpath = '/scratch2/BMC/gsienkf/whitaker/ecanl_1d'
+datapath1 = '/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/%s' % expt1
+datapath2 = '/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/%s' % expt2
+climopath =  '/scratch1/NCEPDEV/global/glopara/fix/fix_verif/climo_files/'
 
-if fhour > 9:
-    dates = dateutils.daterange(date1,date2,24)
-else:
-    dates = dateutils.daterange(date1,date2,6)
-#dates.remove('2016011300')
-#dates.remove('2016010912')
-ntime = None; fcsterrspect1 = None; fcsterrspect2 = None
+dates = dateutils.daterange(date1,date2,24)
 rmsnhall1=[];rmsshall1=[];rmstrall1=[];rmsglall1=[]
 acnhall1=[];acshall1=[];actrall1=[];acglall1=[]
 rmsnhall2=[];rmsshall2=[];rmstrall2=[];rmsglall2=[]
 acnhall2=[];acshall2=[];actrall2=[];acglall2=[]
+lats1d = None
 for date in dates:
     datev = dateutils.dateshift(date,fhour)
     # read analysis
-    analfile = os.path.join(analpath,'pgbanl.ecm.%s' % datev)
+    analfile = os.path.join(analpath,'z_plevs_%s.grb' % datev)
     grbs = pygrib.open(analfile)
-    grb = grbs.select(shortName=vargrb,level=level)[0]
-    verif_data = grb.values[::-1,:]
-    grbs.close()
+    grb = grbs.select(shortName='z',level=level)[0]
+    verif_data = grb.values[::-1,:]/9.80665 # reverse lats (so they are S to N)
+    #print(verif_data.min(), verif_data.max())
+    #lats2d, lons2d = grb.latlons() 
+    #lats1d = lats2d[:,0]; lons1d = lons2d[0,:]
+    #print(lats1d)
+    #raise SystemExit
     # read climo
-    grbsclimo = pygrib.open(os.path.join(climopath,'cmean_1d.1959%s'%datev[4:8]))
+    climofile = os.path.join(climopath,'cmean_1d.1959%s'%datev[4:8])
+    #print(climofile)
+    grbsclimo = pygrib.open(climofile)
     yyyy,mm,dd,hh = dateutils.splitdate(datev)
-    grbclimo = grbsclimo.select(shortName=vargrb,level=level,dataTime=100*hh)[0]
+    grbclimo = grbsclimo.select(shortName='gh',level=level,dataTime=100*hh)[0]
     climo_data = grbclimo.values[::-1,:]
+    #print(climo_data.min(), climo_data.max())
     grbsclimo.close()
-    if fhour > 9:
-        fcstfile = '%s/%s/fv3longcontrol2_historyp_%s_latlon.nc'% (datapath1,date,date)
-    else:
-        fcstfile = '%s/%s/fv3control2_historyp_%s_latlon.nc'% (datapath1,date,date)
-    nc = Dataset(fcstfile)
-    if ntime is None:
-        lons = nc['longitude'][:]; lats = nc['latitude'][:]
-        latslist = lats.tolist()
+    yyyy,mm,dd,hh = dateutils.splitdate(date)
+    fcstfile = '/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/pgb1d/%s/gfs.%04i%02i%02i/%02i/atmos/gfs.t%02iz.pgrb2.1p00.f%03i' % (expt1,yyyy,mm,dd,hh,hh,fhour)
+    #print(fcstfile)
+    grbsfcst1 = pygrib.open(fcstfile)
+    grbfcst1 = grbsfcst1.select(shortName='gh',level=level)[0]
+    fcst_data1 = grbfcst1.values[::-1,:]
+    #print(fcst_data1.min(), fcst_data1.max())
+    grbsfcst1.close()
+    fcstfile = '/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/pgb1d/%s/gfs.%04i%02i%02i/%02i/atmos/gfs.t%02iz.pgrb2.1p00.f%03i' % (expt2,yyyy,mm,dd,hh,hh,fhour)
+    #print(fcstfile)
+    grbsfcst2 = pygrib.open(fcstfile)
+    grbfcst2 = grbsfcst2.select(shortName='gh',level=level)[0]
+    fcst_data2 = grbfcst2.values[::-1,:]
+    #print(fcst_data2.min(), fcst_data2.max())
+    if lats1d is None:
+        lats2d, lons2d = grbfcst2.latlons() 
+        lats1d = lats2d[::-1,0]; lons1d = lons2d[0,:]
+        latslist = lats1d.tolist()
         latnh = latslist.index(latbound)
         latsh = latslist.index(-latbound)
-        #print lats[:latsh]
-        #print lats[latsh:latnh+1]
-        #print lats[latnh+1:]
+        #print lats1d[:latsh]
+        #print lats1d[latsh:latnh+1]
+        #print lats1d[latnh+1:]
         #raise SystemExit
-        lons2, lats2 = np.meshgrid(lons, lats)
-        coslats = np.cos(np.radians(lats2))
+        coslats = np.cos(np.radians(lats2d[::-1,:]))
         coslatssh = coslats[:latsh,:]
         coslatsnh = coslats[latnh+1:,:]
         coslatstr = coslats[latsh:latnh+1,:]
-        nlons = len(lons); nlats = len(lats)
-    times = nc['time'][:].tolist()
-    levels = nc['plev'][:].tolist()
-    ntime = times.index(fhour)
-    nlev = levels.index(level)
-    if int(nc['time'][ntime]) != fhour:
-       raise ValueError('incorrect forecast time')
-    fcst_data1 = nc[varnc][ntime,nlev,...]
-    pmask1 = nc['pmaskv2'][ntime,...]
-    #pmask1 = nc['pressfc'][ntime,...]/100.
-    nc.close()
-    if fhour > 9:
-        fcstfile = '%s/%s/fv3longcontrol2_historyp_%s_latlon.nc'% (datapath2,date,date)
-    else:
-        fcstfile = '%s/%s/fv3control2_historyp_%s_latlon.nc'% (datapath2,date,date)
-    nc = Dataset(fcstfile)
-    times = nc['time'][:].tolist()
-    levels = nc['plev'][:].tolist()
-    ntime = times.index(fhour)
-    nlev = levels.index(level)
-    if int(nc['time'][ntime]) != fhour:
-       raise ValueError('incorrect forecast time')
-    fcst_data2 = nc[varnc][ntime,nlev,...]
-    pmask2 = nc['pmaskv2'][ntime,...]
-    #pmask2 = nc['pressfc'][ntime,...]/100.
-    nc.close()
-    #print date,verif_data.shape,verif_data.min(),verif_data.max(),\
-    #           fcst_data1.shape,fcst_data1.min(),fcst_data1.max(),\
-    #           fcst_data2.shape,fcst_data2.min(),fcst_data2.max()
-    # mask all points that are underground in either forecast
-    fcsterr1 = np.ma.array(fcst_data1 - verif_data,mask=pmask1<level)
-    fcsterr2 = np.ma.array(fcst_data2 - verif_data,mask=pmask2<level)
-    fanom1 = np.ma.array(fcst_data1 - climo_data,mask=pmask1<level)
-    fanom2 = np.ma.array(fcst_data2 - climo_data,mask=pmask2<level)
+        nlons = len(lons1d); nlats = len(lats1d)
+    grbsfcst2.close()
+
+    fcsterr1 = fcst_data1 - verif_data
+    fcsterr2 = fcst_data2 - verif_data
+    fanom1 = fcst_data1 - climo_data
+    fanom2 = fcst_data2 - climo_data
     vanom = verif_data - climo_data
 
     rmssh1 = np.sqrt(getmean(fcsterr1[:latsh,:]**2,coslatssh))
