@@ -11,7 +11,7 @@ export RES_CTL=384
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
 export alpha=250 # percentage of 3dvar increment (beta_2*1000)
 export beta=1000 # percentage of enkf increment (*10)
-# if replay_controlfcast='true', weight given to ens mean vs control 
+# if replay_controlfcst='true', weight given to ens mean vs control 
 # forecast in recentered backgrond ensemble (x100).  if recenter_control_wgt=0, then
 # no recentering is done. If recenter_control_wgt=100, then the background
 # ensemble is recentered around the control forecast.
