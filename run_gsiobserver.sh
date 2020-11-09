@@ -15,6 +15,9 @@ if [ $charnanal == "control" ]; then
    export LATA=$LATB_CTL
    export JCAP=$JCAP_CTL
 fi      
+##export CLEAN="NO"
+export NLAT=$((${LATA}+2))
+export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_janjulysmooth0p5
 
 export CO2DIR=$fixgsi
 
