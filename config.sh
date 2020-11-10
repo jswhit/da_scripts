@@ -136,8 +136,8 @@ export obtimeltr=1.e30
 export obtimelsh=1.e30       
 
 # model physics parameters.
-#export LEVS=127 # 127 for gfsv16, 64 for gfsv15
-export LEVS=64 
+export LEVS=127 # 127 for gfsv16, 64 for gfsv15
+#export LEVS=64 
 export psautco="0.0008,0.0005"
 export prautco="0.00015,0.00015"
 #export imp_physics=99 # zhao-carr
