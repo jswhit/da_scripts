@@ -397,8 +397,7 @@ EOF
 #   bufrtable= text file ONLY needed for single obs test (oneobstest=.true.)
 #   bftab_sst= bufr table for sst ONLY needed for sst retrieval (retrieval=.true.)
 
-#berror=$fixgsi/Big_Endian/global_berror.l${LEVS}y${NLAT}.f77
-berror=/scratch2/BMC/gsienkf/whitaker/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_janjulysmooth0p5
+berror=${BERROR:-$fixgsi/Big_Endian/global_berror.l${LEVS}y${NLAT}.f77}
 
 satinfo=${SATINFO:-$fixgsi/global_satinfo.txt}
 atmsfilter=${ATMSFILTER:-$fixgsi/atms_beamwidth.txt}

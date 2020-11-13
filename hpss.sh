@@ -109,9 +109,9 @@ else
    cd ${analdate}
    /bin/rm -f diag*cris* diag*airs* diag*iasi*
    /bin/rm -f *fhr03* *fhr09* *chgres
-   /bin/rm -rf control  ensmean
+   /bin/rm -rf ensmean
    if [ $hr != '00' ]; then
-       /bin/rm -rf control2
+       /bin/rm -rf control
    fi
 fi
 

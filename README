@@ -17,12 +17,4 @@ fg_only should contain "export fg_only=true" plus "export cold_start=true" and a
 date you want the experiment to start and end.
 
 
-* to turn on long forecasts, set 'run_long_fcst=true' in config.sh. 1 deg pressure level output on a few levels
-  will be created in a netcdf file (ncep_post is not run).
 * to turn off IAU, set iaudelthrs=-1 and iaufhrs=6 in config.sh
-* to run hybrid gain, set hybgain=true.  If you want to replay a high res control,
-  set controlfcst=true and replay_controlfcst=true
-* to run hybrid 4denvar as in ops, set hybgain=false, controlfcst=true, replay_controlfcst=false,
-  recenter_anal=true
-* the executables in exec_<machine> are compiled by cloning out the global-workflow project and
-  running sorc/build_all.sh.

@@ -20,14 +20,13 @@ if [ "$machine" == 'hera' ]; then
    #export LD_LIBRARY_PATH="/scratch2/BMC/gsienkf/whitaker/ufs-weather-model/FV3/ccpp/lib:${LD_LIBRARY_PATH}"
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'orion' ]; then
-   module purge 
-   module load intel/2019.5 
-   module load impi/2019.6 
-   module load mkl/2019.5  
-   export NCEPLIBS=/apps/contrib/NCEPLIBS/lib
-   module use -a /apps/contrib/NCEPLIBS/lib/modulefiles
+   module purge
+   module load intel/2018
+   module load impi/2018
+   export NCEPLIBS=/work/noaa/noaatest/gwv/l530/lib
+   module use /work/noaa/noaatest/gwv/l530/lib/modulefiles
    module load netcdfp/4.7.4
-   module load esmflocal/8.0.0.para
+   module load esmflocal/8_0_1
    module load grib_util-intel-sandybridge # wgrib
 elif [ "$machine" == 'gaea' ]; then
    module purge
@@ -54,7 +53,7 @@ if [ "$VERBOSE" == "YES" ]; then
 fi
 
 niter=${niter:-1}
-if [ "$charnanal" != "control" ] && [ "$charnanal" != "ensmean" ] && [ "$charnanal" != "control2" ]; then
+if [ "$charnanal" != "control" ] && [ "$charnanal" != "ensmean" ]; then
    nmem=`echo $charnanal | cut -f3 -d"m"`
    nmem=$(( 10#$nmem )) # convert to decimal (remove leading zeros)
 else
@@ -188,34 +187,30 @@ for file in `ls $FIXGLOBAL/global_volcanic_aerosols* ` ; do
 done
 
 # create netcdf increment files.
-echo "DO_CALC_INCREMENT = $DO_CALC_INCREMENT"
-if [ "$DO_CALC_INCREMENT" == "YES" ]; then
-   if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
-      cd INPUT
-      iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
+if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
+   cd INPUT
+   iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
 # IAU - multiple increments.
-      for fh in $iaufhrs2; do
-         export increment_file="fv3_increment${fh}.nc"
-         if [ "$replay_controlfcst" == 'true' ] && [ "$charnanal" == 'control2' ]; then
-            export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_ensmean"
-            export fgfile="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}.chgres"
-         else
-            export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_${charnanal}"
-            export fgfile="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}"
-         fi
-         echo "create ${increment_file}"
-         /bin/rm -f ${increment_file}
-         # last two args:  no_mpinc no_delzinc
-         export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file} T F"
-         nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
-         if [ $? -ne 0 -o ! -s ${increment_file} ]; then
-            echo "problem creating ${increment_file}, stopping .."
-            exit 1
-         fi
-      done # do next forecast
-   
-      cd ..
-   fi
+   for fh in $iaufhrs2; do
+      export increment_file="fv3_increment${fh}.nc"
+      if [ $charnanal == "control" ] && [ "$replay_controlfcst" == 'true' ]; then
+         export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_ensmean"
+         export fgfile="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}.chgres"
+      else
+         export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_${charnanal}"
+         export fgfile="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}"
+      fi
+      echo "create ${increment_file}"
+      /bin/rm -f ${increment_file}
+      # last two args:  no_mpinc no_delzinc
+      export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file} T F"
+      nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
+      if [ $? -ne 0 -o ! -s ${increment_file} ]; then
+         echo "problem creating ${increment_file}, stopping .."
+         exit 1
+      fi
+   done # do next forecast
+   cd ..
 else
    if [ $fg_only == "false" ] ; then
       cd INPUT
@@ -523,13 +518,13 @@ cat > input.nml <<EOF
   fv_debug = F,
   range_warn = F,
   reset_eta = F,
-  n_sponge = 10,
+  n_sponge = ${n_sponge:-10},
   nudge_qv = T,
   nudge_dz = F,
-  tau = 5.0,
-  rf_cutoff = 1000.0,
-  d2_bg_k1 = 0.20,
-  d2_bg_k2 = 0.0,
+  tau = ${tau:-5},
+  rf_cutoff = ${rf_cutoff:-1000},
+  d2_bg_k1 = ${d2_bg_k1:-0.20},
+  d2_bg_k2 = ${d2_bg_k2:-0},
   d2_bg = 0.,
   kord_tm = -9,
   kord_mt = 9,
@@ -860,22 +855,6 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
       fi
    done
    cd ..
-fi
-
-# also move history files if copy_history_files is set.
-if [ ! -z $copy_history_files ]; then
-  mkdir -p ${DATOUT}/${charnanal}
-  /bin/mv -f fv3_historyp*.nc ${DATOUT}/${charnanal}
-  # copy with compression
-  #n=1
-  #while [ $n -le 6 ]; do
-  #   # lossless compression
-  #   ncks -4 -L 5 -O fv3_historyp.tile${n}.nc ${DATOUT}/${charnanal}/fv3_historyp.tile${n}.nc
-  #   # lossy compression
-  #   #ncks -4 --ppc default=5 -O fv3_history.tile${n}.nc ${DATOUT}/${charnanal}/fv3_history.tile${n}.nc
-  #   /bin/rm -f fv3_historyp.tile${n}.nc
-  #   n=$((n+1))
-  #done
 fi
 
 # if random pattern restart file exists for end of IAU window, copy it.

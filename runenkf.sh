@@ -17,9 +17,6 @@ else # externally specified bias correction files.
     export GBIASAIR=${biascorrdir}/${analdate}//${PREINP}abias_air
 fi
 export GSATANG=$fixgsi/global_satangbias.txt # not used, but needs to exist
-if [ $lupd_satbiasc == ".true." ]; then
-   export ABIAS=${datapath2}/${PREINP}abias_enkf
-fi
 
 ln -fs $GBIAS   ${datapath2}/satbias_in
 ln -fs $GBIAS_PC   ${datapath2}/satbias_pc
@@ -39,7 +36,7 @@ ln -fs ${current_logdir}/convinfo.out ${datapath2}/fort.205
 
 # remove previous analyses
 if [ $cleanup_anal == 'true' ]; then
-   /bin/rm -f ${datapath2}/${analfileprefix}_*mem*
+   /bin/rm -f ${datapath2}/sanl_*mem*
 fi
 
 niter=1

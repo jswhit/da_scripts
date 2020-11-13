@@ -1,54 +1,43 @@
-echo "running on $machine using $NODES nodes"
+# hybrid gain GSI(3DVar)/EnKF workflow
+export cores=`expr $NODES \* $corespernode`
+echo "running on $machine using $NODES nodes and $cores CORES"
 
 export ndates_job=1 # number of DA cycles to run in one job submission
 # resolution of control and ensmemble.
-export RES=384 
-export RES_CTL=768 
+export RES=192 
+export RES_CTL=384 
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
 export alpha=250 # percentage of 3dvar increment (beta_2*1000)
 export beta=1000 # percentage of enkf increment (*10)
-export hybgain='true' # set to true for hybrid gain 3DVar/EnKF
+# if replay_controlfcst='true', weight given to ens mean vs control 
+# forecast in recentered backgrond ensemble (x100).  if recenter_control_wgt=0, then
+# no recentering is done. If recenter_control_wgt=100, then the background
+# ensemble is recentered around the control forecast.
+# recenter_control_wgt=recenter_ensmean_wgt=50, then the background ensemble
+# is recentered around the average of the (upscaled) control forecast and the
+# original ensemble mean.
+# if replay_controlfcst='false', not used.
+export recenter_control_wgt=0
+export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
 export exptname="C${RES}_hybgain"
 # for 'passive' or 'replay' cycling of control fcst 
-# control forecast files have 'control2' suffix, instead of 'control'
-# GSI observer will be run on 'control2' forecast
-# this is for diagnostic purposes (to get GSI diagnostic files) 
 export replay_controlfcst='true'
-# for dual-res hybrid, set hybgain=false, replay_controlfcst=false
-#export hybgain='false' # set to true for hybrid gain 3DVar/EnKF
-#export replay_controlfcst='false'
-# determine if writing or calculating increment 
-export DO_CALC_INCREMENT="YES" # always YES if hybgain="true"
-export cores=`expr $NODES \* $corespernode`
-
-## check that value of NODES is consistent with PBS_NP on theia.
-#if [ "$machine" == 'theia' ]; then
-#   if [ $PBS_NP -ne $cores ]; then
-#     echo "NODES = ${NODES} PBS_NP = ${PBS_NP} cores = ${cores}"
-#     echo "NODES set incorrectly in preamble"
-#     exit 1
-#   fi
-#fi
-#export KMP_AFFINITY=disabled
 
 export fg_gfs="run_ens_fv3.sh"
 export ensda="enkf_run.sh"
 export rungsi='run_gsi_4densvar.sh'
 export rungfs='run_fv3.sh' # ensemble forecast
 
-export recenter_anal="true" # recenter enkf analysis around GSI hybrid 4DEnVar analysis
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
-export controlanal='true' # use gsi hybrid (if false, pure enkf is used)
-export controlfcst='true' # if true, run dual-res setup with single high-res control
 export cleanup_fg='true'
 export cleanup_ensmean='true'
 export cleanup_anal='true'
 export cleanup_controlanl='true'
 export cleanup_observer='true' 
 export resubmit='true'
-export replay_run_observer='true' # run observer on replay forecast
+export replay_run_observer='true' # run observer on replay control forecast
 # python script checkdate.py used to check
 # YYYYMMDDHH analysis date string to see if
 # full ensemble should be saved to HPSS (returns 0 if 
@@ -62,11 +51,13 @@ export save_hpss="true"
 fi
 export run_long_fcst="false"  # spawn a longer control forecast at 00 UTC
 export ensmean_restart='false'
-#export copy_history_files=1 # save pressure level history files (and compute ens mean)
 export skip_to_fcst="false" # skip to forecast step
+export recenter_anal="true"
+export recenter_fcst="true"
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
+#export recenter_fcst="false"
 #export cleanup_observer='false'
 #export cleanup_controlanl='false'
 #export cleanup_anal='false'
@@ -82,7 +73,6 @@ if [ "$machine" == 'hera' ]; then
    export basedir=/scratch2/BMC/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   #export obs_datapath=/scratch2/BMC/gsienkf/whitaker/gdas1bufr
    export obs_datapath=/scratch1/NCEPDEV/global/glopara/dump
    module purge
    module load intel/18.0.5.274
@@ -108,11 +98,15 @@ elif [ "$machine" == 'orion' ]; then
    module load intel/2018.4
    module load impi/2018.4
    module load mkl/2018.4
-   module load netcdf/4.7.2-parallel
-   module load hdf5/1.10.5-parallel
-   module load python
+   export NCEPLIBS=/apps/contrib/NCEPLIBS/lib
+   module use -a $NCEPLIBS/modulefiles
+   module unload netcdf/4.7.4 
+   module unload hdf5/1.10.6
+   module load netcdfp/4.7.4
+   module load intelpython3/2020.2
    export PYTHONPATH=/home/jwhitake/.local/lib/python3.7/site-packages
    export HDF5_DISABLE_VERSION_CHECK=1
+   module list
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f2/dev/${USER}
    export datadir=/lustre/f2/scratch/${USER}
@@ -142,6 +136,8 @@ export obtimeltr=1.e30
 export obtimelsh=1.e30       
 
 # model physics parameters.
+export LEVS=127 # 127 for gfsv16, 64 for gfsv15
+#export LEVS=64 
 export psautco="0.0008,0.0005"
 export prautco="0.00015,0.00015"
 #export imp_physics=99 # zhao-carr
@@ -194,45 +190,49 @@ export hord_vt=5
 export hord_tm=5
 export hord_dp=-5
 export consv_te=1
-export nord=2
 export dddmp=0.1
 export d4_bg=0.12
 export vtdm4=0.02
 export fv_sg_adj=450
+export nord=2
 
 #gfsv15
-#export satmedmf=F
-#export hybedmf=T
-#export lheatstrg=F
-#export IAER=111
-#export iovr_lw=1
-#export iovr_sw=1
-#export icliq_sw=1
-#export do_tofd=F
-#export reiflag=1
-#export adjust_dry_mass=F
-#export nord=3
-#export vtdm4=0.06
-#export tau=10.0
-#export rf_cutoff=750.0
-#export d2_bg_k1=0.15
-#export d2_bg_k2=0.02
-
-#gfsv16 (defaults in run_fv3.sh)
-export satmedmf=T
-export hybedmf=F
-export lheatstrg=T
-export IAER=5111
-export iovr_lw=3
-export iovr_sw=3
-export icliq_sw=2
-export do_tofd=T
-export reiflag=2
-export adjust_dry_mass=T
-export tau=5.0
-export rf_cutoff=1.e3
-export d2_bg_k1=0.20 
-export d2_bg_k2=0.0
+if [ $LEVS -eq '64' ]; then
+   export satmedmf=F
+   export hybedmf=T
+   export lheatstrg=F
+   export IAER=111
+   export iovr_lw=1
+   export iovr_sw=1
+   export icliq_sw=1
+   export do_tofd=F
+   export reiflag=1
+   export adjust_dry_mass=F
+   export vtdm4=0.06
+   export tau=10.0
+   export rf_cutoff=750.0
+   export d2_bg_k1=0.15
+   export d2_bg_k2=0.02
+elif [ $LEVS -eq 127 ]; then
+#gfsv16
+   export satmedmf=T
+   export hybedmf=F
+   export lheatstrg=T
+   export IAER=5111
+   export iovr_lw=3
+   export iovr_sw=3
+   export icliq_sw=2
+   export do_tofd=T
+   export reiflag=2
+   export adjust_dry_mass=T
+   export tau=5.0
+   export rf_cutoff=1.e3
+   export d2_bg_k1=0.20 
+   export d2_bg_k2=0.0
+else
+   echo "LEVS must be 64 or 127"
+   exit 1
+fi
 
 # stochastic physics parameters.
 export DO_SPPT=.true.
@@ -326,19 +326,17 @@ export LATA=$LATB
 
 export ANALINC=6
 
-export LEVS=127
 export FHMIN=3
 export FHMAX=9
 export FHMAX_LONG=120 # control forecast every 00UTC in run_long_fcst=true
 export FHOUT=3
 FHMAXP1=`expr $FHMAX + 1`
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
+
 export iaufhrs="3,6,9"
 export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
-# dump increment in one time step (for debugging)
+# NO IAU.
 #export iaufhrs="6"
-#export iau_delthrs=0.25
-# to turn off iau, use iau_delthrs=-1
 #export iau_delthrs=-1
 
 # other model variables set in ${rungfs}
@@ -363,30 +361,23 @@ export analpertwttr_rtpp=0.0
 export pseudo_rh=.true.
 export use_correlated_oberrs=".true."
                                                                     
-if [ $hybgain == "true" ]; then
-  # DO_CALC_INCREMENT should always be true for hybgain
-  export DO_CALC_INCREMENT="YES"
-fi
 # Analysis increments to zero out
 export INCREMENTS_TO_ZERO="'liq_wat_inc','icmr_inc'"
 # Stratospheric increments to zero
 export INCVARS_ZERO_STRAT="'sphum_inc','liq_wat_inc','icmr_inc'"
 export INCVARS_EFOLD="5"
-if [ $DO_CALC_INCREMENT = "YES" ]; then
-  export write_fv3_increment=".false."
-  export analfileprefix='sanl'
-else
-  export analfileprefix='incr'
-  export write_fv3_increment=".true."
-fi
+export write_fv3_increment=".false."
 export WRITE_INCR_ZERO="incvars_to_zero= $INCREMENTS_TO_ZERO,"
 export WRITE_ZERO_STRAT="incvars_zero_strat= $INCVARS_ZERO_STRAT,"
 export WRITE_STRAT_EFOLD="incvars_efold= $INCVARS_EFOLD,"
-export write_ensmean=.true. # write out ens analysis (or anal incr) in EnKF
+# NOTE: most other GSI namelist variables are in ${rungsi}
+export aircraft_bc=.true.
+export use_prepb_satwnd=.false.
+export write_ensmean=.true. # write out ens mean analysis in EnKF
 export letkf_flag=.true.
 export letkf_bruteforce_search=.false.
-export denkf=.true.
-export getkf=.true.
+export denkf=.false.
+export getkf=.false.
 export getkf_inflation=.false.
 export modelspace_vloc=.true.
 export letkf_novlocal=.true.
@@ -397,31 +388,11 @@ export huber=.false.
 export zhuberleft=1.e10
 export zhuberright=1.e10
 
-export biasvar=-500
-if [ $controlanal == 'false' ] && [ $NOSAT == "NO" ];  then
-   export lupd_satbiasc=.true.
-   export numiter=4
-else
-   export lupd_satbiasc=.false.
-   export numiter=0
-fi
-# iterate enkf in obspace for varqc
-if [ $varqc == ".true." ]; then
-  export numiter=5
-fi
+export lupd_satbiasc=.false.
+export numiter=0
 # use pre-generated bias files.
-#export lupd_satbiasc=.false.
-#export numiter=0
 #export biascorrdir=${datadir}/C192C192_skeb2
 
-
-# turn on enkf analog of VarQC
-#export sprd_tol=10.
-#export varqc=.true.
-#export huber=.true.
-#export zhuberleft=1.1
-#export zhuberright=1.1
-                                                                    
 export nanals=80                                                    
                                                                     
 export paoverpb_thresh=0.998  # set to 1.0 to use all the obs in serial EnKF
@@ -438,30 +409,30 @@ export incdate="${enkfscripts}/incdate.sh"
 if [ "$machine" == 'hera' ]; then
    export python=/contrib/anaconda/2.3.0/bin/python
    export fv3gfspath=/scratch1/NCEPDEV/global/glopara
-   export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
-   export FIXGLOBAL=${fv3gfspath}/fix/fix_am
+   export FIXFV3=${fv3gfspath}/fix_nco_gfsv16/fix_fv3_gmted2010
+   export FIXGLOBAL=${fv3gfspath}/fix_nco_gfsv16/fix_am
    export gsipath=/scratch1/NCEPDEV/global/glopara/git/global-workflow/gfsv16b/sorc/gsi.fd
    export fixgsi=${gsipath}/fix
-   #export fixcrtm=/scratch1/NCEPDEV/global/glopara/crtm/v2.2.6/fix
    export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
-   export CHGRESEXEC=${execdir}/chgres_recenter_ncio.exe
+   export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
 elif [ "$machine" == 'orion' ]; then
    export python=`which python`
-   export fv3gfspath=${basedir}
-   export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
-   export FIXGLOBAL=${fv3gfspath}/fix/fix_am
-   export gsipath=${basedir}/ProdGSI
+   export fv3gfspath=/work/noaa/global/glopara
+   export FIXFV3=$fv3gfspath/fix_nco_gfsv16/fix_fv3_gmted2010
+   export FIXGLOBAL=$fv3gfspath/fix_nco_gfsv16/fix_am
+   export gsipath=${basedir}/ProdGSI.jswhit
    export fixgsi=${gsipath}/fix
-   export fixcrtm=${basedir}/fix/crtm/v2.2.6/fix
+   #export fixcrtm=${basedir}/fix/crtm/v2.2.6/fix
+   export fixcrtm=$fv3gfspath/crtm/crtm_v2.3.0
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
-   export CHGRESEXEC=${execdir}/chgres_recenter_ncio.exe
+   export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
 elif [ "$machine" == 'gaea' ]; then
    export python=/ncrc/sw/gaea/PythonEnv-noaa/1.4.0/.spack/opt/spack/linux-sles12-x86_64/gcc-4.8/python-2.7.14-zyx34h36bfp2c6ftp5bhdsdduqjxbvp6/bin/python
    #export PYTHONPATH=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/lib/python2.7/site-packages
@@ -477,42 +448,27 @@ elif [ "$machine" == 'gaea' ]; then
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
-   export CHGRESEXEC=${execdir}/chgres_recenter_ncio.exe
+   export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
 else
    echo "${machine} unsupported machine"
    exit 1
 fi
 
-#export ANAVINFO=${enkfscripts}/global_anavinfo.l${LEVS}.txt
 export ANAVINFO=${fixgsi}/global_anavinfo.l${LEVS}.txt
 export ANAVINFO_ENKF=${ANAVINFO}
-export HYBENSINFO=${fixgsi}/global_hybens_info.l${LEVS}.txt
-# comment out next line to disable smoothing of ensemble perturbations
-# in stratosphere/mesosphere
-#export HYBENSMOOTHINFO=${fixgsi}/global_hybens_smoothinfo.l${LEVS}.txt
 export OZINFO=${fixgsi}/global_ozinfo.txt
 export CONVINFO=${fixgsi}/global_convinfo.txt
 export SATINFO=${fixgsi}/global_satinfo.txt
+export NLAT=$((${LATA}+2))
+# default is to use berror file in gsi fix dir.
+#export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_janjulysmooth0p5
+#export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_annmeansmooth0p5
 export REALTIME=YES # if NO, use historical files set in main.sh
 
 # parameters for hybrid gain
-if [ $hybgain == "true" ]; then
-   export beta1_inv=1.000
-   export readin_beta=.false.
-else
-   export beta1_inv=0.125   # 0 means all ensemble, 1 means all 3DVar.
-   export readin_beta=.true.
-fi
-# change the next line to .true. to read in from hybens_info file.
-export readin_localization=.false.
-# if above is .false., these values are used in GSI (not used at all for hybgain)
-export s_ens_h=343.     # 1250 km
-#export s_ens_h=485 # produces similar increments to 1250KM LETKF R localization
-export s_ens_v=-0.58    # 1.5 scale heights
-
-# NOTE: most other GSI namelist variables are in ${rungsi}
-export aircraft_bc=.true.
-export use_prepb_satwnd=.false.
+export beta1_inv=1.000 # 3dvar
+export readin_beta=.false. # not relevant for 3dvar
+export readin_localization=.false. # use fixed localization in EnKF.
 
 cd $enkfscripts
 echo "run main driver script"
