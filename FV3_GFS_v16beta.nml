@@ -44,7 +44,7 @@
   npz      = LEVS,
   ntiles = 6,
   grid_type = -1,
-  make_nh = F,
+  make_nh = MAKE_NH,
   fv_debug = F,
   range_warn = F,
   reset_eta = F,
@@ -69,7 +69,7 @@
   k_split  = 2,
   n_split  = 6,
   nwat = 6,
-  na_init = 0,
+  na_init = NA_INIT,
   d_ext = 0.0,
   dnats = 1,
   fv_sg_adj = 450,
@@ -81,13 +81,13 @@
   vtdm4 = 0.02,
   ke_bg = 0.0,
   do_vort_damp = T,
-  external_ic = F,
-  res_latlon_dynamics=,
-  read_increment=F,
+  external_ic = EXTERNAL_IC,
+  res_latlon_dynamics=RESLATLONDYNAMICS,
+  read_increment=READ_INCREMENT,
   gfs_phil = F,
   agrid_vel_rst = F,
   nggps_ic = T,
-  mountain = T,
+  mountain = MOUNTAIN,
   ncep_ic = F,
   d_con = 1.0,
   hord_mt = 5,
@@ -99,10 +99,11 @@
   dry_mass=98320.0,
   do_sat_adj = .true.,
   consv_am = F,
+  consv_te = 1,
   fill = T,
   dwind_2d = F,
   print_freq = 6,
-  warm_start = T,
+  warm_start = WARM_START,
   no_dycore = F,
   z_tracer = T,
 /
@@ -183,9 +184,9 @@
   ldiag_ugwp     = .false.
   do_ugwp        = F
   do_tofd        = T
-  do_skeb        = DO_SKEB
-  do_sppt        = DO_SPPT
-  do_shum        = DO_SHUM
+  do_skeb        = DO_skeb
+  do_sppt        = DO_sppt
+  do_shum        = DO_shum
   iau_filter_increments = T
   iaufhrs = 6
   iau_delthrs = IAU_DELTHRS
@@ -270,16 +271,16 @@
 
 &nam_stochy
   lon_s=LONB, lat_s=LATB, ntrunc=JCAP,
-  shum=SHUM, -999., -999., -999, -999,SHUM_TAU=21600, 1.728E5, 6.912E5, 7.776E6, 3.1536E7,SHUM_LSCALE=500000, 1000.E3, 2000.E3, 2000.E3, 2000.E3,
-  sppt=SPPT, -999., -999., -999, -999,SPPT_TAU=21600,2592500,25925000,7776000,31536000,SPPT_LSCALE=500000,1000000,2000000,2000000,2000000,SPPT_LOGIT=.TRUE.,SPPT_SFCLIMIT=.TRUE.,
-  SKEBNORM=0,
+  shum=SHUM, -999., -999., -999, -999,shum_tau=21600, 1.728E5, 6.912E5, 7.776E6, 3.1536E7,shum_lscale=500000, 1000.E3, 2000.E3, 2000.E3, 2000.E3,
+  sppt=SPPT, -999., -999., -999, -999,sppt_tau=21600,2592500,25925000,7776000,31536000,sppt_lscale=500000,1000000,2000000,2000000,2000000,sppt_logit=.TRUE.,sppt_sfclimit=.TRUE.,
+  skenorm=0,
   skeb=SKEB, -999, -999, -999, -999,
-  SKEB_TAU=21600, 1.728E5, 2.592E6, 7.776E6, 3.1536E7,
-  SKEB_LSCALE=250000, 1000.E3, 2000.E3, 2000.E3, 2000.E3,
-  SKEB_VDOF=5,
-  SKEB_NPASS=30,
-  SKEBINT=1800,
-  iseed_sppt=ISEED_SPPT,iseed_shum=ISEED_SHUM,iseed_skeb=ISEED_SKEB,
+  skeb_tau=21600, 1.728E5, 2.592E6, 7.776E6, 3.1536E7,
+  skeb_lscale=250000, 1000.E3, 2000.E3, 2000.E3, 2000.E3,
+  skeb_vdof=5,
+  skeb_npass=30,
+  skeb_int=1800,
+  iseed_sppt=ISEED_sppt,iseed_shum=ISEED_shum,iseed_skeb=ISEED_skeb,
   use_zmtnblck=.true.,fhstoch=FHSTOCH,stochini=STOCHINI,new_lscale=.true.
 /
 
