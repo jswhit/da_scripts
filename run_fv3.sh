@@ -16,15 +16,17 @@ if [ "$machine" == 'hera' ]; then
    module load wgrib
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'orion' ]; then
-   module purge 
-   module load intel/2019.5 
-   module load impi/2019.6 
-   module load mkl/2019.5  
-   export NCEPLIBS=/apps/contrib/NCEPLIBS/lib
-   module use -a /apps/contrib/NCEPLIBS/lib/modulefiles
-   module load netcdfp/4.7.4
-   module load esmflocal/8.0.0.para
-   module load grib_util-intel-sandybridge # wgrib
+   module purge
+   module use /apps/contrib/NCEP/libs/hpc-stack/v1.0.0-beta1/modulefiles/stack
+   module load hpc/1.0.0-beta1
+   module load hpc-intel/2018.4
+   module load hpc-impi/2018.4
+   module load hdf5/1.10.6
+   module load netcdf/4.7.4
+   module load pio/2.5.1
+   module load esmf/8_1_0_beta_snapshot_27
+   module load wgrib
+   export WGRIB=`which wgrib`
 elif [ "$machine" == 'gaea' ]; then
    module purge
    module load PrgEnv-intel/6.0.3
