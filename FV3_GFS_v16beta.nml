@@ -117,9 +117,6 @@
 /
 
 &gfs_physics_nml
-  cplflx         = F
-  cplwav         = F
-  cplwav2atm     = F
   fhzero         = 3
   ldiag3d        = F
   fhcyc          = 0
