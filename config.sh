@@ -5,7 +5,7 @@ echo "running on $machine using $NODES nodes and $cores CORES"
 export ndates_job=1 # number of DA cycles to run in one job submission
 # resolution of control and ensmemble.
 export RES=192 
-export RES_CTL=384 
+export RES_CTL=384
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
@@ -21,7 +21,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # if replay_controlfcst='false', not used.
 export recenter_control_wgt=0
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybgain"
+export exptname="C${RES}_hybgain_ccpp"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='true'
 
@@ -67,7 +67,7 @@ export recenter_fcst="true"
 #export do_cleanup='false'
 #export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
 #export skip_to_fcst="true" # skip to forecast step
- 
+
 source $MODULESHOME/init/sh
 if [ "$machine" == 'hera' ]; then
    export basedir=/scratch2/BMC/gsienkf/${USER}
@@ -90,7 +90,6 @@ elif [ "$machine" == 'orion' ]; then
    export basedir=/work/noaa/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   #export obs_datapath=/scratch2/BMC/gsienkf/whitaker/gdas1bufr
    export obs_datapath=${basedir}/dumps
    ulimit -s unlimited
    source $MODULESHOME/init/sh
@@ -135,14 +134,6 @@ export obtimelnh=1.e30
 export obtimeltr=1.e30       
 export obtimelsh=1.e30       
 
-# model physics parameters.
-export LEVS=127 # 127 for gfsv16, 64 for gfsv15
-#export LEVS=64 
-export psautco="0.0008,0.0005"
-export prautco="0.00015,0.00015"
-#export imp_physics=99 # zhao-carr
-export imp_physics=11 # GFDL MP
-
 export NOSAT="NO" # if yes, no radiances assimilated
 export NOCONV="NO"
 # model NSST parameters contained within nstf_name in FV3 namelist
@@ -168,89 +159,29 @@ export NST_GSI=3          # default 0: No NST info at all;
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
 
-if [ $imp_physics == "11" ]; then
-   export ncld=5
-   export nwat=6
-   export cal_pre=F
-   export dnats=1
-   export do_sat_adj=".true."
-   export random_clds=".false."
-   export cnvcld=".false."
-   export lgfdlmprad=".true."
-   export effr_in=".true."
-else
-   export ncld=1
-   export nwat=2
-   export cal_pre=T
-   export dnats=0
-fi
-export fv3exec='fv3-nonhydro.exe'
-export hord_mt=5
-export hord_vt=5
-export hord_tm=5
-export hord_dp=-5
-export consv_te=1
-export dddmp=0.1
-export d4_bg=0.12
-export vtdm4=0.02
-export fv_sg_adj=450
-export nord=2
-
-#gfsv15
-if [ $LEVS -eq '64' ]; then
-   export satmedmf=F
-   export hybedmf=T
-   export lheatstrg=F
-   export IAER=111
-   export iovr_lw=1
-   export iovr_sw=1
-   export icliq_sw=1
-   export do_tofd=F
-   export reiflag=1
-   export adjust_dry_mass=F
-   export vtdm4=0.06
-   export tau=10.0
-   export rf_cutoff=750.0
-   export d2_bg_k1=0.15
-   export d2_bg_k2=0.02
+export LEVS=127
+if [ $LEVS -eq 64 ]; then
+  export SUITE="FV3_GFS_v16p2"
 elif [ $LEVS -eq 127 ]; then
-#gfsv16
-   export satmedmf=T
-   export hybedmf=F
-   export lheatstrg=T
-   export IAER=5111
-   export iovr_lw=3
-   export iovr_sw=3
-   export icliq_sw=2
-   export do_tofd=T
-   export reiflag=2
-   export adjust_dry_mass=T
-   export tau=5.0
-   export rf_cutoff=1.e3
-   export d2_bg_k1=0.20 
-   export d2_bg_k2=0.0
+  export SUITE="FV3_GFS_v16beta"
 else
-   echo "LEVS must be 64 or 127"
-   exit 1
+  echo "LEVS must be 64 or 127"
+  exit 1
 fi
-
 # stochastic physics parameters.
-export DO_SPPT=.true.
+export DO_SPPT=T
 export SPPT=0.5
-export SPPT_TSCALE=21600
-export SPPT_LSCALE=500000
-export DO_SHUM=.true.
+export DO_SHUM=T
 export SHUM=0.005
-export SHUM_TSCALE=21600
-export SHUM_LSCALE=500000
-export DO_SKEB=.true.
+export DO_SKEB=T
 export SKEB=0.3
-export SKEB_TSCALE=21600
-export SKEB_LSCALE=250000
-export SKEBINT=1800
-export SKEBNORM=0
-export SKEB_NPASS=30
-export SKEB_VDOF=5
+# turn off stochastic physics
+#export SKEB=0
+#export DO_SKEB=F
+#export SPPT=0
+#export DO_SPPT=F
+#export SHUM=0
+#export DO_SHUM=F
 
 # resolution dependent model parameters
 if [ $RES -eq 384 ]; then
@@ -293,8 +224,6 @@ if [ $RES_CTL -eq 768 ]; then
    export JCAP_CTL=1534
    export LONB_CTL=3072
    export LATB_CTL=1536
-   export k_split_ctl=2
-   export n_split_ctl=6
    export dt_atmos_ctl=150    
 elif [ $RES_CTL -eq 384 ]; then
    export dt_atmos_ctl=225
@@ -332,10 +261,9 @@ export FHMAX_LONG=120 # control forecast every 00UTC in run_long_fcst=true
 export FHOUT=3
 FHMAXP1=`expr $FHMAX + 1`
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
-
 export iaufhrs="3,6,9"
 export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
-# NO IAU.
+# IAU off
 #export iaufhrs="6"
 #export iau_delthrs=-1
 
@@ -376,8 +304,8 @@ export use_prepb_satwnd=.false.
 export write_ensmean=.true. # write out ens mean analysis in EnKF
 export letkf_flag=.true.
 export letkf_bruteforce_search=.false.
-export denkf=.false.
-export getkf=.false.
+export denkf=.true.
+export getkf=.true.
 export getkf_inflation=.false.
 export modelspace_vloc=.true.
 export letkf_novlocal=.true.
@@ -392,7 +320,7 @@ export lupd_satbiasc=.false.
 export numiter=0
 # use pre-generated bias files.
 #export biascorrdir=${datadir}/C192C192_skeb2
-
+                                                                    
 export nanals=80                                                    
                                                                     
 export paoverpb_thresh=0.998  # set to 1.0 to use all the obs in serial EnKF
@@ -416,7 +344,7 @@ if [ "$machine" == 'hera' ]; then
    export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
-   export FCSTEXEC=${execdir}/${fv3exec}
+   export FCSTEXEC=${execdir}/fv3-nonhydro.exe
    export gsiexec=${execdir}/global_gsi
    export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
 elif [ "$machine" == 'orion' ]; then
@@ -430,7 +358,7 @@ elif [ "$machine" == 'orion' ]; then
    export fixcrtm=$fv3gfspath/crtm/crtm_v2.3.0
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
-   export FCSTEXEC=${execdir}/${fv3exec}
+   export FCSTEXEC=${execdir}/fv3-nonhydro.exe
    export gsiexec=${execdir}/global_gsi
    export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
 elif [ "$machine" == 'gaea' ]; then
@@ -446,7 +374,7 @@ elif [ "$machine" == 'gaea' ]; then
    #export fixcrtm=${fixgsi}/crtm_v2.2.3
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
-   export FCSTEXEC=${execdir}/${fv3exec}
+   export FCSTEXEC=${execdir}/fv3-nonhydro.exe
    export gsiexec=${execdir}/global_gsi
    export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
 else
@@ -461,7 +389,7 @@ export CONVINFO=${fixgsi}/global_convinfo.txt
 export SATINFO=${fixgsi}/global_satinfo.txt
 export NLAT=$((${LATA}+2))
 # default is to use berror file in gsi fix dir.
-#export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_janjulysmooth0p5
+export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_janjulysmooth0p5
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_annmeansmooth0p5
 export REALTIME=YES # if NO, use historical files set in main.sh
 

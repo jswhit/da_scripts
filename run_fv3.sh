@@ -2,31 +2,28 @@
 # model was compiled with these 
 echo "starting at `date`"
 source $MODULESHOME/init/sh
+
 if [ "$machine" == 'hera' ]; then
    module purge
-   module load intel/18.0.5.274
-   module load impi/2018.0.4
-   module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
-   module load netcdf_parallel/4.7.4.release
-   module load esmf/8.1.0bs25_ParallelNetCDF.release
-   module load hdf5_parallel/1.10.6.release
+   module use /scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/v1.0.0-beta1/modulefiles/stack
+   module load hpc/1.0.0-beta1
+   module load hpc-intel/18.0.5.274
+   module load hpc-impi/2018.0.4
+   module load hdf5/1.10.6
+   module load netcdf/4.7.4
+   module load pio/2.5.1
+   module load esmf/8_1_0_beta_snapshot_27
    module load wgrib
-   #module use -a /scratch1/NCEPDEV/global/gwv/lp/lib/modulefiles
-   #module load netcdfp/4.7.4
-   #module load esmflocal/8.0.1.08bs
-   #module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
-   #module load hdf5_parallel/1.10.6
-   #module load wgrib
-   #export LD_LIBRARY_PATH="/scratch2/BMC/gsienkf/whitaker/ufs-weather-model/FV3/ccpp/lib:${LD_LIBRARY_PATH}"
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'orion' ]; then
-   module purge
-   module load intel/2018
-   module load impi/2018
-   export NCEPLIBS=/work/noaa/noaatest/gwv/l530/lib
-   module use /work/noaa/noaatest/gwv/l530/lib/modulefiles
+   module purge 
+   module load intel/2019.5 
+   module load impi/2019.6 
+   module load mkl/2019.5  
+   export NCEPLIBS=/apps/contrib/NCEPLIBS/lib
+   module use -a /apps/contrib/NCEPLIBS/lib/modulefiles
    module load netcdfp/4.7.4
-   module load esmflocal/8_0_1
+   module load esmflocal/8.0.0.para
    module load grib_util-intel-sandybridge # wgrib
 elif [ "$machine" == 'gaea' ]; then
    module purge
@@ -48,9 +45,10 @@ module list
 export VERBOSE=${VERBOSE:-"NO"}
 export quilting=${quilting:-'.true.'}
 if [ "$VERBOSE" == "YES" ]; then
-
  set -x
 fi
+
+ulimit -s unlimited
 
 niter=${niter:-1}
 if [ "$charnanal" != "control" ] && [ "$charnanal" != "ensmean" ]; then
@@ -129,23 +127,14 @@ if [ $? -ne 0 ]; then
   echo "cd to ${datapath2}/${charnanal} failed, stopping..."
   exit 1
 fi
-/bin/rm -f dyn*.nc phy*nc
+/bin/rm -f dyn* phy* *nemsio* PET*
 export DIAG_TABLE=${DIAG_TABLE:-$enkfscripts/diag_table}
 /bin/cp -f $DIAG_TABLE diag_table
 /bin/cp -f $enkfscripts/nems.configure .
 # insert correct starting time and output interval in diag_table template.
 sed -i -e "s/YYYY MM DD HH/${year} ${mon} ${day} ${hour}/g" diag_table
 sed -i -e "s/FHOUT/${FHOUT}/g" diag_table
-if [ "$imp_physics" == '99' ]; then
-   /bin/cp -f $enkfscripts/field_table .
-else
-   echo "satmedmf = $satmedmf"
-   if [ $satmedmf == "T" ] ||  [ $satmedmf == ".true." ]; then
-      /bin/cp -f $enkfscripts/field_table_ncld5.satmedmf field_table
-   else
-      /bin/cp -f $enkfscripts/field_table_ncld5.hybedmf field_table
-   fi
-fi
+/bin/cp -f $enkfscripts/field_table_${SUITE} field_table
 /bin/cp -f $enkfscripts/data_table . 
 /bin/rm -rf RESTART
 mkdir -p RESTART
@@ -185,6 +174,9 @@ ln -fs $FIXGLOBAL/global_climaeropac_global.txt     aerosol.dat
 for file in `ls $FIXGLOBAL/global_volcanic_aerosols* ` ; do
    ln -fs $file $(echo $(basename $file) |sed -e "s/global_//g")
 done
+# for Thompson microphysics
+#ln -fs $FIXGLOBAL/CCN_ACTIVATE.BIN CCN_ACTIVATE.BIN
+#ln -fs $FIXGLOBAL/freezeH2O.dat freezeH2O.dat
 
 # create netcdf increment files.
 if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
@@ -228,23 +220,11 @@ fi
 if [ "$fg_only" == "true" ]; then
    # cold start from chgres'd GFS analyes
    stochini=F
-   if [ "$cold_start" == "true" ]; then
-     warm_start=F
-     externalic=T
-     na_init=1
-     mountain=F
-     make_nh=T
-   else
-     warm_start=T
-     externalic=F
-     na_init=0
-     mountain=T
-     make_nh=F
-   fi
    reslatlondynamics=""
    readincrement=F
    FHCYC=0
    iaudelthrs=-1
+   #iau_inc_files="fv3_increment.nc"
    iau_inc_files=""
 else
    # warm start from restart file with lat/lon increments ingested by the model
@@ -273,11 +253,6 @@ else
    fi
    
    iaudelthrs=${iau_delthrs}
-   warm_start=T
-   make_nh=F
-   externalic=F
-   mountain=T
-   na_init=0 
    FHCYC=${FHCYC}
    if [ "${iau_delthrs}" != "-1" ]; then
       if [ "$iaufhrs" == "3,4,5,6,7,8,9" ]; then
@@ -393,7 +368,6 @@ fi
 # nstf_name(3) : NST_RESV (Reserved, NSST Analysis) : 0 = OFF, 1 = ON
 # nstf_name(4) : ZSEA1 (in mm) : 0
 # nstf_name(5) : ZSEA2 (in mm) : 0
-# nst_anl      : .true. or .false., NSST analysis over lake
 NST_MODEL=${NST_MODEL:-0}
 NST_SPINUP=${NST_SPINUP:-0}
 if [ "$fg_only" == "true" ] && [ $NST_GSI -gt 0 ]; then
@@ -403,8 +377,7 @@ NST_RESV=${NST_RESV-0}
 ZSEA1=${ZSEA1:-0}
 ZSEA2=${ZSEA2:-0}
 nstf_name=${nstf_name:-"$NST_MODEL,$NST_SPINUP,$NST_RESV,$ZSEA1,$ZSEA2"}
-nst_anl=${nst_anl:-".true."}
-if [ $NST_GSI -gt 0 ] && [ $FHCYC -gt 0]; then
+if [ $NST_GSI -gt 0 ] && [ $FHCYC -gt 0 ]; then
    fntsfa='        ' # no input file, use GSI foundation temp
    fnsnoa='        '
    fnacna='        '
@@ -446,8 +419,8 @@ jchunk2d:                ${LATB}
 ichunk3d:                0
 jchunk3d:                0
 kchunk3d:                0
-write_fsyncflag:         .true.
 write_nemsioflip:        .true.
+write_fsyncflag:         .true.
 iau_offset:              ${iaudelthrs}
 imo:                     ${LONB}
 jmo:                     ${LATB}
@@ -468,338 +441,54 @@ else
    /bin/rm -f INPUT/coupler.res # assume current time == start time
 fi
 
-cat > input.nml <<EOF
-&amip_interp_nml
-  interp_oi_sst = T,
-  use_ncep_sst = T,
-  use_ncep_ice = F,
-  no_anom_sst = F,
-  data_set = "reynolds_oi",
-  date_out_of_range = "climo",
-/
+# copy template namelist file, replace variables.
+if [ "$cold_start" == "true" ]; then
+  warm_start=F
+  externalic=T
+  na_init=0
+  mountain=F
+  make_nh=F
+else
+  warm_start=T
+  externalic=F
+  na_init=0
+  mountain=T
+  make_nh=F
+fi
 
-&atmos_model_nml
-  blocksize = 32,
-  dycore_only = F,
-  fdiag = ${FHOUT}
-/
-
-&diag_manager_nml
-  prepend_date = F,
-/
-
-&fms_io_nml
-  checksum_required = F,
-  max_files_r = 100,
-  max_files_w = 100,
-/
-
-&mpp_io_nml
-  shuffle=1,
-  deflate_level=1,
-/
-
-&fms_nml
-  clock_grain = "ROUTINE",
-  domains_stack_size = 4000000,
-  print_memory_usage = F,
-/
-
-&fv_core_nml
-  external_eta = T, 
-  layout = ${layout},
-  io_layout = 1, 1,
-  npx      = ${npx},
-  npy      = ${npx},
-  npz      = ${LEVS},
-  ntiles = 6,
-  grid_type = -1,
-  make_nh = ${make_nh},
-  fv_debug = F,
-  range_warn = F,
-  reset_eta = F,
-  n_sponge = ${n_sponge:-10},
-  nudge_qv = T,
-  nudge_dz = F,
-  tau = ${tau:-5},
-  rf_cutoff = ${rf_cutoff:-1000},
-  d2_bg_k1 = ${d2_bg_k1:-0.20},
-  d2_bg_k2 = ${d2_bg_k2:-0},
-  d2_bg = 0.,
-  kord_tm = -9,
-  kord_mt = 9,
-  kord_wz = 9,
-  kord_tr = 9,
-  hydrostatic = F,
-  phys_hydrostatic = F,
-  use_hydro_pressure = F,
-  beta = 0,
-  a_imp = 1.0,
-  p_fac = 0.1,
-  k_split  = ${k_split:-2},
-  n_split  = ${n_split:-6},
-  nwat = ${nwat},
-  na_init = ${na_init},
-  d_ext = 0.0,
-  dnats = ${dnats},
-  fv_sg_adj = ${fv_sg_adj:-450},
-  d2_bg = 0.0,
-  nord = ${nord:-3},
-  dddmp = ${dddmp:-0.2},
-  d4_bg = ${d4_bg:-0.15},
-  delt_max = 0.002,
-  vtdm4 = ${vtdm4},
-  ke_bg = 0.0,
-  do_vort_damp = T,
-  external_ic = $externalic,
-  res_latlon_dynamics=$reslatlondynamics,
-  read_increment=$readincrement,
-  gfs_phil = F,
-  agrid_vel_rst = F,
-  nggps_ic = T,
-  mountain = ${mountain},
-  ncep_ic = F,
-  d_con = 1.0,
-  hord_mt = ${hord_mt},
-  hord_vt = ${hord_vt},
-  hord_tm = ${hord_tm},
-  hord_dp = ${hord_dp},
-  hord_tr = 8,
-  adjust_dry_mass = T,
-  dry_mass=98320.0,
-  do_sat_adj = ${do_sat_adj:-"F"},
-  consv_am = F,
-  consv_te = 1,
-  fill = T,
-  dwind_2d = F,
-  print_freq = 6,
-  warm_start = ${warm_start},
-  no_dycore = F,
-  z_tracer = T,
-/
-
-&external_ic_nml
-  filtered_terrain = T,
-  levp = $LEVP,
-  gfs_dwinds = T,
-  checker_tr = F,
-  nt_checker = 0,
-/
-
-&gfs_physics_nml
-  fhzero         = ${FHOUT}
-  ldiag3d        = F
-  fhcyc          = ${FHCYC}
-  use_ufo        = T
-  pre_rad        = F
-  ncld           = ${ncld}
-  imp_physics    = ${imp_physics}
-  pdfcld         = ${pdfcld:-"F"}
-  fhswr          = 3600.
-  fhlwr          = 3600.
-  ialb           = 1
-  iems           = 1
-  IAER           = ${IAER:-5111}
-  iovr_lw        = ${iovr_lw:-3}
-  iovr_sw        = ${iovr_sw:-3}
-  icliq_sw       = ${icliq_sw:-2}
-  ico2           = 2
-  isubc_sw       = 2
-  isubc_lw       = 2
-  isol           = 2
-  lwhtr          = T
-  swhtr          = T
-  cnvgwd         = T
-  shal_cnv       = T
-  cal_pre        = ${cal_pre:-"T"}
-  redrag         = T
-  dspheat        = ${dspheat:-"T"}
-  hybedmf        = ${hybedmf:-"F"}
-  satmedmf       = ${satmedmf:-"T"}
-  isatmedmf      = 1
-  lheatstrg      = ${lheatstrg:="T"}
-  random_clds    = ${random_clds:-"F"}
-  trans_trac     = ${trans_trac:-"T"}
-  cnvcld         = ${cnvcld:-"T"}
-  imfshalcnv     = 2
-  imfdeepcnv     = 2
-  prslrd0        = 0
-  ivegsrc        = 1
-  isot           = 1
-  lsoil          = 4
-  lsm            = 1
-  iopt_dveg      = ${iopt_dveg:-"1"}
-  iopt_crs       = ${iopt_crs:-"1"}
-  iopt_btr       = ${iopt_btr:-"1"}
-  iopt_run       = ${iopt_run:-"1"}
-  iopt_sfc       = ${iopt_sfc:-"1"}
-  iopt_frz       = ${iopt_frz:-"1"}
-  iopt_inf       = ${iopt_inf:-"1"}
-  iopt_rad       = ${iopt_rad:-"1"}
-  iopt_alb       = ${iopt_alb:-"2"}
-  iopt_snf       = ${iopt_snf:-"4"}
-  iopt_tbot      = ${iopt_tbot:-"2"}
-  iopt_stc       = ${iopt_stc:-"1"}
-  debug          = T
-  lgfdlmprad     = ${lgfdlmprad:-"F"}
-  effr_in        = ${effr_in:-"F"}
-  cdmbgwd        = ${cdmbgwd}
-  psautco        = ${psautco}
-  prautco        = ${prautco}
-  h2o_phys       = ${h2o_phys:-"T"}
-  nstf_name      = ${nstf_name:-"0,0,0,0,0"}
-  nst_anl        = ${nst_anl}
-  ldiag_ugwp     = .false.
-  do_ugwp        = ${do_ugwp:-"F"}
-  do_tofd        = ${do_tofd:-"T"}
-  do_skeb      = $DO_SKEB
-  do_sppt      = $DO_SPPT
-  do_shum      = $DO_SHUM
-  iau_filter_increments = F
-  iaufhrs = ${iaufhrs}
-  iau_delthrs = ${iaudelthrs}
-  iau_inc_files = ${iau_inc_files}
-/
-
-&gfdl_cloud_microphysics_nml
-  sedi_transport = .true.
-  do_sedi_heat = .false.
-  rad_snow = .true.
-  rad_graupel = .true.
-  rad_rain = .true.
-  const_vi = .F.
-  const_vs = .F.
-  const_vg = .F.
-  const_vr = .F.
-  vi_max = 1.
-  vs_max = 2.
-  vg_max = 12.
-  vr_max = 12.
-  qi_lim = 1.
-  prog_ccn = .false.
-  do_qa = .true.
-  fast_sat_adj = .true.
-  tau_l2v = 225.
-  tau_v2l = 150.
-  tau_g2v = 900.
-  rthresh = 10.e-6  ! This is a key parameter for cloud water
-  dw_land  = 0.16
-  dw_ocean = 0.10
-  ql_gen = 1.0e-3
-  ql_mlt = 1.0e-3
-  qi0_crt = 8.0E-5
-  qs0_crt = 1.0e-3
-  tau_i2s = 1000.
-  c_psaci = 0.05
-  c_pgacs = 0.01
-  rh_inc = 0.30
-  rh_inr = 0.30
-  rh_ins = 0.30
-  ccn_l = 300.
-  ccn_o = 100.
-  c_paut = 0.5
-  c_cracw = 0.8
-  use_ppm = .false.
-  use_ccn = .true.
-  mono_prof = .true.
-  z_slope_liq  = .true.
-  z_slope_ice  = .true.
-  de_ice = .false.
-  fix_negative = .true.
-  icloud_f = 1
-  mp_time = 150.
-  reiflag = ${reiflag:-"2"}
-/
-
-&cires_ugwp_nml
-       knob_ugwp_solver  = 2
-       knob_ugwp_source  = 1,1,0,0
-       knob_ugwp_wvspec  = 1,25,25,25
-       knob_ugwp_azdir   = 2,4,4,4
-       knob_ugwp_stoch   = 0,0,0,0
-       knob_ugwp_effac   = 1,1,1,1
-       knob_ugwp_doaxyz  = 1
-       knob_ugwp_doheat  = 1
-       knob_ugwp_dokdis  = 1
-       knob_ugwp_ndx4lh  = 1
-       knob_ugwp_version = 0
-       launch_level      = 54
-/
-
-&interpolator_nml
-  interp_method = "conserve_great_circle",
-/
-
-&namsfc
-  fnglac = "${FIXGLOBAL}/global_glacier.2x2.grb",
-  fnmxic = "${FIXGLOBAL}/global_maxice.2x2.grb",
-  fntsfc = "${FIXGLOBAL}/RTGSST.1982.2012.monthly.clim.grb",
-  fnsnoc = "${FIXGLOBAL}/global_snoclim.1.875.grb",
-  fnzorc = "igbp",
-  fnalbc = "${FIXGLOBAL}/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb",
-  fnalbc2 = "${FIXGLOBAL}/global_albedo4.1x1.grb"
-  fnaisc = "${FIXGLOBAL}/CFSR.SEAICE.1982.2012.monthly.clim.grb",
-  fntg3c = "${FIXGLOBAL}/global_tg3clim.2.6x1.5.grb",
-  fnvegc = "${FIXGLOBAL}/global_vegfrac.0.144.decpercent.grb",
-  fnvetc = "${FIXGLOBAL}/global_vegtype.igbp.t1534.3072.1536.rg.grb",
-  fnsmcc = "${FIXGLOBAL}/global_soilmgldas.t1534.3072.1536.grb",
-  fnsotc = "${FIXGLOBAL}/global_soiltype.statsgo.t1534.3072.1536.rg.grb",
-  fnmskh = "${FIXGLOBAL}/seaice_newland.grb",
-  fntsfa = "${fntsfa}",
-  fnacna = "${fnacna}",
-  fnsnoa = "${fnsnoa}",
-  fnvmnc = "${FIXGLOBAL}/global_shdmin.0.144x0.144.grb",
-  fnvmxc = "${FIXGLOBAL}/global_shdmax.0.144x0.144.grb",
-  fnslpc = "${FIXGLOBAL}/global_slope.1x1.grb",
-  fnabsc = "${FIXGLOBAL}/global_mxsnoalb.uariz.t1534.3072.1536.rg.grb",
-  ldebug = F,
-  fsmcl(2) = 60,
-  fsmcl(3) = 60,
-  fsmcl(4) = 60,
-  FTSFS = 90,
-  FAISL = 99999,
-  FAISS = 99999,
-  FSNOL = 99999,
-  FSNOS = 99999,
-  FSICL = 99999,
-  FSICS = 99999,
-  FTSFL = 99999,
-  FVETL = 99999,
-  FSOTL = 99999,
-  FvmnL = 99999,
-  FvmxL = 99999,
-  FSLPL = 99999,
-  FABSL = 99999,
-/
-
-&fv_grid_nml
-  grid_file = "INPUT/grid_spec.nc",
-/
-
-&nam_stochy
-  lon_s=$LONB, lat_s=$LATB, ntrunc=$JCAP,
-  SHUM=$SHUM, -999., -999., -999, -999,SHUM_TAU=$SHUM_TSCALE, 1.728E5, 6.912E5, 7.776E6, 3.1536E7,SHUM_LSCALE=$SHUM_LSCALE, 1000.E3, 2000.E3, 2000.E3, 2000.E3,
-  SPPT=$SPPT, -999., -999., -999, -999,SPPT_TAU=$SPPT_TSCALE,2592500,25925000,7776000,31536000,SPPT_LSCALE=$SPPT_LSCALE,1000000,2000000,2000000,2000000,SPPT_LOGIT=.TRUE.,SPPT_SFCLIMIT=.TRUE.,
-  SKEBNORM=$SKEBNORM,
-  SKEB=$SKEB, -999, -999, -999, -999,
-  SKEB_TAU=$SKEB_TSCALE, 1.728E5, 2.592E6, 7.776E6, 3.1536E7,
-  SKEB_LSCALE=$SKEB_LSCALE, 1000.E3, 2000.E3, 2000.E3, 2000.E3,
-  SKEB_VDOF=$SKEB_VDOF,
-  SKEB_NPASS=$SKEB_NPASS,
-  SKEBINT=$SKEBINT,
-  ISEED_SPPT=$ISEED_SPPT,ISEED_SHUM=$ISEED_SHUM,ISEED_SKEB=$ISEED_SKEB,
-  use_zmtnblck=.true.,fhstoch=$FHSTOCH,stochini=$stochini,new_lscale=.true.
-/
-
-&nam_sfcperts
-/
-EOF
-
-
-# ftsfs = 99999 means all climo or all model, 0 means all analysis,
-# 90 mean relax to climo
-# with an e-folding time scale of 90 days.
-
+# build namelist
+/bin/cp -f ${enkfscripts}/${SUITE}.nml input.nml
+sed -i -e "s/LAYOUT/${layout}/g" input.nml
+sed -i -e "s/NSTF_NAME/${nstf_name}/g" input.nml
+sed -i -e "s/NPX/${npx}/g" input.nml
+sed -i -e "s/NPY/${npx}/g" input.nml
+sed -i -e "s/LEVP/${LEVP}/g" input.nml
+sed -i -e "s/LEVS/${LEVS}/g" input.nml
+sed -i -e "s/LONB/${LONB}/g" input.nml
+sed -i -e "s/LATB/${LATB}/g" input.nml
+sed -i -e "s/JCAP/${JCAP}/g" input.nml
+sed -i -e "s/SPPT/${SPPT}/g" input.nml
+sed -i -e "s/DO_sppt/${DO_SPPT}/g" input.nml
+sed -i -e "s/SHUM/${SHUM}/g" input.nml
+sed -i -e "s/DO_shum/${DO_SHUM}/g" input.nml
+sed -i -e "s/SKEB/${SKEB}/g" input.nml
+sed -i -e "s/DO_skeb/${DO_SKEB}/g" input.nml
+sed -i -e "s/STOCHINI/${stochini}/g" input.nml
+sed -i -e "s/FHSTOCH/${FHSTOCH}/g" input.nml
+sed -i -e "s/FHOUT/${FHOUT}/g" input.nml
+sed -i -e "s/CDMBGWD/${cdmbgwd}/g" input.nml
+sed -i -e "s/ISEED_sppt/${ISEED_SPPT}/g" input.nml
+sed -i -e "s/ISEED_shum/${ISEED_SHUM}/g" input.nml
+sed -i -e "s/ISEED_skeb/${ISEED_SKEB}/g" input.nml
+sed -i -e "s/IAU_DELTHRS/${iaudelthrs}/g" input.nml
+sed -i -e "s/IAU_INC_FILES/${iau_inc_files}/g" input.nml
+sed -i -e "s/WARM_START/${warm_start}/g" input.nml
+sed -i -e "s/EXTERNAL_IC/${externalic}/g" input.nml
+sed -i -e "s/NA_INIT/${na_init}/g" input.nml
+sed -i -e "s/MOUNTAIN/${mountain}/g" input.nml
+sed -i -e "s/MAKE_NH/${make_nh}/g" input.nml
+sed -i -e "s/RESLATLONDYNAMICS/${reslatlondynamics}/g" input.nml
+sed -i -e "s/READ_INCREMENT/${read_increment}/g" input.nml
 cat input.nml
 ls -l INPUT
 

@@ -6,6 +6,7 @@ date
 export DATOUT=${datapath}/${analdatep1}
 
 export OMP_NUM_THREADS=$fg_threads
+export OMP_STACKSIZE=512M
 export nprocs=`expr $fg_proc \/ $OMP_NUM_THREADS`
 countproc=`python -c "from __future__ import print_function; import math; print(${corespernode}*int(math.ceil(float(${fg_proc})/${corespernode})))"`
 echo "countproc = $countproc"

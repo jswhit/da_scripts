@@ -29,34 +29,18 @@ export layout="$layout_ctl"
 echo "layout = $layout"
 export dt_atmos=$dt_atmos_ctl
 echo "dt_atmos = $dt_atmos"
-export fv_sg_adj=$fv_sg_adj_ctl
-echo "fv_sg_adj = $fv_sg_adj"
 export cdmbgwd="$cdmbgwd_ctl"
 echo "cdmbgwd = $cdmbgwd"
-if [ ! -z $psautco_ctl ]; then
-export psautco="$psautco_ctl"
-echo "psautco = $psautco"
-fi
-if [ ! -z $prautco_ctl ]; then
-export prautco="$psautco_ctl"
-echo "prautco = $psautco"
-fi
-if [ ! -z $k_split_ctl ]; then
-export k_split="${k_split_ctl}"
-fi
-if [ ! -z $n_split_ctl ]; then
-export n_split="${n_split_ctl}"
-fi
 export fg_proc=$nprocs
 echo "fg_proc = $fg_proc"
 
 # turn off stochastic physics
 export SKEB=0
-export DO_SKEB=.false.
+export DO_SKEB=F
 export SPPT=0
-export DO_SPPT=.false.
+export DO_SPPT=F
 export SHUM=0
-export DO_SHUM=.false.
+export DO_SHUM=F
 echo "SKEB SPPT SHUM = $SKEB $SPPT $SHUM"
 
 if [ $cleanup_fg == 'true' ]; then

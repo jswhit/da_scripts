@@ -95,7 +95,7 @@
   hord_tm = 5,
   hord_dp = -5,
   hord_tr = 8,
-  adjust_dry_mass = F,
+  adjust_dry_mass = T,
   dry_mass=98320.0,
   do_sat_adj = .true.,
   consv_am = F,
@@ -117,6 +117,9 @@
 /
 
 &gfs_physics_nml
+  cplflx         = F
+  cplwav         = F
+  cplwav2atm     = F
   fhzero         = 3
   ldiag3d        = F
   fhcyc          = 0
@@ -286,8 +289,8 @@
   skeb_lscale=250000
   skeb_vdof=5,
   skeb_npass=30,
-  skebint=1800,
   skebnorm=0,
+  skebint=0,
   iseed_skeb=ISEED_skeb,
   use_zmtnblck=.true.,
   fhstoch=FHSTOCH,
