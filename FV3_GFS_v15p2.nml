@@ -10,7 +10,7 @@
 &atmos_model_nml
   blocksize = 32
   dycore_only = F
-  ccpp_suite = "FV3_GFS_v16p2"
+  ccpp_suite = "FV3_GFS_v15p2"
   fdiag = FHOUT
 /
 
@@ -285,7 +285,7 @@
   skeb_lscale=250000
   skeb_vdof=5,
   skeb_npass=30,
-  skebint=1800,
+  skebint=0,
   skebnorm=0,
   iseed_skeb=ISEED_skeb,
   use_zmtnblck=.true.,

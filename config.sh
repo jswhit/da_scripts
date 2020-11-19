@@ -161,7 +161,7 @@ if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI w
 
 export LEVS=127
 if [ $LEVS -eq 64 ]; then
-  export SUITE="FV3_GFS_v16p2"
+  export SUITE="FV3_GFS_v15p2"
 elif [ $LEVS -eq 127 ]; then
   export SUITE="FV3_GFS_v16beta"
 else
