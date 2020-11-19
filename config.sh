@@ -257,15 +257,14 @@ export ANALINC=6
 
 export FHMIN=3
 export FHMAX=9
-export FHMAX_LONG=120 # control forecast every 00UTC in run_long_fcst=true
 export FHOUT=3
 FHMAXP1=`expr $FHMAX + 1`
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
-export iaufhrs="3,6,9"
-export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
+#export iaufhrs="3,6,9"
+#export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 # IAU off
-#export iaufhrs="6"
-#export iau_delthrs=-1
+export iaufhrs="6"
+export iau_delthrs=-1
 
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
@@ -304,7 +303,7 @@ export use_prepb_satwnd=.false.
 export write_ensmean=.true. # write out ens mean analysis in EnKF
 export letkf_flag=.true.
 export letkf_bruteforce_search=.false.
-export denkf=.true.
+export denkf=.false.
 export getkf=.true.
 export getkf_inflation=.false.
 export modelspace_vloc=.true.
