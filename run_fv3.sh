@@ -9,12 +9,13 @@ if [ "$machine" == 'hera' ]; then
    module load hpc/1.0.0-beta1
    module load hpc-intel/18.0.5.274
    module load hpc-impi/2018.0.4
-   module load hdf5/1.10.6
-   module load netcdf/4.7.4
-   module load pio/2.5.1
-   module load esmf/8_1_0_beta_snapshot_27
+   #module load hdf5/1.10.6
+   #module load netcdf/4.7.4
+   #module load pio/2.5.1
+   #module load esmf/8_1_0_beta_snapshot_27
    module load wgrib
    export WGRIB=`which wgrib`
+   export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/scratch2/NCEPDEV/nwprod/hpc-stack/test/intel-18.0.5.274/impi-2018.0.4/hdf5/1.10.6/lib"
 elif [ "$machine" == 'orion' ]; then
    module purge
    module use /apps/contrib/NCEP/libs/hpc-stack/v1.0.0-beta1/modulefiles/stack
@@ -145,6 +146,7 @@ mkdir -p INPUT
 # make symlinks for fixed files and initial conditions.
 cd INPUT
 if [ "$fg_only" == "true" ] && [ "$cold_start" == "true" ]; then
+   ls -l *nc
    for file in ../*nc; do
        file2=`basename $file`
        ln -fs $file $file2
@@ -496,6 +498,7 @@ ls -l INPUT
 
 # run model
 export PGM=$FCSTEXEC
+ldd $FCSTEXEC
 echo "start running model `date`"
 ${enkfscripts}/runmpi
 if [ $? -ne 0 ]; then

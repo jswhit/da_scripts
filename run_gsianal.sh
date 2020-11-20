@@ -21,7 +21,7 @@ fi
 
 niter=1
 alldone='no'
-if [ -s $SIGANL06 ] && [ -s $BIASO ] && [ -s -s $SATANGO ]; then
+if [ -s $SIGANL06 ]; then
    alldone="yes"
 fi 
 

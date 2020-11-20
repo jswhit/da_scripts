@@ -186,7 +186,9 @@ fi
 # optionally (partically) recenter ensemble around control forecast.
 if [ $replay_controlfcst == 'true' ] && [ $recenter_control_wgt -gt 0 ] && [ $recenter_fcst == "true" ]; then
    echo "$analdate (partially) recenter background ensemble around control `date`"
-   sh ${enkfscripts}/recenter_ens_fcst.sh > ${current_logdir}/recenter_ens_fcst.out 2>&1
+   export fileprefix='sfg'
+   export filename_meanout=sfg_${analdate}_${charfhr}_control.chgres
+   sh ${enkfscripts}/recenter_ens.sh > ${current_logdir}/recenter_ens_fcst.out 2>&1
    recenter_done=`cat ${current_logdir}/recenter.log`
    if [ $recenter_done == 'yes' ]; then
      echo "$analdate recentering completed successfully `date`"
@@ -249,8 +251,9 @@ if [ $write_ensmean == ".false." ]; then
 fi
 
 # blend enkf mean and 3dvar increments, recenter ensemble
-if [ $alpha -gt 0 ] && [ $recenter_anal == "true" ]; then
+if [ $recenter_anal == "true" ]; then
    if [ $hybgain == "true" ]; then 
+       if [ $alpha -gt 0 ]; then
        # hybrid gain
        echo "$analdate blend enkf and 3dvar increments `date`"
        sh ${enkfscripts}/blendinc.sh > ${current_logdir}/blendinc.out 2>&1
@@ -261,10 +264,13 @@ if [ $alpha -gt 0 ] && [ $recenter_anal == "true" ]; then
          echo "$analdate increment blending/recentering did not complete successfully, exiting `date`"
          exit 1
        fi
+       fi
    else
       # hybrid covariance
+      export fileprefix='sanl'
+      export filename_meanout=sanl_${analdate}_${charfhr}_control
       echo "$analdate recenter enkf analysis ensemble around control analysis `date`"
-      sh ${enkfscripts}/recenter_ens_anal.sh > ${current_logdir}/recenter_ens_anal.out 2>&1
+      sh ${enkfscripts}/recenter_ens.sh > ${current_logdir}/recenter_ens_anal.out 2>&1
       recenter_done=`cat ${current_logdir}/recenter_ens.log`
       if [ $recenter_done == 'yes' ]; then
         echo "$analdate recentering enkf analysis completed successfully `date`"
