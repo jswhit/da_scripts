@@ -127,7 +127,7 @@ if [ "${iau_delthrs}" != "-1" ]; then
 else
    lwrite4danl=.false.
 fi
-if [[ $beta1_inv > 0.999 ]]; then
+if [[ $beta_s0 > 0.999 ]]; then
    lwrite4danl=.false.
 fi
 # if satwnd bufr file exists, use it.
@@ -143,7 +143,7 @@ if [[ "$HXONLY" = "YES" ]]; then
    SETUP="$SETUP,miter=0,niter=1"
 fi
 if [[ "$HXONLY" != "YES" ]]; then
-   if [[ $beta1_inv > 0.999 ]]; then # 3dvar or hybrid gain
+   if [[ $beta_s0 > 0.999 ]]; then # 3dvar or hybrid gain
       STRONGOPTS="tlnmc_option=1,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5"
       SETUP="$SETUP,miter=1,niter(1)=150,niter(2)=0"
    else # envar
@@ -174,7 +174,7 @@ RAPIDREFRESH_CLDSURF=""
 CHEM=""
 #      l_hyb_ens:  logical variable, if .true., then turn on hybrid ensemble option, default = .false. 
 #      n_ens:      ensemble size, default = 0
-#      beta1_inv:  value between 0 and 1, relative weight given to static background B, default = 1.0
+#      beta_s0:  value between 0 and 1, relative weight given to static background B, default = 1.0
 #      s_ens_h:    horizontal localization correlation length (units of km), default = 2828.0
 #      s_ens_v:    vertical localization correlation length (grid units), default = 30.0
 #      generate_ens:  if .true., generate ensemble perturbations internally as random samples of background B.
@@ -185,11 +185,12 @@ CHEM=""
 #                  if .false., ensemble perturbation wind stored as psi,chi.
 #                   (this is useful for regional application, where there is ambiguity in how to
 #                      define psi,chi from u,v)
-beta1_inv=${beta1_inv:-0.25}
+beta_s0=${beta_s0:-0.25}
+beta_e0=${beta_e0:-1.0}
 s_ens_h=${s_ens_h:-400}
 s_ens_v=${s_ens_v:-0.6}
-if [ "$HXONLY" = "NO" ] && [[ $beta1_inv < 0.999 ]]; then
-HYBRIDENSDATA="l_hyb_ens=.true.,n_ens=$nens,beta_s0=$beta1_inv,s_ens_h=$s_ens_h,s_ens_v=$s_ens_v,generate_ens=.false.,uv_hyb_ens=.true.,jcap_ens=$JCAP_ENS,nlat_ens=$NLAT_ENS,nlon_ens=$LONA_ENS,aniso_a_en=.false.,jcap_ens_test=$JCAP_ENS,readin_localization=$readin_localization,write_ens_sprd=.false.,oz_univ_static=.false.,q_hyb_ens=.false.,ens_fast_read=.true.,readin_beta=$readin_beta"
+if [ "$HXONLY" = "NO" ] && [[ $beta_s0 < 0.999 ]]; then
+HYBRIDENSDATA="l_hyb_ens=.true.,n_ens=$nens,beta_s0=$beta_s0,s_ens_h=$s_ens_h,s_ens_v=$s_ens_v,generate_ens=.false.,uv_hyb_ens=.true.,jcap_ens=$JCAP_ENS,nlat_ens=$NLAT_ENS,nlon_ens=$LONA_ENS,aniso_a_en=.false.,jcap_ens_test=$JCAP_ENS,readin_localization=$readin_localization,write_ens_sprd=.false.,oz_univ_static=.false.,q_hyb_ens=.false.,ens_fast_read=.true.,readin_beta=$readin_beta"
 else
 HYBRIDENSDATA=""
 SETUP="$SETUP,l4densvar=.false."
@@ -712,7 +713,7 @@ SIGG08=${SIGG08:-$datges/sfg_${adate}_fhr08_${charnanal}}
 $nln $SIGG08               ./sigf08
 fi
 
-if [[ $beta1_inv < 0.999 ]]; then
+if [[ $beta_s0 < 0.999 ]]; then
 ln -s $datges/ensmem*.pe* .
 ln -s $datges/control*.pe* .
 fh=3
