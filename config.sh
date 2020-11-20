@@ -316,7 +316,8 @@ export zhuberleft=1.e10
 export zhuberright=1.e10
 
 # these only used for hybrid covariance (hyb 4denvar) in GSI
-export beta1_inv=$alpha # weight given to static B in hyb cov
+# (FIXME modify GSI to allow for weight of ensemble covariance to be set independently)
+export beta_s0=$alpha # weight given to static B in hyb cov
 export readin_beta=.false.
 export readin_localization=.false.
 export s_ens_h=343.     # 1250 km horiz localization in GSI
@@ -400,9 +401,11 @@ export NLAT=$((${LATA}+2))
 export REALTIME=YES # if NO, use historical files set in main.sh
 
 # parameters for hybrid gain
-export beta1_inv=1.000 # 3dvar
+if [ $hybgain == "true" ]; then
+export beta_s0=1.000 # 3dvar
 export readin_beta=.false. # not relevant for 3dvar
 export readin_localization=.false. # use fixed localization in EnKF.
+fi
 
 cd $enkfscripts
 echo "run main driver script"
