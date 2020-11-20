@@ -23,7 +23,7 @@ export recenter_control_wgt=0
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
 export exptname="C${RES}_hybgain_ccpp"
 # for 'passive' or 'replay' cycling of control fcst 
-export replay_controlfcst='true'
+export replay_controlfcst='false'
 
 export fg_gfs="run_ens_fv3.sh"
 export ensda="enkf_run.sh"
@@ -49,7 +49,6 @@ else
 export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
 export save_hpss="true"
 fi
-export run_long_fcst="false"  # spawn a longer control forecast at 00 UTC
 export ensmean_restart='false'
 export skip_to_fcst="false" # skip to forecast step
 export recenter_anal="true"
