@@ -186,7 +186,7 @@ fi
 # optionally (partically) recenter ensemble around control forecast.
 if [ $replay_controlfcst == 'true' ] && [ $recenter_control_wgt -gt 0 ] && [ $recenter_fcst == "true" ]; then
    echo "$analdate (partially) recenter background ensemble around control `date`"
-   sh ${enkfscripts}/recenter_ens.sh > ${current_logdir}/recenter_ens.out 2>&1
+   sh ${enkfscripts}/recenter_ens_fcst.sh > ${current_logdir}/recenter_ens_fcst.out 2>&1
    recenter_done=`cat ${current_logdir}/recenter.log`
    if [ $recenter_done == 'yes' ]; then
      echo "$analdate recentering completed successfully `date`"
@@ -211,17 +211,22 @@ export charnanal2='ensmean'
 export lobsdiag_forenkf='.true.'
 export skipcat="false"
 # run Var analysis
-echo "$analdate run 3DVar `date`"
+if [ $hybgain == "true" ]; then
+  type="3DVar"
+else
+  type="hybrid 4DEnVar"
+fi
+echo "$analdate run $type `date`"
 sh ${enkfscripts}/run_gsianal.sh > ${current_logdir}/run_gsianal.out 2>&1
 # once gsi has completed, check log files.
 gsi_done=`cat ${current_logdir}/run_gsi_anal.log`
 if [ $gsi_done == 'yes' ]; then
- echo "$analdate 3DVar analysis completed successfully `date`"
+ echo "$analdate $type analysis completed successfully `date`"
 else
- echo "$analdate 3DVar analysis did not complete successfully, exiting `date`"
+ echo "$analdate $type analysis did not complete successfully, exiting `date`"
  exit 1
 fi
-# rename 3dvar analysis
+# rename GSI analysis
 /bin/mv -f ${datapath2}/sanl_${analdate}_fhr06_ensmean ${datapath2}/sanl_${analdate}_fhr06_control
 
 # run enkf analysis.
@@ -245,14 +250,28 @@ fi
 
 # blend enkf mean and 3dvar increments, recenter ensemble
 if [ $alpha -gt 0 ] && [ $recenter_anal == "true" ]; then
-   echo "$analdate blend enkf and 3dvar increments `date`"
-   sh ${enkfscripts}/blendinc.sh > ${current_logdir}/blendinc.out 2>&1
-   blendinc_done=`cat ${current_logdir}/blendinc.log`
-   if [ $blendinc_done == 'yes' ]; then
-     echo "$analdate increment blending/recentering completed successfully `date`"
+   if [ $hybgain == "true" ]; then 
+       # hybrid gain
+       echo "$analdate blend enkf and 3dvar increments `date`"
+       sh ${enkfscripts}/blendinc.sh > ${current_logdir}/blendinc.out 2>&1
+       blendinc_done=`cat ${current_logdir}/blendinc.log`
+       if [ $blendinc_done == 'yes' ]; then
+         echo "$analdate increment blending/recentering completed successfully `date`"
+       else
+         echo "$analdate increment blending/recentering did not complete successfully, exiting `date`"
+         exit 1
+       fi
    else
-     echo "$analdate increment blending/recentering did not complete successfully, exiting `date`"
-     exit 1
+      # hybrid covariance
+      echo "$analdate recenter enkf analysis ensemble around control analysis `date`"
+      sh ${enkfscripts}/recenter_ens_anal.sh > ${current_logdir}/recenter_ens_anal.out 2>&1
+      recenter_done=`cat ${current_logdir}/recenter_ens.log`
+      if [ $recenter_done == 'yes' ]; then
+        echo "$analdate recentering enkf analysis completed successfully `date`"
+      else
+        echo "$analdate recentering enkf analysis did not complete successfully, exiting `date`"
+        exit 1
+      fi
    fi
 fi
 

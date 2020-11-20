@@ -9,7 +9,8 @@ export RES_CTL=384
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
-export alpha=0 # percentage of 3dvar increment (beta_2*1000)
+export hybgain="true" # hybrid gain approach, if false use hybrid covariance
+export alpha=0 # percentage of 3dvar increment (beta_2*1000) 
 export beta=1000 # percentage of enkf increment (*10)
 # if replay_controlfcst='true', weight given to ens mean vs control 
 # forecast in recentered backgrond ensemble (x100).  if recenter_control_wgt=0, then
@@ -158,7 +159,7 @@ export NST_GSI=3          # default 0: No NST info at all;
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
 
-export LEVS=127
+export LEVS=64   
 if [ $LEVS -eq 64 ]; then
   export SUITE="FV3_GFS_v15p2"
 elif [ $LEVS -eq 127 ]; then
@@ -313,6 +314,13 @@ export varqc=.false.
 export huber=.false.
 export zhuberleft=1.e10
 export zhuberright=1.e10
+
+# these only used for hybrid covariance (hyb 4denvar) in GSI
+export beta1_inv=$alpha # weight given to static B in hyb cov
+export readin_beta=.false.
+export readin_localization=.false.
+export s_ens_h=343.     # 1250 km horiz localization in GSI
+export s_ens_v=-0.58    # 1.5 scale heights in GSI
 
 export lupd_satbiasc=.false.
 export numiter=0
