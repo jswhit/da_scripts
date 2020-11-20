@@ -9,7 +9,7 @@ export RES_CTL=384
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
-export alpha=250 # percentage of 3dvar increment (beta_2*1000)
+export alpha=0 # percentage of 3dvar increment (beta_2*1000)
 export beta=1000 # percentage of enkf increment (*10)
 # if replay_controlfcst='true', weight given to ens mean vs control 
 # forecast in recentered backgrond ensemble (x100).  if recenter_control_wgt=0, then
@@ -21,7 +21,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # if replay_controlfcst='false', not used.
 export recenter_control_wgt=0
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybgain_ccpp"
+export exptname="C${RES}_enkfonly"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 
