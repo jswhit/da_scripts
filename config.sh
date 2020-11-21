@@ -23,7 +23,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # also used to control weights for recentering of enkf analysis if hybgain='false'
 export recenter_control_wgt=0
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_enkfonly"
+export exptname="C${RES}_hybgain"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 
