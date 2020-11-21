@@ -277,7 +277,7 @@ if [ $recenter_anal == "true" ]; then
       export charnanal="control"
       echo "$analdate recenter enkf analysis ensemble around control analysis `date`"
       sh ${enkfscripts}/recenter_ens.sh > ${current_logdir}/recenter_ens_anal.out 2>&1
-      recenter_done=`cat ${current_logdir}/recenter_ens.log`
+      recenter_done=`cat ${current_logdir}/recenter.log`
       if [ $recenter_done == 'yes' ]; then
         echo "$analdate recentering enkf analysis completed successfully `date`"
       else
