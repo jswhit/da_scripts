@@ -10,7 +10,7 @@ export RES_CTL=384
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
 export hybgain="true" # hybrid gain approach, if false use hybrid covariance
-export alpha=0 # percentage of 3dvar increment (beta_2*1000) 
+export alpha=250 # percentage of 3dvar increment (beta_2*1000) 
 export beta=1000 # percentage of enkf increment (*10)
 # if replay_controlfcst='true', weight given to ens mean vs control 
 # forecast in recentered backgrond ensemble (x100).  if recenter_control_wgt=0, then
@@ -323,11 +323,12 @@ export readin_beta=.false.
 export readin_localization=.false.
 export s_ens_h=343.     # 1250 km horiz localization in GSI
 export s_ens_v=-0.58    # 1.5 scale heights in GSI
+#export s_ens_v=5.4     # 14 levels
 
 export lupd_satbiasc=.false.
 export numiter=0
 # use pre-generated bias files.
-export biascorrdir=${datadir}/biascor
+#export biascorrdir=${datadir}/biascor
                                                                     
 export nanals=80                                                    
                                                                     
