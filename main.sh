@@ -186,8 +186,8 @@ fi
 # optionally (partically) recenter ensemble around control forecast.
 if [ $replay_controlfcst == 'true' ] && [ $recenter_control_wgt -gt 0 ] && [ $recenter_fcst == "true" ]; then
    echo "$analdate (partially) recenter background ensemble around control `date`"
-   export fileprefix='sfg'
-   export filename_meanout=sfg_${analdate}_${charfhr}_control.chgres
+   export fileprefix="sfg"
+   export charnanal="control.chgres"
    sh ${enkfscripts}/recenter_ens.sh > ${current_logdir}/recenter_ens_fcst.out 2>&1
    recenter_done=`cat ${current_logdir}/recenter.log`
    if [ $recenter_done == 'yes' ]; then
@@ -208,11 +208,19 @@ else
 fi
 
 # use ensmean mean background for 3dvar analysis/observer calculatino
-export charnanal='ensmean' 
+export charnanal='control' 
 export charnanal2='ensmean'
 export lobsdiag_forenkf='.true.'
 export skipcat="false"
 # run Var analysis
+# symlink ens mean backgrounds to "control"
+fh=$FHMIN
+while [ $fh -le $FHMAX ]; do
+  fhr=`printf %02i $fh`
+  /bin/ln -fs ${datapath2}/sfg_${analdate}_fhr${fhr}_ensmean ${datapath2}/sfg_${analdate}_fhr${fhr}_control
+  /bin/ln -fs ${datapath2}/bfg_${analdate}_fhr${fhr}_ensmean ${datapath2}/bfg_${analdate}_fhr${fhr}_control
+  fh=$((fh+FHOUT))
+done
 if [ $hybgain == "true" ]; then
   type="3DVar"
 else
@@ -228,8 +236,6 @@ else
  echo "$analdate $type analysis did not complete successfully, exiting `date`"
  exit 1
 fi
-# rename GSI analysis
-/bin/mv -f ${datapath2}/sanl_${analdate}_fhr06_ensmean ${datapath2}/sanl_${analdate}_fhr06_control
 
 # run enkf analysis.
 echo "$analdate run enkf `date`"
@@ -267,8 +273,8 @@ if [ $recenter_anal == "true" ]; then
        fi
    else
       # hybrid covariance
-      export fileprefix='sanl'
-      export filename_meanout=sanl_${analdate}_${charfhr}_control
+      export fileprefix="sanl"
+      export charnanal="control"
       echo "$analdate recenter enkf analysis ensemble around control analysis `date`"
       sh ${enkfscripts}/recenter_ens.sh > ${current_logdir}/recenter_ens_anal.out 2>&1
       recenter_done=`cat ${current_logdir}/recenter_ens.log`

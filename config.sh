@@ -20,6 +20,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # is recentered around the average of the (upscaled) control forecast and the
 # original ensemble mean.
 # if replay_controlfcst='false', not used.
+# also used to control weights for recentering of enkf analysis if hybgain='false'
 export recenter_control_wgt=0
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
 export exptname="C${RES}_enkfonly"
@@ -316,8 +317,8 @@ export zhuberleft=1.e10
 export zhuberright=1.e10
 
 # these only used for hybrid covariance (hyb 4denvar) in GSI
-# (FIXME modify GSI to allow for weight of ensemble covariance to be set independently)
-export beta_s0=$alpha # weight given to static B in hyb cov
+export beta_s0=`python -c "print $alpha / 1000."` # weight given to static B in hyb cov
+export beta_e0=`python -c "print $beta / 1000."` # weight given to ensemble B in hyb cov
 export readin_beta=.false.
 export readin_localization=.false.
 export s_ens_h=343.     # 1250 km horiz localization in GSI
@@ -326,7 +327,7 @@ export s_ens_v=-0.58    # 1.5 scale heights in GSI
 export lupd_satbiasc=.false.
 export numiter=0
 # use pre-generated bias files.
-#export biascorrdir=${datadir}/C192C192_skeb2
+export biascorrdir=${datadir}/biascor
                                                                     
 export nanals=80                                                    
                                                                     
@@ -403,6 +404,7 @@ export REALTIME=YES # if NO, use historical files set in main.sh
 # parameters for hybrid gain
 if [ $hybgain == "true" ]; then
 export beta_s0=1.000 # 3dvar
+export beta_e0=0.0
 export readin_beta=.false. # not relevant for 3dvar
 export readin_localization=.false. # use fixed localization in EnKF.
 fi
