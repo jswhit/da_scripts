@@ -10,7 +10,7 @@
 &atmos_model_nml
   blocksize = 32
   dycore_only = F
-  ccpp_suite = "FV3_GFS_v15p2"
+  ccpp_suite = "SUITE"
   fdiag = FHOUT
 /
 
@@ -130,8 +130,6 @@
   ialb           = 1
   iems           = 1
   IAER           = 111
-  iovr           = 1
-  icliq_sw       = 1
   ico2           = 2
   isubc_sw       = 2
   isubc_lw       = 2
@@ -144,9 +142,6 @@
   redrag         = T
   dspheat        = T
   hybedmf        = T
-  satmedmf       = F
-  isatmedmf      = 1
-  lheatstrg      = F
   random_clds    = .false.
   trans_trac     = T
   cnvcld         = .false.
@@ -157,18 +152,6 @@
   isot           = 1
   lsoil          = 4
   lsm            = 1
-  iopt_dveg      = 1
-  iopt_crs       = 1
-  iopt_btr       = 1
-  iopt_run       = 1
-  iopt_sfc       = 1
-  iopt_frz       = 1
-  iopt_inf       = 1
-  iopt_rad       = 1
-  iopt_alb       = 2
-  iopt_snf       = 4
-  iopt_tbot      = 2
-  iopt_stc       = 1
   debug          = T
   lgfdlmprad     = .true.
   effr_in        = .true.
@@ -239,7 +222,6 @@
   fix_negative = .true.
   icloud_f = 1
   mp_time = 150.
-  reiflag = 1
 /
 
 &cires_ugwp_nml
