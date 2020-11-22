@@ -155,16 +155,27 @@ export NST_GSI=3          # default 0: No NST info at all;
                           #         2: Input NST info, used in CRTM simulation, no Tr analysis
                           #         3: Input NST info, used in both CRTM simulation and Tr analysis
 
-#export NST_GSI=0          # No NST 
+# turn off NST
+export DONST="NO"
+export NST_MODEL=0
+export NST_GSI=0
 
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
 
 export LEVS=64   
 if [ $LEVS -eq 64 ]; then
-  export SUITE="FV3_GFS_v15p2"
+  if [ $DONST == "YES" ]; then
+     export SUITE="FV3_GFS_v15p2"
+  else
+     export SUITE="FV3_GFS_v15p2_no_nsst"
+  fi
 elif [ $LEVS -eq 127 ]; then
-  export SUITE="FV3_GFS_v16beta"
+  if [ $DONST == "YES" ]; then
+     export SUITE="FV3_GFS_v16beta"
+  else
+     export SUITE="FV3_GFS_v16beta_no_nsst"
+  fi
 else
   echo "LEVS must be 64 or 127"
   exit 1
