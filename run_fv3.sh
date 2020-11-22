@@ -14,8 +14,8 @@ if [ "$machine" == 'hera' ]; then
    #module load pio/2.5.1
    #module load esmf/8_1_0_beta_snapshot_27
    module load wgrib
-   export WGRIB=`which wgrib`
    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/scratch2/NCEPDEV/nwprod/hpc-stack/test/intel-18.0.5.274/impi-2018.0.4/hdf5/1.10.6/lib"
+   export WGRIB=`which wgrib`
 elif [ "$machine" == 'orion' ]; then
    module purge
    module use /apps/contrib/NCEP/libs/hpc-stack/v1.0.0-beta1/modulefiles/stack
@@ -462,6 +462,7 @@ fi
 
 # build namelist
 /bin/cp -f ${enkfscripts}/${SUITE}.nml input.nml
+sed -i -e "s/SUITE/${SUITE}/g" input.nml
 sed -i -e "s/LAYOUT/${layout}/g" input.nml
 sed -i -e "s/NSTF_NAME/${nstf_name}/g" input.nml
 sed -i -e "s/NPX/${npx}/g" input.nml
