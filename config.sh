@@ -204,21 +204,13 @@ if [ $RES -eq 384 ]; then
    export LONB=1536
    export LATB=768
    export dt_atmos=225 # for n_split=6
-   if [ $LEVS == 64 ]; then
-       export cdmbgwd="1.0,1.2"
-   else
-       export cdmbgwd="1.1,0.72,1.0,1.0"
-   fi
+   export cdmbgwd="1.1,0.72,1.0,1.0"
 elif [ $RES -eq 192 ]; then
    export JCAP=382 
    export LONB=768   
    export LATB=384  
    export dt_atmos=450
-   if [ $LEVS == 64 ]; then
-       export cdmbgwd="0.2,2.5"
-   else
-       export cdmbgwd="0.23,1.5,1.0,1.0"
-   fi
+   export cdmbgwd="0.23,1.5,1.0,1.0"
 elif [ $RES -eq 128 ]; then
    export JCAP=254 
    export LONB=512   
@@ -243,22 +235,14 @@ else
 fi
 
 if [ $RES_CTL -eq 768 ]; then
-   if [ $LEVS == 64 ]; then
-       export cdmbgwd="3.5,0.25"
-   else
-       export cdmbgwd_ctl="4.0,0.15,1.0,1.0"
-   fi
+   export cdmbgwd_ctl="4.0,0.15,1.0,1.0"
    export JCAP_CTL=1534
    export LONB_CTL=3072
    export LATB_CTL=1536
    export dt_atmos_ctl=150    
 elif [ $RES_CTL -eq 384 ]; then
    export dt_atmos_ctl=225
-   if [ $LEVS == 64 ]; then
-       export cdmbgwd="1.0,1.2"
-   else
-       export cdmbgwd="1.1,0.72,1.0,1.0"
-   fi
+   export cdmbgwd="1.1,0.72,1.0,1.0"
    export JCAP_CTL=766
    export LONB_CTL=1536
    export LATB_CTL=768
@@ -291,11 +275,11 @@ export FHMAX=9
 export FHOUT=3
 FHMAXP1=`expr $FHMAX + 1`
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
-export iaufhrs="3,6,9"
-export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
+#export iaufhrs="3,6,9"
+#export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 # IAU off
-#export iaufhrs="6"
-#export iau_delthrs=-1
+export iaufhrs="6"
+export iau_delthrs=-1
 
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
