@@ -45,11 +45,11 @@ export replay_run_observer='true' # run observer on replay control forecast
 # full ensemble should be saved to HPSS (returns 0 if 
 # HPSS save should be done)
 if [ $machine == "orion" ]; then
-export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
-export save_hpss="false"
+   export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
+   export save_hpss="false"
 else
-export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
-export save_hpss="true"
+   export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
+   export save_hpss="true"
 fi
 export ensmean_restart='false'
 export skip_to_fcst="false" # skip to forecast step
@@ -180,6 +180,8 @@ else
   echo "LEVS must be 64 or 127"
   exit 1
 fi
+#export use_ipd="YES" # use IPD instead of CCPP
+
 # stochastic physics parameters.
 export DO_SPPT=T
 export SPPT=0.5
@@ -193,6 +195,7 @@ export SKEB=0.3
 #export SPPT=0
 #export DO_SPPT=F
 #export SHUM=0
+export imp_physics=11 # used by GSI, not model
 #export DO_SHUM=F
 
 # resolution dependent model parameters
@@ -329,6 +332,7 @@ export zhuberright=1.e10
 
 # these only used for hybrid covariance (hyb 4denvar) in GSI
 export beta_s0=`python -c "print $alpha / 1000."` # weight given to static B in hyb cov
+# beta_e0 parameter in my GSI branch (not in GSI/develop)
 export beta_e0=`python -c "print $beta / 1000."` # weight given to ensemble B in hyb cov
 export readin_beta=.false.
 export readin_localization=.false.
@@ -415,10 +419,10 @@ export REALTIME=YES # if NO, use historical files set in main.sh
 
 # parameters for hybrid gain
 if [ $hybgain == "true" ]; then
-export beta_s0=1.000 # 3dvar
-export beta_e0=0.0
-export readin_beta=.false. # not relevant for 3dvar
-export readin_localization=.false. # use fixed localization in EnKF.
+   export beta_s0=1.000 # 3dvar
+   export beta_e0=0.0
+   export readin_beta=.false. # not relevant for 3dvar
+   export readin_localization=.false. # use fixed localization in EnKF.
 fi
 
 cd $enkfscripts
