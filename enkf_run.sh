@@ -162,7 +162,7 @@ EOF
 
 cat enkf.nml
 
-cp ${enkfscripts}/vlocal_eig.dat ${datapath2}
+cp ${enkfscripts}/vlocal_eig_L${LEVS}.dat ${datapath2}
 
 /bin/rm -f ${datapath2}/enkf.log
 /bin/mv -f ${current_logdir}/ensda.out ${current_logdir}/ensda.out.save
