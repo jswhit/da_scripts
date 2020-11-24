@@ -473,6 +473,7 @@ fi
 /bin/cp -f ${enkfscripts}/${SUITE}.nml input.nml
 if [ $use_ipd == "YES" ]; then
     sed -i -e '/SUITE/d' input.nml
+    sed -i -e '/oz_phys/d' input.nml
 else
     sed -i -e "s/SUITE/${SUITE}/g" input.nml
 fi
