@@ -242,7 +242,7 @@ if [ $RES_CTL -eq 768 ]; then
    export dt_atmos_ctl=150    
 elif [ $RES_CTL -eq 384 ]; then
    export dt_atmos_ctl=225
-   export cdmbgwd="1.1,0.72,1.0,1.0"
+   export cdmbgwd_ctl="1.1,0.72,1.0,1.0"
    export JCAP_CTL=766
    export LONB_CTL=1536
    export LATB_CTL=768
