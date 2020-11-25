@@ -157,8 +157,8 @@ if [[ "$HXONLY" != "YES" ]]; then
 else
    STRONGOPTS="tlnmc_option=0,nstrong=0,nvmodes_keep=0,baldiag_full=.false.,baldiag_inc=.false.,"
 fi
-GRIDOPTS=""
-BKGVERR=""
+GRIDOPTS=${GRIDOPTS:-""}
+BKGVERR=${BKGVERR:-""}
 ANBKGERR=""
 JCOPTS=""
 OBSQC=""
