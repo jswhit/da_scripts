@@ -142,9 +142,9 @@
   redrag         = T
   dspheat        = T
   hybedmf        = T
-  random_clds    = .false.
+  random_clds    = F
   trans_trac     = T
-  cnvcld         = .false.
+  cnvcld         = T
   imfshalcnv     = 2
   imfdeepcnv     = 2
   prslrd0        = 0
