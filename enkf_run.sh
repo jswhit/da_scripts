@@ -35,7 +35,7 @@ cd ${datapath2}
 
 cat <<EOF > enkf.nml
  &nam_enkf
-  datestring="$analdate",datapath="$datapath2",
+  datestring="$analdate",datapath="$datapath2",univaroz=.false.,
   analpertwtnh=$analpertwtnh,analpertwtsh=$analpertwtsh,analpertwttr=$analpertwttr,
   analpertwtnh_rtpp=$analpertwtnh_rtpp,analpertwtsh_rtpp=$analpertwtsh_rtpp,analpertwttr_rtpp=$analpertwttr_rtpp,
   covinflatemax=$covinflatemax,covinflatemin=$covinflatemin,pseudo_rh=$pseudo_rh,
