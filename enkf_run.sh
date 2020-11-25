@@ -4,6 +4,7 @@ export nprocs=`expr $cores \/ $enkf_threads`
 export mpitaskspernode=`expr $corespernode \/ $enkf_threads`
 export OMP_NUM_THREADS=$enkf_threads
 export OMP_STACKSIZE=512M
+export MKL_NUM_THREADS=1
 source $MODULESHOME/init/sh
 module list
 
@@ -137,8 +138,10 @@ cat <<EOF > enkf.nml
   sattypes_rad(81)= 'saphir_meghat', dsis(81)= 'saphir_meghat',
   sattypes_rad(82)= 'amsua_metop-c', dsis(82)= 'amsua_metop-c',
   sattypes_rad(83)= 'mhs_metop-c',   dsis(83)= 'mhs_metop-c',
-  sattypes_rad(84)= 'ahi_himawari8', dsis(84)= 'ahi_himawari8',
-  sattypes_rad(85)= 'abi_g16',       dsis(85)= 'abi_g16',
+  sattypes_rad(84)= 'iasi_metop-c',  dsis(84)= 'iasi_metop-c',
+  sattypes_rad(85)= 'ahi_himawari8', dsis(85)= 'ahi_himawari8',
+  sattypes_rad(86)= 'abi_g16',       dsis(86)= 'abi_g16',
+  sattypes_rad(87)= 'abi_g17',       dsis(87)= 'abi_g17',
  /
  &END
  &ozobs_enkf

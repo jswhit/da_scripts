@@ -33,6 +33,7 @@ export HXONLY='NO'
 export VERBOSE=YES  
 export OMP_NUM_THREADS=$gsi_control_threads
 export OMP_STACKSIZE=2048M
+export MKL_NUM_THREADS=1
 #cores=`python -c "print (${NODES} - 1) * ${corespernode}"`
 export nprocs=`expr $cores \/ $OMP_NUM_THREADS`
 export mpitaskspernode=`expr $corespernode \/ $OMP_NUM_THREADS`
