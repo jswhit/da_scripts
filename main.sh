@@ -237,6 +237,25 @@ else
  exit 1
 fi
 
+## loop over members run observer sequentially (for testing)
+#nanal=1
+#while [ $nanal -le $nanals ]; do
+#   export charnanal="mem"`printf %03i $nanal`
+#   export charnanal2=$charnanal 
+#   export lobsdiag_forenkf='.false.'
+#   echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
+#   sh ${enkfscripts}/run_gsiobserver.sh > ${current_logdir}/run_gsi_observer_${charnanal}.out 2>&1
+#   # once observer has completed, check log files.
+#   gsi_done=`cat ${current_logdir}/run_gsi_observer.log`
+#   if [ $gsi_done == 'yes' ]; then
+#     echo "$analdate gsi observer completed successfully `date`"
+#   else
+#     echo "$analdate gsi observer did not complete successfully, exiting `date`"
+#     exit 1
+#   fi
+#   nanal=$((nanal+1))
+#done
+
 # run enkf analysis.
 echo "$analdate run enkf `date`"
 sh ${enkfscripts}/runenkf.sh > ${current_logdir}/run_enkf.out 2>&1
