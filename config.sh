@@ -119,21 +119,6 @@ else
 fi
 export datapath="${datadir}/${exptname}"
 export logdir="${datadir}/logs/${exptname}"
-export corrlengthnh=1250
-export corrlengthtr=1250
-export corrlengthsh=1250
-export lnsigcutoffnh=1.5
-export lnsigcutofftr=1.5
-export lnsigcutoffsh=1.5
-export lnsigcutoffpsnh=1.5
-export lnsigcutoffpstr=1.5
-export lnsigcutoffpssh=1.5
-export lnsigcutoffsatnh=1.5 
-export lnsigcutoffsattr=1.5  
-export lnsigcutoffsatsh=1.5  
-export obtimelnh=1.e30       
-export obtimeltr=1.e30       
-export obtimelsh=1.e30       
 
 export NOSAT="NO" # if yes, no radiances assimilated
 export NOCONV="NO"
@@ -186,6 +171,7 @@ else
   echo "LEVS must be 64 or 127"
   exit 1
 fi
+
 #export use_ipd="YES" # use IPD instead of CCPP
 
 # stochastic physics parameters.
@@ -201,8 +187,9 @@ export SKEB=0.3
 #export SPPT=0
 #export DO_SPPT=F
 #export SHUM=0
-export imp_physics=11 # used by GSI, not model
 #export DO_SHUM=F
+
+export imp_physics=11 # used by GSI, not model
 
 # resolution dependent model parameters
 if [ $RES -eq 384 ]; then
@@ -290,25 +277,8 @@ export iau_delthrs=-1
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
 
-export SMOOTHINF=35
-export npts=`expr \( $LONA \) \* \( $LATA \)`
 export RUN=gdas # use gdas obs
-export reducedgrid=.false.
-export univaroz=.false.
 
-export iassim_order=0
-
-export covinflatemax=1.e2
-export covinflatemin=1.0                                            
-export analpertwtnh=0.85
-export analpertwtsh=0.85
-export analpertwttr=0.85
-export analpertwtnh_rtpp=0.0
-export analpertwtsh_rtpp=0.0
-export analpertwttr_rtpp=0.0
-export pseudo_rh=.true.
-export use_correlated_oberrs=".true."
-                                                                    
 # Analysis increments to zero out
 export INCREMENTS_TO_ZERO="'liq_wat_inc','icmr_inc'"
 # Stratospheric increments to zero
@@ -318,9 +288,20 @@ export write_fv3_increment=".false."
 export WRITE_INCR_ZERO="incvars_to_zero= $INCREMENTS_TO_ZERO,"
 export WRITE_ZERO_STRAT="incvars_zero_strat= $INCVARS_ZERO_STRAT,"
 export WRITE_STRAT_EFOLD="incvars_efold= $INCVARS_EFOLD,"
+export use_correlated_oberrs=".true."
 # NOTE: most other GSI namelist variables are in ${rungsi}
-export aircraft_bc=.true.
-export use_prepb_satwnd=.false.
+
+export SMOOTHINF=35 # inflation smoothing (spectral truncation)
+export covinflatemax=1.e2
+export reducedgrid=.false. # if T, used reduced gaussian analysis grid in EnKF
+export covinflatemin=1.0                                            
+export analpertwtnh=0.85
+export analpertwtsh=0.85
+export analpertwttr=0.85
+export analpertwtnh_rtpp=0.0
+export analpertwtsh_rtpp=0.0
+export analpertwttr_rtpp=0.0
+export pseudo_rh=.true.
 export write_ensmean=.true. # write out ens mean analysis in EnKF
 export letkf_flag=.true.
 export letkf_bruteforce_search=.false.
@@ -330,11 +311,23 @@ export getkf_inflation=.false.
 export modelspace_vloc=.true.
 export letkf_novlocal=.true.
 export nobsl_max=10000
-export sprd_tol=1.e30
-export varqc=.false.
-export huber=.false.
-export zhuberleft=1.e10
-export zhuberright=1.e10
+export corrlengthnh=1250
+export corrlengthtr=1250
+export corrlengthsh=1250
+# The lnsigcutoff* parameters are ignored if modelspace_vloc=T
+export lnsigcutoffnh=1.5
+export lnsigcutofftr=1.5
+export lnsigcutoffsh=1.5
+export lnsigcutoffpsnh=1.5
+export lnsigcutoffpstr=1.5
+export lnsigcutoffpssh=1.5
+export lnsigcutoffsatnh=1.5 
+export lnsigcutoffsattr=1.5  
+export lnsigcutoffsatsh=1.5  
+export paoverpb_thresh=0.998  # ignored for LETKF, set to 1 to use all obs in serial EnKF
+export saterrfact=1.0
+export deterministic=.true.
+export sortinc=.true.
 
 # these only used for hybrid covariance (hyb 4denvar) in GSI
 export beta_s0=`python -c "print $alpha / 1000."` # weight given to static B in hyb cov
@@ -345,21 +338,11 @@ export readin_localization=.false.
 export s_ens_h=343.     # 1250 km horiz localization in GSI
 export s_ens_v=-0.58    # 1.5 scale heights in GSI
 #export s_ens_v=5.4     # 14 levels
-
-export lupd_satbiasc=.false.
-export numiter=0
 # use pre-generated bias files.
 #export biascorrdir=${datadir}/biascor
-                                                                    
-export nanals=80                                                    
-                                                                    
-export paoverpb_thresh=0.998  # set to 1.0 to use all the obs in serial EnKF
-export saterrfact=1.0
-export deterministic=.true.
-export sortinc=.true.
-                                                                    
-export nitermax=2
 
+export nanals=80                                                    
+export nitermax=2 # number of retries
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
