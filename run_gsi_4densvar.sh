@@ -151,8 +151,8 @@ if [[ "$HXONLY" != "YES" ]]; then
       # balance constraint on 3dvar part of envar increment
       #STRONGOPTS="tlnmc_option=4,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
       # no strong bal constraint
-      STRONGOPTS="tlnmc_option=0,nstrong=0,nvmodes_keep=0,baldiag_full=.false.,baldiag_inc=.false.,"
-      SETUP="$SETUP,miter=1,niter(1)=150,niter(2)=0"
+      #STRONGOPTS="tlnmc_option=0,nstrong=0,nvmodes_keep=0,baldiag_full=.false.,baldiag_inc=.false.,"
+      SETUP="$SETUP,miter=1,niter(1)=100,niter(2)=100"
    fi
 else
    STRONGOPTS="tlnmc_option=0,nstrong=0,nvmodes_keep=0,baldiag_full=.false.,baldiag_inc=.false.,"
@@ -211,7 +211,7 @@ cat <<EOF > gsiparm.anl
    factqmin=0.5,factqmax=0.0002,deltim=$DELTIM,
    tzr_qc=1,iguess=-1,
    oneobtest=.false.,retrieval=.false.,l_foto=.false.,
-   use_pbl=.false.,use_compress=.true.,nsig_ext=56,gpstop=55.,
+   use_pbl=.false.,use_compress=.true.,nsig_ext=$nsig_ext,gpstop=$gpstop.,
    use_gfs_ncio=.true.,sfcnst_comb=.true.,cwoption=3,imp_physics=${imp_physics},
    write_fv3_incr=$write_fv3_increment,
    crtm_coeffs_path='./crtm_coeffs/',
@@ -222,7 +222,7 @@ cat <<EOF > gsiparm.anl
  /
  &GRIDOPTS
    JCAP_B=$JCAP_B,JCAP=$JCAP_A,NLAT=$NLAT,NLON=$LONA,nsig=$LEVS,
-   regional=.false.,nlayers(63)=1,nlayers(64)=1,
+   regional=.false.,
    $GRIDOPTS
  /
  &BKGERR

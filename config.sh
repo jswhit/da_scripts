@@ -165,12 +165,18 @@ if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI w
 
 export LEVS=64   
 if [ $LEVS -eq 64 ]; then
+  export nsig_ext=12
+  export gpstop=50
+  export GRIDOPTS="nlayers(63)=3,nlayers(64)=6,"
   if [ $DONST == "YES" ]; then
      export SUITE="FV3_GFS_v15p2"
   else
      export SUITE="FV3_GFS_v15p2_no_nsst"
   fi
 elif [ $LEVS -eq 127 ]; then
+  export nsig_ext=56
+  export gpstop=55
+  export GRIDOPTS="nlayers(63)=1,nlayers(64)=1,"
   if [ $DONST == "YES" ]; then
      export SUITE="FV3_GFS_v16beta"
   else
