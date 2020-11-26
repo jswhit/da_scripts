@@ -44,7 +44,7 @@
   npz      = LEVS,
   ntiles = 6,
   grid_type = -1,
-  make_nh = MAKE_NH,
+  make_nh = F,
   fv_debug = F,
   range_warn = F,
   reset_eta = F,
