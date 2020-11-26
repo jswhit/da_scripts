@@ -479,6 +479,7 @@ sed -i -e "s/CDMBGWD/${cdmbgwd}/g" input.nml
 sed -i -e "s/ISEED_sppt/${ISEED_SPPT}/g" input.nml
 sed -i -e "s/ISEED_shum/${ISEED_SHUM}/g" input.nml
 sed -i -e "s/ISEED_skeb/${ISEED_SKEB}/g" input.nml
+sed -i -e "s/IAU_FHRS/${iaufhrs}/g" input.nml
 sed -i -e "s/IAU_DELTHRS/${iaudelthrs}/g" input.nml
 sed -i -e "s/IAU_INC_FILES/${iau_inc_files}/g" input.nml
 sed -i -e "s/WARM_START/${warm_start}/g" input.nml
