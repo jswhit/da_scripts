@@ -338,7 +338,7 @@ else
    FHMAX_FCST=$FHMAX
 fi
 
-if [ "$warm_start" == "T" ] && [ -z $skip_global_cycle ]; then
+if [ "$cold_start" == "false" ] && [ -z $skip_global_cycle ]; then
    # run global_cycle to update surface in restart file.
    export BASE_GSM=${fv3gfspath}
    export FIXfv3=$FIXFV3
@@ -460,16 +460,12 @@ if [ "$cold_start" == "true" ]; then
   externalic=T
   na_init=0
   mountain=F
-  make_nh=F
 else
   warm_start=T
   externalic=F
   na_init=0
   mountain=T
-  make_nh=F
 fi
-
-# build namelist
 /bin/cp -f ${enkfscripts}/${SUITE}.nml input.nml
 if [ $use_ipd == "YES" ]; then
     sed -i -e '/SUITE/d' input.nml
@@ -505,7 +501,6 @@ sed -i -e "s/WARM_START/${warm_start}/g" input.nml
 sed -i -e "s/EXTERNAL_IC/${externalic}/g" input.nml
 sed -i -e "s/NA_INIT/${na_init}/g" input.nml
 sed -i -e "s/MOUNTAIN/${mountain}/g" input.nml
-sed -i -e "s/MAKE_NH/${make_nh}/g" input.nml
 sed -i -e "s/RESLATLONDYNAMICS/${reslatlondynamics}/g" input.nml
 sed -i -e "s/READ_INCREMENT/${readincrement}/g" input.nml
 cat input.nml
