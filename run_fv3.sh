@@ -21,7 +21,10 @@ if [ "$machine" == 'hera' ]; then
       module load hpc/1.0.0-beta1
       module load hpc-intel/18.0.5.274
       module load hpc-impi/2018.0.4
-      export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/scratch2/NCEPDEV/nwprod/hpc-stack/test/intel-18.0.5.274/impi-2018.0.4/hdf5/1.10.6/lib"
+      module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
+      module load netcdf_parallel/4.7.4.release
+      module load esmf/8.1.0bs25_ParallelNetCDF.release
+      module load hdf5_parallel/1.10.6.release
    fi
    module load wgrib
    export WGRIB=`which wgrib`
@@ -229,7 +232,7 @@ else
    fi
 fi
 
-# setup model namelist
+# setup model namelist parameters
 if [ "$fg_only" == "true" ]; then
    # cold start from chgres'd GFS analyes
    stochini=F
