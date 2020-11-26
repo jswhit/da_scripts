@@ -147,10 +147,6 @@ export PREINP="${RUN}.t${hr}z."
 export PREINP1="${RUN}.t${hrp1}z."
 export PREINPm1="${RUN}.t${hrm1}z."
 
-if [ $skip_to_fcst == "true" ]; then
-   fg_only="true"
-fi
-
 if [ $fg_only ==  'false' ]; then
 
 echo "$analdate starting ens mean computation `date`"
@@ -326,9 +322,6 @@ if [ $replay_controlfcst == 'true' ] && [ $replay_run_observer == "true" ]; then
 fi
 
 fi # skip to here if fg_only = true
-if [ $skip_to_fcst == "true" ]; then
-   export fg_only="false"
-fi
 
 if [ $replay_controlfcst == 'true' ]; then
     echo "$analdate run high-res control first guess `date`"
@@ -352,7 +345,7 @@ else
   exit 1
 fi
 
-if [ $fg_only == 'false' ]; then
+if [ $cold_start == 'false' ]; then
 
 # cleanup
 if [ $do_cleanup == 'true' ]; then
@@ -376,7 +369,7 @@ fi
 #sbatch --export=ALL job_hpss.sh
 sbatch --export=machine=${machine},analdate=${analdate},datapath2=${datapath2},hsidir=${hsidir},save_hpss_full=${save_hpss_full},save_hpss_subset=${save_hpss_subset} job_hpss.sh
 
-fi # skip to here if fg_only = true
+fi # skip to here if cold_start = true
 
 echo "$analdate all done"
 

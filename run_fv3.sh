@@ -78,7 +78,7 @@ export yearprev=`echo $analdatem1 |cut -c 1-4`
 export monprev=`echo $analdatem1 |cut -c 5-6`
 export dayprev=`echo $analdatem1 |cut -c 7-8`
 export hourprev=`echo $analdatem1 |cut -c 9-10`
-if [ "${iau_delthrs}" != "-1" ] && [ "${fg_only}" == "false" ]; then
+if [ "${iau_delthrs}" != "-1" ] && [ "${cold_start}" == "false" ]; then
 # assume model is started at beginning of analysis window
 # (if IAU on or initial cold start)
    # start date for forecast (previous analysis time)
@@ -145,7 +145,7 @@ mkdir -p INPUT
 
 # make symlinks for fixed files and initial conditions.
 cd INPUT
-if [ "$fg_only" == "true" ] && [ "$cold_start" == "true" ]; then
+if [ "$cold_start" == "true" ]; then
    ls -l *nc
    for file in ../*nc; do
        file2=`basename $file`
@@ -183,7 +183,7 @@ done
 #ln -fs $FIXGLOBAL/freezeH2O.dat freezeH2O.dat
 
 # create netcdf increment files.
-if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
+if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
    cd INPUT
    iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
 # IAU - multiple increments.
@@ -208,7 +208,7 @@ if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
    done # do next forecast
    cd ..
 else
-   if [ $fg_only == "false" ] ; then
+   if [ $cold_start == "false" ] ; then
       cd INPUT
       iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
 # move already computed increment files
@@ -221,7 +221,7 @@ else
 fi
 
 # setup model namelist parameters
-if [ "$fg_only" == "true" ]; then
+if [ "$cold_start" == "true" ]; then
    # cold start from chgres'd GFS analyes
    stochini=F
    reslatlondynamics=""
@@ -230,7 +230,13 @@ if [ "$fg_only" == "true" ]; then
    iaudelthrs=-1
    #iau_inc_files="fv3_increment.nc"
    iau_inc_files=""
+   warm_start=F
+   externalic=T
+   mountain=F
 else
+   warm_start=T
+   externalic=F
+   mountain=T
    # warm start from restart file with lat/lon increments ingested by the model
    if [ $niter == 1 ] ; then
      if [ -s stoch_ini ]; then
@@ -252,8 +258,6 @@ else
       # set to large value so no random patterns will be output
       # and random pattern will be reinitialized
       FHSTOCH=240
-      # reduce model time step
-      #dt_atmos=`python -c "print ${dt_atmos}/2"`
    fi
    
    iaudelthrs=${iau_delthrs}
@@ -319,7 +323,7 @@ FHRESTART=${FHRESTART:-$ANALINC}
 if [ "${iau_delthrs}" != "-1" ]; then
    FHMAX_FCST=`expr $FHMAX + $ANALINC`
    FHSTOCH=`expr $FHRESTART + $ANALINC \/ 2`
-   if [ "${fg_only}" == "true" ]; then
+   if [ "${cold_start}" == "true" ]; then
       FHSTOCH=${FHSTOCH:-$ANALINC}
       FHRESTART=`expr $ANALINC \/ 2`
       FHMAX_FCST=$FHMAX
@@ -374,7 +378,7 @@ fi
 # nstf_name(5) : ZSEA2 (in mm) : 0
 NST_MODEL=${NST_MODEL:-0}
 NST_SPINUP=${NST_SPINUP:-0}
-if [ "$fg_only" == "true" ] && [ $NST_GSI -gt 0 ]; then
+if [ "$cold_start" == "true" ] && [ $NST_GSI -gt 0 ]; then
    NST_SPINUP=1
 fi
 NST_RESV=${NST_RESV-0}
@@ -436,7 +440,7 @@ EOF
 cat model_configure
 
 # setup coupler.res (needed for restarts if current time != start time)
-if [ "${iau_delthrs}" != "-1" ]  && [ "${fg_only}" == "false" ]; then
+if [ "${iau_delthrs}" != "-1" ]  && [ "${cold_start}" == "false" ]; then
    echo "     2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)" > INPUT/coupler.res
    echo "  ${year}  ${mon}  ${day}  ${hour}     0     0        Model start time:   year, month, day, hour, minute, second" >> INPUT/coupler.res
    echo "  ${year_start}  ${mon_start}  ${day_start}  ${hour_start}     0     0        Current model time: year, month, day, hour, minute, second" >> INPUT/coupler.res
@@ -446,15 +450,6 @@ else
 fi
 
 # copy template namelist file, replace variables.
-if [ "$cold_start" == "true" ]; then
-  warm_start=F
-  externalic=T
-  mountain=F
-else
-  warm_start=T
-  externalic=F
-  mountain=T
-fi
 /bin/cp -f ${enkfscripts}/${SUITE}.nml input.nml
 if [ $use_ipd == "YES" ]; then
     sed -i -e '/SUITE/d' input.nml

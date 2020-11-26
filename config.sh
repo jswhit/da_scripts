@@ -52,7 +52,6 @@ else
    export save_hpss="true"
 fi
 export ensmean_restart='false'
-export skip_to_fcst="false" # skip to forecast step
 export recenter_anal="true"
 export recenter_fcst="true"
 
@@ -67,7 +66,6 @@ export recenter_fcst="true"
 #export resubmit='false'
 #export do_cleanup='false'
 #export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
-#export skip_to_fcst="true" # skip to forecast step
 
 source $MODULESHOME/init/sh
 if [ "$machine" == 'hera' ]; then
@@ -128,7 +126,7 @@ export NOCONV="NO"
 export DONST="YES"
 export NST_MODEL=2
 # nstf_name(2) : NST_SPINUP : 0 = OFF, 1 = ON,
-export NST_SPINUP=0 # (will be set to 1 if fg_only=='true')
+export NST_SPINUP=0 # (will be set to 1 if cold_start=='true')
 # nstf_name(3) : NST_RESV (Reserved, NSST Analysis) : 0 = OFF, 1 = ON
 export NST_RESV=0
 # nstf_name(4,5) : ZSEA1, ZSEA2 the two depths to apply vertical average (bias correction)

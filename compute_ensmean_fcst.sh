@@ -39,7 +39,7 @@ while [ $fh -le $FHMAX ]; do
 done
 
 # now compute ensemble mean restart files (only at 00UTC).
-if [ $ensmean_restart == 'true' ] && [ $fg_only == 'false' ] && [ $hr == '06' ]; then
+if [ $ensmean_restart == 'true' ] && [ $cold_start == 'false' ] && [ $hr == '06' ]; then
 if [ $cleanup_ensmean == 'true' ] || ([ $cleanup_ensmean == 'false' ]  && [ ! -s ${datapath2}/ensmean/INPUT/fv_core.res.tile1.nc ]); then
    echo "compute ensemble mean restart files `date`"
    export nprocs=1
