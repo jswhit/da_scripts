@@ -458,12 +458,10 @@ fi
 if [ "$cold_start" == "true" ]; then
   warm_start=F
   externalic=T
-  na_init=0
   mountain=F
 else
   warm_start=T
   externalic=F
-  na_init=0
   mountain=T
 fi
 /bin/cp -f ${enkfscripts}/${SUITE}.nml input.nml
@@ -499,7 +497,6 @@ sed -i -e "s/IAU_DELTHRS/${iaudelthrs}/g" input.nml
 sed -i -e "s/IAU_INC_FILES/${iau_inc_files}/g" input.nml
 sed -i -e "s/WARM_START/${warm_start}/g" input.nml
 sed -i -e "s/EXTERNAL_IC/${externalic}/g" input.nml
-sed -i -e "s/NA_INIT/${na_init}/g" input.nml
 sed -i -e "s/MOUNTAIN/${mountain}/g" input.nml
 sed -i -e "s/RESLATLONDYNAMICS/${reslatlondynamics}/g" input.nml
 sed -i -e "s/READ_INCREMENT/${readincrement}/g" input.nml
