@@ -22,11 +22,11 @@ elif [ "$machine" == 'orion' ]; then
    module load hpc/1.0.0-beta1
    module load hpc-intel/2018.4
    module load hpc-impi/2018.4
-   module load hdf5/1.10.6
-   module load netcdf/4.7.4
-   module load pio/2.5.1
-   module load esmf/8_1_0_beta_snapshot_27
-   module load wgrib
+   module load grib_util
+   export NCEPLIBS=/apps/contrib/NCEPLIBS/lib
+   module use -a $NCEPLIBS/modulefiles
+   module load netcdfp/4.7.4
+   #export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/apps/contrib/NCEP/test/hpc-stack-nco/intel/2018.4/impi/2018.4/hdf5/1.10.6/lib/"
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'gaea' ]; then
    module purge
