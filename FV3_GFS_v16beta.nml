@@ -286,7 +286,7 @@
   skeb_vdof=5,
   skeb_npass=30,
   skebnorm=0,
-  skebint=0,
+  skebint=1800,
   iseed_skeb=ISEED_skeb,
   use_zmtnblck=.true.,
   fhstoch=FHSTOCH,

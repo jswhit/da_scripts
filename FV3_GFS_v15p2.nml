@@ -267,7 +267,7 @@
   skeb_lscale=250000
   skeb_vdof=5,
   skeb_npass=30,
-  skebint=0,
+  skebint=1800,
   skebnorm=0,
   iseed_skeb=ISEED_skeb,
   use_zmtnblck=.true.,
