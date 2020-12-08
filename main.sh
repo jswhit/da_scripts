@@ -81,6 +81,12 @@ else
     exit 1
 fi
 fi
+if [ ! -z $HYBENSINFO ]; then
+   /bin/cp -f ${HYBENSINFO} ${datapath}/${analdate}/hybens_info
+fi
+if [ ! -z $HYBENSMOOTHINFO ];  then
+   /bin/cp -f ${HYBENSMOOTHINFO} $datapath2/${analdate}/hybens_smoothinfo
+fi
 
 #------------------------------------------------------------------------
 mkdir -p $datapath
