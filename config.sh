@@ -21,8 +21,8 @@ export beta=1000 # percentage of enkf increment (*10)
 # original ensemble mean.
 # if replay_controlfcst='false', not used.
 # also used to control weights for recentering of enkf analysis if hybgain='false'
-export recenter_control_wgt=0
-export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
+export recenter_control_wgt=100
+export recenter_ensmean_wgt=`expr 0 - $recenter_control_wgt`
 export exptname="C${RES}_hybgain"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
@@ -53,7 +53,7 @@ else
 fi
 export ensmean_restart='false'
 export recenter_anal="true"
-export recenter_fcst="true"
+export recenter_fcst="false"
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
