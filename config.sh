@@ -19,8 +19,9 @@ export beta=1000 # percentage of enkf increment (*10)
 # recenter_control_wgt=recenter_ensmean_wgt=50, then the background ensemble
 # is recentered around the average of the (upscaled) control forecast and the
 # original ensemble mean.
-# if replay_controlfcst='false', not used.
+# if replay_controlfcst='false', not used for forecast.
 # also used to control weights for recentering of enkf analysis if hybgain='false'
+# in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
 export exptname="C${RES}_hybgain"

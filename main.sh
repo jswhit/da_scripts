@@ -185,7 +185,7 @@ if [ $replay_controlfcst == 'true' ]; then
    echo "$analdate done changing resolution of control forecast to ens resolution `date`"
 fi
 
-# optionally (partically) recenter ensemble around control forecast.
+# optionally (partially) recenter ensemble around control forecast.
 if [ $replay_controlfcst == 'true' ] && [ $recenter_control_wgt -gt 0 ] && [ $recenter_fcst == "true" ]; then
    echo "$analdate (partially) recenter background ensemble around control `date`"
    export fileprefix="sfg"
