@@ -22,11 +22,11 @@ elif [ "$machine" == 'orion' ]; then
    module load hpc/1.0.0-beta1
    module load hpc-intel/2018.4
    module load hpc-impi/2018.4
-   module load grib_util
-   export NCEPLIBS=/apps/contrib/NCEPLIBS/lib
-   module use -a $NCEPLIBS/modulefiles
-   module load netcdfp/4.7.4
-   #export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/apps/contrib/NCEP/test/hpc-stack-nco/intel/2018.4/impi/2018.4/hdf5/1.10.6/lib/"
+   module load hdf5/1.10.6
+   module load netcdf/4.7.4
+   module load pio/2.5.1
+   module load esmf/8_1_0_beta_snapshot_27
+   module load wgrib
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'gaea' ]; then
    module purge
@@ -46,6 +46,7 @@ fi
 module list
 
 export VERBOSE=${VERBOSE:-"NO"}
+hydrostatic=${hydrostatic:=".false."}
 export quilting=${quilting:-'.true.'}
 if [ "$VERBOSE" == "YES" ]; then
  set -x
@@ -199,7 +200,7 @@ if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
       echo "create ${increment_file}"
       /bin/rm -f ${increment_file}
       # last two args:  no_mpinc no_delzinc
-      export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file} T F"
+      export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file} T $hydrostatic"
       nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
       if [ $? -ne 0 -o ! -s ${increment_file} ]; then
          echo "problem creating ${increment_file}, stopping .."
@@ -487,6 +488,7 @@ sed -i -e "s/EXTERNAL_IC/${externalic}/g" input.nml
 sed -i -e "s/MOUNTAIN/${mountain}/g" input.nml
 sed -i -e "s/RESLATLONDYNAMICS/${reslatlondynamics}/g" input.nml
 sed -i -e "s/READ_INCREMENT/${readincrement}/g" input.nml
+sed -i -e "s/HYDROSTATIC/${hydrostatic}/g" input.nml
 cat input.nml
 ls -l INPUT
 

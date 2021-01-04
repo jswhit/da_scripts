@@ -68,6 +68,14 @@ export recenter_fcst="false"
 #export do_cleanup='false'
 #export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
 
+# set to .true. to run hydrostatic version of model 
+export hydrostatic=.false.
+if [ $hydrostatic == ".true." ]; then
+   export FCSTEXEC=${execdir}/fv3-hydro.exe
+else
+   export FCSTEXEC=${execdir}/fv3-nonhydro.exe
+fi
+
 source $MODULESHOME/init/sh
 if [ "$machine" == 'hera' ]; then
    export basedir=/scratch2/BMC/gsienkf/${USER}
@@ -356,7 +364,6 @@ if [ "$machine" == 'hera' ]; then
    export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
-   export FCSTEXEC=${execdir}/fv3-nonhydro.exe
    export gsiexec=${execdir}/global_gsi
    export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
 elif [ "$machine" == 'orion' ]; then
@@ -370,7 +377,6 @@ elif [ "$machine" == 'orion' ]; then
    export fixcrtm=$fv3gfspath/crtm/crtm_v2.3.0
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
-   export FCSTEXEC=${execdir}/fv3-nonhydro.exe
    export gsiexec=${execdir}/global_gsi
    export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
 elif [ "$machine" == 'gaea' ]; then
@@ -386,7 +392,6 @@ elif [ "$machine" == 'gaea' ]; then
    #export fixcrtm=${fixgsi}/crtm_v2.2.3
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
-   export FCSTEXEC=${execdir}/fv3-nonhydro.exe
    export gsiexec=${execdir}/global_gsi
    export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
 else
