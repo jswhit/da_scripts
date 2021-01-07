@@ -337,9 +337,9 @@ export deterministic=.true.
 export sortinc=.true.
 
 # these only used for hybrid covariance (hyb 4denvar) in GSI
-export beta_s0=`python -c "print $alpha / 1000."` # weight given to static B in hyb cov
-# beta_e0 parameter in my GSI branch (not in GSI/develop)
-export beta_e0=`python -c "print $beta / 1000."` # weight given to ensemble B in hyb cov
+export beta_s0=`python -c "from __future__ import print_function; print($alpha / 1000.)"` # weight given to static B in hyb cov
+# beta_e0 parameter (ensemble weight) in my GSI branch (not in GSI/develop)
+export beta_e0=`python -c "from __future__ import print_function; print($beta / 1000.)"` # weight given to ensemble B in hyb cov
 export readin_beta=.false.
 export readin_localization=.false.
 export s_ens_h=343.     # 1250 km horiz localization in GSI
