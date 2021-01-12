@@ -68,14 +68,6 @@ export recenter_fcst="false"
 #export do_cleanup='false'
 #export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
 
-# set to .true. to run hydrostatic version of model 
-export hydrostatic=.false.
-if [ $hydrostatic == ".true." ]; then
-   export FCSTEXEC=${execdir}/fv3-hydro.exe
-else
-   export FCSTEXEC=${execdir}/fv3-nonhydro.exe
-fi
-
 source $MODULESHOME/init/sh
 if [ "$machine" == 'hera' ]; then
    export basedir=/scratch2/BMC/gsienkf/${USER}
@@ -178,6 +170,11 @@ else
   echo "LEVS must be 64 or 127"
   exit 1
 fi
+
+# radiance thinning parameters for GSI
+#export dmesh1=160
+#export dmesh2=160
+#export dmesh3=160
 
 #export use_ipd="YES" # use IPD instead of CCPP
 
@@ -398,6 +395,14 @@ else
    echo "${machine} unsupported machine"
    exit 1
 fi
+# set to .true. to run hydrostatic version of model 
+export hydrostatic=.false.
+if [ $hydrostatic == ".true." ]; then
+   export FCSTEXEC=${execdir}/fv3-hydro.exe
+else
+   export FCSTEXEC=${execdir}/fv3-nonhydro.exe
+fi
+
 
 export ANAVINFO=${fixgsi}/global_anavinfo.l${LEVS}.txt
 export ANAVINFO_ENKF=${ANAVINFO}
