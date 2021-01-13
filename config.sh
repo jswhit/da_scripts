@@ -147,7 +147,7 @@ export NST_GSI=0
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
 
-export LEVS=127  
+export LEVS=64   
 if [ $LEVS -eq 64 ]; then
   export nsig_ext=12
   export gpstop=50
@@ -172,9 +172,9 @@ else
 fi
 
 # radiance thinning parameters for GSI
-#export dmesh1=160
-#export dmesh2=160
-#export dmesh3=160
+export dmesh1=160
+export dmesh2=160
+export dmesh3=160
 
 #export use_ipd="YES" # use IPD instead of CCPP
 
@@ -383,9 +383,9 @@ elif [ "$machine" == 'gaea' ]; then
    export fv3gfspath=/lustre/f2/dev/Jeffrey.S.Whitaker/fv3_reanl/fv3gfs/global_shared.v15.0.0
    export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
-   export gsipath=/lustre/f2/dev/Jeffrey.S.Whitaker/ProdGSI
+   export gsipath=/lustre/f2/dev/Jeffrey.S.Whitaker/GSI-github-jswhit
    export fixgsi=${gsipath}/fix
-   export fixcrtm=/lustre/f2/pdata/ncep_shared/NCEPLIBS/lib/crtm/v2.2.5/fix
+   export fixcrtm=/lustre/f2/pdata/ncep_shared/NCEPLIBS/lib/crtm/v2.2.6/fix
    #export fixcrtm=${fixgsi}/crtm_v2.2.3
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
