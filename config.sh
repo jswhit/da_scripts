@@ -121,6 +121,8 @@ export logdir="${datadir}/logs/${exptname}"
 
 export NOSAT="NO" # if yes, no radiances assimilated
 export NOCONV="NO"
+export NOTLNMC="NO" # no TLNMC in GSI in GSI EnVar
+export NOOUTERLOOP="NO" # no outer loop in GSI EnVar
 # model NSST parameters contained within nstf_name in FV3 namelist
 # (comment out to get default - no NSST)
 # nstf_name(1) : NST_MODEL (NSST Model) : 0 = OFF, 1 = ON but uncoupled, 2 = ON and coupled

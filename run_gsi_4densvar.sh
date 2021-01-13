@@ -151,8 +151,14 @@ if [[ "$HXONLY" != "YES" ]]; then
       # balance constraint on 3dvar part of envar increment
       #STRONGOPTS="tlnmc_option=4,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
       # no strong bal constraint
-      #STRONGOPTS="tlnmc_option=0,nstrong=0,nvmodes_keep=0,baldiag_full=.false.,baldiag_inc=.false.,"
-      SETUP="$SETUP,miter=1,niter(1)=100,niter(2)=100"
+      if [ $NOTLNMC == "YES" ]; then
+         STRONGOPTS="tlnmc_option=0,nstrong=0,nvmodes_keep=0,baldiag_full=.false.,baldiag_inc=.false.,"
+      fi
+      if [ $NOOUTERLOOP == "YES" ]; then
+         SETUP="$SETUP,miter=1,niter(1)=150,niter(2)=100"
+      else
+         SETUP="$SETUP,miter=2,niter(1)=100,niter(2)=100"
+      fi
    fi
 else
    STRONGOPTS="tlnmc_option=0,nstrong=0,nvmodes_keep=0,baldiag_full=.false.,baldiag_inc=.false.,"
