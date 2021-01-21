@@ -48,6 +48,7 @@ module list
 export VERBOSE=${VERBOSE:-"NO"}
 hydrostatic=${hydrostatic:=".false."}
 export quilting=${quilting:-'.true.'}
+launch_level=$(echo "$LEVS/2.35" |bc)
 if [ "$VERBOSE" == "YES" ]; then
  set -x
 fi
@@ -489,6 +490,7 @@ sed -i -e "s/MOUNTAIN/${mountain}/g" input.nml
 sed -i -e "s/RESLATLONDYNAMICS/${reslatlondynamics}/g" input.nml
 sed -i -e "s/READ_INCREMENT/${readincrement}/g" input.nml
 sed -i -e "s/HYDROSTATIC/${hydrostatic}/g" input.nml
+sed -i -e "s/LAUNCH_LEVEL/${launch_level}/g" input.nml
 cat input.nml
 ls -l INPUT
 
