@@ -308,7 +308,10 @@ export analpertwtnh_rtpp=0.0
 export analpertwtsh_rtpp=0.0
 export analpertwttr_rtpp=0.0
 export pseudo_rh=.true.
-export write_ensmean=.true. # write out ens mean analysis in EnKF
+export write_ensmean=.false. # write out ens mean analysis in EnKF
+if [[ $write_ensmean == ".true." ]]; then
+   ENKFVARS="write_ensmean=${write_ensmean},"
+fi
 export letkf_flag=.true.
 export letkf_bruteforce_search=.false.
 export denkf=.true.
