@@ -354,7 +354,7 @@ OBS_INPUT::
    gsnd1bufr      sndrd2      g15         sndrD2_g15           0.0     1      0
    gsnd1bufr      sndrd3      g15         sndrD3_g15           0.0     1      0
    gsnd1bufr      sndrd4      g15         sndrD4_g15           0.0     1      0
-   iasibufr       iasi        metop-a     iasi616_metop-a      0.0     1      1
+   iasibufr       iasi        metop-a     iasi_metop-a         0.0     1      1
    gomebufr       gome        metop-a     gome_metop-a         0.0     2      0
    omibufr        omi         aura        omi_aura             0.0     2      0
    hirs4bufr      hirs4       n18         hirs4_n18            0.0     1      1
@@ -368,7 +368,7 @@ OBS_INPUT::
    hirs4bufr      hirs4       metop-b     hirs4_metop-b        0.0     1      0
    amsuabufr      amsua       metop-b     amsua_metop-b        0.0     1      0
    mhsbufr        mhs         metop-b     mhs_metop-b          0.0     1      0
-   iasibufr       iasi        metop-b     iasi616_metop-b      0.0     1      0
+   iasibufr       iasi        metop-b     iasi_metop-b         0.0     1      0
    gomebufr       gome        metop-b     gome_metop-b         0.0     2      0
    atmsbufr       atms        npp         atms_npp            0.0     1     1
    atmsbufr       atms        n20         atms_n20            0.0     1     1

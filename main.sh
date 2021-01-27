@@ -16,10 +16,26 @@ source $datapath/fg_only.sh # define fg_only variable.
 
 export startupenv="${datapath}/analdate.sh"
 source $startupenv
+# substringing to get yr, mon, day, hr info
+export yr=`echo $analdate | cut -c1-4`
+export mon=`echo $analdate | cut -c5-6`
+export day=`echo $analdate | cut -c7-8`
+export hr=`echo $analdate | cut -c9-10`
+# previous analysis time.
+FHOFFSET=`expr $ANALINC \/ 2`
+export analdatem1=`${incdate} $analdate -$ANALINC`
+# next analysis time.
+export analdatep1=`${incdate} $analdate $ANALINC`
+# beginning of current assimilation window
+export analdatem3=`${incdate} $analdate -$FHOFFSET`
+# beginning of next assimilation window
+export analdatep1m3=`${incdate} $analdate $FHOFFSET`
+export hrp1=`echo $analdatep1 | cut -c9-10`
+export hrm1=`echo $analdatem1 | cut -c9-10`
 
 # if SATINFO in obs dir, use it
-#if [ -s ${obs_datapath}/bufr_${analdate}/global_satinfo.txt ]; then
-#   export SATINFO=${obs_datapath}/bufr_${analdate}/global_satinfo.txt
+#if [ -s $obs_datapath/gdas.${yr}${mon}${day}/${hr}/global_satinfo_${analdate}.txt ]; then
+#   export  $obs_datapath/gdas.${yr}${mon}${day}/${hr}/global_satinfo_${analdate}.txt
 #fi
 #export OZINFO=`sh ${enkfscripts}/pickinfo.sh ${analdate} ozinfo`
 #export CONVINFO=`sh ${enkfscripts}/pickinfo.sh ${analdate} convinfo`
@@ -41,7 +57,11 @@ else
     exit 1
 fi
 #   Set OZINFO
-if [[ "$analdate" -ge "2018110700" ]]; then
+if [[ "$analdate" -ge "2020011806" ]]; then
+    export OZINFO=$fixgsi/fv3_historical/global_ozinfo.txt.2020011806
+elif [[ "$analdate" -ge "2020011600" ]]; then
+    export OZINFO=$fixgsi/fv3_historical/global_ozinfo.txt.2020011600
+elif [[ "$analdate" -ge "2018110700" ]]; then
     export OZINFO=$fixgsi/fv3_historical/global_ozinfo.txt.2018110700
 elif [[ "$analdate" -ge "2015110500" ]]; then
     export OZINFO=$fixgsi/fv3_historical/global_ozinfo.txt.2015110500
@@ -101,13 +121,6 @@ echo "DataPath: ${datapath}"
 env
 echo "starting the cycle (${idate_job} out of ${ndates_job})"
 
-# substringing to get yr, mon, day, hr info
-export yr=`echo $analdate | cut -c1-4`
-export mon=`echo $analdate | cut -c5-6`
-export day=`echo $analdate | cut -c7-8`
-export hr=`echo $analdate | cut -c9-10`
-export ANALHR=$hr
-# set environment analdate
 export datapath2="${datapath}/${analdate}/"
 /bin/cp -f ${ANAVINFO_ENKF} ${datapath2}/anavinfo
 
@@ -120,20 +133,6 @@ export OMP_NUM_THREADS=`expr $corespernode \/ $mpitaskspernode`
 echo "mpitaskspernode = $mpitaskspernode threads = $OMP_NUM_THREADS"
 export nprocs=$nanals
 
-# current analysis time.
-export analdate=$analdate
-# previous analysis time.
-FHOFFSET=`expr $ANALINC \/ 2`
-export analdatem1=`${incdate} $analdate -$ANALINC`
-# next analysis time.
-export analdatep1=`${incdate} $analdate $ANALINC`
-# beginning of current assimilation window
-export analdatem3=`${incdate} $analdate -$FHOFFSET`
-# beginning of next assimilation window
-export analdatep1m3=`${incdate} $analdate $FHOFFSET`
-export hrp1=`echo $analdatep1 | cut -c9-10`
-export hrm1=`echo $analdatem1 | cut -c9-10`
-export hr=`echo $analdate | cut -c9-10`
 export datapathp1="${datapath}/${analdatep1}/"
 export datapathm1="${datapath}/${analdatem1}/"
 mkdir -p $datapathp1
@@ -155,9 +154,21 @@ export PREINPm1="${RUN}.t${hrm1}z."
 
 if [ $fg_only ==  'false' ]; then
 
-echo "$analdate starting ens mean computation `date`"
-sh ${enkfscripts}/compute_ensmean_fcst.sh >  ${current_logdir}/compute_ensmean_fcst.out 2>&1
-echo "$analdate done computing ensemble mean `date`"
+niter=1
+alldone="no"
+while [ $alldone == 'no' ] && [ $niter -le $nitermax ]; do
+   echo "$analdate starting ens mean computation `date`"
+   sh ${enkfscripts}/compute_ensmean_fcst.sh >  ${current_logdir}/compute_ensmean_fcst.out 2>&1
+   errstatus=$?
+   if [ $errstatus -ne 0 ]; then
+       echo "failed computing ensemble mean, try again..."
+       alldone="no"
+   else
+       echo "$analdate done computing ensemble mean `date`"
+       alldone="yes"
+   fi
+   niter=$((niter+1))
+done
 
 # change orography in high-res control forecast nemsio file so it matches enkf ensemble,
 # adjust surface pressure accordingly.
