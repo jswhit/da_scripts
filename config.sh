@@ -345,8 +345,8 @@ export beta_e0=`python -c "from __future__ import print_function; print($beta / 
 export readin_beta=.false.
 export readin_localization=.false.
 export s_ens_h=343.     # 1250 km horiz localization in GSI
-export s_ens_v=-0.58    # 1.5 scale heights in GSI
-#export s_ens_v=5.4     # 14 levels
+#export s_ens_v=-0.58    # 1.5 scale heights in GSI
+export s_ens_v=5.4     # 14 levels
 # use pre-generated bias files.
 #export biascorrdir=${datadir}/biascor
 
