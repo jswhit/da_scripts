@@ -71,60 +71,36 @@ export ISEED_SHUM=$((analdate*1000 + nmem*10 + 2 + niter))
 #export ISEED_SHUM=$((analdate*1000 + nmem*10 + 2))
 export npx=`expr $RES + 1`
 export LEVP=`expr $LEVS \+ 1`
-# yr,mon,day,hr at middle of assim window (analysis time)
+# yr,mon,day,hr at middle of assim window (nominal analysis time)
+fhdiff=`expr $nhr_anal - $ANALINC`
+# actual analysis time (may be end of window)
+analdatex=`$incdate $analdate $fhdiff`
+export year=`echo $analdate |cut -c 1-4`
+export mon=`echo $analdate |cut -c 5-6`
+export day=`echo $analdate |cut -c 7-8`
+export hour=`echo $analdate |cut -c 9-10`
+if [ "$cold_start" == "true" ]; then
 export yeara=`echo $analdate |cut -c 1-4`
 export mona=`echo $analdate |cut -c 5-6`
 export daya=`echo $analdate |cut -c 7-8`
 export houra=`echo $analdate |cut -c 9-10`
+else
+export yeara=`echo $analdatex |cut -c 1-4`
+export mona=`echo $analdatex |cut -c 5-6`
+export daya=`echo $analdatex |cut -c 7-8`
+export houra=`echo $analdatex |cut -c 9-10`
+fi
+# previous nominal analysis time
 export yearprev=`echo $analdatem1 |cut -c 1-4`
 export monprev=`echo $analdatem1 |cut -c 5-6`
 export dayprev=`echo $analdatem1 |cut -c 7-8`
 export hourprev=`echo $analdatem1 |cut -c 9-10`
-if [ "${iau_delthrs}" != "-1" ] && [ "${cold_start}" == "false" ]; then
-# assume model is started at beginning of analysis window
-# (if IAU on or initial cold start)
-   # start date for forecast (previous analysis time)
-   export year=`echo $analdatem1 |cut -c 1-4`
-   export mon=`echo $analdatem1 |cut -c 5-6`
-   export day=`echo $analdatem1 |cut -c 7-8`
-   export hour=`echo $analdatem1 |cut -c 9-10`
-   # current date in restart (beginning of analysis window)
-   export year_start=`echo $analdatem3 |cut -c 1-4`
-   export mon_start=`echo $analdatem3 |cut -c 5-6`
-   export day_start=`echo $analdatem3 |cut -c 7-8`
-   export hour_start=`echo $analdatem3 |cut -c 9-10`
-   # end time of analysis window (time for next restart)
-   export yrnext=`echo $analdatep1m3 |cut -c 1-4`
-   export monnext=`echo $analdatep1m3 |cut -c 5-6`
-   export daynext=`echo $analdatep1m3 |cut -c 7-8`
-   export hrnext=`echo $analdatep1m3 |cut -c 9-10`
-else
-   # if no IAU, start date is middle of window
-   export year=`echo $analdate |cut -c 1-4`
-   export mon=`echo $analdate |cut -c 5-6`
-   export day=`echo $analdate |cut -c 7-8`
-   export hour=`echo $analdate |cut -c 9-10`
-   # date in restart file is same as start date (not continuing a forecast)
-   export year_start=`echo $analdate |cut -c 1-4`
-   export mon_start=`echo $analdate |cut -c 5-6`
-   export day_start=`echo $analdate |cut -c 7-8`
-   export hour_start=`echo $analdate |cut -c 9-10`
-   # time for restart file
-   if [ "${iau_delthrs}" != "-1" ] ; then
-      # beginning of next analysis window
-      export yrnext=`echo $analdatep1m3 |cut -c 1-4`
-      export monnext=`echo $analdatep1m3 |cut -c 5-6`
-      export daynext=`echo $analdatep1m3 |cut -c 7-8`
-      export hrnext=`echo $analdatep1m3 |cut -c 9-10`
-   else
-      # end of next analysis window
-      export yrnext=`echo $analdatep1 |cut -c 1-4`
-      export monnext=`echo $analdatep1 |cut -c 5-6`
-      export daynext=`echo $analdatep1 |cut -c 7-8`
-      export hrnext=`echo $analdatep1 |cut -c 9-10`
-   fi
-fi
-
+# time for restart
+analdatexp1=`$incdate $analdatex $ANALINC`
+export yrnext=`echo $analdatexp1 |cut -c 1-4`
+export monnext=`echo $analdatexp1 |cut -c 5-6`
+export daynext=`echo $analdatexp1 |cut -c 7-8`
+export hrnext=`echo $analdatexp1 |cut -c 9-10`
 
 # copy data, diag and field tables.
 cd ${datapath2}/${charnanal}
@@ -187,37 +163,30 @@ done
 # create netcdf increment files.
 if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
    cd INPUT
-   iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
-# IAU - multiple increments.
-   for fh in $iaufhrs2; do
-      export increment_file="fv3_increment${fh}.nc"
-      if [ $charnanal == "control" ] && [ "$replay_controlfcst" == 'true' ]; then
-         export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_ensmean"
-         export fgfile="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}.chgres"
-      else
-         export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_${charnanal}"
-         export fgfile="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}"
-      fi
-      echo "create ${increment_file}"
-      /bin/rm -f ${increment_file}
-      # last two args:  no_mpinc no_delzinc
-      export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file} T $hydrostatic"
-      nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
-      if [ $? -ne 0 -o ! -s ${increment_file} ]; then
-         echo "problem creating ${increment_file}, stopping .."
-         exit 1
-      fi
-   done # do next forecast
+   fh=$nhr_anal
+   export increment_file="fv3_increment${fh}.nc"
+   if [ $charnanal == "control" ] && [ "$replay_controlfcst" == 'true' ]; then
+      export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_ensmean"
+      export fgfile="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}.chgres"
+   else
+      export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_${charnanal}"
+      export fgfile="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}"
+   fi
+   echo "create ${increment_file}"
+   /bin/rm -f ${increment_file}
+   # last three args:  no_mpinc no_delzinc, taper_strat (humidity increment)
+   export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file} T $hydrostatic T"
+   nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
+   if [ $? -ne 0 -o ! -s ${increment_file} ]; then
+      echo "problem creating ${increment_file}, stopping .."
+      exit 1
+   fi
    cd ..
 else
    if [ $cold_start == "false" ] ; then
       cd INPUT
-      iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
-# move already computed increment files
-      for fh in $iaufhrs2; do
-         export increment_file="fv3_increment${fh}.nc"
-         /bin/mv -f ${datapath2}/incr_${analdate}_fhr0${fh}_${charnanal} ${increment_file}
-      done
+      export increment_file="fv3_increment${fh}.nc"
+      /bin/mv -f ${datapath2}/incr_${analdate}_fhr0${nhr_anal}_${charnanal} ${increment_file}
       cd ..
    fi
 fi
@@ -229,9 +198,6 @@ if [ "$cold_start" == "true" ]; then
    reslatlondynamics=""
    readincrement=F
    FHCYC=0
-   iaudelthrs=-1
-   #iau_inc_files="fv3_increment.nc"
-   iau_inc_files=""
    warm_start=F
    externalic=T
    mountain=F
@@ -262,41 +228,18 @@ else
       FHSTOCH=240
    fi
    
-   iaudelthrs=${iau_delthrs}
    FHCYC=${FHCYC}
-   if [ "${iau_delthrs}" != "-1" ]; then
-      if [ "$iaufhrs" == "3,4,5,6,7,8,9" ]; then
-         iau_inc_files="'fv3_increment3.nc','fv3_increment4.nc','fv3_increment5.nc','fv3_increment6.nc','fv3_increment7.nc','fv3_increment8.nc','fv3_increment9.nc'"
-      elif [ "$iaufhrs" == "3,6,9" ]; then
-         iau_inc_files="'fv3_increment3.nc','fv3_increment6.nc','fv3_increment9.nc'"
-      elif [ "$iaufhrs" == "6" ]; then
-         iau_inc_files="'fv3_increment6.nc'"
-      else
-         echo "illegal value for iaufhrs"
-         exit 1
-      fi
-      reslatlondynamics=""
-      readincrement=F
-   else
-      reslatlondynamics="fv3_increment6.nc"
-      readincrement=T
-      iau_inc_files=""
-   fi
+   reslatlondynamics="fv3_increment${nhr_anal}.nc"
+   readincrement=T
 fi
-
-#fntsfa=${sstpath}/${yeara}/sst_${charnanal2}.grib
-#fnacna=${sstpath}/${yeara}/icec_${charnanal2}.grib
-#fnsnoa='        ' # no input file, use model snow
 
 snoid='SNOD'
 
 # Turn off snow analysis if it has already been used.
 # (snow analysis only available once per day at 18z)
-fntsfa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.rtgssthr.grb
-#fntsfa=/scratch2/BMC/gsienkf/Philip.Pegion/obs/ostia/grb_files/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.ostia_sst.grb
-fnacna=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.seaice.5min.grb
-#fnacna=/scratch2/BMC/gsienkf/Philip.Pegion/obs/ostia/grb_files/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.ostia_ice_fraction.grb
-fnsnoa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.snogrb_t1534.3072.1536
+fntsfa=${obs_datapath}/gdas.${year}${mon}${day}/${hour}/gdas.t${hour}z.rtgssthr.grb
+fnacna=${obs_datapath}/gdas.${year}${mon}${day}/${hour}/gdas.t${hour}z.seaice.5min.grb
+fnsnoa=${obs_datapath}/gdas.${year}${mon}${day}/${hour}/gdas.t${hour}z.snogrb_t1534.3072.1536
 fnsnog=${obs_datapath}/gdas.${yearprev}${monprev}${dayprev}/${hourprev}/gdas.t${hourprev}z.snogrb_t1534.3072.1536
 nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
 if [ $nrecs_snow -eq 0 ]; then
@@ -321,17 +264,11 @@ fi
 
 ls -l 
 
-FHRESTART=${FHRESTART:-$ANALINC}
-if [ "${iau_delthrs}" != "-1" ]; then
-   FHMAX_FCST=`expr $FHMAX + $ANALINC`
-   FHSTOCH=`expr $FHRESTART + $ANALINC \/ 2`
-   if [ "${cold_start}" == "true" ]; then
-      FHSTOCH=${FHSTOCH:-$ANALINC}
-      FHRESTART=`expr $ANALINC \/ 2`
-      FHMAX_FCST=$FHMAX
-   fi
+FHRESTART=3
+FHSTOCH=3
+if [ $nanals2 -gt 0 ] && [ $nmem -le $nanals2 ]; then
+   FHMAX_FCST=$FHMAX_LONGER
 else
-   FHSTOCH=$FHRESTART
    FHMAX_FCST=$FHMAX
 fi
 
@@ -407,7 +344,7 @@ nhours_fcst:             ${FHMAX_FCST}
 RUN_CONTINUE:            F
 ENS_SPS:                 F
 dt_atmos:                ${dt_atmos} 
-output_1st_tstep_rst:    .false.
+output_1st_tstep_rst:    .true.
 calendar:                'julian'
 cpl:                     F
 memuse_verbose:          F
@@ -431,7 +368,7 @@ jchunk3d:                0
 kchunk3d:                0
 write_nemsioflip:        .true.
 write_fsyncflag:         .true.
-iau_offset:              ${iaudelthrs}
+iau_offset:              -1
 imo:                     ${LONB}
 jmo:                     ${LATB}
 nfhout:                  ${FHOUT}
@@ -442,14 +379,10 @@ EOF
 cat model_configure
 
 # setup coupler.res (needed for restarts if current time != start time)
-if [ "${iau_delthrs}" != "-1" ]  && [ "${cold_start}" == "false" ]; then
-   echo "     2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)" > INPUT/coupler.res
-   echo "  ${year}  ${mon}  ${day}  ${hour}     0     0        Model start time:   year, month, day, hour, minute, second" >> INPUT/coupler.res
-   echo "  ${year_start}  ${mon_start}  ${day_start}  ${hour_start}     0     0        Current model time: year, month, day, hour, minute, second" >> INPUT/coupler.res
-   cat INPUT/coupler.res
-else
-   /bin/rm -f INPUT/coupler.res # assume current time == start time
-fi
+echo "     2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)" > INPUT/coupler.res
+echo "  ${year}  ${mon}  ${day}  ${hour}     0     0        Model start time:   year, month, day, hour, minute, second" >> INPUT/coupler.res
+echo "  ${yeara}  ${mona}  ${daya}  ${houra}     0     0        Current model time: year, month, day, hour, minute, second" >> INPUT/coupler.res
+cat INPUT/coupler.res
 
 # copy template namelist file, replace variables.
 /bin/cp -f ${enkfscripts}/${SUITE}.nml input.nml
@@ -481,9 +414,6 @@ sed -i -e "s/CDMBGWD/${cdmbgwd}/g" input.nml
 sed -i -e "s/ISEED_sppt/${ISEED_SPPT}/g" input.nml
 sed -i -e "s/ISEED_shum/${ISEED_SHUM}/g" input.nml
 sed -i -e "s/ISEED_skeb/${ISEED_SKEB}/g" input.nml
-sed -i -e "s/IAU_FHRS/${iaufhrs}/g" input.nml
-sed -i -e "s/IAU_DELTHRS/${iaudelthrs}/g" input.nml
-sed -i -e "s/IAU_INC_FILES/${iau_inc_files}/g" input.nml
 sed -i -e "s/WARM_START/${warm_start}/g" input.nml
 sed -i -e "s/EXTERNAL_IC/${externalic}/g" input.nml
 sed -i -e "s/MOUNTAIN/${mountain}/g" input.nml
@@ -515,18 +445,39 @@ if [ "$quilting" == ".true." ]; then
    while [ $fh -le $FHMAX ]; do
      charfhr="fhr"`printf %02i $fh`
      charfhr2="f"`printf %03i $fh`
-     /bin/mv -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
+     /bin/cp -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
      if [ $? -ne 0 ]; then
         echo "netcdffile missing..."
         exit 1
      fi
-     /bin/mv -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
+     /bin/cp -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
      if [ $? -ne 0 ]; then
         echo "netcdf file missing..."
         exit 1
      fi
      fh=$[$fh+$FHOUT]
    done
+   if [ $nanals2 -gt 0 ] && [ $nmem -le $nanals2 ]; then
+       fh=$FHMAX
+       analdatep2=`$incdate $analdatep1 $ANALINC`
+       mkdir -p $datapath/$analdatep2
+       while [ $fh -le $FHMAX_LONGER ]; do
+         charfhr="fhr"`printf %02i $fh`
+         charfhr2="f"`printf %03i $fh`
+         /bin/mv -f dyn${charfhr2}.nc ${datapath}/${analdatep2}/sfg2_${analdatep2}_${charfhr}_${charnanal}
+         if [ $? -ne 0 ]; then
+            echo "netcdffile missing..."
+            exit 1
+         fi
+         /bin/mv -f phy${charfhr2}.nc ${datapath}/${analdatep2}/bfg2_${analdatep2}_${charfhr}_${charnanal}
+         if [ $? -ne 0 ]; then
+            echo "netcdf file missing..."
+            exit 1
+         fi
+         fh=$[$fh+$FHOUT]
+       done
+   fi
+   /bin/rm -f phy*nc dyn*nc
 fi
 
 ls -l *nc
@@ -537,21 +488,32 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
    mkdir -p ${datapathp1}/${charnanal}/INPUT
    cd RESTART
    ls -l
-   datestring="${yrnext}${monnext}${daynext}.${hrnext}0000."
-   for file in ${datestring}*nc; do
-      file2=`echo $file | cut -f3-10 -d"."`
-      /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT/$file2
-      if [ $? -ne 0 ]; then
-        echo "restart file missing..."
-        exit 1
-      fi
-   done
+   if [ $nhr_anal -eq $FHMAX ]; then
+      /bin/mv -f fv_core.res.nc ${datapathp1}/${charnanal}/INPUT
+      tiles="tile1 tile2 tile3 tile4 tile5 tile6"
+      for tile in $tiles; do
+         files="fv_core.res.${tile}.nc fv_tracer.res.${tile}.nc fv_srf_wnd.res.${tile}.nc sfc_data.${tile}.nc phy_data.${tile}.nc"
+         for file in $files; do
+             /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT
+         done
+      done
+   else
+      datestring="${yrnext}${monnext}${daynext}.${hrnext}0000."
+      for file in ${datestring}*nc; do
+         file2=`echo $file | cut -f3-10 -d"."`
+         /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT/$file2
+         if [ $? -ne 0 ]; then
+           echo "restart file missing..."
+           exit 1
+         fi
+      done
+   fi
    cd ..
 fi
 
-# if random pattern restart file exists for end of IAU window, copy it.
+# if random pattern restart file exists, copy it.
 ls -l stoch_out*
-charfh="F"`printf %06i $FHSTOCH`
+charfh="F"`printf %06i $nhr_anal`
 if [ -s stoch_out.${charfh} ]; then
   mkdir -p ${DATOUT}/${charnanal}
   echo "copying stoch_out.${charfh} ${DATOUT}/${charnanal}/stoch_ini"

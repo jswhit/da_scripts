@@ -122,11 +122,7 @@ BIASO=${BIASO:-$savdir/${RUN}.t${hha}z.abias}
 BIASOAIR=${BIASOAIR:-$savdir/${RUN}.t${hha}z.abias_air}
 BIASO_PC=${BIASO_PC:-$savdir/${RUN}.t${hha}z.abias_pc}
 
-if [ "${iau_delthrs}" != "-1" ]; then
-   lwrite4danl=.true.
-else
-   lwrite4danl=.false.
-fi
+lwrite4danl=.false.
 if [[ $beta_s0 > 0.999 ]]; then
    lwrite4danl=.false.
 fi

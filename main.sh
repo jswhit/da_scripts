@@ -163,7 +163,10 @@ while [ $alldone == 'no' ] && [ $niter -le $nitermax ]; do
    if [ $errstatus -ne 0 ]; then
        echo "failed computing ensemble mean, try again..."
        alldone="no"
-       if [ $niter -eq $nitermax ]; exit 1
+       if [ $niter -eq $nitermax ]; then
+           echo "giving up"
+           exit 1
+       fi
    else
        echo "$analdate done computing ensemble mean `date`"
        alldone="yes"
@@ -354,6 +357,34 @@ if [ $replay_controlfcst == 'true' ] && [ $replay_run_observer == "true" ]; then
    export skipcat="false"
    echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
    sh ${enkfscripts}/run_gsiobserver.sh > ${current_logdir}/run_gsi_observer.out 2>&1
+   # once observer has completed, check log files.
+   gsi_done=`cat ${current_logdir}/run_gsi_observer.log`
+   if [ $gsi_done == 'yes' ]; then
+     echo "$analdate gsi observer completed successfully `date`"
+   else
+     echo "$analdate gsi observer did not complete successfully, exiting `date`"
+     exit 1
+   fi
+fi
+
+# run gsi observer on ensemble mean forecast extension
+if [ $nanals2 -gt 0 ] && [ -s $datapath2/sfg2_${analdate}_fhr${FHMAX_LONGER}_ensmean ]; then
+   # symlink ensmean files (fhr12_ensmean --> fhr06_ensmean2, etc)
+   fh=$FHMAX
+   while [ $fh -le $FHMAX_LONGER ]; do
+     fhr=`printf %02i $fh`
+     fh2=`expr $fh - $ANALINC`
+     fhr2=`printf %02i $fh2`
+     /bin/ln -fs ${datapath2}/sfg2_${analdate}_fhr${fhr}_ensmean ${datapath2}/sfg_${analdate}_fhr${fhr2}_ensmean2
+     /bin/ln -fs ${datapath2}/bfg2_${analdate}_fhr${fhr}_ensmean ${datapath2}/bfg_${analdate}_fhr${fhr2}_ensmean2
+     fh=$((fh+FHOUT))
+   done
+   export charnanal='ensmean2' 
+   export charnanal2='ensmean2' 
+   export lobsdiag_forenkf='.false.'
+   export skipcat="false"
+   echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
+   sh ${enkfscripts}/run_gsiobserver.sh > ${current_logdir}/run_gsiobserver.out 2>&1
    # once observer has completed, check log files.
    gsi_done=`cat ${current_logdir}/run_gsi_observer.log`
    if [ $gsi_done == 'yes' ]; then

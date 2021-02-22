@@ -22,6 +22,8 @@ mkdir fgens2
 charnanal='control'
 /bin/rm -f mem*/*nc mem*/*txt mem*/*grb mem*/*dat mem*/co2*
 /bin/rm -f ${charnanal}/*nc ${charnanal}/*txt ${charnanal}/*grb ${charnanal}/*dat ${charnanal}/co2*
+/bin/rm -f sfg2*mem*
+/bin/rm -f bfg2*mem*
 /bin/mv -f mem* fgens
 /bin/mv -f sfg*mem* fgens2
 /bin/mv -f bfg*mem* fgens2

@@ -1,4 +1,6 @@
-# hybrid gain GSI(3DVar)/EnKF workflow
+# hybrid gain GSI(3DVar)/EnKF workflow (no IAU)
+# analysis at center or end of window
+
 export cores=`expr $NODES \* $corespernode`
 echo "running on $machine using $NODES nodes and $cores CORES"
 
@@ -24,7 +26,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybgain"
+export exptname="C${RES}_hybgain_mid"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 
@@ -49,8 +51,8 @@ if [ $machine == "orion" ]; then
    export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
    export save_hpss="false"
 else
-   export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
-   export save_hpss="true"
+   export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
+   export save_hpss="false"
 fi
 export ensmean_restart='false'
 export recenter_anal="true"
@@ -174,9 +176,9 @@ else
 fi
 
 # radiance thinning parameters for GSI
-export dmesh1=160
-export dmesh2=160
-export dmesh3=160
+export dmesh1=145
+export dmesh2=145
+export dmesh3=100
 
 #export use_ipd="YES" # use IPD instead of CCPP
 
@@ -267,18 +269,16 @@ export FHCYC=0 # run global_cycle instead of gcycle inside model
 export LONA=$LONB
 export LATA=$LATB      
 
-export ANALINC=6
+export ANALINC=6 # assimilation window
 
 export FHMIN=3
 export FHMAX=9
 export FHOUT=3
+export FHMAX_LONGER=`expr $FHMAX + $ANALINC`
 FHMAXP1=`expr $FHMAX + 1`
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
-#export iaufhrs="3,6,9"
-#export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
-# IAU off
-export iaufhrs="6"
-export iau_delthrs=-1
+#export nhr_anal=$ANALINC # analysis increment computed at center of window
+export nhr_anal=$FHMAX # analysis increment computed at end of window
 
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
@@ -351,6 +351,9 @@ export s_ens_v=5.4     # 14 levels
 #export biascorrdir=${datadir}/biascor
 
 export nanals=80                                                    
+# if nanals2>0, extend nanals2 members out to FHMAX + ANALINC (one extra assim window)
+#export nanals2=-1 # longer extension. Set to -1 to disable 
+export nanals2=$NODES
 export nitermax=2 # number of retries
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
