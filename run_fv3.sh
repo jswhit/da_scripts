@@ -95,7 +95,7 @@ export yearprev=`echo $analdatem1 |cut -c 1-4`
 export monprev=`echo $analdatem1 |cut -c 5-6`
 export dayprev=`echo $analdatem1 |cut -c 7-8`
 export hourprev=`echo $analdatem1 |cut -c 9-10`
-# time for restart
+# time for restart to initialize next background forecast
 analdatexp1=`$incdate $analdatex $ANALINC`
 export yrnext=`echo $analdatexp1 |cut -c 1-4`
 export monnext=`echo $analdatexp1 |cut -c 5-6`

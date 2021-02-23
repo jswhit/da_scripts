@@ -269,7 +269,7 @@ export FHCYC=0 # run global_cycle instead of gcycle inside model
 export LONA=$LONB
 export LATA=$LATB      
 
-export ANALINC=6 # assimilation window
+export ANALINC=6 # assimilation window length
 
 export FHMIN=3
 export FHMAX=9
@@ -290,7 +290,7 @@ export INCREMENTS_TO_ZERO="'liq_wat_inc','icmr_inc'"
 # Stratospheric increments to zero
 export INCVARS_ZERO_STRAT="'sphum_inc','liq_wat_inc','icmr_inc'"
 export INCVARS_EFOLD="5"
-export write_fv3_increment=".false."
+export write_fv3_increment=".false." # if .false., increments are calculated using calc_increment_ncio.x in run_fv3.sh
 export WRITE_INCR_ZERO="incvars_to_zero= $INCREMENTS_TO_ZERO,"
 export WRITE_ZERO_STRAT="incvars_zero_strat= $INCVARS_ZERO_STRAT,"
 export WRITE_STRAT_EFOLD="incvars_efold= $INCVARS_EFOLD,"
