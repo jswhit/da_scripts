@@ -488,7 +488,7 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
    mkdir -p ${datapathp1}/${charnanal}/INPUT
    cd RESTART
    ls -l
-   if [ $nhr_anal -eq $FHMAX ]; then
+   if [ $nhr_anal -eq $FHMAX_FCST ]; then
       /bin/mv -f fv_core.res.nc ${datapathp1}/${charnanal}/INPUT
       tiles="tile1 tile2 tile3 tile4 tile5 tile6"
       for tile in $tiles; do
