@@ -267,10 +267,10 @@ FHRESTART=$FHOFFSET
 FHSTOCH=$FHOFFSET # half of window length (set in main.sh)3
 if [ $nanals2 -gt 0 ] && [ $nmem -le $nanals2 ]; then
    FHMAX_FCST=$FHMAX_LONGER
-   longer_forecast="YES"
+   longer_fcst="YES"
 else
    FHMAX_FCST=$FHMAX
-   longer_forecast="NO"
+   longer_fcst="NO"
 fi
 
 if [ "$cold_start" == "false" ] && [ -z $skip_global_cycle ]; then
@@ -387,7 +387,7 @@ cat INPUT/coupler.res
 
 # copy template namelist file, replace variables.
 /bin/cp -f ${enkfscripts}/${SUITE}.nml input.nml
-if [ $use_ipd == "YES" ]; then
+if [ $use_ipd = "YES" ]; then
     sed -i -e '/SUITE/d' input.nml
     sed -i -e '/oz_phys/d' input.nml
 else
@@ -445,7 +445,7 @@ fh=$FHMIN
 while [ $fh -le $FHMAX ]; do
   charfhr="fhr"`printf %02i $fh`
   charfhr2="f"`printf %03i $fh`
-  if [ $longer_fcst == "YES" ] && [ $fh -eq $FHMAX ]; then
+  if [ $longer_fcst = "YES" ] && [ $fh -eq $FHMAX ]; then
      /bin/cp -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
   else
      /bin/mv -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
@@ -454,7 +454,7 @@ while [ $fh -le $FHMAX ]; do
      echo "netcdffile missing..."
      exit 1
   fi
-  if [ $longer_fcst == "YES" ] && [ $fh -eq $FHMAX ]; then
+  if [ $longer_fcst = "YES" ] && [ $fh -eq $FHMAX ]; then
      /bin/cp -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
   else
      /bin/mv -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
@@ -465,7 +465,7 @@ while [ $fh -le $FHMAX ]; do
   fi
   fh=$[$fh+$FHOUT]
 done
-if [ $longer_fcst == "YES" ]; then
+if [ $longer_fcst = "YES" ]; then
     fh=$FHMAX
     analdatep2=`$incdate $analdatep1 $ANALINC`
     mkdir -p $datapath/$analdatep2
