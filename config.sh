@@ -24,7 +24,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybgain"
+export exptname="C${RES}_hybgain_iau"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 
@@ -273,12 +273,13 @@ export FHMIN=3
 export FHMAX=9
 export FHOUT=3
 FHMAXP1=`expr $FHMAX + 1`
+export FHMAX_LONGER=`expr $FHMAX + $ANALINC`
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
-#export iaufhrs="3,6,9"
-#export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
+export iaufhrs="3,6,9"
+export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 # IAU off
-export iaufhrs="6"
-export iau_delthrs=-1
+#export iaufhrs="6"
+#export iau_delthrs=-1
 
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
@@ -351,6 +352,9 @@ export s_ens_v=5.4     # 14 levels
 #export biascorrdir=${datadir}/biascor
 
 export nanals=80                                                    
+# if nanals2>0, extend nanals2 members out to FHMAX + ANALINC (one extra assim window)
+#export nanals2=-1 # longer extension. Set to -1 to disable 
+export nanals2=$NODES
 export nitermax=2 # number of retries
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
