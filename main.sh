@@ -22,7 +22,7 @@ export mon=`echo $analdate | cut -c5-6`
 export day=`echo $analdate | cut -c7-8`
 export hr=`echo $analdate | cut -c9-10`
 # previous analysis time.
-FHOFFSET=`expr $ANALINC \/ 2`
+export FHOFFSET=`expr $ANALINC \/ 2`
 export analdatem1=`${incdate} $analdate -$ANALINC`
 # next analysis time.
 export analdatep1=`${incdate} $analdate $ANALINC`

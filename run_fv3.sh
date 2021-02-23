@@ -47,7 +47,6 @@ module list
 
 export VERBOSE=${VERBOSE:-"NO"}
 hydrostatic=${hydrostatic:=".false."}
-export quilting=${quilting:-'.true.'}
 launch_level=$(echo "$LEVS/2.35" |bc)
 if [ "$VERBOSE" == "YES" ]; then
  set -x
@@ -264,12 +263,14 @@ fi
 
 ls -l 
 
-FHRESTART=3
-FHSTOCH=3
+FHRESTART=$FHOFFSET
+FHSTOCH=$FHOFFSET # half of window length (set in main.sh)3
 if [ $nanals2 -gt 0 ] && [ $nmem -le $nanals2 ]; then
    FHMAX_FCST=$FHMAX_LONGER
+   longer_forecast="YES"
 else
    FHMAX_FCST=$FHMAX
+   longer_forecast="NO"
 fi
 
 if [ "$cold_start" == "false" ] && [ -z $skip_global_cycle ]; then
@@ -352,7 +353,7 @@ atmos_nthreads:          ${OMP_NUM_THREADS}
 use_hyper_thread:        F
 ncores_per_node:         ${corespernode}
 restart_interval:        ${FHRESTART}
-quilting:                ${quilting}
+quilting:                .true.
 write_groups:            ${write_groups}
 write_tasks_per_group:   ${write_tasks}
 num_files:               2
@@ -436,51 +437,57 @@ else
    echo "done running model.. `date`"
 fi
 
-# rename netcdf files (if quilting = .true.).
+# rename netcdf files.
 export DATOUT=${DATOUT:-$datapathp1}
-if [ "$quilting" == ".true." ]; then
-   ls -l dyn*.nc
-   ls -l phy*.nc
-   fh=$FHMIN
-   while [ $fh -le $FHMAX ]; do
-     charfhr="fhr"`printf %02i $fh`
-     charfhr2="f"`printf %03i $fh`
+ls -l dyn*.nc
+ls -l phy*.nc
+fh=$FHMIN
+while [ $fh -le $FHMAX ]; do
+  charfhr="fhr"`printf %02i $fh`
+  charfhr2="f"`printf %03i $fh`
+  if [ $longer_fcst == "YES" ] && [ $fh -eq $FHMAX ]; then
      /bin/cp -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
-     if [ $? -ne 0 ]; then
-        echo "netcdffile missing..."
-        exit 1
-     fi
+  else
+     /bin/mv -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
+  fi
+  if [ $? -ne 0 ]; then
+     echo "netcdffile missing..."
+     exit 1
+  fi
+  if [ $longer_fcst == "YES" ] && [ $fh -eq $FHMAX ]; then
      /bin/cp -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
-     if [ $? -ne 0 ]; then
-        echo "netcdf file missing..."
-        exit 1
-     fi
-     fh=$[$fh+$FHOUT]
-   done
-   if [ $nanals2 -gt 0 ] && [ $nmem -le $nanals2 ]; then
-       fh=$FHMAX
-       analdatep2=`$incdate $analdatep1 $ANALINC`
-       mkdir -p $datapath/$analdatep2
-       while [ $fh -le $FHMAX_LONGER ]; do
-         charfhr="fhr"`printf %02i $fh`
-         charfhr2="f"`printf %03i $fh`
-         /bin/mv -f dyn${charfhr2}.nc ${datapath}/${analdatep2}/sfg2_${analdatep2}_${charfhr}_${charnanal}
-         if [ $? -ne 0 ]; then
-            echo "netcdffile missing..."
-            exit 1
-         fi
-         /bin/mv -f phy${charfhr2}.nc ${datapath}/${analdatep2}/bfg2_${analdatep2}_${charfhr}_${charnanal}
-         if [ $? -ne 0 ]; then
-            echo "netcdf file missing..."
-            exit 1
-         fi
-         fh=$[$fh+$FHOUT]
-       done
-   fi
-   /bin/rm -f phy*nc dyn*nc
+  else
+     /bin/mv -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
+  fi
+  if [ $? -ne 0 ]; then
+     echo "netcdf file missing..."
+     exit 1
+  fi
+  fh=$[$fh+$FHOUT]
+done
+if [ $longer_fcst == "YES" ]; then
+    fh=$FHMAX
+    analdatep2=`$incdate $analdatep1 $ANALINC`
+    mkdir -p $datapath/$analdatep2
+    while [ $fh -le $FHMAX_LONGER ]; do
+      charfhr="fhr"`printf %02i $fh`
+      charfhr2="f"`printf %03i $fh`
+      /bin/mv -f dyn${charfhr2}.nc ${datapath}/${analdatep2}/sfg2_${analdatep2}_${charfhr}_${charnanal}
+      if [ $? -ne 0 ]; then
+         echo "netcdffile missing..."
+         exit 1
+      fi
+      /bin/mv -f phy${charfhr2}.nc ${datapath}/${analdatep2}/bfg2_${analdatep2}_${charfhr}_${charnanal}
+      if [ $? -ne 0 ]; then
+         echo "netcdf file missing..."
+         exit 1
+      fi
+      fh=$[$fh+$FHOUT]
+    done
 fi
+/bin/rm -f phy*nc dyn*nc
 
-ls -l *nc
+ls -l *tile*nc
 if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
    ls -l RESTART
    # copy restart file to INPUT directory for next analysis time.
