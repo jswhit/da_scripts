@@ -163,7 +163,10 @@ while [ $alldone == 'no' ] && [ $niter -le $nitermax ]; do
    if [ $errstatus -ne 0 ]; then
        echo "failed computing ensemble mean, try again..."
        alldone="no"
-       if [ $niter -eq $nitermax ]; exit 1
+       if [ $niter -eq $nitermax ]; then
+           echo "giving up"
+           exit 1
+       fi
    else
        echo "$analdate done computing ensemble mean `date`"
        alldone="yes"
