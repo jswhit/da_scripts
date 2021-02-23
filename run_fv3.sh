@@ -48,7 +48,7 @@ module list
 export VERBOSE=${VERBOSE:-"NO"}
 hydrostatic=${hydrostatic:=".false."}
 launch_level=$(echo "$LEVS/2.35" |bc)
-if [ "$VERBOSE" == "YES" ]; then
+if [ $VERBOSE = "YES" ]; then
  set -x
 fi
 
@@ -322,21 +322,21 @@ ls -l
 
 FHRESTART=${FHRESTART:-$ANALINC}
 if [ $nanals2 -gt 0 ] && [ $nmem -le $nanals2 ]; then
-   longer_forecast="YES"
+   longer_fcst="YES"
 else
-   longer_forecast="NO"
+   longer_fcst="NO"
 fi
 if [ "${iau_delthrs}" != "-1" ]; then
-   if [ $longer_fcst == "YES" ]; then
+   if [ $longer_fcst = "YES" ]; then
       FHMAX_FCST=`expr $FHMAX_LONGER + $ANALINC`
    else
       FHMAX_FCST=`expr $FHMAX + $ANALINC`
    fi
    FHSTOCH=`expr $FHRESTART + $ANALINC \/ 2`
-   if [ "${cold_start}" == "true" ]; then
+   if [ ${cold_start} = "true" ]; then
       FHSTOCH=${FHSTOCH:-$ANALINC}
       FHRESTART=`expr $ANALINC \/ 2`
-      if [ $longer_fcst == "YES" ]; then
+      if [ $longer_fcst = "YES" ]; then
          FHMAX_FCST=$FHMAX_LONGER
       else
          FHMAX_FCST=$FHMAX
@@ -344,14 +344,14 @@ if [ "${iau_delthrs}" != "-1" ]; then
    fi
 else
    FHSTOCH=$FHRESTART
-   if [ $longer_fcst == "YES" ]; then
+   if [ $longer_fcst = "YES" ]; then
       FHMAX_FCST=$FHMAX_LONGER
    else
       FHMAX_FCST=$FHMAX
    fi
 fi
 
-if [ "$cold_start" == "false" ] && [ -z $skip_global_cycle ]; then
+if [ $cold_start = "false" ] && [ -z $skip_global_cycle ]; then
    # run global_cycle to update surface in restart file.
    export BASE_GSM=${fv3gfspath}
    export FIXfv3=$FIXFV3
@@ -396,7 +396,7 @@ fi
 # nstf_name(5) : ZSEA2 (in mm) : 0
 NST_MODEL=${NST_MODEL:-0}
 NST_SPINUP=${NST_SPINUP:-0}
-if [ "$cold_start" == "true" ] && [ $NST_GSI -gt 0 ]; then
+if [ $cold_start = "true" ] && [ $NST_GSI -gt 0 ]; then
    NST_SPINUP=1
 fi
 NST_RESV=${NST_RESV-0}
@@ -469,7 +469,7 @@ fi
 
 # copy template namelist file, replace variables.
 /bin/cp -f ${enkfscripts}/${SUITE}.nml input.nml
-if [ $use_ipd == "YES" ]; then
+if [ $use_ipd = "YES" ]; then
     sed -i -e '/SUITE/d' input.nml
     sed -i -e '/oz_phys/d' input.nml
 else
@@ -530,7 +530,7 @@ fh=$FHMIN
 while [ $fh -le $FHMAX ]; do
   charfhr="fhr"`printf %02i $fh`
   charfhr2="f"`printf %03i $fh`
-  if [ $longer_fcst == "YES" ] && [ $fh -eq $FHMAX ]; then
+  if [ $longer_fcst = "YES" ] && [ $fh -eq $FHMAX ]; then
      /bin/cp -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
   else
      /bin/mv -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
@@ -539,7 +539,7 @@ while [ $fh -le $FHMAX ]; do
      echo "netcdffile missing..."
      exit 1
   fi
-  if [ $longer_fcst == "YES" ] && [ $fh -eq $FHMAX ]; then
+  if [ $longer_fcst = "YES" ] && [ $fh -eq $FHMAX ]; then
      /bin/cp -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
   else
      /bin/mv -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
@@ -550,7 +550,7 @@ while [ $fh -le $FHMAX ]; do
   fi
   fh=$[$fh+$FHOUT]
 done
-if [ $longer_fcst == "YES" ]; then
+if [ $longer_fcst = "YES" ]; then
     fh=$FHMAX
     analdatep2=`$incdate $analdatep1 $ANALINC`
     mkdir -p $datapath/$analdatep2
