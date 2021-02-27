@@ -15,7 +15,7 @@ date1 = sys.argv[1]
 date2 = sys.argv[2]
 expt1 = sys.argv[3]
 expt2 = sys.argv[4]
-region = "TR"
+region = sys.argv[5]
 latbound = 20.
 dates = dateutils.daterange(date1,date2,6)
 ifsanldir = '/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/C192ifsanalL64'
@@ -46,8 +46,8 @@ for date in dates:
             raise ValueError('region must be NH,SH or TR')
         coslats = np.ma.masked_array(coslats, mask)
         ak = ncufs1.ak; bk = ncufs1.bk
-        plevs = 0.01*(ak + bk*1.e5)
-        plevs_mid = 0.5*(plevs[1:]+plevs[:-1])[::-1]
+        plevs = 0.01*(ak[::-1] + bk[::-1]*1.e5)
+        plevs_mid = 0.5*(plevs[1:]+plevs[:-1])
            
     tmpdiff1 = ncufs1['tmp'][:].squeeze()-ncifs['tmp'][:].squeeze()
     udiff1 = ncufs1['ugrd'][:].squeeze()-ncifs['ugrd'][:].squeeze()
@@ -86,42 +86,42 @@ tmprms1 = np.sqrt(tmperrsq1); tmprms2 = np.sqrt(tmperrsq2)
 qrms1 = np.sqrt(qerrsq1); qrms2 = np.sqrt(qerrsq2)
 nlevs = windrms1.shape[0]
 ptop = 100.
-levels = np.arange(nlevs)
+nlevtop =  np.argwhere(plevs_mid < ptop)[0,0]
 color1 = 'r'; linewidth1 = 1.0
 color2 = 'b'; linewidth2 = 1.0
 
 fig = plt.figure(figsize=(11,6))
 fig.add_subplot(1,3,1)
-plt.plot(windrms1,plevs_mid,color=color1,linewidth=linewidth1,label=expt1)
-plt.plot(windrms2,plevs_mid,color=color2,linewidth=linewidth2,label=expt2)
+plt.plot(windrms1[:nlevtop],plevs_mid[:nlevtop],color=color1,linewidth=linewidth1,label=expt1)
+plt.plot(windrms2[:nlevtop],plevs_mid[:nlevtop],color=color2,linewidth=linewidth2,label=expt2)
 plt.ylabel('pressure')
 plt.title('vector wind: %s' % region)
 plt.xlabel('RMS (mps)')
 plt.axis('tight')
-plt.xlim(2.0,3.75)
+#plt.xlim(2.0,3.75)
 plt.ylim(1000,ptop)
 plt.grid(True)
 
 plt.subplot(1,3,2)
-plt.plot(tmprms1,plevs_mid,color=color1,linewidth=linewidth1,label=expt1)
-plt.plot(tmprms2,plevs_mid,color=color2,linewidth=linewidth2,label=expt2)
+plt.plot(tmprms1[:nlevtop],plevs_mid[:nlevtop],color=color1,linewidth=linewidth1,label=expt1)
+plt.plot(tmprms2[:nlevtop],plevs_mid[:nlevtop],color=color2,linewidth=linewidth2,label=expt2)
 plt.xlabel('RMS (K)')
 plt.title('temp: %s' % region)
 plt.axis('tight')
-plt.xlim(0.25,1.5)
+#plt.xlim(0.25,1.5)
 plt.ylim(1000,ptop)
 plt.grid(True)
 
 fig.add_subplot(1,3,3)
-plt.plot(qrms1,plevs_mid,color=color1,linewidth=linewidth1,label=expt1)
-plt.plot(qrms2,plevs_mid,color=color2,linewidth=linewidth2,label=expt2)
+plt.plot(qrms1[:nlevtop],plevs_mid[:nlevtop],color=color1,linewidth=linewidth1,label=expt1)
+plt.plot(qrms2[:nlevtop],plevs_mid[:nlevtop],color=color2,linewidth=linewidth2,label=expt2)
 plt.xlabel('RMS (g/kg)')
 plt.legend(loc=0)
 plt.title('spfh: %s' % region)
 locator = matplotlib.ticker.MaxNLocator(nbins=4)
 plt.gca().xaxis.set_major_locator(locator)
 plt.axis('tight')
-plt.xlim(0.0,1.5)
+#plt.xlim(0.0,1.5)
 plt.ylim(1000,ptop)
 plt.grid(True)
 
@@ -130,26 +130,28 @@ plt.savefig('ifsdiffrms_%s_%s_%s.png' % (expt1,expt2,region))
 
 fig = plt.figure(figsize=(11,6))
 fig.add_subplot(1,2,1)
-plt.plot(tmpbias1,plevs_mid,color=color1,linewidth=linewidth1,label=expt1)
-plt.plot(tmpbias2,plevs_mid,color=color2,linewidth=linewidth2,label=expt2)
+plt.plot(tmpbias1[:nlevtop],plevs_mid[:nlevtop],color=color1,linewidth=linewidth1,label=expt1)
+plt.plot(tmpbias2[:nlevtop],plevs_mid[:nlevtop],color=color2,linewidth=linewidth2,label=expt2)
 plt.xlabel('bias (K)')
 plt.title('temp: %s' % region)
 plt.axis('tight')
-plt.xlim(-0.25,0.25)
+#plt.xlim(-0.25,0.25)
 plt.ylim(1000,ptop)
+plt.axvline(0)
 plt.grid(True)
 
 fig.add_subplot(1,2,2)
-plt.plot(qbias1,plevs_mid,color=color1,linewidth=linewidth1,label=expt1)
-plt.plot(qbias2,plevs_mid,color=color2,linewidth=linewidth2,label=expt2)
+plt.plot(qbias1[:nlevtop],plevs_mid[:nlevtop],color=color1,linewidth=linewidth1,label=expt1)
+plt.plot(qbias2[:nlevtop],plevs_mid[:nlevtop],color=color2,linewidth=linewidth2,label=expt2)
 plt.xlabel('bias (g/kg)')
 plt.legend(loc=0)
 plt.title('spfh: %s' % region)
 locator = matplotlib.ticker.MaxNLocator(nbins=4)
 plt.gca().xaxis.set_major_locator(locator)
 plt.axis('tight')
-plt.xlim(-0.5,0.5)
+#plt.xlim(-0.5,0.5)
 plt.ylim(1000,ptop)
+plt.axvline(0)
 plt.grid(True)
 
 plt.figtext(0.5,0.93,'12-h ens mean fcst bias vs IFS %s-%s' % (date1,date2),horizontalalignment='center',fontsize=18)
