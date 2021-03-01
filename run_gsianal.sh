@@ -69,7 +69,7 @@ if [ "$cold_start_bias" == "true" ]; then
 fi
 export lread_obs_save=".false."
 export lread_obs_skip=".false."
-export HXONLY 'NO'
+export HXONLY='NO'
 if [ -s $SIGANL06 ] && [ -s ${datapath2}/diag_conv_uv_ges.${analdate}_${charnanal2}.nc4 ]; then
   echo "gsi already completed"
   echo "yes" > ${current_logdir}/run_gsi_anal.log
