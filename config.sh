@@ -353,8 +353,8 @@ export s_ens_v=5.4     # 14 levels
 
 export nanals=80                                                    
 # if nanals2>0, extend nanals2 members out to FHMAX + ANALINC (one extra assim window)
-#export nanals2=-1 # longer extension. Set to -1 to disable 
-export nanals2=$NODES
+export nanals2=-1 # longer extension. Set to -1 to disable 
+#export nanals2=$NODES
 export nitermax=2 # number of retries
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
