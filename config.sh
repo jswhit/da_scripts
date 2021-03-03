@@ -174,9 +174,9 @@ else
 fi
 
 # radiance thinning parameters for GSI
-export dmesh1=160
-export dmesh2=160
-export dmesh3=160
+export dmesh1=145
+export dmesh2=145
+export dmesh3=100
 
 #export use_ipd="YES" # use IPD instead of CCPP
 
