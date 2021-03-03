@@ -82,9 +82,11 @@ mkdir -p $tmpdir
 sh ${enkfscripts}/${rungsi}
 status=$?
 if [ "$cold_start_bias" == "true" ]; then
+  export cold_start_bias=="false"
   export GBIAS=${datapath2}/${PREINP}abias
   export GBIAS_PC=${datapath2}/${PREINP}abias_pc
   export GBIASAIR=${datapath2}/${PREINP}abias_air
+  /bin/rm -f ${datapath2}/diag*${charnanal2}*nc4
   echo "${analdate} re-compute gsi analysis increment `date`"
   sh ${enkfscripts}/${rungsi}
   status=$?

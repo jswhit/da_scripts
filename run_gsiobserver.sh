@@ -1,10 +1,6 @@
 #!/bin/sh
 # do hybrid observer.
 
-if [ "$cold_start_bias" == "true" ]; then
-  export NOSAT=YES
-fi
-
 if [ -z $charnanal2 ]; then
   export charnanal2=$charnanal
 fi
