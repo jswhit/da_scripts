@@ -41,8 +41,30 @@ export hrm1=`echo $analdatem1 | cut -c9-10`
 #export CONVINFO=`sh ${enkfscripts}/pickinfo.sh ${analdate} convinfo`
 # if $REALTIME == "YES", use OZINFO,CONVINFO,SATINFO set in config.sh
 if [ "$REALTIME" == "NO" ]; then
+
+#cd build_gsinfo
+#info=`sh pickinfo.sh $analdate convinfo`
+#export CONVINFO="$PWD/$info"
+#echo "CONVINFO: $CONVINFO"
+#info=`sh pickinfo.sh $analdate ozinfo`
+#export OZINFO="$PWD/$info"
+#echo "OZINFO: $OZINFO"
+#export SATINFO=$datapath/$analdate/satinfo
+#sh create_satinfo.sh $analdate > $SATINFO
+#cd ..
+
 #   Set CONVINFO
-if [[ "$analdate" -ge "2018022818" ]]; then
+if [[  "$analdate" -ge 2020091612 ]]; then
+    export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2020091612
+elif [[  "$analdate" -ge 2020091612 ]]; then
+    export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2020052612
+elif [[  "$analdate" -ge 2020040718 ]]; then
+    export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2020041718
+elif [[  "$analdate" -ge 2019110706 ]]; then
+    export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2019110706
+elif [[  "$analdate" -ge 2019021900 ]]; then
+    export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2019021900
+elif [[ "$analdate" -ge "2018022818" ]]; then
     export CONVINFO=$fixgsi/fv3_historical/global_convinfo.txt.2018022818
 elif [[ "$analdate" -ge "2018010512" ]]; then
     export CONVINFO=$fixgsi/fv3_historical/global_convinfo.txt.2018010512
@@ -56,8 +78,17 @@ else
     echo "no convinfo found"
     exit 1
 fi
+
 #   Set OZINFO
-if [[ "$analdate" -ge "2020011806" ]]; then
+if [[  "$analdate" -ge 2020011806 ]]; then
+    export OZINFO=$fixgsi/gfsv16_historical/global_ozinfo.txt.2020011806
+elif [[  "$analdate" -ge 2020011600 ]]; then
+    export OZINFO=$fixgsi/gfsv16_historical/global_ozinfo.txt.2020011600
+elif [[  "$analdate" -ge 2020011600 ]]; then
+    export OZINFO=$fixgsi/gfsv16_historical/global_ozinfo.txt.2020021900
+elif [[  "$analdate" -ge 2020011806 ]]; then
+    export CONVINFO=$fixgsi/gfsv16_historical/global_ozinfo.txt.2020011806
+elif [[ "$analdate" -ge "2020011806" ]]; then
     export OZINFO=$fixgsi/fv3_historical/global_ozinfo.txt.2020011806
 elif [[ "$analdate" -ge "2020011600" ]]; then
     export OZINFO=$fixgsi/fv3_historical/global_ozinfo.txt.2020011600
@@ -69,8 +100,15 @@ else
     echo "no ozinfo found"
     exit 1
 fi
+
 #   Set SATINFO
-if [[ "$analdate" -ge "2018053012" ]]; then
+if [[ "$analdate" -ge "2020022012" ]]; then
+    export SATINFO=$fixgsi/gfsv16_historical/global_satinfo.txt.2020022012
+elif [[ "$analdate" -ge "2019110706" ]]; then
+    export SATINFO=$fixgsi/gfsv16_historical/global_satinfo.txt.2019110706
+elif [[ "$analdate" -ge "2019021900" ]]; then
+    export SATINFO=$fixgsi/gfsv16_historical/global_satinfo.txt.2019021900
+elif [[ "$analdate" -ge "2018053012" ]]; then
     export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2018053012
 elif [[ "$analdate" -ge "2018021212" ]]; then
     export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2018021212
@@ -100,7 +138,9 @@ else
     echo "no satinfo found"
     exit 1
 fi
+
 fi
+
 if [ ! -z $HYBENSINFO ]; then
    /bin/cp -f ${HYBENSINFO} ${datapath}/${analdate}/hybens_info
 fi
