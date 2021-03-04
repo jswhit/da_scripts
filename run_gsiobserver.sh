@@ -17,6 +17,7 @@ export NLAT=$((${LATA}+2))
 export CO2DIR=$fixgsi
 
 # charanal is an env var set in parent script
+if [ $ANALINC -eq 6 ]; then
 export SIGANL03=${datapath2}/sanl_${analdate}_fhr03_${charnanal}
 export SIGANL04=${datapath2}/sanl_${analdate}_fhr04_${charnanal}
 export SIGANL05=${datapath2}/sanl_${analdate}_fhr05_${charnanal}
@@ -24,6 +25,12 @@ export SIGANL06=${datapath2}/sanl_${analdate}_fhr06_${charnanal}
 export SIGANL07=${datapath2}/sanl_${analdate}_fhr07_${charnanal}
 export SIGANL08=${datapath2}/sanl_${analdate}_fhr08_${charnanal}
 export SIGANL09=${datapath2}/sanl_${analdate}_fhr09_${charnanal}
+elif [ $ANALINC -eq 1 ]; then
+export SIGANL06=${datapath2}/sanl_${analdate}_fhr01_${charnanal}
+else
+echo "ANALINC must be 1 or 6"
+exit
+fi
 export BIASO=${datapath2}/${PREINP}abias 
 export BIASO_PC=${datapath2}/${PREINP}abias_pc 
 export SATANGO=${datapath2}/${PREINP}satang

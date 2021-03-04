@@ -190,12 +190,20 @@ mkdir -p ${current_logdir}
 
 # if nanals2>0, extend nanals2 members out to FHMAX_LONGER
 # but only at 02,08,14,20UTC (for comparison with 6-h cycled system)
-if [ $hr = "02" ] || [ $hr = "08" ] || [ $hr = "14" ] || [ $hr = "20"]; then
-export nanals2=80
-echo "will run $nanals2 members out to hour $FHMAX_LONGER"
+if [ $hr = "02" ] || [ $hr = "08" ] || [ $hr = "14" ] || [ $hr = "20" ]; then
+  export nanals2=80
+  echo "will run $nanals2 members out to hour $FHMAX_LONGER"
 else
-export nanals2=-1
-echo "no longer forecast extension"
+  export nanals2=-1
+  echo "no longer forecast extension"
+fi
+# only run global cycle at synoptic times.
+if [ $hr = "00" ] || [ $hr = "06" ] || [ $hr = "12" ] || [ $hr = "18" ]; then
+ unset skip_global_cycle
+ echo "global_cycle will be run"
+else
+ export skip_global_cycle=1
+ echo "don't run global_cycle"
 fi
 
 export PREINP="${RUN}.t${hr}z."

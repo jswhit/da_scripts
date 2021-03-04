@@ -1,11 +1,11 @@
 #!/bin/sh
 ##SBATCH -q debug
-#SBATCH -t 03:00:00
+#SBATCH -t 01:30:00
 #SBATCH -A gsienkf
 #SBATCH -N 20    
-#SBATCH -J C192_hybgain_mid
-#SBATCH -e C192_hybgain_mid.err
-#SBATCH -o C192_hybgain_mid.out
+#SBATCH -J C192_hybgain_hourly
+#SBATCH -e C192_hybgain_hourly.err
+#SBATCH -o C192_hybgain_hourly.out
 
 export NODES=$SLURM_NNODES
 export corespernode=$SLURM_CPUS_ON_NODE
@@ -49,8 +49,8 @@ fi
 # C192 ensemble, C384 control (run with 20 nodes)
 export fg_proc=$corespernode 
 export fg_threads=1
-export enkf_threads=8 
-export gsi_control_threads=4
+export enkf_threads=4 
+export gsi_control_threads=2
 export write_groups=4
 # 40 cores per node 
 export write_tasks=1 

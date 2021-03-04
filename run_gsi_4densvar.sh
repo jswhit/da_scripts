@@ -67,7 +67,7 @@ im=`echo $adate | cut -c5-6`
 id=`echo $adate | cut -c7-8`
 ih=`echo $adate | cut -c9-10`
 echo "iy,im,id,ih = $iy $im $id $ih"
-date_fhour=`$python ${enkfscripts}/getidate.py ${datges}/bfg_${adate}_fhr03_${charnanal}`
+date_fhour=`$python ${enkfscripts}/getidate.py ${datges}/bfg_${adate}_fhr0${ANALINC}_${charnanal}`
 fdatei=`echo $date_fhour | cut -f1 -d " "`
 fhr=`echo $date_fhour | cut -f2 -d " "`
 fdatev=`${incdate} $fdatei $fhr`
@@ -137,7 +137,19 @@ if [ $use_correlated_oberrs == ".true." ];  then
 else
   lupdqc=.false.
 fi
-SETUP="verbose=.true.,reduce_diag=.true.,lwrite_peakwt=.true.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=.true.,ens_nstarthr=3,iwrtinc=-1,nhr_assimilation=6,nhr_obsbin=$FHOUT,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=$lobsdiag_forenkf,lwrite_predterms=.true.,thin4d=.true.,lupdqc=$lupdqc"
+if [ $ANALINC -eq 6 ]; then
+   min_offset=180
+   l4densvar=.true.
+   thin4d=.true.
+elif [ $ANALINC -eq 1 ]; then
+   min_offset=30
+   l4densvar=.false.
+   thin4d=.false.
+   lwrite4danl=.false.
+else
+   echo "ANALINC must be 1 or 6"
+fi
+SETUP="verbose=.true.,reduce_diag=.true.,lwrite_peakwt=.true.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=$l4densvar,ens_nstarthr=$FHMIN,iwrtinc=-1,nhr_assimilation=$ANALINC,nhr_obsbin=$FHOUT,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=$lobsdiag_forenkf,lwrite_predterms=.true.,thin4d=$thin4d,lupdqc=$lupdqc,min_offset=$min_offset"
 
 if [[ "$HXONLY" = "YES" ]]; then
    #SETUP="$SETUP,lobserver=.true.,l4dvar=.true." # can't use reduce_diag=T
@@ -715,6 +727,7 @@ $nln $GBIAS_PC           ./satbias_pc
 $nln $GSATANG            ./satbias_angle
 $nln $GBIASAIR           ./aircftbias_in
 
+if [ $ANALINC -eq 6 ]; then
 SFCG03=${SFCG03:-$datges/bfg_${adate}_fhr03_${charnanal}}
 $nln $SFCG03               ./sfcf03
 SFCG06=${SFCG06:-$datges/bfg_${adate}_fhr06_${charnanal}}
@@ -747,12 +760,20 @@ $nln $SIGG07               ./sigf07
 SIGG08=${SIGG08:-$datges/sfg_${adate}_fhr08_${charnanal}}
 $nln $SIGG08               ./sigf08
 fi
+elif [ $ANALINC -eq 1 ]; then
+SIGG06=${SIGG01:-$datges/sfg_${adate}_fhr01_${charnanal}}
+$nln $SIGG06               ./sigf01
+SFCG06=${SIGG01:-$datges/bfg_${adate}_fhr01_${charnanal}}
+$nln $SFCG06               ./sfcf01
+else
+echo "ANALINC must be 6 or 1"
+fi
 
 if [[ $beta_s0 < 0.999 ]]; then
 ln -s $datges/ensmem*.pe* .
 ln -s $datges/control*.pe* .
-fh=3
-while [ $fh -le 9 ] ;do
+fh=$FHMIN
+while [ $fh -le $FHMAX ] ;do
 for ensfile in $datges/sfg_${adate}*fhr0${fh}*mem???; do
  ensfilename=`basename $ensfile`
  memnum=`echo $ensfilename | cut -f4 -d"_" | cut -c4-6`
@@ -781,7 +802,7 @@ done
 
 # Run gsi.
 #if [ -s ./satbias_in ] && [ -s ./satbias_angle ] && [ -s ./sfcf03 ] && [ -s ./sfcf06 ] && [ -s ./sfcf09 ] && [ -s ./sigf03 ] && [ -s ./sigf06 ] && [ -s ./sigf09 ] ; then
-if [[ $NOSAT == "YES" ||  -s ./satbias_in ]]  && [ -s ./sfcf03 ] && [ -s ./sfcf06 ] && [ -s ./sfcf09 ] && [ -s ./sigf03 ] && [ -s ./sigf06 ] && [ -s ./sigf09 ] ; then
+if [[ $NOSAT == "YES" ||  -s ./satbias_in ]]  && [ -s $SFC06 ] && [ -s $SIGG06 ] ; then
 cat gsiparm.anl
 ulimit -s unlimited
 
@@ -791,22 +812,16 @@ echo "Time before GSI `date` "
 export PGM=$tmpdir/gsi.x
 export FORT_BUFFERED=TRUE
 ${enkfscripts}/runmpi
-rc=$?
-if [[ $rc -ne 0 ]];then
-  echo "GSI failed with exit code $rc"
-  exit $rc
-fi
+#rc=$?
+#if [[ $rc -ne 0 ]];then
+#  echo "GSI failed with exit code $rc"
+#  exit $rc
+#fi
 else
 echo "some input files missing, exiting ..."
 ls -l ./satbias_in
-ls -l ./satbias_angle
-ls -l ./sfcf03
-ls -l ./sfcf06
-ls -l ./sfcf09
-ls -l ./sfcanl
-ls -l ./sigf03
-ls -l ./sigf06
-ls -l ./sigf09
+ls -l $SFC06
+ls -l $SIGG06
 exit 1
 fi
 

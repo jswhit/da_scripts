@@ -51,8 +51,8 @@ if [ $machine == "orion" ]; then
    export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
    export save_hpss="false"
 else
-   export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
-   export save_hpss="false"
+   export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
+   export save_hpss="true"
 fi
 export ensmean_restart='false'
 export recenter_anal="true"
@@ -75,7 +75,8 @@ if [ "$machine" == 'hera' ]; then
    export basedir=/scratch2/BMC/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   export obs_datapath=/scratch1/NCEPDEV/global/glopara/dump
+   #export obs_datapath=/scratch1/NCEPDEV/global/glopara/dump
+   export obs_datapath=/scratch2/BMC/gsienkf/whitaker/gdas1bufr
    module purge
    module load intel/18.0.5.274
    module load impi/2018.0.4 
@@ -353,7 +354,7 @@ export s_ens_v=5.4     # 14 levels
 export nanals=80                                                    
 export nanals2=-1 # longer extension. Set to -1 to disable 
 #export nanals2=$nanals
-export nitermax=2 # number of retries
+export nitermax=1 # number of retries
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
