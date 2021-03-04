@@ -188,6 +188,16 @@ export current_logdir="${datapath2}/logs"
 echo "Current LogDir: ${current_logdir}"
 mkdir -p ${current_logdir}
 
+# if nanals2>0, extend nanals2 members out to FHMAX_LONGER
+# but only at 02,08,14,20UTC (for comparison with 6-h cycled system)
+if [ $hr = "02" ] || [ $hr = "08" ] || [ $hr = "14" ] || [ $hr = "20"]; then
+export nanals2=80
+echo "will run $nanals2 members out to hour $FHMAX_LONGER"
+else
+export nanals2=-1
+echo "no longer forecast extension"
+fi
+
 export PREINP="${RUN}.t${hr}z."
 export PREINP1="${RUN}.t${hrp1}z."
 export PREINPm1="${RUN}.t${hrm1}z."

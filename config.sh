@@ -26,7 +26,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybgain_mid"
+export exptname="C${RES}_hybgain_hourly"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 
@@ -269,12 +269,12 @@ export FHCYC=0 # run global_cycle instead of gcycle inside model
 export LONA=$LONB
 export LATA=$LATB      
 
-export ANALINC=6 # assimilation window length
+export ANALINC=1 # assimilation window length
 
-export FHMIN=3
-export FHMAX=9
-export FHOUT=3
-export FHMAX_LONGER=`expr $FHMAX + $ANALINC`
+export FHMIN=1
+export FHMAX=1
+export FHOUT=1
+export FHMAX_LONGER=7
 FHMAXP1=`expr $FHMAX + 1`
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
 export nhr_anal=$ANALINC # analysis increment computed at center of window
@@ -301,12 +301,12 @@ export SMOOTHINF=35 # inflation smoothing (spectral truncation)
 export covinflatemax=1.e2
 export reducedgrid=.false. # if T, used reduced gaussian analysis grid in EnKF
 export covinflatemin=1.0                                            
-export analpertwtnh=0.85
-export analpertwtsh=0.85
-export analpertwttr=0.85
-export analpertwtnh_rtpp=0.0
-export analpertwtsh_rtpp=0.0
-export analpertwttr_rtpp=0.0
+export analpertwtnh=0.9
+export analpertwtsh=0.9
+export analpertwttr=0.9
+export analpertwtnh_rtpp=0.4
+export analpertwtsh_rtpp=0.4
+export analpertwttr_rtpp=0.4
 export pseudo_rh=.true.
 export write_ensmean=.false. # write out ens mean analysis in EnKF
 if [[ $write_ensmean == ".true." ]]; then
@@ -351,9 +351,8 @@ export s_ens_v=5.4     # 14 levels
 #export biascorrdir=${datadir}/biascor
 
 export nanals=80                                                    
-# if nanals2>0, extend nanals2 members out to FHMAX + ANALINC (one extra assim window)
-#export nanals2=-1 # longer extension. Set to -1 to disable 
-export nanals2=$NODES
+export nanals2=-1 # longer extension. Set to -1 to disable 
+#export nanals2=$nanals
 export nitermax=2 # number of retries
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
