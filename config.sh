@@ -26,7 +26,7 @@ export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
 export exptname="C${RES}_hybgain_iau"
 # for 'passive' or 'replay' cycling of control fcst 
-export replay_controlfcst='false'
+export replay_controlfcst='true'
 
 export fg_gfs="run_ens_fv3.sh"
 export ensda="enkf_run.sh"
@@ -149,7 +149,7 @@ export NST_GSI=0
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
 
-export LEVS=64   
+export LEVS=127  
 if [ $LEVS -eq 64 ]; then
   export nsig_ext=12
   export gpstop=50
