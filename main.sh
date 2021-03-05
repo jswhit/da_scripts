@@ -190,12 +190,14 @@ mkdir -p ${current_logdir}
 
 # if nanals2>0, extend nanals2 members out to FHMAX_LONGER
 # but only at 02,08,14,20UTC (for comparison with 6-h cycled system)
+if [ $ANALINC -eq 1 ]; then
 if [ $hr = "02" ] || [ $hr = "08" ] || [ $hr = "14" ] || [ $hr = "20" ]; then
   export nanals2=80
   echo "will run $nanals2 members out to hour $FHMAX_LONGER"
 else
   export nanals2=-1
   echo "no longer forecast extension"
+fi
 fi
 # only run global cycle at synoptic times.
 if [ $hr = "00" ] || [ $hr = "06" ] || [ $hr = "12" ] || [ $hr = "18" ]; then
@@ -426,6 +428,7 @@ if [ $replay_controlfcst == 'true' ] && [ $replay_run_observer == "true" ]; then
 fi
 
 # run gsi observer on ensemble mean forecast extension
+if [ $ANALINC -eq 6 ]; then
 if [ $nanals2 -gt 0 ] && [ -s $datapath2/sfg2_${analdate}_fhr${FHMAX_LONGER}_ensmean ]; then
    # symlink ensmean files (fhr12_ensmean --> fhr06_ensmean2, etc)
    fh=$FHMAX
@@ -451,6 +454,7 @@ if [ $nanals2 -gt 0 ] && [ -s $datapath2/sfg2_${analdate}_fhr${FHMAX_LONGER}_ens
      echo "$analdate gsi observer did not complete successfully, exiting `date`"
      exit 1
    fi
+fi
 fi
 
 fi # skip to here if fg_only = true

@@ -1,6 +1,6 @@
 #!/bin/sh
 ##SBATCH -q debug
-#SBATCH -t 01:30:00
+#SBATCH -t 02:30:00
 #SBATCH -A gsienkf
 #SBATCH -N 20    
 #SBATCH -J C192_hybgain_hourly

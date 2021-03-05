@@ -75,8 +75,8 @@ if [ "$machine" == 'hera' ]; then
    export basedir=/scratch2/BMC/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   #export obs_datapath=/scratch1/NCEPDEV/global/glopara/dump
-   export obs_datapath=/scratch2/BMC/gsienkf/whitaker/gdas1bufr
+   export obs_datapath2=/scratch1/NCEPDEV/global/glopara/dump # for sst,snow,ice grib
+   export obs_datapath=/scratch2/BMC/gsienkf/whitaker/gdas1bufr # for bufr
    module purge
    module load intel/18.0.5.274
    module load impi/2018.0.4 
@@ -272,10 +272,21 @@ export LATA=$LATB
 
 export ANALINC=1 # assimilation window length
 
+if [ $ANALINC -eq 1 ]; then
 export FHMIN=1
 export FHMAX=1
 export FHOUT=1
 export FHMAX_LONGER=7
+elif [ $ANALINC -eq 6 ]; then
+export FHMIN=3
+export FHMAX=9
+export FHOUT=3
+export FHMAX_LONGER=15
+export obs_datapath=$obs_datapath2
+else
+echo "ANALINC must be 6 or 1"
+exit 1
+fi
 FHMAXP1=`expr $FHMAX + 1`
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
 export nhr_anal=$ANALINC # analysis increment computed at center of window
