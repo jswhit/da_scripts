@@ -54,7 +54,6 @@ else
    export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
    export save_hpss="true"
 fi
-export ensmean_restart='false'
 export recenter_anal="true"
 export recenter_fcst="false"
 
@@ -365,7 +364,7 @@ export s_ens_v=5.4     # 14 levels
 export nanals=80                                                    
 export nanals2=-1 # longer extension. Set to -1 to disable 
 #export nanals2=$nanals
-export nitermax=1 # number of retries
+export nitermax=2 # number of retries
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"

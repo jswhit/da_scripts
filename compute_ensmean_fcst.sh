@@ -46,11 +46,14 @@ while [ $fh -le $FHMAX ]; do
 
 done
 
-if [ $nanals2 -gt 0 ]; then
 fh=${FHMAX}
+charfhr="fhr`printf %02i $fh`"
+if [ $ANALINC -eq 1 ]; then
+  analdate_save=`$incdate $analdate 2`
+  mkdir -p ${datapath}/${analdate_save}
+  nanals2=80
+fi
 while [ $fh -le $FHMAX_LONGER ] && [ -s ${datapath2}/sfg2_${analdate}_${charfhr}_mem001 ]; do
-
-  charfhr="fhr`printf %02i $fh`"
 
   if [ $cleanup_ensmean == 'true' ] || ([ $cleanup_ensmean == 'false' ]  && [ ! -s ${datapath}/${analdate}/bfg2_${analdate}_${charfhr}_ensmean ]); then
       echo "running  ${execdir}/getsfcensmeanp.x ${datapath2}/ bfg2_${analdate}_${charfhr}_ensmean bfg2_${analdate}_${charfhr} ${nanals2}"
@@ -78,43 +81,16 @@ while [ $fh -le $FHMAX_LONGER ] && [ -s ${datapath2}/sfg2_${analdate}_${charfhr}
       fi
   fi
 
+  if [ $ANALINC -eq 1 ]; then
+    fh2=$((fh+2))
+    charfhr2="fhr`printf %02i $fh2`"
+    /bin/mv -f ${datapath2}/sfg2_${analdate}_${charfhr}_ensmean ${datapath}/${analdate_save}/sfg_${analdate_save}_${charfhr2}_ensmean
+    /bin/mv -f ${datapath2}/bfg2_${analdate}_${charfhr}_ensmean ${datapath}/${analdate_save}/bfg_${analdate_save}_${charfhr2}_ensmean
+    /bin/mv -f ${datapath2}/sfg2_${analdate}_${charfhr}_enssprd ${datapath}/${analdate_save}/sfg_${analdate_save}_${charfhr2}_enssprd
+  fi
   fh=$((fh+FHOUT))
+  charfhr="fhr`printf %02i $fh`"
 
 done
-fi
-
-# now compute ensemble mean restart files (only at 00UTC).
-if [ $ensmean_restart == 'true' ] && [ $cold_start == 'false' ] && [ $hr == '06' ]; then
-if [ $cleanup_ensmean == 'true' ] || ([ $cleanup_ensmean == 'false' ]  && [ ! -s ${datapath2}/ensmean/INPUT/fv_core.res.tile1.nc ]); then
-   echo "compute ensemble mean restart files `date`"
-   export nprocs=1
-   export mpitaskspernode=1
-   export OMP_NUM_THREADS=$corespernode
-   pathout=${datapath2}/ensmean/INPUT
-   mkdir -p $pathout
-   ncount=1
-   tiles="tile1 tile2 tile3 tile4 tile5 tile6"
-   for tile in $tiles; do
-      files="fv_core.res.${tile}.nc fv_tracer.res.${tile}.nc fv_srf_wnd.res.${tile}.nc sfc_data.${tile}.nc phy_data.${tile}.nc"
-      for file in $files; do
-         export PGM="${nces} -O `ls -1 ${datapath2}/mem*/INPUT/${filename}` ${pathout}/${filename}"
-         echo "computing ens mean for $filename"
-         #${enkfscripts}/runmpi &
-         $PGM &
-         if [ $ncount == $NODES ]; then
-            echo "waiting for backgrounded jobs to finish..."
-            wait
-            ncount=1
-         else
-            ncount=$((ncount+1))
-         fi
-      done
-   done
-   wait
-   /bin/rm -f ${datapath2}/hostfile_nces*
-   /bin/cp -f ${datapath2}/mem001/INPUT/fv_core.res.nc ${pathout}
-   echo "done computing ensemble mean restart files `date`"
-fi
-fi
 
 echo "all done `date`"
