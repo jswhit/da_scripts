@@ -59,7 +59,7 @@ if [[  "$analdate" -ge 2020091612 ]]; then
 elif [[  "$analdate" -ge 2020091612 ]]; then
     export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2020052612
 elif [[  "$analdate" -ge 2020040718 ]]; then
-    export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2020041718
+    export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2020040718
 elif [[  "$analdate" -ge 2019110706 ]]; then
     export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2019110706
 elif [[  "$analdate" -ge 2019021900 ]]; then
