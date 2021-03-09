@@ -46,7 +46,6 @@ echo "files moved to fgens, fgens2 `date`"
 if [ $save_hpss_subset == "false" ] && [ $save_hpss_full == "false" ]; then
   /bin/rm -rf fgens fgens2
   /bin/rm -f diag*cris* diag*airs* diag*iasi*
-  /bin/rm -f *fhr03* *fhr09* *chgres
   /bin/rm -rf ensmean
   if [ $hr != '00' ]; then
       /bin/rm -rf control
