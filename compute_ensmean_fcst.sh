@@ -53,6 +53,7 @@ if [ $ANALINC -eq 1 ]; then
   mkdir -p ${datapath}/${analdate_save}
   nanals2=80
 fi
+ANALINC2=`expr $FHMAX_LONGER - 3`
 while [ $fh -le $FHMAX_LONGER ] && [ -s ${datapath2}/sfg2_${analdate}_${charfhr}_mem001 ]; do
 
   if [ $cleanup_ensmean == 'true' ] || ([ $cleanup_ensmean == 'false' ]  && [ ! -s ${datapath}/${analdate}/bfg2_${analdate}_${charfhr}_ensmean ]); then
@@ -68,7 +69,6 @@ while [ $fh -le $FHMAX_LONGER ] && [ -s ${datapath2}/sfg2_${analdate}_${charfhr}
   if [ $cleanup_ensmean == 'true' ] || ([ $cleanup_ensmean == 'false' ]  && [ ! -s ${datapath}/${analdate}/sfg2_${analdate}_${charfhr}_ensmean ]); then
       /bin/rm -f ${datapath2}/sfg2_${analdate}_${charfhr}_ensmean
       echo "running ${execdir}/getsigensmeanp_smooth.x ${datapath2}/ sfg2_${analdate}_${charfhr}_ensmean sfg2_${analdate}_${charfhr} ${nanals2} sfg2_${analdate}_${charfhr}_enssprd"
-      ANALINC2=`expr $ANALINC + $ANALINC`
       if [ $fh -eq $ANALINC2 ]; then # just save spread at middle of window
          export PGM="${execdir}/getsigensmeanp_smooth.x ${datapath2}/ sfg2_${analdate}_${charfhr}_ensmean sfg2_${analdate}_${charfhr} ${nanals2} sfg2_${analdate}_${charfhr}_enssprd"
       else
