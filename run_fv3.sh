@@ -90,7 +90,7 @@ export daya=`echo $analdatex |cut -c 7-8`
 export houra=`echo $analdatex |cut -c 9-10`
 fi
 # previous nominal analysis time
-analdatem6=`$incdate $analdate -6f`
+analdatem6=`$incdate $analdate -6`
 export yearprev=`echo $analdatem6 |cut -c 1-4`
 export monprev=`echo $analdatem6 |cut -c 5-6`
 export dayprev=`echo $analdatem6 |cut -c 7-8`
