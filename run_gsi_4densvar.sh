@@ -282,7 +282,7 @@ cat <<EOF > gsiparm.anl
  /
  /
  &OBS_INPUT
-   dmesh(1)=$dmesh1,dmesh(2)=$dmesh2,dmesh(3)=$dmesh3,time_window_max=$time_window_max,
+   dmesh(1)=$dmesh1,dmesh(2)=$dmesh2,dmesh(3)=$dmesh3,time_window_max=$time_window_max,time_window_rad=$time_window_max
   $OBSINPUT
 /
 OBS_INPUT::
