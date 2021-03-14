@@ -28,7 +28,11 @@ fi
 while [ $alldone == "no" ] && [ $niter -le $nitermax ]; do
 
 export JCAP_A=$JCAP
-export JCAP_B=$JCAP # ens mean background
+if [ $controlanal == 'true' ]; then
+  export JCAP_B=$JCAP_CTL # high res control background
+else
+  export JCAP_B=$JCAP # ensmean background
+fi
 export HXONLY='NO'
 export VERBOSE=YES  
 export OMP_NUM_THREADS=$gsi_control_threads

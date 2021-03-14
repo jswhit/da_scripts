@@ -1,8 +1,7 @@
 #!/bin/sh
 
 # main driver script
-# gsi gain or gsi covariance GSI EnKF (based on ensemble mean background)
-# optional high-res control fcst replayed to ens mean analysis
+# high res control analysis from hybrid 4denvar, enkf recentered around this analysis
 
 # allow this script to submit other scripts with LSF
 unset LSB_SUB_RES_REQ 
@@ -215,46 +214,6 @@ while [ $alldone == 'no' ] && [ $niter -le $nitermax ]; do
    niter=$((niter+1))
 done
 
-# change resolution of high-res control forecast to ensemble resolution
-# this file only used to calculate analysis increment for replay
-errexit=0
-if [ $replay_controlfcst == 'true' ]; then
-   charnanal='control'
-   echo "$analdate change resolution of control forecast to ens resolution `date`"
-   fh=$FHMIN
-   while [ $fh -le $FHMAX ]; do
-     fhr=`printf %02i $fh`
-     # run concurrently, wait
-     sh ${enkfscripts}/chgres.sh $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal}.chgres > ${current_logdir}/chgres_${fhr}.out 2>&1 &
-     errstatus=$?
-     if [ $errstatus -ne 0 ]; then
-       errexit=$errstatus
-     fi
-     fh=$((fh+FHOUT))
-   done
-   wait
-   if [ $errexit -ne 0 ]; then
-      echo "adjustps/chgres step failed, exiting...."
-      exit 1
-   fi
-   echo "$analdate done changing resolution of control forecast to ens resolution `date`"
-fi
-
-# optionally (partially) recenter ensemble around control forecast.
-if [ $replay_controlfcst == 'true' ] && [ $recenter_control_wgt -gt 0 ] && [ $recenter_fcst == "true" ]; then
-   echo "$analdate (partially) recenter background ensemble around control `date`"
-   export fileprefix="sfg"
-   export charnanal="control.chgres"
-   sh ${enkfscripts}/recenter_ens.sh > ${current_logdir}/recenter_ens_fcst.out 2>&1
-   recenter_done=`cat ${current_logdir}/recenter.log`
-   if [ $recenter_done == 'yes' ]; then
-     echo "$analdate recentering completed successfully `date`"
-   else
-     echo "$analdate recentering did not complete successfully, exiting `date`"
-     exit 1
-   fi
-fi
-
 # if ${datapathm1}/cold_start_bias exists, GSI run in 'observer' mode
 # to generate diag_rad files to initialize angle-dependent 
 # bias correction.
@@ -264,34 +223,53 @@ else
    export cold_start_bias "false"
 fi
 
-# use ensmean mean background for 3dvar analysis/observer calculatino
-export charnanal='control' 
-export charnanal2='ensmean'
-export lobsdiag_forenkf='.true.'
-export skipcat="false"
+# do hybrid control analysis.
+# uses high-res control forecast background
+export charnanal='control' # sfg files 
+export charnanal2='control' # for diag files
+export lobsdiag_forenkf='.false.'
+type='hybrid 4DEnVar'
 # run Var analysis
-# symlink ens mean backgrounds to "control"
+echo "$analdate run $type `date`"
+sh ${enkfscripts}/run_gsianal.sh > ${current_logdir}/run_gsianal.out 2>&1
+# once hybrid has completed, check log files.
+hybrid_done=`cat ${current_logdir}/run_gsi_anal.log`
+if [ $hybrid_done == 'yes' ]; then
+  echo "$analdate $type analysis completed successfully `date`"
+else
+  echo "$analdate $type analysis did not complete successfully, exiting `date`"
+  exit 1
+fi
+# change resolution of control analysis to ens resolution
+echo "$analdate chgres control analysis to ens resolution `date`"
 fh=$FHMIN
 while [ $fh -le $FHMAX ]; do
   fhr=`printf %02i $fh`
-  /bin/ln -fs ${datapath2}/sfg_${analdate}_fhr${fhr}_ensmean ${datapath2}/sfg_${analdate}_fhr${fhr}_control
-  /bin/ln -fs ${datapath2}/bfg_${analdate}_fhr${fhr}_ensmean ${datapath2}/bfg_${analdate}_fhr${fhr}_control
+  # run concurrently, wait
+  sh ${enkfscripts}/chgres.sh $datapath2/sanl_${analdate}_fhr${fhr}_control $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sanl_${analdate}_fhr${fhr}_control.chgres > ${current_logdir}/chgres_${fhr}.out 2>&1 &
   fh=$((fh+FHOUT))
 done
-if [ $hybgain == "true" ]; then
-  type="3DVar"
-else
-  type="hybrid 4DEnVar"
+wait
+if [ $? -ne 0 ]; then
+   echo "chgres control analysis to ens resolution failed, exiting...."
+   exit 1
 fi
-echo "$analdate run $type `date`"
-sh ${enkfscripts}/run_gsianal.sh > ${current_logdir}/run_gsianal.out 2>&1
-# once gsi has completed, check log files.
-gsi_done=`cat ${current_logdir}/run_gsi_anal.log`
-if [ $gsi_done == 'yes' ]; then
- echo "$analdate $type analysis completed successfully `date`"
+echo "$analdate chgres control analysis to ens resolution completed `date`"
+
+# compute observer on ensmean mean background for EnKF
+export charnanal='ensmean' 
+export charnanal2='ensmean'
+export lobsdiag_forenkf='.true.'
+export skipcat="false"
+echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
+sh ${enkfscripts}/run_gsiobserver.sh > ${current_logdir}/run_gsi_observer.out 2>&1
+# once observer has completed, check log files.
+hybrid_done=`cat ${current_logdir}/run_gsi_observer.log`
+if [ $hybrid_done == 'yes' ]; then
+  echo "$analdate gsi observer completed successfully `date`"
 else
- echo "$analdate $type analysis did not complete successfully, exiting `date`"
- exit 1
+  echo "$analdate gsi observer did not complete successfully, exiting `date`"
+  exit 1
 fi
 
 # loop over members run observer sequentially (for testing)
@@ -357,52 +335,18 @@ if [ $write_ensmean == ".false." ]; then
    echo "$analdate done computing ensemble mean analyses `date`"
 fi
 
-# blend enkf mean and 3dvar increments, recenter ensemble
+# recenter enkf analysis around chgres'd control analysis
 if [ $recenter_anal == "true" ]; then
-   if [ $hybgain == "true" ]; then 
-       if [ $alpha -gt 0 ]; then
-       # hybrid gain
-       echo "$analdate blend enkf and 3dvar increments `date`"
-       sh ${enkfscripts}/blendinc.sh > ${current_logdir}/blendinc.out 2>&1
-       blendinc_done=`cat ${current_logdir}/blendinc.log`
-       if [ $blendinc_done == 'yes' ]; then
-         echo "$analdate increment blending/recentering completed successfully `date`"
-       else
-         echo "$analdate increment blending/recentering did not complete successfully, exiting `date`"
-         exit 1
-       fi
-       fi
+   # hybrid covariance
+   export fileprefix="sanl"
+   export charnanal="control.chgres"
+   echo "$analdate recenter enkf analysis ensemble around control analysis `date`"
+   sh ${enkfscripts}/recenter_ens.sh > ${current_logdir}/recenter_ens_anal.out 2>&1
+   recenter_done=`cat ${current_logdir}/recenter.log`
+   if [ $recenter_done == 'yes' ]; then
+     echo "$analdate recentering enkf analysis completed successfully `date`"
    else
-      # hybrid covariance
-      export fileprefix="sanl"
-      export charnanal="control"
-      echo "$analdate recenter enkf analysis ensemble around control analysis `date`"
-      sh ${enkfscripts}/recenter_ens.sh > ${current_logdir}/recenter_ens_anal.out 2>&1
-      recenter_done=`cat ${current_logdir}/recenter.log`
-      if [ $recenter_done == 'yes' ]; then
-        echo "$analdate recentering enkf analysis completed successfully `date`"
-      else
-        echo "$analdate recentering enkf analysis did not complete successfully, exiting `date`"
-        exit 1
-      fi
-   fi
-fi
-
-# for passive (replay) cycling of control forecast, optionally run GSI observer
-# on control forecast background (diag files saved with 'control' suffix)
-if [ $replay_controlfcst == 'true' ] && [ $replay_run_observer == "true" ]; then
-   export charnanal='control' 
-   export charnanal2='control' 
-   export lobsdiag_forenkf='.false.'
-   export skipcat="false"
-   echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
-   sh ${enkfscripts}/run_gsiobserver.sh > ${current_logdir}/run_gsi_observer.out 2>&1
-   # once observer has completed, check log files.
-   gsi_done=`cat ${current_logdir}/run_gsi_observer.log`
-   if [ $gsi_done == 'yes' ]; then
-     echo "$analdate gsi observer completed successfully `date`"
-   else
-     echo "$analdate gsi observer did not complete successfully, exiting `date`"
+     echo "$analdate recentering enkf analysis did not complete successfully, exiting `date`"
      exit 1
    fi
 fi
@@ -437,16 +381,14 @@ fi
 
 fi # skip to here if fg_only = true
 
-if [ $replay_controlfcst == 'true' ]; then
-    echo "$analdate run high-res control first guess `date`"
-    sh ${enkfscripts}/run_fg_control.sh  > ${current_logdir}/run_fg_control.out  2>&1
-    control_done=`cat ${current_logdir}/run_fg_control.log`
-    if [ $control_done == 'yes' ]; then
-      echo "$analdate high-res control first-guess completed successfully `date`"
-    else
-      echo "$analdate high-res control did not complete successfully, exiting `date`"
-      exit 1
-    fi
+echo "$analdate run high-res control first guess `date`"
+sh ${enkfscripts}/run_fg_control.sh  > ${current_logdir}/run_fg_control.out  2>&1
+control_done=`cat ${current_logdir}/run_fg_control.log`
+if [ $control_done == 'yes' ]; then
+  echo "$analdate high-res control first-guess completed successfully `date`"
+else
+  echo "$analdate high-res control did not complete successfully, exiting `date`"
+  exit 1
 fi
 
 echo "$analdate run enkf ens first guess `date`"
