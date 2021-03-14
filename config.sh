@@ -9,7 +9,7 @@ export RES_CTL=384
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
-export hybgain="false" # hybrid gain approach, if false use hybrid covariance
+export hybgain="true" # hybrid gain approach, if false use hybrid covariance
 export alpha=250 # percentage of 3dvar increment (beta_2*1000) 
 export beta=1000 # percentage of enkf increment (*10)
 # if replay_controlfcst='true', weight given to ens mean vs control 
@@ -24,7 +24,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybcov_iau"
+export exptname="C${RES}_hybgain_iau"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='true'
 
@@ -55,8 +55,9 @@ fi
 export ensmean_restart='false'
 export recenter_anal="true"
 export recenter_fcst="false"
-export controlanal="true" # hybrid-cov high-res control analysis as in ops
-# controlanal takes precedence of hybgain (hybgain will be set to false if controlanal=true)
+export controlanal="false" # hybrid-cov high-res control analysis as in ops
+# controlanal takes precedence over hybgain
+# (hybgain will be set to false if controlanal=true)
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
