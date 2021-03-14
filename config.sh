@@ -9,7 +9,7 @@ export RES_CTL=384
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
-export hybgain="true" # hybrid gain approach, if false use hybrid covariance
+export hybgain="false" # hybrid gain approach, if false use hybrid covariance
 export alpha=250 # percentage of 3dvar increment (beta_2*1000) 
 export beta=1000 # percentage of enkf increment (*10)
 # if replay_controlfcst='true', weight given to ens mean vs control 
@@ -24,7 +24,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybgain_iau"
+export exptname="C${RES}_hybcov_iau"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='true'
 
@@ -55,12 +55,14 @@ fi
 export ensmean_restart='false'
 export recenter_anal="true"
 export recenter_fcst="false"
+export controlanal="true" # hybrid-cov high-res control analysis as in ops
+# controlanal takes precedence of hybgain (hybgain will be set to false if controlanal=true)
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
 #export recenter_fcst="false"
-#export cleanup_observer='false'
 #export cleanup_controlanl='false'
+#export cleanup_observer='false'
 #export cleanup_anal='false'
 #export recenter_anal="false"
 #export cleanup_fg='false'
@@ -343,8 +345,6 @@ export sortinc=.true.
 export beta_s0=`python -c "from __future__ import print_function; print($alpha / 1000.)"` # weight given to static B in hyb cov
 # beta_e0 parameter (ensemble weight) in my GSI branch (not in GSI/develop)
 export beta_e0=`python -c "from __future__ import print_function; print($beta / 1000.)"` # weight given to ensemble B in hyb cov
-export readin_beta=.false.
-export readin_localization=.false.
 export s_ens_h=343.     # 1250 km horiz localization in GSI
 #export s_ens_v=-0.58    # 1.5 scale heights in GSI
 export s_ens_v=5.4     # 14 levels
@@ -430,7 +430,7 @@ export NLAT=$((${LATA}+2))
 export REALTIME=NO # if NO, use historical files set in main.sh
 
 # parameters for hybrid gain
-if [ $hybgain == "true" ]; then
+if [ $hybgain == "true" ] && [ $controlanal == "false" ]; then
    export beta_s0=1.000 # 3dvar
    export beta_e0=0.0
    export readin_beta=.false. # not relevant for 3dvar
@@ -439,4 +439,35 @@ fi
 
 cd $enkfscripts
 echo "run main driver script"
-sh ./main.sh
+if [ $controlanal == "true" ]; then
+   # run as in NCEP ops, with high-res control forecast updated by GSI hyb 4denvar,
+   # and enkf analysis recentered around upscaled control analysis.
+   # use static B weights and localization scales for GSI from files.
+   # (s_ens_h, s_ens_v, beta_s0, beta_e0 will be ignored)
+   export readin_localization=".true."
+   export readin_beta=".true."
+   export replay_controlfcst=".false."
+   export hybgain=".false." # controlanal takes precedence over hybgain
+   export HYBENSINFO=${fixgsi}/global_hybens_info.l${LEVS}.txt # only used if readin_beta or readin_localization=T
+   # uncomment to smooth ensemble perturbations
+   #export HYBENSMOOTHINFO=${fixgsi}/global_hybens_smoothinfo.l${LEVS}.txt
+   sh ./main_controlanal.sh
+else
+   # GSI sees ensemble mean background (high-res control forecast is a replay to ens mean analysis)
+   # (s_ens_h, s_ens_v, beta_s0, beta_e0, alpha, beta used)
+   if [ $hybgain == "false" ]; then
+      # use static B weights and localization scales for GSI from files.
+      # (alpha, beta ignored)
+      #export readin_localization=".true."
+      #export readin_beta=".true."
+      # use constant values (alpha and beta parameters)
+      export readin_beta=.false.
+      export readin_localization=.false.
+      export beta_s0=$alpha
+      export beta_e0=$beta
+   else
+      export readin_beta=.false.
+      export readin_localization=.false.
+   fi
+   sh ./main.sh
+fi
