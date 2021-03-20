@@ -265,17 +265,17 @@ else
 fi
 
 # use ensmean mean background for 3dvar analysis/observer calculatino
-export charnanal='control' 
+export charnanal="varanal"
 export charnanal2='ensmean'
 export lobsdiag_forenkf='.true.'
 export skipcat="false"
 # run Var analysis
-# symlink ens mean backgrounds to "control"
+# symlink ens mean backgrounds to "varanal"
 fh=$FHMIN
 while [ $fh -le $FHMAX ]; do
   fhr=`printf %02i $fh`
-  /bin/ln -fs ${datapath2}/sfg_${analdate}_fhr${fhr}_ensmean ${datapath2}/sfg_${analdate}_fhr${fhr}_control
-  /bin/ln -fs ${datapath2}/bfg_${analdate}_fhr${fhr}_ensmean ${datapath2}/bfg_${analdate}_fhr${fhr}_control
+  /bin/ln -fs ${datapath2}/sfg_${analdate}_fhr${fhr}_ensmean ${datapath2}/sfg_${analdate}_fhr${fhr}_${charnanal}
+  /bin/ln -fs ${datapath2}/bfg_${analdate}_fhr${fhr}_ensmean ${datapath2}/bfg_${analdate}_fhr${fhr}_${charnanal}
   fh=$((fh+FHOUT))
 done
 if [ $hybgain == "true" ]; then
@@ -375,8 +375,7 @@ if [ $recenter_anal == "true" ]; then
    else
       # hybrid covariance
       export fileprefix="sanl"
-      export charnanal="control"
-      echo "$analdate recenter enkf analysis ensemble around control analysis `date`"
+      echo "$analdate recenter enkf analysis ensemble around varanal analysis `date`"
       sh ${enkfscripts}/recenter_ens.sh > ${current_logdir}/recenter_ens_anal.out 2>&1
       recenter_done=`cat ${current_logdir}/recenter.log`
       if [ $recenter_done == 'yes' ]; then
