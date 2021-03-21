@@ -69,13 +69,8 @@ for outfile in $outfiles; do
 done
 echo "${analdate} compute first guesses `date`"
 while [ $alldone == 'no' ] && [ $niter -le $nitermax ]; do
-    if [ $niter -eq 1 ]; then
-       sh ${enkfscripts}/${rungfs}
-       exitstat=$?
-    else
-       sh ${enkfscripts}/${rungfs}
-       exitstat=$?
-    fi
+    sh ${enkfscripts}/${rungfs}
+    exitstat=$?
     if [ $exitstat -eq 0 ]; then
        alldone='yes'
        for outfile in $outfiles; do
