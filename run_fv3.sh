@@ -228,10 +228,10 @@ snoid='SNOD'
 
 # Turn off snow analysis if it has already been used.
 # (snow analysis only available once per day at 18z)
-fntsfa=${obs_datapath2}/gdas.${year}${mon}${day}/${hour}/gdas.t${hour}z.rtgssthr.grb
-fnacna=${obs_datapath2}/gdas.${year}${mon}${day}/${hour}/gdas.t${hour}z.seaice.5min.grb
-fnsnoa=${obs_datapath2}/gdas.${year}${mon}${day}/${hour}/gdas.t${hour}z.snogrb_t1534.3072.1536
-fnsnog=${obs_datapath2}/gdas.${yearprev}${monprev}${dayprev}/${hourprev}/gdas.t${hourprev}z.snogrb_t1534.3072.1536
+fntsfa=${obs_datapath2}/${RUN}.${year}${mon}${day}/${hour}/${RUN}.t${hour}z.rtgssthr.grb
+fnacna=${obs_datapath2}/${RUN}.${year}${mon}${day}/${hour}/${RUN}.t${hour}z.seaice.5min.grb
+fnsnoa=${obs_datapath2}/${RUN}.${year}${mon}${day}/${hour}/${RUN}.t${hour}z.snogrb_t1534.3072.1536
+fnsnog=${obs_datapath2}/${RUN}.${yearprev}${monprev}${dayprev}/${hourprev}/${RUN}.t${hourprev}z.snogrb_t1534.3072.1536
 nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
 if [ $nrecs_snow -eq 0 ]; then
    # no snow depth in file, use model
