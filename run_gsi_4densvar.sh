@@ -73,7 +73,7 @@ fdatev=`${incdate} $fdatei $fhr`
 echo "fdatei=$fdatei fhr=$fhr fdatev=$fdatev"
 gdate0=`echo $gdate | cut -c1-8`
 obs_datapath=${obs_datapath:-/scratch1/NCEPDEV/global/glopara/dump}
-datobs=$obs_datapath/gdas.${iy}${im}${id}/${ih}
+datobs=$obs_datapath/${RUN}.${iy}${im}${id}/${ih}
 
 # Set runtime and save directories
 tmpdir=${tmpdir:-$datges/gsitmp$$}
