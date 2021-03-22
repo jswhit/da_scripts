@@ -90,7 +90,8 @@ elif [ "$machine" == 'orion' ]; then
    export basedir=/work/noaa/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   export obs_datapath=${basedir}/dumps
+   export obs_datapath2=/work/noaa/sfc-perts/gbates/hrlyda_dumps/6hrly
+   export obs_datapath=/work/noaa/sfc-perts/gbates/hrlyda_dumps/short
    ulimit -s unlimited
    source $MODULESHOME/init/sh
    module purge
