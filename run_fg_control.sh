@@ -51,13 +51,7 @@ if [ $cleanup_fg == 'true' ]; then
 fi
 
 export niter=1
-outfiles=""
-fhr=$FHMIN
-while  [ $fhr -le $FHMAX ]; do
-   charhr="fhr`printf %02i $fhr`"
-   outfiles="${outfiles} ${datapath}/${analdatep1}/sfg_${analdatep1}_${charhr}_${charnanal} ${datapath}/${analdatep1}/bfg_${analdatep1}_${charhr}_${charnanal}"
-   fhr=$((fhr+FHOUT))
-done
+outfiles="${datapath}/${analdatep1}/sfg_${analdatep1}_fhr06_${charnanal} ${datapath}/${analdatep1}/bfg_${analdatep1}_fhr06_${charnanal}"
 alldone='yes'
 for outfile in $outfiles; do
   if [ ! -s $outfile ]; then
@@ -69,13 +63,8 @@ for outfile in $outfiles; do
 done
 echo "${analdate} compute first guesses `date`"
 while [ $alldone == 'no' ] && [ $niter -le $nitermax ]; do
-    if [ $niter -eq 1 ]; then
-       sh ${enkfscripts}/${rungfs}
-       exitstat=$?
-    else
-       sh ${enkfscripts}/${rungfs}
-       exitstat=$?
-    fi
+    sh ${enkfscripts}/${rungfs}
+    exitstat=$?
     if [ $exitstat -eq 0 ]; then
        alldone='yes'
        for outfile in $outfiles; do

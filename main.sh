@@ -21,15 +21,14 @@ export yr=`echo $analdate | cut -c1-4`
 export mon=`echo $analdate | cut -c5-6`
 export day=`echo $analdate | cut -c7-8`
 export hr=`echo $analdate | cut -c9-10`
-# previous analysis time.
-if [ $ANALINC -eq 1 ]; then
 export FHOFFSET=1
-else
-export FHOFFSET=`expr $ANALINC \/ 2`
-fi
-export analdatem1=`${incdate} $analdate -$ANALINC`
+export analdatem1=`${incdate} $analdate -1`
 # next analysis time.
-export analdatep1=`${incdate} $analdate $ANALINC`
+if [ $cold_start == "true" ]; then
+export analdatep1=`${incdate} $analdate 6`
+else
+export analdatep1=`${incdate} $analdate 1`
+fi
 # beginning of current assimilation window
 export analdatem3=`${incdate} $analdate -$FHOFFSET`
 # beginning of next assimilation window
@@ -194,14 +193,12 @@ mkdir -p ${current_logdir}
 
 # if nanals2>0, extend nanals2 members out to FHMAX_LONGER
 # but only at 02,08,14,20UTC (for comparison with 6-h cycled system)
-if [ $ANALINC -eq 1 ]; then
 if [ $hr = "02" ] || [ $hr = "08" ] || [ $hr = "14" ] || [ $hr = "20" ]; then
   export nanals2=80
   echo "will run $nanals2 members out to hour $FHMAX_LONGER"
 else
   export nanals2=-1
   echo "no longer forecast extension"
-fi
 fi
 # only run global cycle at synoptic times.
 if [ $hr = "00" ] || [ $hr = "06" ] || [ $hr = "12" ] || [ $hr = "18" ]; then
@@ -245,11 +242,13 @@ errexit=0
 if [ $replay_controlfcst == 'true' ]; then
    charnanal='control'
    echo "$analdate change resolution of control forecast to ens resolution `date`"
-   fh=$FHMIN
-   while [ $fh -le $FHMAX ]; do
+   fh=3
+   while [ $fh -le 9 ]; do
      fhr=`printf %02i $fh`
      # run concurrently, wait
+     if [ -s $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} ]; then
      sh ${enkfscripts}/chgres.sh $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal}.chgres > ${current_logdir}/chgres_${fhr}.out 2>&1 &
+     fi
      errstatus=$?
      if [ $errstatus -ne 0 ]; then
        errexit=$errstatus
@@ -264,21 +263,6 @@ if [ $replay_controlfcst == 'true' ]; then
    echo "$analdate done changing resolution of control forecast to ens resolution `date`"
 fi
 
-# optionally (partially) recenter ensemble around control forecast.
-if [ $replay_controlfcst == 'true' ] && [ $recenter_control_wgt -gt 0 ] && [ $recenter_fcst == "true" ]; then
-   echo "$analdate (partially) recenter background ensemble around control `date`"
-   export fileprefix="sfg"
-   export charnanal="control.chgres"
-   sh ${enkfscripts}/recenter_ens.sh > ${current_logdir}/recenter_ens_fcst.out 2>&1
-   recenter_done=`cat ${current_logdir}/recenter.log`
-   if [ $recenter_done == 'yes' ]; then
-     echo "$analdate recentering completed successfully `date`"
-   else
-     echo "$analdate recentering did not complete successfully, exiting `date`"
-     exit 1
-   fi
-fi
-
 # if ${datapathm1}/cold_start_bias exists, GSI run in 'observer' mode
 # to generate diag_rad files to initialize angle-dependent 
 # bias correction.
@@ -289,17 +273,19 @@ else
 fi
 
 # use ensmean mean background for 3dvar analysis/observer calculatino
-export charnanal='control' 
+export charnanal='varanal' 
 export charnanal2='ensmean'
 export lobsdiag_forenkf='.true.'
 export skipcat="false"
 # run Var analysis
 # symlink ens mean backgrounds to "control"
-fh=$FHMIN
-while [ $fh -le $FHMAX ]; do
+fh=3
+while [ $fh -le 9 ]; do
   fhr=`printf %02i $fh`
-  /bin/ln -fs ${datapath2}/sfg_${analdate}_fhr${fhr}_ensmean ${datapath2}/sfg_${analdate}_fhr${fhr}_control
-  /bin/ln -fs ${datapath2}/bfg_${analdate}_fhr${fhr}_ensmean ${datapath2}/bfg_${analdate}_fhr${fhr}_control
+  if [ -s ${datapath2}/sfg_${analdate}_fhr${fhr}_ensmean ]; then
+  /bin/ln -fs ${datapath2}/sfg_${analdate}_fhr${fhr}_ensmean ${datapath2}/sfg_${analdate}_fhr${fhr}_${charnanal}
+  /bin/ln -fs ${datapath2}/bfg_${analdate}_fhr${fhr}_ensmean ${datapath2}/bfg_${analdate}_fhr${fhr}_${charnanal}
+  fi
   fh=$((fh+FHOUT))
 done
 if [ $hybgain == "true" ]; then
@@ -317,50 +303,6 @@ else
  echo "$analdate $type analysis did not complete successfully, exiting `date`"
  exit 1
 fi
-
-# loop over members run observer sequentially (for testing)
-#export skipcat="false"
-#nanal=0
-#ncount=0
-#while [ $nanal -le $nanals ]; do
-#   if [ $nanal -eq 0 ]; then
-#     export charnanal="ensmean"
-#     export charnanal2="ensmean"
-#   else
-#     export charnanal="mem"`printf %03i $nanal`
-#     export charnanal2=$charnanal 
-#   fi
-#   export lobsdiag_forenkf='.false.'
-#   echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
-#   sh ${enkfscripts}/run_gsiobserver.sh > ${current_logdir}/run_gsi_observer_${charnanal}.out 2>&1 &
-#   ncount=$((ncount+1))
-#   if [ $ncount -eq $NODES ]; then
-#      echo "waiting at nanal = $nanal ..."
-#      wait
-#      ncount=0
-#   fi
-#   nanal=$((nanal+1))
-#done
-#wait
-#nanal=0
-#while [ $nanal -le $nanals ]; do
-#   if [ $nanal -eq 0 ]; then
-#     export charnanal="ensmean"
-#     export charnanal2="ensmean"
-#   else
-#     export charnanal="mem"`printf %03i $nanal`
-#     export charnanal2=$charnanal 
-#   fi
-#   # once observer has completed, check log files.
-#   gsi_done=`cat ${current_logdir}/run_gsi_observer_${charnanal}.log`
-#   if [ $gsi_done == 'yes' ]; then
-#     echo "$analdate gsi observer $charnanal completed successfully `date`"
-#   else
-#     echo "$analdate gsi observer $charnanal did not complete successfully, exiting `date`"
-#     exit 1
-#   fi
-#   nanal=$((nanal+1))
-#done
 
 # run enkf analysis.
 echo "$analdate run enkf `date`"
@@ -431,37 +373,12 @@ if [ $replay_controlfcst == 'true' ] && [ $replay_run_observer == "true" ]; then
    fi
 fi
 
-# run gsi observer on ensemble mean forecast extension
-if [ $ANALINC -eq 6 ]; then
-if [ $nanals2 -gt 0 ] && [ -s $datapath2/sfg2_${analdate}_fhr${FHMAX_LONGER}_ensmean ]; then
-   # symlink ensmean files (fhr12_ensmean --> fhr06_ensmean2, etc)
-   fh=$FHMAX
-   while [ $fh -le $FHMAX_LONGER ]; do
-     fhr=`printf %02i $fh`
-     fh2=`expr $fh - $ANALINC`
-     fhr2=`printf %02i $fh2`
-     /bin/ln -fs ${datapath2}/sfg2_${analdate}_fhr${fhr}_ensmean ${datapath2}/sfg_${analdate}_fhr${fhr2}_ensmean2
-     /bin/ln -fs ${datapath2}/bfg2_${analdate}_fhr${fhr}_ensmean ${datapath2}/bfg_${analdate}_fhr${fhr2}_ensmean2
-     fh=$((fh+FHOUT))
-   done
-   export charnanal='ensmean2' 
-   export charnanal2='ensmean2' 
-   export lobsdiag_forenkf='.false.'
-   export skipcat="false"
-   echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
-   sh ${enkfscripts}/run_gsiobserver.sh > ${current_logdir}/run_gsiobserver.out 2>&1
-   # once observer has completed, check log files.
-   gsi_done=`cat ${current_logdir}/run_gsi_observer.log`
-   if [ $gsi_done == 'yes' ]; then
-     echo "$analdate gsi observer completed successfully `date`"
-   else
-     echo "$analdate gsi observer did not complete successfully, exiting `date`"
-     exit 1
-   fi
-fi
-fi
-
 fi # skip to here if fg_only = true
+
+if [ $cold_start == "true" ]; then
+    export FHMIN=3
+    export FHMAX=9
+fi
 
 if [ $replay_controlfcst == 'true' ]; then
     echo "$analdate run high-res control first guess `date`"
@@ -513,10 +430,8 @@ fi # skip to here if cold_start = true
 
 echo "$analdate all done"
 
-# next analdate: increment by $ANALINC
-export analdate=`${incdate} $analdate $ANALINC`
-
-echo "export analdate=${analdate}" > $startupenv
+# next analdate
+echo "export analdate=${analdatep1}" > $startupenv
 echo "export analdate_end=${analdate_end}" >> $startupenv
 echo "export fg_only=false" > $datapath/fg_only.sh
 echo "export cold_start=false" >> $datapath/fg_only.sh

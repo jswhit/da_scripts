@@ -29,7 +29,6 @@ FAC_TSL=${FAC_TSL:-1}
 TZR_QC=${TZR_QC:-1}
 
 HXONLY=${HXONLY:-"NO"}
-HRLY_BKG=${HRLY_BKG:-"YES"}
 NOSAT=${NOSAT:-"NO"}
 skipcat=${skipcat:-"false"}
 
@@ -48,7 +47,7 @@ charnanal2=${charnanal2:-$charnanal}
 # Given the analysis date, compute the date from which the
 # first guess comes.  Extract cycle and set prefix and suffix
 # for guess and observation data files
-gdate=`${incdate} $adate -${ANALINC}`
+gdate=`${incdate} $adate -1`
 hha=`echo $adate | cut -c9-10`
 hham1=`echo $analdatem1 | cut -c9-10`
 hhg=`echo $gdate | cut -c9-10`
@@ -67,7 +66,7 @@ im=`echo $adate | cut -c5-6`
 id=`echo $adate | cut -c7-8`
 ih=`echo $adate | cut -c9-10`
 echo "iy,im,id,ih = $iy $im $id $ih"
-date_fhour=`$python ${enkfscripts}/getidate.py ${datges}/bfg_${adate}_fhr0${ANALINC}_${charnanal}`
+date_fhour=`$python ${enkfscripts}/getidate.py ${datges}/bfg_${adate}_fhr06_${charnanal}`
 fdatei=`echo $date_fhour | cut -f1 -d " "`
 fhr=`echo $date_fhour | cut -f2 -d " "`
 fdatev=`${incdate} $fdatei $fhr`
@@ -123,6 +122,11 @@ BIASOAIR=${BIASOAIR:-$savdir/${RUN}.t${hha}z.abias_air}
 BIASO_PC=${BIASO_PC:-$savdir/${RUN}.t${hha}z.abias_pc}
 
 lwrite4danl=.false.
+if [[ "$HXONLY" = "YES" ]]; then
+  l4densvar = .false.
+else
+  l4densvar = .true.
+fi
 if [[ $beta_s0 > 0.999 ]]; then
    lwrite4danl=.false.
 fi
@@ -137,23 +141,11 @@ if [ $use_correlated_oberrs == ".true." ];  then
 else
   lupdqc=.false.
 fi
-if [ $ANALINC -eq 6 ]; then
-   min_offset=180
-   l4densvar=.true.
-   thin4d=.true.
-   nhr_obsbin=$FHOUT
-   time_window_max=3
-elif [ $ANALINC -eq 1 ]; then
-   min_offset=30
-   l4densvar=.false.
-   thin4d=.false.
-   lwrite4danl=.false.
-   nhr_obsbin=1
-   time_window_max=0.5
-else
-   echo "ANALINC must be 1 or 6"
-fi
-SETUP="verbose=.true.,reduce_diag=.true.,lwrite_peakwt=.true.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=$l4densvar,ens_nstarthr=$FHMIN,iwrtinc=-1,nhr_assimilation=$ANALINC,nhr_obsbin=$nhr_obsbin,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=$lobsdiag_forenkf,lwrite_predterms=.true.,thin4d=$thin4d,lupdqc=$lupdqc,min_offset=$min_offset"
+min_offset=180
+thin4d=.true.
+nhr_obsbin=$FHOUT
+time_window_max=3
+SETUP="verbose=.true.,reduce_diag=.true.,lwrite_peakwt=.true.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=$l4densvar,ens_nstarthr=3,iwrtinc=-1,nhr_assimilation=6,nhr_obsbin=$nhr_obsbin,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=$lobsdiag_forenkf,lwrite_predterms=.true.,thin4d=$thin4d,lupdqc=$lupdqc,min_offset=$min_offset"
 
 if [[ "$HXONLY" = "YES" ]]; then
    #SETUP="$SETUP,lobserver=.true.,l4dvar=.true." # can't use reduce_diag=T
@@ -731,53 +723,40 @@ $nln $GBIAS_PC           ./satbias_pc
 $nln $GSATANG            ./satbias_angle
 $nln $GBIASAIR           ./aircftbias_in
 
-if [ $ANALINC -eq 6 ]; then
 SFCG03=${SFCG03:-$datges/bfg_${adate}_fhr03_${charnanal}}
 $nln $SFCG03               ./sfcf03
-SFCG06=${SFCG06:-$datges/bfg_${adate}_fhr06_${charnanal}}
-$nln $SFCG06               ./sfcf06
-SFCG09=${SFCG09:-$datges/bfg_${adate}_fhr09_${charnanal}}
-$nln $SFCG09               ./sfcf09
-
-SIGG03=${SIGG03:-$datges/sfg_${adate}_fhr03_${charnanal}}
-$nln $SIGG03               ./sigf03
-SIGG06=${SIGG06:-$datges/sfg_${adate}_fhr06_${charnanal}}
-$nln $SIGG06               ./sigf06
-SIGG09=${SIGG09:-$datges/sfg_${adate}_fhr09_${charnanal}}
-$nln $SIGG09               ./sigf09
-
-if [[ "$HRLY_BKG" = "YES" ]]; then
 SFCG04=${SFCG04:-$datges/bfg_${adate}_fhr04_${charnanal}}
 $nln $SFCG04               ./sfcf04
 SFCG05=${SFCG05:-$datges/bfg_${adate}_fhr05_${charnanal}}
 $nln $SFCG05               ./sfcf05
+SFCG06=${SFCG06:-$datges/bfg_${adate}_fhr06_${charnanal}}
+$nln $SFCG06               ./sfcf06
 SFCG07=${SFCG07:-$datges/bfg_${adate}_fhr07_${charnanal}}
 $nln $SFCG07               ./sfcf07
 SFCG08=${SFCG08:-$datges/bfg_${adate}_fhr08_${charnanal}}
 $nln $SFCG08               ./sfcf08
+SFCG09=${SFCG09:-$datges/bfg_${adate}_fhr09_${charnanal}}
+$nln $SFCG09               ./sfcf09
+SIGG03=${SIGG03:-$datges/sfg_${adate}_fhr03_${charnanal}}
+$nln $SIGG03               ./sigf03
 SIGG04=${SIGG04:-$datges/sfg_${adate}_fhr04_${charnanal}}
 $nln $SIGG04               ./sigf04
 SIGG05=${SIGG05:-$datges/sfg_${adate}_fhr05_${charnanal}}
 $nln $SIGG05               ./sigf05
+SIGG06=${SIGG06:-$datges/sfg_${adate}_fhr06_${charnanal}}
+$nln $SIGG06               ./sigf06
 SIGG07=${SIGG07:-$datges/sfg_${adate}_fhr07_${charnanal}}
 $nln $SIGG07               ./sigf07
 SIGG08=${SIGG08:-$datges/sfg_${adate}_fhr08_${charnanal}}
 $nln $SIGG08               ./sigf08
-fi
-elif [ $ANALINC -eq 1 ]; then
-SIGG06=${SIGG01:-$datges/sfg_${adate}_fhr01_${charnanal}}
-$nln $SIGG06               ./sigf01
-SFCG06=${SIGG01:-$datges/bfg_${adate}_fhr01_${charnanal}}
-$nln $SFCG06               ./sfcf01
-else
-echo "ANALINC must be 6 or 1"
-fi
+SIGG09=${SIGG09:-$datges/sfg_${adate}_fhr09_${charnanal}}
+$nln $SIGG09               ./sigf09
 
 if [[ $beta_s0 < 0.999 ]]; then
 ln -s $datges/ensmem*.pe* .
 ln -s $datges/control*.pe* .
-fh=$FHMIN
-while [ $fh -le $FHMAX ] ;do
+fh=3
+while [ $fh -le 9 ] ;do
 for ensfile in $datges/sfg_${adate}*fhr0${fh}*mem???; do
  ensfilename=`basename $ensfile`
  memnum=`echo $ensfilename | cut -f4 -d"_" | cut -c4-6`

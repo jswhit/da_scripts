@@ -1,6 +1,6 @@
 #!/bin/sh
-#SBATCH -q debug
-#SBATCH -t 00:30:00
+##SBATCH -q debug
+#SBATCH -t 04:30:00
 #SBATCH -A gsienkf
 #SBATCH -N 10    
 #SBATCH -J observer
@@ -152,9 +152,9 @@ export lobsdiag_forenkf='.false.'
 export skipcat="false"
 
 export cleanup_observer="true"
-export analdate=2020031612
+export analdate=2020031312
 export nitermax=1
-while [ $analdate -le 2020031818 ]; do
+while [ $analdate -le 2020031600 ]; do
    export yr=`echo $analdate | cut -c1-4`
    export mon=`echo $analdate | cut -c5-6`
    export day=`echo $analdate | cut -c7-8`

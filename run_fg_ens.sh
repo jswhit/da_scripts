@@ -6,8 +6,8 @@ echo "deleting existing files..."
 nanal=1
 while [ $nanal -le $nanals ]; do
     charnanal="mem`printf %03i $nanal`"
-    /bin/rm -f ${datapath}/${analdatep1}/sfg_${analdatep1}*${charnanal}
-    /bin/rm -f ${datapath}/${analdatep1}/bfg_${analdatep1}*${charnanal} 
+    /bin/rm -f ${datapath}/${analdatep1}/sfg_${analdatep1}*fhr06*${charnanal}
+    /bin/rm -f ${datapath}/${analdatep1}/bfg_${analdatep1}*fhr06*${charnanal} 
     nanal=$((nanal+1))
 done
 fi

@@ -24,12 +24,11 @@ while [ $nanal -le $nanals ]; do
  export charnanal="mem`printf %03i $nanal`"
 
 # check to see if output files already created.
- fhr=$FHMIN
+ fhrs=`echo $enkfstatefhrs | sed 's/,/ /g'`
  outfiles=""
- while [ $fhr -le $FHMAX ]; do
+ for fhr in $fhrs; do
     charhr="fhr`printf %02i $fhr`"
     outfiles="${outfiles} ${datapath}/${analdatep1}/sfg_${analdatep1}_${charhr}_${charnanal} ${datapath}/${analdatep1}/bfg_${analdatep1}_${charhr}_${charnanal}"
-    fhr=$((fhr+FHOUT))
  done 
  filemissing='no'
  for outfile in $outfiles; do
@@ -73,12 +72,10 @@ nanal=1
 anyfilemissing='no'
 while [ $nanal -le $nanals ]; do
     export charnanal="mem`printf %03i $nanal`"
-    fhr=$FHMIN
     outfiles="${datapath}/${analdatep1}/${charnanal}/INPUT/sfc_data.tile6.nc"
-    while [ $fhr -le $FHMAX ]; do
+    for fhr in $fhrs; do
        charhr="fhr`printf %02i $fhr`"
        outfiles="${outfiles} ${datapath}/${analdatep1}/sfg_${analdatep1}_${charhr}_${charnanal} ${datapath}/${analdatep1}/bfg_${analdatep1}_${charhr}_${charnanal}"
-       fhr=$((fhr+FHOUT))
     done
     filemissing='no'
     for outfile in $outfiles; do

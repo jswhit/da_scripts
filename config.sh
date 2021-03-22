@@ -26,9 +26,9 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybgain_hourly"
+export exptname="C${RES}_hybgain_owhourly"
 # for 'passive' or 'replay' cycling of control fcst 
-export replay_controlfcst='false'
+export replay_controlfcst='true'
 
 export fg_gfs="run_ens_fv3.sh"
 export ensda="enkf_run.sh"
@@ -55,11 +55,9 @@ else
    export save_hpss="true"
 fi
 export recenter_anal="true"
-export recenter_fcst="false"
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
-#export recenter_fcst="false"
 #export cleanup_observer='false'
 #export cleanup_controlanl='false'
 #export cleanup_anal='false'
@@ -75,7 +73,7 @@ if [ "$machine" == 'hera' ]; then
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    export obs_datapath2=/scratch1/NCEPDEV/global/glopara/dump # for sst,snow,ice grib
-   export obs_datapath=/scratch2/BMC/gsienkf/whitaker/gdas1bufr # for bufr
+   export obs_datapath=/scratch2/BMC/gsienkf/whitaker/gdas1bufr_short # for bufr
    module purge
    module load intel/18.0.5.274
    module load impi/2018.0.4 
@@ -269,27 +267,15 @@ export FHCYC=0 # run global_cycle instead of gcycle inside model
 export LONA=$LONB
 export LATA=$LATB      
 
-export ANALINC=1 # assimilation window length
-
-if [ $ANALINC -eq 1 ]; then
-export FHMIN=1
-export FHMAX=1
+# fhr=1 mapped to fhr=6, fhr=2 mapped to fhr=7 etc
+# fhrs 3,4,5 are previous analyses.  
+export FHMIN=0
+export FHMAX=4 # only really need to run two hours (this allows GSI to see a symmetric window)
 export FHOUT=1
-export FHMAX_LONGER=7
-elif [ $ANALINC -eq 6 ]; then
-export FHMIN=3
-export FHMAX=9
-export FHOUT=3
-export FHMAX_LONGER=15
-export obs_datapath=$obs_datapath2
-else
-echo "ANALINC must be 6 or 1"
-exit 1
-fi
-FHMAXP1=`expr $FHMAX + 1`
-export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
-export nhr_anal=$ANALINC # analysis increment computed at center of window
-#export nhr_anal=$FHMAX # analysis increment computed at end of window
+export FHMAX_LONGER=7 # to compare with 6-h cycling system 4 times per day
+
+export enkfstatefhrs="3, 4, 5, 6, 7, 8, 9"
+export enkfanalfhrs="4, 5, 6"
 
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
@@ -364,7 +350,7 @@ export s_ens_v=5.4     # 14 levels
 export nanals=80                                                    
 export nanals2=-1 # longer extension. Set to -1 to disable 
 #export nanals2=$nanals
-export nitermax=2 # number of retries
+export nitermax=1 # number of retries
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
@@ -429,7 +415,7 @@ export HYBENSINFO=${fixgsi}/global_hybens_info.l${LEVS}.txt # only used if readi
 # in stratosphere/mesosphere
 #export HYBENSMOOTHINFO=${fixgsi}/global_hybens_smoothinfo.l${LEVS}.txt
 export OZINFO=${fixgsi}/global_ozinfo.txt
-export CONVINFO=${fixgsi}/global_convinfo.txt
+export CONVINFO=${fixgsi}/global_convinfo.txt 
 export SATINFO=${fixgsi}/global_satinfo.txt
 export NLAT=$((${LATA}+2))
 # default is to use berror file in gsi fix dir.

@@ -2,7 +2,7 @@
 
 export VERBOSE=YES
 export OMP_STACKSIZE=256M
-charnanal=${charnanal:-"control"}
+charnanal=${charnanal:-"varanal"}
 recenter_ensmean_wgt=${recenter_ensmean_wgt:-"0"}
 recenter_control_wgt=${recenter_control_wgt:-"100"}
 fileprefix=${fileprefix:-"sanl"}

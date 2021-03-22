@@ -20,3 +20,8 @@ date you want the experiment to start and end.
 * to turn off IAU, set iaudelthrs=-1 and iaufhrs=6 in config.sh
 
 Requires gsi/enkf and utils from https://github.com/jswhit/GSI (branch enkf-64bit)
+
+
+* for cold_start=true, a 3-9 hour forecast will be run from -6 hours prior to first analysis time.
+  make a directory for first analysis time -1 hour with symlinks to bias correction files in -6 h directory
+* l4densvar=T doesn't work if fhrs=8,9 missing (make symlinks to fhr=7, or set nhr_assimilation=4 ?)

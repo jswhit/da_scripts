@@ -8,20 +8,22 @@ export MKL_NUM_THREADS=1
 source $MODULESHOME/init/sh
 module list
 
-nfhr=$nhr_anal
-charfhr="fhr"`printf %02i $nfhr`
-# check output files.
-nanal=1
-filemissing='no'
-while [ $nanal -le $nanals ]; do
-   charnanal="mem"`printf %03i $nanal`
-   analfile="${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}"
-   if [ ! -s $analfile ]; then
-      filemissing='yes'
-   fi
-   nanal=$((nanal+1))
-done
+fhrs=`echo $enkfanalfhrs | sed 's/,/ /g'`
 
+for nfhr in $fhrs; do
+  charfhr="fhr"`printf %02i $nfhr`
+  # check output files.
+  nanal=1
+  filemissing='no'
+  while [ $nanal -le $nanals ]; do
+     charnanal="mem"`printf %03i $nanal`
+     analfile="${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}"
+     if [ ! -s $analfile ]; then
+        filemissing='yes'
+     fi
+     nanal=$((nanal+1))
+  done
+done
 
 if [ $filemissing == 'yes' ]; then
 
@@ -46,7 +48,7 @@ cat <<EOF > enkf.nml
   getkf_inflation=$getkf_inflation,letkf_novlocal=$letkf_novlocal,modelspace_vloc=$modelspace_vloc,save_inflation=.false.,
   reducedgrid=${reducedgrid},nlevs=$LEVS,nanals=$nanals,deterministic=$deterministic,imp_physics=$imp_physics,
   lobsdiag_forenkf=.true.,write_spread_diag=.false.,netcdf_diag=.true.,
-  sortinc=$sortinc,nhr_anal=$nhr_anal,nhr_state=$enkfstatefhrs,getkf=$getkf,
+  sortinc=$sortinc,nhr_anal=$enkfanalfhrs,nhr_state=$enkfstatefhrs,getkf=$getkf,
   use_correlated_oberrs=${use_correlated_oberrs},use_gfs_ncio=.true.,nccompress=T,paranc=F,write_fv3_incr=${write_fv3_increment},
   adp_anglebc=.true.,angord=4,newpc4pred=.true.,use_edges=.false.,emiss_bc=.true.,biasvar=-500,nobsl_max=$nobsl_max,use_qsatensmean=.true.,
   ${ENKFVARS}

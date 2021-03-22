@@ -70,37 +70,28 @@ export ISEED_SHUM=$((analdate*1000 + nmem*10 + 2 + niter))
 #export ISEED_SHUM=$((analdate*1000 + nmem*10 + 2))
 export npx=`expr $RES + 1`
 export LEVP=`expr $LEVS \+ 1`
-# yr,mon,day,hr at middle of assim window (nominal analysis time)
-fhdiff=`expr $nhr_anal - $ANALINC`
-# actual analysis time (may be end of window)
-analdatex=`$incdate $analdate $fhdiff`
+
 export year=`echo $analdate |cut -c 1-4`
 export mon=`echo $analdate |cut -c 5-6`
 export day=`echo $analdate |cut -c 7-8`
 export hour=`echo $analdate |cut -c 9-10`
-if [ "$cold_start" == "true" ]; then
-export yeara=`echo $analdate |cut -c 1-4`
-export mona=`echo $analdate |cut -c 5-6`
-export daya=`echo $analdate |cut -c 7-8`
-export houra=`echo $analdate |cut -c 9-10`
-else
-export yeara=`echo $analdatex |cut -c 1-4`
-export mona=`echo $analdatex |cut -c 5-6`
-export daya=`echo $analdatex |cut -c 7-8`
-export houra=`echo $analdatex |cut -c 9-10`
-fi
-# previous nominal analysis time
+
 analdatem6=`$incdate $analdate -6`
+# used to to test for new snow analysis
 export yearprev=`echo $analdatem6 |cut -c 1-4`
 export monprev=`echo $analdatem6 |cut -c 5-6`
 export dayprev=`echo $analdatem6 |cut -c 7-8`
 export hourprev=`echo $analdatem6 |cut -c 9-10`
 # time for restart to initialize next background forecast
-analdatexp1=`$incdate $analdatex $ANALINC`
-export yrnext=`echo $analdatexp1 |cut -c 1-4`
-export monnext=`echo $analdatexp1 |cut -c 5-6`
-export daynext=`echo $analdatexp1 |cut -c 7-8`
-export hrnext=`echo $analdatexp1 |cut -c 9-10`
+if [ $cold_start == "true" ]; then # cold start
+   analdatep1=`$incdate $analdate 6`
+else
+   analdatep1=`$incdate $analdate 1`
+fi
+export yrnext=`echo $analdatep1 |cut -c 1-4`
+export monnext=`echo $analdatep1 |cut -c 5-6`
+export daynext=`echo $analdatep1 |cut -c 7-8`
+export hrnext=`echo $analdatep1 |cut -c 9-10`
 
 # copy data, diag and field tables.
 cd ${datapath2}/${charnanal}
@@ -163,7 +154,7 @@ done
 # create netcdf increment files.
 if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
    cd INPUT
-   fh=$nhr_anal
+   fh=6
    export increment_file="fv3_increment${fh}.nc"
    if [ $charnanal == "control" ] && [ "$replay_controlfcst" == 'true' ]; then
       export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_ensmean"
@@ -186,7 +177,7 @@ else
    if [ $cold_start == "false" ] ; then
       cd INPUT
       export increment_file="fv3_increment${fh}.nc"
-      /bin/mv -f ${datapath2}/incr_${analdate}_fhr0${nhr_anal}_${charnanal} ${increment_file}
+      /bin/mv -f ${datapath2}/incr_${analdate}_fhr06_{charnanal} ${increment_file}
       cd ..
    fi
 fi
@@ -229,7 +220,7 @@ else
    fi
    
    FHCYC=${FHCYC}
-   reslatlondynamics="fv3_increment${nhr_anal}.nc"
+   reslatlondynamics="fv3_increment6.nc"
    readincrement=T
 fi
 
@@ -270,7 +261,11 @@ if [ $nanals2 -gt 0 ] && [ $nmem -le $nanals2 ]; then
    FHMAX_FCST=$FHMAX_LONGER
    longer_fcst="YES"
 else
-   FHMAX_FCST=$FHMAX
+   if [ "$charnanal" == "control" ] && [ $cold_start != "true" ]; then
+      FHMAX_FCST=2
+   else
+      FHMAX_FCST=$FHMAX
+   fi
    longer_fcst="NO"
 fi
 
@@ -380,12 +375,6 @@ nsout:                   -1
 EOF
 cat model_configure
 
-# setup coupler.res (needed for restarts if current time != start time)
-echo "     2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)" > INPUT/coupler.res
-echo "  ${year}  ${mon}  ${day}  ${hour}     0     0        Model start time:   year, month, day, hour, minute, second" >> INPUT/coupler.res
-echo "  ${yeara}  ${mona}  ${daya}  ${houra}     0     0        Current model time: year, month, day, hour, minute, second" >> INPUT/coupler.res
-cat INPUT/coupler.res
-
 # copy template namelist file, replace variables.
 /bin/cp -f ${enkfscripts}/${SUITE}.nml input.nml
 if [ $use_ipd = "YES" ]; then
@@ -442,22 +431,26 @@ fi
 export DATOUT=${DATOUT:-$datapathp1}
 ls -l dyn*.nc
 ls -l phy*.nc
+analdatep2=`$incdate $analdatep1 3`
+mkdir -p $datapath/$analdatep2
 fh=$FHMIN
-while [ $fh -le $FHMAX ]; do
-  charfhr="fhr"`printf %02i $fh`
+while [ $fh -le $FHMAX_FCST ]; do
+  if [ $cold_start == "true" ]; then
+      charfhr="fhr"`printf %02i $fh`
+  else
+      fhx=`expr $fh + 5`
+      charfhr="fhr"`printf %02i $fhx`
+  fi
   charfhr2="f"`printf %03i $fh`
-  if [ $longer_fcst = "YES" ] && [ $fh -eq $FHMAX ]; then
+  if [ $longer_fcst = "YES" ] && [ $fh -ge 1 ] ; then
+     fh3=`expr $fh + 2`
+     charfhr3="fhr"`printf %02i $fh3`
      /bin/cp -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
+     /bin/cp -f dyn${charfhr2}.nc ${datapath}/${analdatep2}/sfg2_${analdatep2}_${charfhr3}_${charnanal}
+     /bin/cp -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
+     /bin/cp -f phy${charfhr2}.nc ${datapath}/${analdatep2}/bfg2_${analdatep2}_${charfhr3}_${charnanal}
   else
      /bin/mv -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
-  fi
-  if [ $? -ne 0 ]; then
-     echo "netcdffile missing..."
-     exit 1
-  fi
-  if [ $longer_fcst = "YES" ] && [ $fh -eq $FHMAX ]; then
-     /bin/cp -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
-  else
      /bin/mv -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
   fi
   if [ $? -ne 0 ]; then
@@ -467,17 +460,12 @@ while [ $fh -le $FHMAX ]; do
   fh=$[$fh+$FHOUT]
 done
 if [ $longer_fcst = "YES" ]; then
-    fh=$FHMAX
-    analdatep2=`$incdate $analdatep1 $ANALINC`
-    mkdir -p $datapath/$analdatep2
+    fh=`expr $FHMAX + 1`
     while [ $fh -le $FHMAX_LONGER ]; do
-      charfhr="fhr"`printf %02i $fh`
+      fhx=`expr $fh + 2`
+      charfhr="f"`printf %03i $fhx`
       charfhr2="f"`printf %03i $fh`
       /bin/mv -f dyn${charfhr2}.nc ${datapath}/${analdatep2}/sfg2_${analdatep2}_${charfhr}_${charnanal}
-      if [ $? -ne 0 ]; then
-         echo "netcdffile missing..."
-         exit 1
-      fi
       /bin/mv -f phy${charfhr2}.nc ${datapath}/${analdatep2}/bfg2_${analdatep2}_${charfhr}_${charnanal}
       if [ $? -ne 0 ]; then
          echo "netcdf file missing..."
@@ -496,32 +484,26 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
    mkdir -p ${datapathp1}/${charnanal}/INPUT
    cd RESTART
    ls -l
-   if [ $nhr_anal -eq $FHMAX_FCST ]; then
-      /bin/mv -f fv_core.res.nc ${datapathp1}/${charnanal}/INPUT
-      tiles="tile1 tile2 tile3 tile4 tile5 tile6"
-      for tile in $tiles; do
-         files="fv_core.res.${tile}.nc fv_tracer.res.${tile}.nc fv_srf_wnd.res.${tile}.nc sfc_data.${tile}.nc phy_data.${tile}.nc"
-         for file in $files; do
-             /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT
-         done
-      done
-   else
-      datestring="${yrnext}${monnext}${daynext}.${hrnext}0000."
-      for file in ${datestring}*nc; do
-         file2=`echo $file | cut -f3-10 -d"."`
-         /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT/$file2
-         if [ $? -ne 0 ]; then
-           echo "restart file missing..."
-           exit 1
-         fi
-      done
-   fi
+   datestring="${yrnext}${monnext}${daynext}.${hrnext}0000."
+   for file in ${datestring}*nc; do
+      file2=`echo $file | cut -f3-10 -d"."`
+      /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT/$file2
+      if [ $? -ne 0 ]; then
+        echo "restart file missing..."
+        exit 1
+      fi
+   done
    cd ..
 fi
 
 # if random pattern restart file exists, copy it.
 ls -l stoch_out*
-charfh="F"`printf %06i $nhr_anal`
+if [ $cold_start == "true" ]; then
+  fhr = 1
+else
+  fhr = 6
+fi
+charfh="F"`printf %06i $fhr`
 if [ -s stoch_out.${charfh} ]; then
   mkdir -p ${DATOUT}/${charnanal}
   echo "copying stoch_out.${charfh} ${DATOUT}/${charnanal}/stoch_ini"
