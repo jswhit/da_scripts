@@ -18,30 +18,14 @@ if [ "$machine" == 'hera' ]; then
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'orion' ]; then
    module purge
-   module use /apps/contrib/NCEP/libs/hpc-stack/v1.0.0-beta1/modulefiles/stack
-   module load hpc/1.0.0-beta1
+   module use /apps/contrib/NCEP/libs/hpc-stack/modulefiles/stack
+   module load hpc/1.1.0
    module load hpc-intel/2018.4
+   module unload mkl/2020.2
+   module load mkl/2018.4
    module load hpc-impi/2018.4
-   module load hdf5/1.10.6
-   module load netcdf/4.7.4
-   module load pio/2.5.1
-   module load esmf/8_1_0_beta_snapshot_27
    module load wgrib
    export WGRIB=`which wgrib`
-elif [ "$machine" == 'gaea' ]; then
-   module purge
-   module load PrgEnv-intel/6.0.3
-   module rm intel
-   module load intel/18.0.3.222
-   #module load cray-netcdf-hdf5parallel/4.6.1.3
-   #module load cray-hdf5-parallel/1.10.2.0
-   module load cray-netcdf
-   module use -a /lustre/f2/pdata/ncep_shared/NCEPLIBS/lib//modulefiles
-   module load esmflocal/8_0_48b
-   module load nco/4.6.4
-   module load wgrib
-   export WGRIB=`which wgrib`
-   export HDF5_DISABLE_VERSION_CHECK=1
 fi
 module list
 
@@ -280,6 +264,7 @@ if [ "$cold_start" == "false" ] && [ -z $skip_global_cycle ]; then
    export CYCLESH=${enkfscripts}/global_cycle.sh
    export COMIN=${PWD}/INPUT
    export COMOUT=$COMIN
+   export CDUMP=$RUN
    export FNTSFA="${fntsfa}"
    export FNSNOA="${fnsnoa}"
    export FNACNA="${fnacna}"
