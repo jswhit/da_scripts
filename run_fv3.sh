@@ -18,9 +18,11 @@ if [ "$machine" == 'hera' ]; then
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'orion' ]; then
    module purge
-   module use /apps/contrib/NCEP/libs/hpc-stack/v1.0.0-beta1/modulefiles/stack
-   module load hpc/1.0.0-beta1
+   module use /apps/contrib/NCEP/libs/hpc-stack/modulefiles/stack
+   module load hpc/1.1.0
    module load hpc-intel/2018.4
+   module unload mkl/2020.2
+   module load mkl/2018.4
    module load hpc-impi/2018.4
    module load hdf5/1.10.6
    module load netcdf/4.7.4
@@ -291,12 +293,12 @@ snoid='SNOD'
 
 # Turn off snow analysis if it has already been used.
 # (snow analysis only available once per day at 18z)
-fntsfa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.rtgssthr.grb
-#fntsfa=/scratch2/BMC/gsienkf/Philip.Pegion/obs/ostia/grb_files/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.ostia_sst.grb
-fnacna=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.seaice.5min.grb
-#fnacna=/scratch2/BMC/gsienkf/Philip.Pegion/obs/ostia/grb_files/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.ostia_ice_fraction.grb
-fnsnoa=${obs_datapath}/gdas.${yeara}${mona}${daya}/${houra}/gdas.t${houra}z.snogrb_t1534.3072.1536
-fnsnog=${obs_datapath}/gdas.${yearprev}${monprev}${dayprev}/${hourprev}/gdas.t${hourprev}z.snogrb_t1534.3072.1536
+fntsfa=${obs_datapath}/${RUN}.${yeara}${mona}${daya}/${houra}/${RUN}.t${houra}z.rtgssthr.grb
+#fntsfa=/scratch2/BMC/gsienkf/Philip.Pegion/obs/ostia/grb_files/${RUN}.${yeara}${mona}${daya}/${houra}/${RUN}.t${houra}z.ostia_sst.grb
+fnacna=${obs_datapath}/${RUN}.${yeara}${mona}${daya}/${houra}/${RUN}.t${houra}z.seaice.5min.grb
+#fnacna=/scratch2/BMC/gsienkf/Philip.Pegion/obs/ostia/grb_files/${RUN}.${yeara}${mona}${daya}/${houra}/${RUN}.t${houra}z.ostia_ice_fraction.grb
+fnsnoa=${obs_datapath}/${RUN}.${yeara}${mona}${daya}/${houra}/${RUN}.t${houra}z.snogrb_t1534.3072.1536
+fnsnog=${obs_datapath}/${RUN}.${yearprev}${monprev}${dayprev}/${hourprev}/${RUN}.t${hourprev}z.snogrb_t1534.3072.1536
 nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
 if [ $nrecs_snow -eq 0 ]; then
    # no snow depth in file, use model

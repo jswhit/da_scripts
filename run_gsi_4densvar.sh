@@ -1,5 +1,8 @@
 #!/bin/sh
 echo "Time starting at `date` "
+source $MODULESHOME/init/sh
+module list
+env | grep OMP
 
 #if [ $machine == "hera" ]; then
 #   source $MODULESHOME/init/sh
@@ -74,7 +77,7 @@ fdatev=`${incdate} $fdatei $fhr`
 echo "fdatei=$fdatei fhr=$fhr fdatev=$fdatev"
 gdate0=`echo $gdate | cut -c1-8`
 obs_datapath=${obs_datapath:-/scratch1/NCEPDEV/global/glopara/dump}
-datobs=$obs_datapath/gdas.${iy}${im}${id}/${ih}
+datobs=$obs_datapath/${RUN}.${iy}${im}${id}/${ih}
 
 # Set runtime and save directories
 tmpdir=${tmpdir:-$datges/gsitmp$$}
@@ -793,7 +796,6 @@ pwd
 ls -l
 echo "Time before GSI `date` "
 export PGM=$tmpdir/gsi.x
-export FORT_BUFFERED=TRUE
 ${enkfscripts}/runmpi
 rc=$?
 if [[ $rc -ne 0 ]];then

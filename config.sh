@@ -24,7 +24,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybgain_iau"
+export exptname="C${RES}_hybgain"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='true'
 
@@ -93,19 +93,29 @@ elif [ "$machine" == 'orion' ]; then
    export basedir=/work/noaa/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   export obs_datapath=${basedir}/dumps
+   export obs_datapath=/work/noaa/sfc-perts/gbates/hrlyda_dumps/6hrly
    ulimit -s unlimited
    source $MODULESHOME/init/sh
+
    module purge
-   module load intel/2018.4
-   module load impi/2018.4
+   #module load intel/2018.4
+   #module load impi/2018.4
+   #module load mkl/2018.4
+   #export NCEPLIBS=/apps/contrib/NCEPLIBS/lib
+   #module use -a $NCEPLIBS/modulefiles
+   #module unload netcdf 
+   #module unload hdf5
+   #module load netcdfp/4.7.4
+
+
+   module use /apps/contrib/NCEP/libs/hpc-stack/modulefiles/stack
+   module load hpc/1.1.0
+   module load hpc-intel/2018.4
+   module unload mkl/2020.2
    module load mkl/2018.4
-   export NCEPLIBS=/apps/contrib/NCEPLIBS/lib
-   module use -a $NCEPLIBS/modulefiles
-   module unload netcdf/4.7.4 
-   module unload hdf5/1.10.6
-   module load netcdfp/4.7.4
-   module load intelpython3/2020.2
+   module load hpc-impi/2018.4
+
+   module load python/3.7.5
    export PYTHONPATH=/home/jwhitake/.local/lib/python3.7/site-packages
    export HDF5_DISABLE_VERSION_CHECK=1
    module list
@@ -152,7 +162,7 @@ export NST_GSI=0
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
 
-export LEVS=127  
+export LEVS=64   
 if [ $LEVS -eq 64 ]; then
   export nsig_ext=12
   export gpstop=50
@@ -287,7 +297,7 @@ export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
 
-export RUN=gdas # use gdas obs
+export RUN=gdas # use gdas or gfs obs
 
 # Analysis increments to zero out
 export INCREMENTS_TO_ZERO="'liq_wat_inc','icmr_inc'"
@@ -356,7 +366,7 @@ export nanals=80
 # if nanals2>0, extend nanals2 members out to FHMAX + ANALINC (one extra assim window)
 export nanals2=-1 # longer extension. Set to -1 to disable 
 #export nanals2=$NODES
-export nitermax=2 # number of retries
+export nitermax=1 # number of retries
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
@@ -378,7 +388,7 @@ elif [ "$machine" == 'orion' ]; then
    export fv3gfspath=/work/noaa/global/glopara
    export FIXFV3=$fv3gfspath/fix_nco_gfsv16/fix_fv3_gmted2010
    export FIXGLOBAL=$fv3gfspath/fix_nco_gfsv16/fix_am
-   export gsipath=${basedir}/ProdGSI.jswhit
+   export gsipath=${basedir}/GSI-enkf64bit
    export fixgsi=${gsipath}/fix
    #export fixcrtm=${basedir}/fix/crtm/v2.2.6/fix
    export fixcrtm=$fv3gfspath/crtm/crtm_v2.3.0
