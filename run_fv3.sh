@@ -24,15 +24,7 @@ elif [ "$machine" == 'orion' ]; then
    module unload mkl/2020.2
    module load mkl/2018.4
    module load hpc-impi/2018.4
-   module load hdf5/1.10.6
-   module load netcdf/4.7.4
-   module load pio/2.5.1
-   module load esmf/8_1_0_beta_snapshot_27
    module load wgrib
-   # for global_cycle
-   module use -a /apps/contrib/NCEPLIBS/lib/modulefiles
-   module load netcdfp/4.7.4.release
-   module load esmflocal/8_0_0.release
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'gaea' ]; then
    module purge
