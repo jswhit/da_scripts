@@ -28,7 +28,7 @@ export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
 export exptname="C${RES}_hybgain_owhourly"
 # for 'passive' or 'replay' cycling of control fcst 
-export replay_controlfcst='true'
+export replay_controlfcst='false'
 
 export fg_gfs="run_ens_fv3.sh"
 export ensda="enkf_run.sh"
@@ -95,15 +95,13 @@ elif [ "$machine" == 'orion' ]; then
    ulimit -s unlimited
    source $MODULESHOME/init/sh
    module purge
-   module load intel/2018.4
-   module load impi/2018.4
+   module use /apps/contrib/NCEP/libs/hpc-stack/modulefiles/stack
+   module load hpc/1.1.0
+   module load hpc-intel/2018.4
+   module unload mkl/2020.2
    module load mkl/2018.4
-   export NCEPLIBS=/apps/contrib/NCEPLIBS/lib
-   module use -a $NCEPLIBS/modulefiles
-   module unload netcdf/4.7.4 
-   module unload hdf5/1.10.6
-   module load netcdfp/4.7.4
-   module load intelpython3/2020.2
+   module load hpc-impi/2018.4
+   module load python/3.7.5
    export PYTHONPATH=/home/jwhitake/.local/lib/python3.7/site-packages
    export HDF5_DISABLE_VERSION_CHECK=1
    module list
@@ -282,6 +280,7 @@ export enkfanalfhrs="4, 5, 6"
 # other gsi variables set in ${rungsi}
 
 export RUN=gdas # use gdas obs
+#export RUN=gfs # use gfs obs
 
 # Analysis increments to zero out
 export INCREMENTS_TO_ZERO="'liq_wat_inc','icmr_inc'"
@@ -373,7 +372,7 @@ elif [ "$machine" == 'orion' ]; then
    export fv3gfspath=/work/noaa/global/glopara
    export FIXFV3=$fv3gfspath/fix_nco_gfsv16/fix_fv3_gmted2010
    export FIXGLOBAL=$fv3gfspath/fix_nco_gfsv16/fix_am
-   export gsipath=${basedir}/ProdGSI.jswhit
+   export gsipath=${basedir}/GSI-enkf64bit
    export fixgsi=${gsipath}/fix
    #export fixcrtm=${basedir}/fix/crtm/v2.2.6/fix
    export fixcrtm=$fv3gfspath/crtm/crtm_v2.3.0
