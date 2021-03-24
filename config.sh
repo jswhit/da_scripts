@@ -26,7 +26,7 @@ export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
 export exptname="C${RES}_hybgain"
 # for 'passive' or 'replay' cycling of control fcst 
-export replay_controlfcst='true'
+export replay_controlfcst='false'
 
 export fg_gfs="run_ens_fv3.sh"
 export ensda="enkf_run.sh"
@@ -297,7 +297,7 @@ export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
 
-export RUN=gdas # use gdas or gfs obs
+export RUN=gfs # use gdas or gfs obs
 
 # Analysis increments to zero out
 export INCREMENTS_TO_ZERO="'liq_wat_inc','icmr_inc'"
@@ -324,7 +324,7 @@ export analpertwttr_rtpp=0.0
 export pseudo_rh=.true.
 export write_ensmean=.false. # write out ens mean analysis in EnKF
 if [[ $write_ensmean == ".true." ]]; then
-   ENKFVARS="write_ensmean=${write_ensmean},"
+   export ENKFVARS="write_ensmean=${write_ensmean},"
 fi
 export letkf_flag=.true.
 export letkf_bruteforce_search=.false.
