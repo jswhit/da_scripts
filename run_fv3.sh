@@ -228,6 +228,20 @@ else
       cd ..
    fi
 fi
+ 
+if [ $do_2mDA_anal == "YES" ]; then 
+    echo 'CSD - adding sfc increment file', ${datapath2}/sfcincr_${analdate}_fhr0${fh}_${charnanal}
+
+    cd INPUT 
+    #/bin/mv -f ${datapath2}/sfcincr_${analdate}_fhr0${fh}_${charnanal} ${sfcincrement_file}
+    /bin/cp -f ${datapath2}/sfcincr_${analdate}_fhr0${fh}_${charnanal} lnd_incr
+    for file in sfc_data*nc; do
+     cp -f  $file   orig_$file
+    done
+
+    cd .. 
+
+fi 
 
 # setup model namelist
 if [ "$fg_only" == "true" ]; then
@@ -372,8 +386,9 @@ if [ "$warm_start" == "T" ] && [ -z $skip_global_cycle ]; then
    export CASE="C${RES}"
    export PGM="${execdir}/global_cycle"
    if [ $NST_GSI -gt 0 ]; then
-       export GSI_FILE=${datapath2}/${PREINP}dtfanl.nc
+       export NST_FILE=${datapath2}/${PREINP}dtfanl.nc
    fi
+
    sh ${enkfscripts}/global_cycle_driver.sh
    n=1
    while [ $n -le 6 ]; do

@@ -265,7 +265,8 @@ IVEGSRC=${IVEGSRC:-1}
 CYCLVARS=${CYCLVARS:-""}
 use_ufo=${use_ufo:-.true.}
 DONST=${DONST:-"NO"}
-ADJT_NST_ONLY=${ADJT_NST_ONLY:-.false.}
+DO_SFCCYCLE=${DO_SFCCYCLE:-.true.}
+DO_LNDINC=${DO_LNDINC:-.false.}
 zsea1=${zsea1:-0}
 zsea2=${zsea2:-0}
 MAX_TASKS_CY=${MAX_TASKS_CY:-99999}
@@ -288,7 +289,8 @@ FNVMNC=${FNVMNC:-${FIXgsm}/global_shdmin.0.144x0.144.grb}
 FNVMXC=${FNVMXC:-${FIXgsm}/global_shdmax.0.144x0.144.grb}
 FNSLPC=${FNSLPC:-${FIXgsm}/global_slope.1x1.grb}
 FNMSKH=${FNMSKH:-${FIXgsm}/seaice_newland.grb}
-GSI_FILE=${GSI_FILE:-"NULL"}
+NST_FILE=${NST_FILE:-"NULL"}
+LND_FILE=${LND_FILE:-"NULL"}
 FNTSFA=${FNTSFA:-${COMIN}/${PREINP}sstgrb${SUFINP}}
 FNACNA=${FNACNA:-${COMIN}/${PREINP}engicegrb${SUFINP}}
 FNSNOA=${FNSNOA:-${COMIN}/${PREINP}snogrb${SUFINP}}
@@ -375,14 +377,15 @@ cat << EOF > fort.36
   idim=$CRES, jdim=$CRES, lsoil=$LSOIL,
   iy=$iy, im=$im, id=$id, ih=$ih, fh=$FHOUR,
   deltsfc=$DELTSFC,ialb=$IALB,use_ufo=$use_ufo,donst=$DONST,
-  adjt_nst_only=$ADJT_NST_ONLY,isot=$ISOT,ivegsrc=$IVEGSRC,
+  do_sfccycle=$DO_SFCCYCLE,do_lndinc=$DO_LNDINC,isot=$ISOT,ivegsrc=$IVEGSRC,
   zsea1_mm=$zsea1,zsea2_mm=$zsea2,MAX_TASKS=$MAX_TASKS_CY
  /
 EOF
 
 cat << EOF > fort.37
  &NAMSFCD
-  GSI_FILE="$GSI_FILE",
+  NST_FILE="$NST_FILE", 
+  LND_FILE="$LND_FILE",
  /
 EOF
 

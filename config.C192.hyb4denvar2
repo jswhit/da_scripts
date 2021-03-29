@@ -64,6 +64,7 @@ export run_long_fcst="false"  # spawn a longer control forecast at 00 UTC
 export ensmean_restart='false'
 #export copy_history_files=1 # save pressure level history files (and compute ens mean)
 export skip_to_fcst="false" # skip to forecast step
+export oberrflg=".false." # set (previously hard-coded) default
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'

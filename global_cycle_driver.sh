@@ -47,11 +47,20 @@ export FSNOS=${FSNOS:-99999}
 export CYCLVARS=${CYCLVARS:-"FSNOL=$FSNOL,FSNOS=$FSNOS,"}
 
 if [ $DONST = "YES" ]; then
-    export GSI_FILE=${GSI_FILE:-$COMOUT/dtfanl.nc}
-    export ADJT_NST_ONLY=${ADJT_NST_ONLY:-".false."}
+    export NST_FILE=${NST_FILE:-$COMOUT/dtfanl.nc}
 else
-    export GSI_FILE="NULL"
-    export ADJT_NST_ONLY=".false."
+    export NST_FILE="NULL"
+fi
+
+export DO_SFCCYLE=${DO_SFCCYCLE:-".true."}
+
+# increment file should be available, unless first_guess only (then global_cycle not called)
+if [ $do_2mDA_anal == "YES" ]; then
+    export DO_LNDINC=${DO_LNDINC:-".true."}
+    export LND_FILE='lnd_incr'
+else 
+    export DO_LNDINC=${DO_LNDINC:-".false."}
+    export LND_FILE=${LND_FILE:-"NULL"}
 fi
 
 CRES=$(echo $CASE | cut -c 2-)
@@ -70,6 +79,7 @@ export DATA=${DATA:-$pwd/rundir$$}
 rm -fr $DATA
 mkdir -p $DATA
 
+ln -fs $COMIN/lnd_incr $DATA/lnd_incr
 for n in $(seq 1 $ntiles); do
   #ln -fs $COMIN/$PDY.${cyc}0000.sfc_data.tile${n}.nc      $DATA/fnbgsi.00$n
   #ln -fs $COMOUT/$PDY.${cyc}0000.sfcanl_data.tile${n}.nc  $DATA/fnbgso.00$n

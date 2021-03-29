@@ -1,0 +1,99 @@
+Files: 
+bfg (ln from sigf  - (nc) background forecast, sfc, on DA grid
+sfg (ln from sfcf) - (nc) background, forecast, atmos (is this right?), on DA grid
+
+banl / sanl - (nc) analysis (sfc/atmos), on DA grid 
+sfcincr - 2mDA increments on DA grid
+
+diag*conv - (nc) O-F file, produced by observer 
+
+* main.sh 
+
+-stages some files 
+
+-calculate the ensemble mean on the DA grid
+        -call compute_ensmean_fcst.sh
+                -file in->out: bfg_*mem* -> bfg_ensmean 
+                -file in->out: sfg_*mem* -> sfg_ensmean , sfg_*_enspread
+
+              -may also calculate ensemble mean of tiled restarts? 
+
+-regrid high res control if using (not using for hybvar) 
+        -file out: bfg_*_control, sfg_*_control
+
+-establish control background on the DA grid (if using) 
+        -for hybgain use the ensemble mean
+        -file in-> out: bfg/sfg_ensmean bfg_*_control, sfg_*_control
+
+-do control analysis, if using 
+        -call run_hybridanal.sh 
+           -calls run_gsi.sh
+               -for hybgain is 3DVar
+               -also runs the observer for the EnKF
+               -file in->out  sfg_control -> sanl_control
+               -file out: diag_* 
+
+-run observer on high res control if using (not using for hybvar)
+-some work with getting increment files / analysis files (not using for hybvar) 
+
+-run the enkf to update ensemble members
+        -calls runenkf.sh 
+          -calls enkf_run.sh
+                -file in-> out: sfg_*mem* (and bfg_*mem*?) -> sanl_*mem*
+
+-compute the ensemble mean analysis
+        -call compute_ensmean_enkf.sh
+                -files in: sanl_mem* 
+                -files out: sanl_ensmean 
+                (no banl files here)
+
+if 2mDA:
+   -calls run_gsiobserver.sh
+         -runs observer (gsi executable) on ensemble mean and each ensemble member 
+         -observer calculates the O-F
+            
+         -files in:  fortran reads sfg_mem, bfg_mem (sfc height only from bfg), and prepbufr 
+         -files out: fortran (pe*conv_q_01*nc4), then python cats to diag_* 
+                     for sfc, python cats to sfcdiag_conv_t_ges*  for each member
+
+    -call  runenkf_sfc.sh
+            -calls enkf_run_sfc.sh
+                -files in: bfg_mem* and diag_conv for each mem
+                -files out:  sfcincr_mem* (increments to soil fields)
+
+CSD -  get the code from Jeff, and apply to increment file.
+    -call compute_ensmean_enkf_sfc.sh      
+            -files in: bfanl_mem* 
+            -files out: bfanl_ensmean 
+
+-hybrid blending (hybrid gain selected) 
+    -calls blendinc.sh  
+            -blends 3DVar and EnKF analysis files
+            -file in:  sanl_*_control (3Dvar update) and  sanl_*_ensmean (EnKF update) 
+            -file out: sanl_*_ensmean 
+
+            -also recenters the ensemble members (sanl_mem*) about the new analysis    
+            -file in and out: sanl_mem*, 
+
+    - no change to bfg files 
+ 
+
+-call run_fg_ens.sh to run next forecasts (if fg_only is true, skips straight to here)
+    -calls run_ens_fv3.sh
+      -calls run_fv3.sh on each ensemble member
+        -creates fv3_increment*.nc (this is switched off, iau_delthrs < 0) 
+                    (number of increment files depends on iau_delthrs) 
+        -calls global_cycle
+        -output it sfg_$date_$fhr_$mem and bfg_ 
+
+-clean up 
+    -archive to HPSS
+    -update fg_only.sh and analdate.sh files 
+                -resubmit
+
+
+
+
+
+         
+        

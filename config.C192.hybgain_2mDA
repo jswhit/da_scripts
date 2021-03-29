@@ -3,25 +3,36 @@ echo "running on $machine using $NODES nodes"
 export ndates_job=1 # number of DA cycles to run in one job submission
 # resolution of control and ensmemble.
 export RES=192 
-export RES_CTL=384 
+export RES_CTL=384
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
 export alpha=250 # percentage of 3dvar increment (beta_2*1000)
 export beta=1000 # percentage of enkf increment (*10)
 export hybgain='true' # set to true for hybrid gain 3DVar/EnKF
-export exptname="C${RES}_hybgain"
+export exptname="C${RES}_hybgain_2mDA"
 # for 'passive' or 'replay' cycling of control fcst 
 # control forecast files have 'control2' suffix, instead of 'control'
 # GSI observer will be run on 'control2' forecast
 # this is for diagnostic purposes (to get GSI diagnostic files) 
-export replay_controlfcst='true'
+export replay_controlfcst='false' 
 # for dual-res hybrid, set hybgain=false, replay_controlfcst=false
 #export hybgain='false' # set to true for hybrid gain 3DVar/EnKF
 #export replay_controlfcst='false'
 # determine if writing or calculating increment 
 export DO_CALC_INCREMENT="YES" # always YES if hybgain="true"
 export cores=`expr $NODES \* $corespernode`
+# 2m DA config 
+export do_2mDA_anal="YES"
+export l_closeobs_2m=".true." # .true. = at each location, will take only ob closest to analysis time 
+                               # .false. = use all obs at each location, downweight the errors 
+export oberrflg_2m=".true." # read T2m errors from obserr table.
+export write_fv3_increment_sfc=".true." 
+# 1100 = e-folding scale around 420 km (as is used elsewhere)
+export corrlength_sfc=1100
+export diagprefix_sfc='sfcdiag'
+
+export oberrflg=".false." # set (previously hard-coded) default 
 
 ## check that value of NODES is consistent with PBS_NP on theia.
 #if [ "$machine" == 'theia' ]; then
@@ -41,7 +52,7 @@ export rungfs='run_fv3.sh' # ensemble forecast
 export recenter_anal="true" # recenter enkf analysis around GSI hybrid 4DEnVar analysis
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
 export controlanal='true' # use gsi hybrid (if false, pure enkf is used)
-export controlfcst='true' # if true, run dual-res setup with single high-res control
+export controlfcst='false' # if true, run dual-res setup with single high-res control
 export cleanup_fg='true'
 export cleanup_ensmean='true'
 export cleanup_anal='true'
@@ -57,8 +68,8 @@ if [ $machine == "orion" ]; then
 export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
 export save_hpss="false"
 else
-export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
-export save_hpss="true"
+export save_hpss_subset="false" # save a subset of data each analysis time to HPSS 
+export save_hpss="false"
 fi
 export run_long_fcst="false"  # spawn a longer control forecast at 00 UTC
 export ensmean_restart='false'
@@ -167,7 +178,10 @@ export NST_GSI=3          # default 0: No NST info at all;
                           #         2: Input NST info, used in CRTM simulation, no Tr analysis
                           #         3: Input NST info, used in both CRTM simulation and Tr analysis
 
-#export NST_GSI=0          # No NST 
+# turn off NST
+export DONST="NO" 
+export NST_MODEL=0
+export NST_GSI=0
 
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
@@ -336,10 +350,10 @@ export enkfstatefhrs=`python -c "from __future__ import print_function; print(li
 export iaufhrs="3,6,9"
 export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 # dump increment in one time step (for debugging)
-#export iaufhrs="6"
+export iaufhrs="6" 
 #export iau_delthrs=0.25
 # to turn off iau, use iau_delthrs=-1
-#export iau_delthrs=-1
+export iau_delthrs=-1
 
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
@@ -378,6 +392,13 @@ if [ $DO_CALC_INCREMENT = "YES" ]; then
 else
   export analfileprefix='incr'
   export write_fv3_increment=".true."
+fi
+# write_fv3_increment_sfc false option not yet coded.
+# (and might not be a good idea / possible)
+if [ $write_fv3_increment_sfc = ".true." ]; then 
+  export sfcanalfileprefix='sfcincr'
+else 
+  export sfcanalfileprefix='banl'
 fi
 export WRITE_INCR_ZERO="incvars_to_zero= $INCREMENTS_TO_ZERO,"
 export WRITE_ZERO_STRAT="incvars_zero_strat= $INCVARS_ZERO_STRAT,"
@@ -422,7 +443,7 @@ fi
 #export zhuberleft=1.1
 #export zhuberright=1.1
                                                                     
-export nanals=80                                                    
+export nanals=80
                                                                     
 export paoverpb_thresh=0.998  # set to 1.0 to use all the obs in serial EnKF
 export saterrfact=1.0
@@ -485,13 +506,20 @@ fi
 
 #export ANAVINFO=${enkfscripts}/global_anavinfo.l${LEVS}.txt
 export ANAVINFO=${fixgsi}/global_anavinfo.l${LEVS}.txt
+# there are a ton of assumptions built into the GSI code. The observer has multiple assumptions about the size 
+# of the 3D control and state vector. The EnKF writes out zero surface increments if the control vector 
+# is not empty. For now, just use differenet anavinfo. There may be a compromise setup, otherwise the enkf 
+# is probably the easier of the two to fix.
+export ANAVINFO_SFC=/scratch2/BMC/gsienkf/Clara.Draper/scripts/2mDA_files/global_2mDA_anavinfo.l127.txt_observer 
 export ANAVINFO_ENKF=${ANAVINFO}
+export ANAVINFO_ENKF_SFC=/scratch2/BMC/gsienkf/Clara.Draper/scripts/2mDA_files/global_2mDA_anavinfo.l127.txt_enkf
 export HYBENSINFO=${fixgsi}/global_hybens_info.l${LEVS}.txt
 # comment out next line to disable smoothing of ensemble perturbations
 # in stratosphere/mesosphere
 #export HYBENSMOOTHINFO=${fixgsi}/global_hybens_smoothinfo.l${LEVS}.txt
 export OZINFO=${fixgsi}/global_ozinfo.txt
 export CONVINFO=${fixgsi}/global_convinfo.txt
+export CONVINFO_SFC=/scratch2/BMC/gsienkf/Clara.Draper/scripts/2mDA_files/global_2mDA_convinfo.txt
 export SATINFO=${fixgsi}/global_satinfo.txt
 export REALTIME=YES # if NO, use historical files set in main.sh
 
@@ -509,8 +537,6 @@ export readin_localization=.false.
 export s_ens_h=343.     # 1250 km
 #export s_ens_h=485 # produces similar increments to 1250KM LETKF R localization
 export s_ens_v=-0.58    # 1.5 scale heights
-
-export oberrflg=".false." # set (previously hard-coded) default
 
 # NOTE: most other GSI namelist variables are in ${rungsi}
 export aircraft_bc=.true.
