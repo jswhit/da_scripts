@@ -36,6 +36,13 @@ else
 /bin/cp -f sfg*control bfg*control fgens2
 fi
 
+# save sfcdiag and sfcincr 
+/bin/mv -f sfcdiag_conv* fgens2
+/bin/mv -f sfcincr* fgens2
+
+
+
+
 #mkdir analens
 #/bin/mv -f sanl_*mem* analens # save analysis ensemble
 #echo "files moved to analens `date`"

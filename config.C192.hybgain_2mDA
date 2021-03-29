@@ -65,8 +65,8 @@ export replay_run_observer='true' # run observer on replay forecast
 # full ensemble should be saved to HPSS (returns 0 if 
 # HPSS save should be done)
 if [ $machine == "orion" ]; then
-export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
-export save_hpss="false"
+export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
+export save_hpss="true"
 else
 export save_hpss_subset="false" # save a subset of data each analysis time to HPSS 
 export save_hpss="false"
