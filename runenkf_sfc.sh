@@ -17,9 +17,6 @@ else # externally specified bias correction files.
     export GBIASAIR=${biascorrdir}/${analdate}//${PREINP}abias_air
 fi
 export GSATANG=$fixgsi/global_satangbias.txt # not used, but needs to exist
-if [ $lupd_satbiasc == ".true." ]; then
-   export ABIAS=${datapath2}/${PREINP}abias_enkf
-fi
 
 ln -fs $GBIAS   ${datapath2}/satbias_in
 ln -fs $GBIAS_PC   ${datapath2}/satbias_pc
@@ -28,9 +25,9 @@ ln -fs $GSATANG ${datapath2}/satbias_angle
 ln -fs ${SATINFO} ${datapath2}/satinfo
 ls -l ${datapath2}/satinfo
 #ln -fs ${gsipath}/fix/global_convinfo.txt ${datapath2}/convinfo
-ln -fs ${CONVINFO} ${datapath2}/convinfo
-#ln -fs ${ANAVINFO_ENKF} ${datapath2}/anavinfo
-cp -f  ${ANAVINFO_ENKF} ${datapath2}/anavinfo # linking results in source file getting cloberred
+ln -fs ${CONVINFO_SFC} ${datapath2}/convinfo
+#ln -fs ${ANAVINFO_ENKF_SFC} ${datapath2}/anavinfo
+cp -f ${ANAVINFO_ENKF_SFC} ${datapath2}/anavinfo # linking results in later clobbering the sfc / non_sfc files
 ls -l ${datapath2}/convinfo
 ln -fs ${gsipath}/fix/global_ozinfo.txt ${datapath2}/ozinfo
 ln -fs ${gsipath}/fix/global_scaninfo.txt ${datapath2}/scaninfo
@@ -40,15 +37,15 @@ ln -fs ${current_logdir}/convinfo.out ${datapath2}/fort.205
 
 # remove previous analyses
 if [ $cleanup_anal == 'true' ]; then
-   /bin/rm -f ${datapath2}/${analfileprefix}_*mem*
+   /bin/rm -f ${datapath2}/${sfcanalfileprefix}_*mem*
 fi
 
 niter=1
 alldone='no'
-echo "${analdate} compute enkf analysis increment `date`"
+echo "${analdate} compute enkf 2mDA sfc analysis increment `date`"
 while [ $alldone == 'no' ] && [ $niter -le $nitermax ]; do
-    echo "${enkfscripts}/${ensda}"
-    sh ${enkfscripts}/${ensda} 
+    echo "${enkfscripts}/enkf_run_sfc.sh"
+    sh ${enkfscripts}/enkf_run_sfc.sh
     exitstat=$?
     if [ $exitstat -eq 0 ] ; then
        alldone='yes'
@@ -58,9 +55,9 @@ while [ $alldone == 'no' ] && [ $niter -le $nitermax ]; do
     fi
 done
 if [ $alldone == 'no' ]; then
-    echo "Tried ${nitermax} times to run ensda and failed: ${analdate}"
-    echo "no" > ${current_logdir}/run_enkf.log
+    echo "Tried ${nitermax} times to run ensda sfc and failed: ${analdate}"
+    echo "no" > ${current_logdir}/run_enkf_sfc.log
 else
-    echo "yes" > ${current_logdir}/run_enkf.log
+    echo "yes" > ${current_logdir}/run_enkf_sfc.log
 fi
-echo "${analdate} done computing enkf analysis increment `date`"
+echo "${analdate} done computing sfc enkf analysis increment `date`"

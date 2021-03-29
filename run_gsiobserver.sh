@@ -24,17 +24,24 @@ export BIASO_PC=${datapath2}/${PREINP}abias_pc
 export SATANGO=${datapath2}/${PREINP}satang
 export DTFANL=${datapath2}/${PREINP}dtfanl.nc
 echo "NOCONV:" $NOCONV
+
+if [ $global_2mDA == ".true." ]; then
+    diagprefix=${diagprefix_sfc}
+else
+    diagprefix='diag'
+fi
+
 if [ $skipcat == 'false' ]; then
    if [ $NOCONV == 'YES' ]; then
      diagfile=${datapath2}/diag_amsua_n15_ges.${analdate}_${charnanal2}.nc4
    else
-     diagfile=${datapath2}/diag_conv_uv_ges.${analdate}_${charnanal2}.nc4
+     diagfile=${datapath2}/${diagprefix}_conv_t_ges.${analdate}_${charnanal2}.nc4
    fi
 else
    if [ $NOCONV == 'YES' ]; then
      diagfile=${datapath2}/gsitmp_${charnanal2}/pe0000.amsua_n15_01.nc4
    else
-     diagfile=${datapath2}/gsitmp_${charnanal2}/pe0000.conv_uv_01.nc4
+     diagfile=${datapath2}/gsitmp_${charnanal2}/pe0000.conv_t_01.nc4
    fi
 fi
 echo "skipcat $skipcat diagfile $diagfile"
@@ -42,7 +49,7 @@ echo "skipcat $skipcat diagfile $diagfile"
 if [ $cleanup_observer == 'true' ]; then
   if [ $skipcat == 'false' ];  then
      echo "removing diag files"
-     /bin/rm -f ${datapath2}/diag*${charnanal2}*nc4
+     /bin/rm -f ${datapath2}/${diagprefix}*${charnanal2}*nc4
   else
      echo "removing ${datapath2}/gsitmp_${charnanal2}"
      /bin/rm -rf ${datapath2}/gsitmp_${charnanal2}
@@ -64,8 +71,15 @@ export VERBOSE=YES
 export OMP_NUM_THREADS=$gsi_control_threads
 export OMP_STACKSIZE=2048M
 #cores=`python -c "print (${NODES} - 1) * ${corespernode}"`
-export nprocs=`expr $cores \/ $OMP_NUM_THREADS`
-export mpitaskspernode=`expr $corespernode \/ $OMP_NUM_THREADS`
+if [ $global_2mDA == ".true." ]; then
+  export nprocs=`expr $corespernode \/ $OMP_NUM_THREADS`
+  export mpitaskspernode=$nprocs
+  export RAPIDREFRESH_CLDSURF="l_closeobs=.true."
+else
+  export nprocs=`expr $cores \/ $OMP_NUM_THREADS`
+  export mpitaskspernode=`expr $corespernode \/ $OMP_NUM_THREADS`
+fi
+
 echo "running with $OMP_NUM_THREADS threads ..."
 
 if [ -z $biascorrdir ]; then # cycled bias correction files
@@ -86,7 +100,7 @@ export lread_obs_skip=".false."
 export HXONLY='YES'
 if [ -s ${diagfile} ]; then
   echo "gsi hybrid observer already completed"
-  echo "yes" > ${current_logdir}/run_gsi_observer.log 2>&1
+  echo "yes" > ${current_logdir}/run_gsi_observer_${charnanal}.log 2>&1
   exit 0
 fi
 echo "${analdate} compute gsi hybrid observer `date`"
@@ -121,9 +135,9 @@ done
 
 if [ $alldone == 'no' ]; then
     echo "Tried ${nitermax} times and to do gsi hybrid observer and failed"
-    echo "no" > ${current_logdir}/run_gsi_observer.log 2>&1
+    echo "no" > ${current_logdir}/run_gsi_observer_${charnanal}.log 2>&1
 else
-    echo "yes" > ${current_logdir}/run_gsi_observer.log 2>&1
+    echo "yes" > ${current_logdir}/run_gsi_observer_${charnanal}.log 2>&1
     if [ $skipcat == 'false' ]; then
         /bin/rm -rf $tmpdir
     fi

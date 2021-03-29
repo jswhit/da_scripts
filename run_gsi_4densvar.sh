@@ -45,6 +45,12 @@ charnanal=${charnanal:-'ensmean'}
 # name just for diag files.
 charnanal2=${charnanal2:-$charnanal}
 
+if [ $global_2mDA == ".false." ]; then
+       diagprefix='diag' 
+else
+       diagprefix=${diagprefix_sfc}
+fi
+
 # Given the analysis date, compute the date from which the
 # first guess comes.  Extract cycle and set prefix and suffix
 # for guess and observation data files
@@ -170,7 +176,7 @@ OBSINPUT=""
 SUPERRAD=""
 SINGLEOB=""
 LAGDATA=""
-RAPIDREFRESH_CLDSURF=""
+RAPIDREFRESH_CLDSURF=${RAPIDREFRESH_CLDSURF:-""}
 CHEM=""
 #      l_hyb_ens:  logical variable, if .true., then turn on hybrid ensemble option, default = .false. 
 #      n_ens:      ensemble size, default = 0
@@ -246,17 +252,48 @@ cat <<EOF > gsiparm.anl
    $STRONGOPTS
  /
  &OBSQC
-   dfact=0.75,dfact1=3.0,noiqc=.true.,oberrflg=.false.,c_varqc=0.04,
+   dfact=0.75,dfact1=3.0,noiqc=.true.,oberrflg=$oberrflg,c_varqc=0.04,
    use_poq7=.true.,qc_noirjaco3_pole=.true.,vqc=.false.,nvqc=.true.,
    aircraft_t_bc=.true.,biaspredt=1.0e5,upd_aircraft=.true.,cleanup_tail=.true.,
    tcp_width=60.0,tcp_ermin=2.0,tcp_ermax=12.0,
    $OBSQC
  /
- /
  &OBS_INPUT
    dmesh(1)=145.0,dmesh(2)=150.0,dmesh(3)=100.0,time_window_max=3.0,
   $OBSINPUT
 /
+ &SUPEROB_RADAR
+   $SUPERRAD
+ /
+ &LAG_DATA
+   $LAGDATA
+ /
+ &HYBRID_ENSEMBLE
+   $HYBRIDENSDATA
+ /
+ &RAPIDREFRESH_CLDSURF
+   dfi_radar_latent_heat_time_period=30.0,
+   $RAPIDREFRESH_CLDSURF
+ /
+ &CHEM
+   $CHEM
+ /
+ &SINGLEOB_TEST
+   maginnov=0.1,magoberr=0.1,oneob_type='t',
+   oblat=45.,oblon=180.,obpres=1000.,obdattim=${CDATE},
+   obhourset=0.,
+   $SINGLEOB
+ /
+&NST
+  nst_gsi=$NST_GSI,
+  $NST
+/
+&global_2mDA
+  do_global_2mDA=$global_2mDA
+/
+EOF
+if [[ "$global_2mDA" = ".false." ]]; then
+cat <<EOF >> gsiparm.anl
 OBS_INPUT::
 !  dfile          dtype       dplat       dsis                dval    dthin dsfcalc
    prepbufr       ps          null        ps                  0.0     0     0
@@ -358,34 +395,17 @@ OBS_INPUT::
    mhsbufr        mhs         metop-c     mhs_metop-c         0.0     1     1
    iasibufr       iasi        metop-c     iasi_metop-c        0.0     1     1
 ::
- &SUPEROB_RADAR
-   $SUPERRAD
- /
- &LAG_DATA
-   $LAGDATA
- /
- &HYBRID_ENSEMBLE
-   $HYBRIDENSDATA
- /
- &RAPIDREFRESH_CLDSURF
-   dfi_radar_latent_heat_time_period=30.0,
-   $RAPIDREFRESH_CLDSURF
- /
- &CHEM
-   $CHEM
- /
- &SINGLEOB_TEST
-   maginnov=0.1,magoberr=0.1,oneob_type='t',
-   oblat=45.,oblon=180.,obpres=1000.,obdattim=${CDATE},
-   obhourset=0.,
-   $SINGLEOB
- /
-&NST
-  nst_gsi=$NST_GSI,
-  $NST
-/
 EOF
-
+else
+cat <<EOF >> gsiparm.anl
+OBS_INPUT::
+!  dfile          dtype       dplat       dsis                dval    dthin dsfcalc
+   prepbufr       t           null        t                   0.0     0     0
+   prepbufr       q           null        q                   0.0     0     0
+::
+EOF
+fi
+ 
 # Set fixed files
 #   berror   = forecast model background error statistics
 #   satinfo  = text file with information about assimilation of brightness temperatures
@@ -397,8 +417,8 @@ EOF
 #   bufrtable= text file ONLY needed for single obs test (oneobstest=.true.)
 #   bftab_sst= bufr table for sst ONLY needed for sst retrieval (retrieval=.true.)
 
-#berror=$fixgsi/Big_Endian/global_berror.l${LEVS}y${NLAT}.f77
-berror=/scratch2/BMC/gsienkf/whitaker/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_janjulysmooth0p5
+berror=$fixgsi/Big_Endian/global_berror.l${LEVS}y${NLAT}.f77
+#berror=/scratch2/BMC/gsienkf/whitaker/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_janjulysmooth0p5
 
 satinfo=${SATINFO:-$fixgsi/global_satinfo.txt}
 atmsfilter=${ATMSFILTER:-$fixgsi/atms_beamwidth.txt}
@@ -409,7 +429,8 @@ ozinfo=${OZINFO:-$fixgsi/global_ozinfo.txt}
 convinfo=${CONVINFO:-$fixgsi/global_convinfo.txt}
 insituinfo=${INSITUINFO:-$fixgsi/global_insituinfo.txt}
 aeroinfo=${AEROINFO:-$fixgsi/global_aeroinfo.txt}
-errtable=$fixgsi/prepobs_errtable.global
+#errtable=$fixgsi/prepobs_errtable.global
+errtable=/scratch2/BMC/gsienkf/Clara.Draper/scripts/2mDA_files/prepobs_errtable.global_with2m  # same as above, with 2m errors added.
 anavinfo=${ANAVINFO:-$fixgsi/global_anavinfo.l${LEVS}txt}
 radcloudinfo=${RADCLOUDINFO:-${fixgsi}/cloudy_radiance_info.txt}
 vqcdat=${vqcdat:-${fixgsi}/vqctp001.dat}
@@ -424,7 +445,7 @@ bftab_sst=$fixgsi/bufrtab.012
 if [[ "$lread_obs_skip" = ".false." ]]; then
 
 $nln $gsiexec ./gsi.x
-
+ 
 $ncp $anavinfo ./anavinfo
 $ncp $radcloudinfo ./cloudy_radiance_info.txt
 $nln $berror   ./berror_stats
@@ -730,16 +751,20 @@ fi
 
 # make symlinks for diag files to initialize angle dependent bias correction for new channels.
 satdiag="ssu_n14 hirs2_n14 msu_n14 sndr_g08 sndr_g09 sndr_g11 sndr_g12 sndr_g13 sndr_g08_prep sndr_g11_prep sndr_g12_prep sndr_g13_prep sndrd1_g11 sndrd2_g11 sndrd3_g11 sndrd4_g11 sndrd1_g12 sndrd2_g12 sndrd3_g12 sndrd4_g12 sndrd1_g13 sndrd2_g13 sndrd3_g13 sndrd4_g13 sndrd1_g14 sndrd2_g14 sndrd3_g14 sndrd4_g14 sndrd1_g15 sndrd2_g15 sndrd3_g15 sndrd4_g15 hirs2_n14 hirs3_n15 hirs3_n16 hirs3_n17 amsua_n15 amsua_n16 amsua_n17 amsub_n15 amsub_n16 amsub_n17 hsb_aqua airs_aqua amsua_aqua imgr_g08 imgr_g11 imgr_g12 imgr_g14 imgr_g15 gome_metop-a omi_aura mls_aura ssmi_f13 ssmi_f14 ssmi_f15 hirs4_n18 hirs4_metop-a amsua_n18 amsua_metop-a mhs_n18 mhs_metop-a amsre_low_aqua amsre_mid_aqua amsre_hig_aqua ssmis_las_f16 ssmis_uas_f16 ssmis_img_f16 ssmis_env_f16 ssmis_las_f17 ssmis_uas_f17 ssmis_img_f17 ssmis_env_f17 ssmis_las_f18 ssmis_uas_f18 ssmis_img_f18 ssmis_env_f18 ssmis_las_f19 ssmis_uas_f19 ssmis_img_f19 ssmis_env_f19 ssmis_las_f20 ssmis_uas_f20 ssmis_img_f20 ssmis_env_f20 ssmis_f20 iasi_metop-a hirs4_n19 amsua_n19 mhs_n19 seviri_m08 seviri_m09 seviri_m10 cris_npp atms_npp hirs4_metop-b amsua_metop-b mhs_metop-b iasi_metop-b gome_metop-b avhrr_n18 avhrr_metop-a avhrr_n15 avhrr_n16 avhrr_n17 avhrr_n19 avhrr_metop-a amsr2_gcom-w1 gmi_gpm saphir_meghat ahi_himawari8 abi_g16 abi_g17 amsua_metop-c mhs_metop-c iasi_metop-c avhrr_metop-c cris-fsr_npp cris-fsr_n20 atms_n20"
+if [ $global_2mDA == ".false." ]; then
 alldiag="$satdiag pcp_ssmi_dmsp pcp_tmi_trmm conv_tcp conv_gps conv_t conv_q conv_uv conv_ps sbuv2_n11 sbuv2_n14 sbuv2_n16 sbuv2_n17 sbuv2_n18 sbuv2_n19 gome_metop-a gome_metop-b omi_aura mls30_aura ompsnp_npp ompstc8_npp gome-metop-c pcp_ssmi_dmsp pcp_tmi_trmm"
+else
+   alldiag="conv_t conv_q"
+fi
 string='ges'
 for type in $satdiag; do
     if [[ "$cold_start_bias" = "true" ]]; then
-       if [ -s $datges/diag_${type}_${string}.${adate}_${charnanal2}.nc4 ]; then
-          ln -fs $datges/diag_${type}_${string}.${adate}_${charnanal2}.nc4 diag_${type}.nc4
+       if [ -s $datges/${diagprefix}_${type}_${string}.${adate}_${charnanal2}.nc4 ]; then
+          ln -fs $datges/${diagprefix}_${type}_${string}.${adate}_${charnanal2}.nc4 ${diagprefix}_${type}.nc4
        fi
     else
-       if [ -s $datgesm1/diag_${type}_${string}.${adatem1}_${charnanal2}.nc4 ]; then
-          ln -fs $datgesm1/diag_${type}_${string}.${adatem1}_${charnanal2}.nc4 diag_${type}.nc4
+       if [ -s $datgesm1/${diagprefix}_${type}_${string}.${adatem1}_${charnanal2}.nc4 ]; then
+          ln -fs $datgesm1/${diagprefix}_${type}_${string}.${adatem1}_${charnanal2}.nc4 ${diagprefix}_${type}.nc4
        fi
     fi
 done
@@ -894,9 +919,9 @@ for loop in $loops; do
           if [[ $count -eq 1 ]]; then
             # just one file, no cat needed (just copy it)
             file=`ls -1 pe*${type}_${loop}*`
-            /bin/cp -f $file ${savdir}/diag_${type}_${string}.${adate}_${charnanal2}.nc4
+            /bin/cp -f $file ${savdir}/${diagprefix}_${type}_${string}.${adate}_${charnanal2}.nc4
           else
-            export PGM="${execdir}/nc_diag_cat_serial.x -o ${savdir}/diag_${type}_${string}.${adate}_${charnanal2}.nc4  pe*${type}_${loop}*nc4"
+            export PGM="${execdir}/nc_diag_cat_serial.x -o ${savdir}/${diagprefix}_${type}_${string}.${adate}_${charnanal2}.nc4  pe*${type}_${loop}*nc4"
             ls -l pe*${type}_${loop}*nc4
             nodecount=$((nodecount+1))
             echo "node = $nodecount ${enkfscripts}/runmpi 1> ${current_logdir}/nc_diag_cat_${type}_${string}_${charnanal2}.out"
@@ -916,17 +941,21 @@ done
 wait
 echo "Time after diagnostic loop is `date` "
 
-if [ ! -s $savdir/diag_conv_uv_ges.${adate}_${charnanal2}.nc4 ]; then
+if [ $global_2mDA == ".false." ]; then
+    if [ ! -s $savdir/${diagprefix}_conv_uv_ges.${adate}_${charnanal2}.nc4 ]; then
+       exit 1
+    fi
+fi 
+if [ ! -s $savdir/${diagprefix}_conv_t_ges.${adate}_${charnanal2}.nc4 ]; then
    exit 1
 fi
-if [ ! -s $savdir/diag_conv_t_ges.${adate}_${charnanal2}.nc4 ]; then
+if [ ! -s $savdir/${diagprefix}_conv_q_ges.${adate}_${charnanal2}.nc4 ]; then
    exit 1
 fi
-if [ ! -s $savdir/diag_conv_q_ges.${adate}_${charnanal2}.nc4 ]; then
-   exit 1
-fi
-if [ ! -s $savdir/diag_conv_ps_ges.${adate}_${charnanal2}.nc4 ]; then
-   exit 1
+if [ $global_2mDA == ".false." ]; then
+    if [ ! -s $savdir/${diagprefix}_conv_ps_ges.${adate}_${charnanal2}.nc4 ]; then
+       exit 1
+    fi
 fi
 
 fi # skipcat

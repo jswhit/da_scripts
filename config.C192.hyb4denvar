@@ -49,6 +49,7 @@ export cleanup_controlanl='true'
 export cleanup_observer='true' 
 export resubmit='true'
 export replay_run_observer='true' # run observer on replay forecast
+export oberrflg=".false." # set (previously hard-coded) default
 # python script checkdate.py used to check
 # YYYYMMDDHH analysis date string to see if
 # full ensemble should be saved to HPSS (returns 0 if 
