@@ -15,7 +15,7 @@ export corespernode=$SLURM_CPUS_ON_NODE
 export machine='orion'
 export cores=`expr $NODES \* $corespernode`
 echo "running on $machine using $NODES nodes and $cores CORES"
-export RUN='gdas'
+export RUN='gfs'
 export RES='192'
 export basedir=/work/noaa/gsienkf/${USER}
 export datadir=$basedir
@@ -153,13 +153,15 @@ export NLAT=$((${LATA}+2))
 
 export charnanal='ensmean' 
 export charnanal2='ensmean2' 
+export ATMPREFIX='sfg2'
+export SFCPREFIX='bfg2'
 export lobsdiag_forenkf='.false.'
 export skipcat="false"
 
 export cleanup_observer="true"
-export analdate=2020031318
+export analdate=2020031312
 export nitermax=1
-while [ $analdate -le 2020031918 ]; do
+while [ $analdate -le 2020032006 ]; do
    export yr=`echo $analdate | cut -c1-4`
    export mon=`echo $analdate | cut -c5-6`
    export day=`echo $analdate | cut -c7-8`

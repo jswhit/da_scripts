@@ -430,10 +430,15 @@ while [ $fh -le $FHMAX_FCST ]; do
   if [ $longer_fcst = "YES" ] && [ $fh -ge 1 ] ; then
      fh3=`expr $fh + 2`
      charfhr3="fhr"`printf %02i $fh3`
-     /bin/cp -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
-     /bin/cp -f dyn${charfhr2}.nc ${datapath}/${analdatep2}/sfg2_${analdatep2}_${charfhr3}_${charnanal}
-     /bin/cp -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
-     /bin/cp -f phy${charfhr2}.nc ${datapath}/${analdatep2}/bfg2_${analdatep2}_${charfhr3}_${charnanal}
+     if [ $fhx -le 9 ]; then # fhx = fh+5 (charfhr), fh3 = fh+2 (charfhr3)
+        /bin/cp -f dyn${charfhr2}.nc ${datapath}/${analdatep2}/sfg2_${analdatep2}_${charfhr3}_${charnanal}
+        /bin/mv -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
+        /bin/cp -f phy${charfhr2}.nc ${datapath}/${analdatep2}/bfg2_${analdatep2}_${charfhr3}_${charnanal}
+        /bin/mv -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
+     else
+        /bin/mv -f dyn${charfhr2}.nc ${datapath}/${analdatep2}/sfg2_${analdatep2}_${charfhr3}_${charnanal}
+        /bin/mv -f phy${charfhr2}.nc ${datapath}/${analdatep2}/bfg2_${analdatep2}_${charfhr3}_${charnanal}
+     fi
   else
      /bin/mv -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
      /bin/mv -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
@@ -444,21 +449,6 @@ while [ $fh -le $FHMAX_FCST ]; do
   fi
   fh=$[$fh+$FHOUT]
 done
-if [ $longer_fcst = "YES" ]; then
-    fh=`expr $FHMAX + 1`
-    while [ $fh -le $FHMAX_LONGER ]; do
-      fhx=`expr $fh + 2`
-      charfhr="f"`printf %03i $fhx`
-      charfhr2="f"`printf %03i $fh`
-      /bin/mv -f dyn${charfhr2}.nc ${datapath}/${analdatep2}/sfg2_${analdatep2}_${charfhr}_${charnanal}
-      /bin/mv -f phy${charfhr2}.nc ${datapath}/${analdatep2}/bfg2_${analdatep2}_${charfhr}_${charnanal}
-      if [ $? -ne 0 ]; then
-         echo "netcdf file missing..."
-         exit 1
-      fi
-      fh=$[$fh+$FHOUT]
-    done
-fi
 /bin/rm -f phy*nc dyn*nc
 
 ls -l *tile*nc
