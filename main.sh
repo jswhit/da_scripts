@@ -36,6 +36,12 @@ export analdatem3=`${incdate} $analdate -$FHOFFSET`
 export analdatep1m3=`${incdate} $analdate $FHOFFSET`
 export hrp1=`echo $analdatep1 | cut -c9-10`
 export hrm1=`echo $analdatem1 | cut -c9-10`
+# next analysis time.
+if [ $cold_start == "true" ]; then
+export analdatep1=`${incdate} $analdate 6`
+else
+export analdatep1=`${incdate} $analdate 1`
+fi
 
 # if SATINFO in obs dir, use it
 #if [ -s $obs_datapath/gdas.${yr}${mon}${day}/${hr}/global_satinfo_${analdate}.txt ]; then
@@ -463,6 +469,11 @@ fi
 
 fi # skip to here if fg_only = true
 
+if [ $cold_start == "true" ]; then
+    export FHMIN=6
+    export FHMAX=6
+fi
+
 if [ $replay_controlfcst == 'true' ]; then
     echo "$analdate run high-res control first guess `date`"
     sh ${enkfscripts}/run_fg_control.sh  > ${current_logdir}/run_fg_control.out  2>&1
@@ -514,7 +525,11 @@ fi # skip to here if cold_start = true
 echo "$analdate all done"
 
 # next analdate: increment by $ANALINC
+if [ $cold_start == "true" ]; then
+export analdate=`${incdate} $analdate 6`
+else
 export analdate=`${incdate} $analdate $ANALINC`
+fi
 
 echo "export analdate=${analdate}" > $startupenv
 echo "export analdate_end=${analdate_end}" >> $startupenv

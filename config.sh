@@ -92,19 +92,18 @@ elif [ "$machine" == 'orion' ]; then
    export basedir=/work/noaa/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   export obs_datapath=${basedir}/dumps
+   export obs_datapath2=/work/noaa/sfc-perts/gbates/hrlyda_dumps/6hrly
+   export obs_datapath=/work/noaa/sfc-perts/gbates/hrlyda_dumps/veryshort_nolatency
    ulimit -s unlimited
    source $MODULESHOME/init/sh
    module purge
-   module load intel/2018.4
-   module load impi/2018.4
+   module use /apps/contrib/NCEP/libs/hpc-stack/modulefiles/stack
+   module load hpc/1.1.0
+   module load hpc-intel/2018.4
+   module unload mkl/2020.2
    module load mkl/2018.4
-   export NCEPLIBS=/apps/contrib/NCEPLIBS/lib
-   module use -a $NCEPLIBS/modulefiles
-   module unload netcdf/4.7.4 
-   module unload hdf5/1.10.6
-   module load netcdfp/4.7.4
-   module load intelpython3/2020.2
+   module load hpc-impi/2018.4
+   module load python/3.7.5
    export PYTHONPATH=/home/jwhitake/.local/lib/python3.7/site-packages
    export HDF5_DISABLE_VERSION_CHECK=1
    module list
@@ -321,7 +320,7 @@ export analpertwttr_rtpp=0.4
 export pseudo_rh=.true.
 export write_ensmean=.false. # write out ens mean analysis in EnKF
 if [[ $write_ensmean == ".true." ]]; then
-   ENKFVARS="write_ensmean=${write_ensmean},"
+   export ENKFVARS="write_ensmean=${write_ensmean},"
 fi
 export letkf_flag=.true.
 export letkf_bruteforce_search=.false.
@@ -386,7 +385,7 @@ elif [ "$machine" == 'orion' ]; then
    export fv3gfspath=/work/noaa/global/glopara
    export FIXFV3=$fv3gfspath/fix_nco_gfsv16/fix_fv3_gmted2010
    export FIXGLOBAL=$fv3gfspath/fix_nco_gfsv16/fix_am
-   export gsipath=${basedir}/ProdGSI.jswhit
+   export gsipath=${basedir}/GSI-enkf64bit
    export fixgsi=${gsipath}/fix
    #export fixcrtm=${basedir}/fix/crtm/v2.2.6/fix
    export fixcrtm=$fv3gfspath/crtm/crtm_v2.3.0

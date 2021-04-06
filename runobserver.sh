@@ -1,8 +1,10 @@
 #!/bin/sh
-#SBATCH -q debug
-#SBATCH -t 00:30:00
+##SBATCH -q urgent
+#SBATCH -p orion
+#SBATCH -t 01:00:00
 #SBATCH -A gsienkf
 #SBATCH -N 10    
+#SBATCH --ntasks-per-node=40
 #SBATCH -J observer
 #SBATCH -e observer.err
 #SBATCH -o observer.out
@@ -10,23 +12,26 @@
 export gsi_control_threads=2
 export NODES=$SLURM_NNODES
 export corespernode=$SLURM_CPUS_ON_NODE
-export machine='hera'
+export machine='orion'
 export cores=`expr $NODES \* $corespernode`
 echo "running on $machine using $NODES nodes and $cores CORES"
-export RUN='gdas'
+export RUN='gfs'
 export RES='192'
-export basedir=/scratch2/BMC/gsienkf/${USER}
+export basedir=/work/noaa/gsienkf/${USER}
 export datadir=$basedir
 export exptname="C${RES}_hybgain_hourly"
-export obs_datapath=/scratch1/NCEPDEV/global/glopara/dump # for sst,snow,ice grib
+export obs_datapath=/work/noaa/sfc-perts/gbates/hrlyda_dumps/6hrly
 source $MODULESHOME/init/sh
 module purge
-module load intel/18.0.5.274
-module load impi/2018.0.4 
-module use -a /scratch1/NCEPDEV/global/gwv/lp/lib/modulefiles
-module load netcdfp/4.7.4
-module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
-module load hdf5_parallel/1.10.6
+module use /apps/contrib/NCEP/libs/hpc-stack/modulefiles/stack
+module load hpc/1.1.0
+module load hpc-intel/2018.4
+module unload mkl/2020.2
+module load mkl/2018.4
+module load hpc-impi/2018.4
+module load python/3.7.5
+export PYTHONPATH=/home/jwhitake/.local/lib/python3.7/site-packages
+export HDF5_DISABLE_VERSION_CHECK=1
 export datapath="${datadir}/${exptname}"
 export logdir="${datadir}/logs/${exptname}"
 export NOSAT="NO" # if yes, no radiances assimilated
@@ -126,14 +131,14 @@ export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
 export rungsi='run_gsi_4densvar.sh'
 
-export python=/contrib/anaconda/2.3.0/bin/python
-export fv3gfspath=/scratch1/NCEPDEV/global/glopara
-export FIXFV3=${fv3gfspath}/fix_nco_gfsv16/fix_fv3_gmted2010
-export FIXGLOBAL=${fv3gfspath}/fix_nco_gfsv16/fix_am
-export gsipath=/scratch1/NCEPDEV/global/glopara/git/global-workflow/gfsv16b/sorc/gsi.fd
+export python=`which python`
+export fv3gfspath=/work/noaa/global/glopara
+export FIXFV3=$fv3gfspath/fix_nco_gfsv16/fix_fv3_gmted2010
+export FIXGLOBAL=$fv3gfspath/fix_nco_gfsv16/fix_am
+export gsipath=${basedir}/GSI-enkf64bit
 export fixgsi=${gsipath}/fix
-export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0
-export execdir=${enkfscripts}/exec_hera
+export fixcrtm=$fv3gfspath/crtm/crtm_v2.3.0
+export execdir=${enkfscripts}/exec_orion
 export gsiexec=${execdir}/global_gsi
 export ANAVINFO=${fixgsi}/global_anavinfo.l${LEVS}.txt
 export ANAVINFO_ENKF=${ANAVINFO}
@@ -145,16 +150,19 @@ export OZINFO=${fixgsi}/global_ozinfo.txt
 export CONVINFO=${fixgsi}/global_convinfo.txt
 export SATINFO=${fixgsi}/global_satinfo.txt
 export NLAT=$((${LATA}+2))
+export biascorrdir=/work/noaa/gsienkf/whitaker/C192_hybgain
 
 export charnanal='ensmean' 
 export charnanal2='ensmean2' 
+export ATMPREFIX='sfg2'
+export SFCPREFIX='bfg2'
 export lobsdiag_forenkf='.false.'
 export skipcat="false"
 
 export cleanup_observer="true"
-export analdate=2020031612
+export analdate=2020032018
 export nitermax=1
-while [ $analdate -le 2020031818 ]; do
+while [ $analdate -le 2020032100 ]; do
    export yr=`echo $analdate | cut -c1-4`
    export mon=`echo $analdate | cut -c5-6`
    export day=`echo $analdate | cut -c7-8`

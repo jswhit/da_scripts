@@ -46,20 +46,14 @@ while [ $fh -le $FHMAX ]; do
 
 done
 
-fh=${FHMAX}
+fh=3
 charfhr="fhr`printf %02i $fh`"
-if [ $ANALINC -eq 1 ]; then
-  analdate_save=`$incdate $analdate 2`
-  mkdir -p ${datapath}/${analdate_save}
-  nanals2=80
-fi
-ANALINC2=`expr $FHMAX_LONGER - 3`
-while [ $fh -le $FHMAX_LONGER ] && [ -s ${datapath2}/sfg2_${analdate}_${charfhr}_mem001 ]; do
+while [ $fh -le 9 ] && [ -s ${datapath2}/sfg2_${analdate}_${charfhr}_mem001 ]; do
 
-  if [ $cleanup_ensmean == 'true' ] || ([ $cleanup_ensmean == 'false' ]  && [ ! -s ${datapath}/${analdate}/bfg2_${analdate}_${charfhr}_ensmean ]); then
-      echo "running  ${execdir}/getsfcensmeanp.x ${datapath2}/ bfg2_${analdate}_${charfhr}_ensmean bfg2_${analdate}_${charfhr} ${nanals2}"
+  if [ $cleanup_ensmean == 'true' ] || ([ $cleanup_ensmean == 'false' ]  && [ ! -s ${datapath}/${analdate}/bfg_${analdate}_${charfhr}_ensmean ]); then
+      echo "running  ${execdir}/getsfcensmeanp.x ${datapath2}/ bfg2_${analdate}_${charfhr}_ensmean bfg2_${analdate}_${charfhr} ${nanals}"
       /bin/rm -f ${datapath2}/bfg2_${analdate}_${charfhr}_ensmean
-      export PGM="${execdir}/getsfcensmeanp.x ${datapath2}/ bfg2_${analdate}_${charfhr}_ensmean bfg2_${analdate}_${charfhr} ${nanals2}"
+      export PGM="${execdir}/getsfcensmeanp.x ${datapath2}/ bfg2_${analdate}_${charfhr}_ensmean bfg2_${analdate}_${charfhr} ${nanals}"
       ${enkfscripts}/runmpi
       if [ ! -s ${datapath}/${analdate}/bfg2_${analdate}_${charfhr}_ensmean ]; then
          echo "getsfcensmeanp.x failed..."
@@ -68,12 +62,8 @@ while [ $fh -le $FHMAX_LONGER ] && [ -s ${datapath2}/sfg2_${analdate}_${charfhr}
   fi
   if [ $cleanup_ensmean == 'true' ] || ([ $cleanup_ensmean == 'false' ]  && [ ! -s ${datapath}/${analdate}/sfg2_${analdate}_${charfhr}_ensmean ]); then
       /bin/rm -f ${datapath2}/sfg2_${analdate}_${charfhr}_ensmean
-      echo "running ${execdir}/getsigensmeanp_smooth.x ${datapath2}/ sfg2_${analdate}_${charfhr}_ensmean sfg2_${analdate}_${charfhr} ${nanals2} sfg2_${analdate}_${charfhr}_enssprd"
-      if [ $fh -eq $ANALINC2 ]; then # just save spread at middle of window
-         export PGM="${execdir}/getsigensmeanp_smooth.x ${datapath2}/ sfg2_${analdate}_${charfhr}_ensmean sfg2_${analdate}_${charfhr} ${nanals2} sfg2_${analdate}_${charfhr}_enssprd"
-      else
-         export PGM="${execdir}/getsigensmeanp_smooth.x ${datapath2}/ sfg2_${analdate}_${charfhr}_ensmean sfg2_${analdate}_${charfhr} ${nanals2}"
-      fi
+      echo "running ${execdir}/getsigensmeanp_smooth.x ${datapath2}/ sfg2_${analdate}_${charfhr}_ensmean sfg2_${analdate}_${charfhr} ${nanals} sfg2_${analdate}_${charfhr}_enssprd"
+      export PGM="${execdir}/getsigensmeanp_smooth.x ${datapath2}/ sfg2_${analdate}_${charfhr}_ensmean sfg2_${analdate}_${charfhr} ${nanals} sfg2_${analdate}_${charfhr}_enssprd"
       ${enkfscripts}/runmpi
       if [ ! -s ${datapath}/${analdate}/sfg2_${analdate}_${charfhr}_ensmean ]; then
          echo "getsigensmeanp_smooth.x failed..."
@@ -81,13 +71,6 @@ while [ $fh -le $FHMAX_LONGER ] && [ -s ${datapath2}/sfg2_${analdate}_${charfhr}
       fi
   fi
 
-  if [ $ANALINC -eq 1 ]; then
-    fh2=$((fh+2))
-    charfhr2="fhr`printf %02i $fh2`"
-    /bin/mv -f ${datapath2}/sfg2_${analdate}_${charfhr}_ensmean ${datapath}/${analdate_save}/sfg_${analdate_save}_${charfhr2}_ensmean
-    /bin/mv -f ${datapath2}/bfg2_${analdate}_${charfhr}_ensmean ${datapath}/${analdate_save}/bfg_${analdate_save}_${charfhr2}_ensmean
-    /bin/mv -f ${datapath2}/sfg2_${analdate}_${charfhr}_enssprd ${datapath}/${analdate_save}/sfg_${analdate_save}_${charfhr2}_enssprd
-  fi
   fh=$((fh+FHOUT))
   charfhr="fhr`printf %02i $fh`"
 

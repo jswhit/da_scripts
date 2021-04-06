@@ -60,6 +60,8 @@ suffix=tm00.bufr_d
 
 datges=${datapath2:-/lfs1/projects/fim/whitaker/gfsenkf_test/$adate}
 datgesm1=${datapathm1:-/lfs1/projects/fim/whitaker/gfsenkf_test/$gdate}
+ATMPREFIX=${ATMPREFIX:-'sfg'}
+SFCPREFIX=${SFCPREFIX:-'bfg'}
 adate0=`echo $adate | cut -c1-8`
 echo "adate = $adate"
 iy=`echo $adate | cut -c1-4`
@@ -67,14 +69,14 @@ im=`echo $adate | cut -c5-6`
 id=`echo $adate | cut -c7-8`
 ih=`echo $adate | cut -c9-10`
 echo "iy,im,id,ih = $iy $im $id $ih"
-date_fhour=`$python ${enkfscripts}/getidate.py ${datges}/bfg_${adate}_fhr0${ANALINC}_${charnanal}`
+date_fhour=`$python ${enkfscripts}/getidate.py ${datges}/${SFCPREFIX}_${adate}_fhr0${ANALINC}_${charnanal}`
 fdatei=`echo $date_fhour | cut -f1 -d " "`
 fhr=`echo $date_fhour | cut -f2 -d " "`
 fdatev=`${incdate} $fdatei $fhr`
 echo "fdatei=$fdatei fhr=$fhr fdatev=$fdatev"
 gdate0=`echo $gdate | cut -c1-8`
 obs_datapath=${obs_datapath:-/scratch1/NCEPDEV/global/glopara/dump}
-datobs=$obs_datapath/gdas.${iy}${im}${id}/${ih}
+datobs=$obs_datapath/${RUN}.${iy}${im}${id}/${ih}
 
 # Set runtime and save directories
 tmpdir=${tmpdir:-$datges/gsitmp$$}
@@ -732,42 +734,40 @@ $nln $GSATANG            ./satbias_angle
 $nln $GBIASAIR           ./aircftbias_in
 
 if [ $ANALINC -eq 6 ]; then
-SFCG03=${SFCG03:-$datges/bfg_${adate}_fhr03_${charnanal}}
-$nln $SFCG03               ./sfcf03
-SFCG06=${SFCG06:-$datges/bfg_${adate}_fhr06_${charnanal}}
-$nln $SFCG06               ./sfcf06
-SFCG09=${SFCG09:-$datges/bfg_${adate}_fhr09_${charnanal}}
-$nln $SFCG09               ./sfcf09
 
-SIGG03=${SIGG03:-$datges/sfg_${adate}_fhr03_${charnanal}}
+SFCG03=${SFCG03:-$datges/${SFCPREFIX}_${adate}_fhr03_${charnanal}}
+$nln $SFCG03               ./sfcf03
+SFCG04=${SFCG04:-$datges/${SFCPREFIX}_${adate}_fhr04_${charnanal}}
+$nln $SFCG04               ./sfcf04
+SFCG05=${SFCG05:-$datges/${SFCPREFIX}_${adate}_fhr05_${charnanal}}
+$nln $SFCG05               ./sfcf05
+SFCG06=${SFCG06:-$datges/${SFCPREFIX}_${adate}_fhr06_${charnanal}}
+$nln $SFCG06               ./sfcf06
+SFCG07=${SFCG07:-$datges/${SFCPREFIX}_${adate}_fhr07_${charnanal}}
+$nln $SFCG07               ./sfcf07
+SFCG08=${SFCG08:-$datges/${SFCPREFIX}_${adate}_fhr08_${charnanal}}
+$nln $SFCG08               ./sfcf08
+SFCG09=${SFCG09:-$datges/${SFCPREFIX}_${adate}_fhr09_${charnanal}}
+$nln $SFCG09               ./sfcf09
+SIGG03=${SIGG03:-$datges/${ATMPREFIX}_${adate}_fhr03_${charnanal}}
 $nln $SIGG03               ./sigf03
-SIGG06=${SIGG06:-$datges/sfg_${adate}_fhr06_${charnanal}}
+SIGG04=${SIGG04:-$datges/${ATMPREFIX}_${adate}_fhr04_${charnanal}}
+$nln $SIGG04               ./sigf04
+SIGG05=${SIGG05:-$datges/${ATMPREFIX}_${adate}_fhr05_${charnanal}}
+$nln $SIGG05               ./sigf05
+SIGG06=${SIGG06:-$datges/${ATMPREFIX}_${adate}_fhr06_${charnanal}}
 $nln $SIGG06               ./sigf06
-SIGG09=${SIGG09:-$datges/sfg_${adate}_fhr09_${charnanal}}
+SIGG07=${SIGG07:-$datges/${ATMPREFIX}_${adate}_fhr07_${charnanal}}
+$nln $SIGG07               ./sigf07
+SIGG08=${SIGG08:-$datges/${ATMPREFIX}_${adate}_fhr08_${charnanal}}
+$nln $SIGG08               ./sigf08
+SIGG09=${SIGG09:-$datges/${ATMPREFIX}_${adate}_fhr09_${charnanal}}
 $nln $SIGG09               ./sigf09
 
-if [[ "$HRLY_BKG" = "YES" ]]; then
-SFCG04=${SFCG04:-$datges/bfg_${adate}_fhr04_${charnanal}}
-$nln $SFCG04               ./sfcf04
-SFCG05=${SFCG05:-$datges/bfg_${adate}_fhr05_${charnanal}}
-$nln $SFCG05               ./sfcf05
-SFCG07=${SFCG07:-$datges/bfg_${adate}_fhr07_${charnanal}}
-$nln $SFCG07               ./sfcf07
-SFCG08=${SFCG08:-$datges/bfg_${adate}_fhr08_${charnanal}}
-$nln $SFCG08               ./sfcf08
-SIGG04=${SIGG04:-$datges/sfg_${adate}_fhr04_${charnanal}}
-$nln $SIGG04               ./sigf04
-SIGG05=${SIGG05:-$datges/sfg_${adate}_fhr05_${charnanal}}
-$nln $SIGG05               ./sigf05
-SIGG07=${SIGG07:-$datges/sfg_${adate}_fhr07_${charnanal}}
-$nln $SIGG07               ./sigf07
-SIGG08=${SIGG08:-$datges/sfg_${adate}_fhr08_${charnanal}}
-$nln $SIGG08               ./sigf08
-fi
 elif [ $ANALINC -eq 1 ]; then
-SIGG06=${SIGG01:-$datges/sfg_${adate}_fhr01_${charnanal}}
+SIGG06=${SIGG01:-$datges/${ATMPREFIX}_${adate}_fhr01_${charnanal}}
 $nln $SIGG06               ./sigf01
-SFCG06=${SIGG01:-$datges/bfg_${adate}_fhr01_${charnanal}}
+SFCG06=${SIGG01:-$datges/${SFCPREFIX}_${adate}_fhr01_${charnanal}}
 $nln $SFCG06               ./sfcf01
 else
 echo "ANALINC must be 6 or 1"
@@ -778,7 +778,7 @@ ln -s $datges/ensmem*.pe* .
 ln -s $datges/control*.pe* .
 fh=$FHMIN
 while [ $fh -le $FHMAX ] ;do
-for ensfile in $datges/sfg_${adate}*fhr0${fh}*mem???; do
+for ensfile in $datges/${ATMPREFIX}_${adate}*fhr0${fh}*mem???; do
  ensfilename=`basename $ensfile`
  memnum=`echo $ensfilename | cut -f4 -d"_" | cut -c4-6`
  $nln $ensfile ./sigf0${fh}_ens_mem${memnum}

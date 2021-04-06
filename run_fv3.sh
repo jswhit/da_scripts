@@ -18,30 +18,14 @@ if [ "$machine" == 'hera' ]; then
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'orion' ]; then
    module purge
-   module use /apps/contrib/NCEP/libs/hpc-stack/v1.0.0-beta1/modulefiles/stack
-   module load hpc/1.0.0-beta1
+   module use /apps/contrib/NCEP/libs/hpc-stack/modulefiles/stack
+   module load hpc/1.1.0
    module load hpc-intel/2018.4
+   module unload mkl/2020.2
+   module load mkl/2018.4
    module load hpc-impi/2018.4
-   module load hdf5/1.10.6
-   module load netcdf/4.7.4
-   module load pio/2.5.1
-   module load esmf/8_1_0_beta_snapshot_27
    module load wgrib
    export WGRIB=`which wgrib`
-elif [ "$machine" == 'gaea' ]; then
-   module purge
-   module load PrgEnv-intel/6.0.3
-   module rm intel
-   module load intel/18.0.3.222
-   #module load cray-netcdf-hdf5parallel/4.6.1.3
-   #module load cray-hdf5-parallel/1.10.2.0
-   module load cray-netcdf
-   module use -a /lustre/f2/pdata/ncep_shared/NCEPLIBS/lib//modulefiles
-   module load esmflocal/8_0_48b
-   module load nco/4.6.4
-   module load wgrib
-   export WGRIB=`which wgrib`
-   export HDF5_DISABLE_VERSION_CHECK=1
 fi
 module list
 
@@ -442,6 +426,25 @@ fi
 export DATOUT=${DATOUT:-$datapathp1}
 ls -l dyn*.nc
 ls -l phy*.nc
+if [ $cold_start == "true" ] && [ $ANALINC -eq 1 ]; then
+fh=$FHMIN
+while [ $fh -le $FHMAX ]; do
+  charfhr2="f"`printf %03i $fh`
+  fhx=`expr $fh - 5`
+  charfhr="fhr"`printf %02i $fhx`
+  /bin/mv -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
+  if [ $? -ne 0 ]; then
+     echo "netcdffile missing..."
+     exit 1
+  fi
+  /bin/mv -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
+  if [ $? -ne 0 ]; then
+     echo "netcdffile missing..."
+     exit 1
+  fi
+  fh=$[$fh+$FHOUT]
+done
+else
 fh=$FHMIN
 while [ $fh -le $FHMAX ]; do
   charfhr="fhr"`printf %02i $fh`
@@ -468,23 +471,26 @@ while [ $fh -le $FHMAX ]; do
 done
 if [ $longer_fcst = "YES" ]; then
     fh=$FHMAX
-    analdatep2=`$incdate $analdatep1 $ANALINC`
+    analdatep2=`$incdate $analdatep1 3`
     mkdir -p $datapath/$analdatep2
     while [ $fh -le $FHMAX_LONGER ]; do
       charfhr="fhr"`printf %02i $fh`
       charfhr2="f"`printf %03i $fh`
-      /bin/mv -f dyn${charfhr2}.nc ${datapath}/${analdatep2}/sfg2_${analdatep2}_${charfhr}_${charnanal}
+      fh3=`expr $fh + 2`
+      charfhr3="fhr"`printf %02i $fh3`
+      /bin/mv -f dyn${charfhr2}.nc ${datapath}/${analdatep2}/sfg2_${analdatep2}_${charfhr3}_${charnanal}
       if [ $? -ne 0 ]; then
          echo "netcdffile missing..."
          exit 1
       fi
-      /bin/mv -f phy${charfhr2}.nc ${datapath}/${analdatep2}/bfg2_${analdatep2}_${charfhr}_${charnanal}
+      /bin/mv -f phy${charfhr2}.nc ${datapath}/${analdatep2}/bfg2_${analdatep2}_${charfhr3}_${charnanal}
       if [ $? -ne 0 ]; then
          echo "netcdf file missing..."
          exit 1
       fi
       fh=$[$fh+$FHOUT]
     done
+fi
 fi
 /bin/rm -f phy*nc dyn*nc
 
@@ -496,7 +502,7 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
    mkdir -p ${datapathp1}/${charnanal}/INPUT
    cd RESTART
    ls -l
-   if [ $nhr_anal -eq $FHMAX_FCST ]; then
+   if [ $nhr_anal -eq $FHMAX_FCST ] || [ $cold_start == "true" ]; then
       /bin/mv -f fv_core.res.nc ${datapathp1}/${charnanal}/INPUT
       tiles="tile1 tile2 tile3 tile4 tile5 tile6"
       for tile in $tiles; do
