@@ -440,14 +440,6 @@ export NLAT=$((${LATA}+2))
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_annmeansmooth0p5
 export REALTIME=NO # if NO, use historical files set in main.sh
 
-# parameters for hybrid gain
-if [ $hybgain == "true" ] && [ $controlanal == "false" ]; then
-   export beta_s0=1.000 # 3dvar
-   export beta_e0=0.0
-   export readin_beta=.false. # not relevant for 3dvar
-   export readin_localization=.false. # use fixed localization in EnKF.
-fi
-
 cd $enkfscripts
 echo "run main driver script"
 if [ $controlanal == "true" ]; then
@@ -474,9 +466,13 @@ else
       # use constant values (alpha and beta parameters)
       export readin_beta=.false.
       export readin_localization=.false.
-      export beta_s0=$alpha
-      export beta_e0=$beta
+      # these only used for hybrid covariance (hyb 4denvar) in GSI
+      export beta_s0=`python -c "from __future__ import print_function; print($alpha / 1000.)"` # weight given to static B in hyb cov
+      # beta_e0 parameter (ensemble weight) in my GSI branch (not in GSI/develop)
+      export beta_e0=`python -c "from __future__ import print_function; print($beta / 1000.)"` # weight given to ensemble B in hyb cov
    else
+      export beta_s0=1.000 # 3dvar
+      export beta_e0=0.0
       export readin_beta=.false.
       export readin_localization=.false.
    fi
