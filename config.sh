@@ -24,7 +24,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybgain"
+export exptname="C${RES}_hybgain_iau"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 
@@ -297,7 +297,7 @@ export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
 
-export RUN=gfs # use gdas or gfs obs
+export RUN=gdas # use gdas or gfs obs
 
 # Analysis increments to zero out
 export INCREMENTS_TO_ZERO="'liq_wat_inc','icmr_inc'"
