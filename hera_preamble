@@ -1,7 +1,7 @@
 #!/bin/sh
 ##SBATCH -q debug
-#SBATCH -t 03:30:00
-#SBATCH -A gsienkf
+#SBATCH -t 04:00:00
+#SBATCH -A da-cpu   
 #SBATCH -N 20    
 #SBATCH -J C192_hybgain_iau
 #SBATCH -e C192_hybgain_iau.err
@@ -46,7 +46,7 @@ fi
 
 # for ensemble forecast and GSI
 
-# C192 ensemble, C384 control (run with 20 nodes)
+# C192 ensemble, C384 control
 export fg_proc=$corespernode 
 export fg_threads=1
 export enkf_threads=10 

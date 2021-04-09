@@ -34,12 +34,6 @@ export analdatep1m3=`${incdate} $analdate $FHOFFSET`
 export hrp1=`echo $analdatep1 | cut -c9-10`
 export hrm1=`echo $analdatem1 | cut -c9-10`
 
-# if SATINFO in obs dir, use it
-#if [ -s $obs_datapath/gdas.${yr}${mon}${day}/${hr}/global_satinfo_${analdate}.txt ]; then
-#   export  $obs_datapath/gdas.${yr}${mon}${day}/${hr}/global_satinfo_${analdate}.txt
-#fi
-#export OZINFO=`sh ${enkfscripts}/pickinfo.sh ${analdate} ozinfo`
-#export CONVINFO=`sh ${enkfscripts}/pickinfo.sh ${analdate} convinfo`
 # if $REALTIME == "YES", use OZINFO,CONVINFO,SATINFO set in config.sh
 if [ "$REALTIME" == "NO" ]; then
 
