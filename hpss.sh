@@ -97,7 +97,7 @@ if  [ $save_hpss_subset == "true" ]; then
    #fi
    #cd ..
    # exclude long forecast directory
-   htar -cvf ${hsidir}/${analdate}_subset.tar ${analdate}/gdas* ${analdate}/*ensmean* ${analdate}/*control* ${analdate}/logs
+   htar -cvf ${hsidir}/${analdate}_subset.tar ${analdate}/${RUN}* ${analdate}/*ensmean* ${analdate}/*control* ${analdate}/logs
 fi
 hsi ls -l ${hsidir}/${analdate}_subset.tar
 exitstat=$?
