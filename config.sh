@@ -358,7 +358,11 @@ export beta_s0=`python -c "from __future__ import print_function; print($alpha /
 export beta_e0=`python -c "from __future__ import print_function; print($beta / 1000.)"` # weight given to ensemble B in hyb cov
 export s_ens_h=343.     # 1250 km horiz localization in GSI
 #export s_ens_v=-0.58    # 1.5 scale heights in GSI
-export s_ens_v=5.4     # 14 levels
+if [ $LEVS -eq 64 ]; then
+  export s_ens_v=5.4 # 14 levels
+elif [ $LEVS -eq 127 ]; then
+  export s_ens_v=7.7 # 20 levels
+fi
 # use pre-generated bias files.
 #export biascorrdir=${datadir}/biascor
 
