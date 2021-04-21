@@ -19,7 +19,6 @@ while [ $fh -le 9 ] && [ -s ${datapath2}/sfg_${analdate}_${charfhr}_mem001 ]; do
   if [ $cleanup_ensmean == 'true' ] || ([ $cleanup_ensmean == 'false' ]  && [ ! -s ${datapath}/${analdate}/bfg_${analdate}_${charfhr}_ensmean ]); then
       if [ $FHMAX_FCST -eq 2 ] && [ $fh -gt 7 ] && [ $cold_start != "true" ]; then
          # symlink last two forecast times (only needed to trick GSI into believing window is symmetric)
-         /bin/ln -fs ${datapath}/${analdate}/sfg_${analdatep1}_fhr07_ensmean ${datapath}/${analdate}/sfg_${analdatep1}_${charfhr}_ensmean
          /bin/ln -fs ${datapath}/${analdate}/bfg_${analdatep1}_fhr07_ensmean ${datapath}/${analdate}/bfg_${analdatep1}_${charfhr}_ensmean
       else
          echo "running  ${execdir}/getsfcensmeanp.x ${datapath2}/ bfg_${analdate}_${charfhr}_ensmean bfg_${analdate}_${charfhr} ${nanals}"
@@ -33,13 +32,18 @@ while [ $fh -le 9 ] && [ -s ${datapath2}/sfg_${analdate}_${charfhr}_mem001 ]; do
       fi
   fi
   if [ $cleanup_ensmean == 'true' ] || ([ $cleanup_ensmean == 'false' ]  && [ ! -s ${datapath}/${analdate}/sfg_${analdate}_${charfhr}_ensmean ]); then
-      /bin/rm -f ${datapath2}/sfg_${analdate}_${charfhr}_ensmean
-      echo "running ${execdir}/getsigensmeanp_smooth.x ${datapath2}/ sfg_${analdate}_${charfhr}_ensmean sfg_${analdate}_${charfhr} ${nanals} sfg_${analdate}_${charfhr}_enssprd"
-      export PGM="${execdir}/getsigensmeanp_smooth.x ${datapath2}/ sfg_${analdate}_${charfhr}_ensmean sfg_${analdate}_${charfhr} ${nanals} sfg_${analdate}_${charfhr}_enssprd"
-      ${enkfscripts}/runmpi
-      if [ ! -s ${datapath}/${analdate}/sfg_${analdate}_${charfhr}_ensmean ]; then
-         echo "getsigensmeanp_smooth.x failed..."
-         exit 1
+      if [ $FHMAX_FCST -eq 2 ] && [ $fh -gt 7 ] && [ $cold_start != "true" ]; then
+         # symlink last two forecast times (only needed to trick GSI into believing window is symmetric)
+         /bin/ln -fs ${datapath}/${analdate}/sfg_${analdatep1}_fhr07_ensmean ${datapath}/${analdate}/sfg_${analdatep1}_${charfhr}_ensmean
+         /bin/ln -fs ${datapath}/${analdate}/sfg_${analdatep1}_fhr07_enssprd ${datapath}/${analdate}/sfg_${analdatep1}_${charfhr}_enssprd
+      else
+         echo "running ${execdir}/getsigensmeanp_smooth.x ${datapath2}/ sfg_${analdate}_${charfhr}_ensmean sfg_${analdate}_${charfhr} ${nanals} sfg_${analdate}_${charfhr}_enssprd"
+         export PGM="${execdir}/getsigensmeanp_smooth.x ${datapath2}/ sfg_${analdate}_${charfhr}_ensmean sfg_${analdate}_${charfhr} ${nanals} sfg_${analdate}_${charfhr}_enssprd"
+         ${enkfscripts}/runmpi
+         if [ ! -s ${datapath}/${analdate}/sfg_${analdate}_${charfhr}_ensmean ]; then
+            echo "getsigensmeanp_smooth.x failed..."
+            exit 1
+         fi
       fi
   fi
 
