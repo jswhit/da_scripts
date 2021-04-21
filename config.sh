@@ -26,7 +26,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybgain_owhourly"
+export exptname="C${RES}_hybgain_owhourly2"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 
@@ -90,7 +90,7 @@ elif [ "$machine" == 'orion' ]; then
    export basedir=/work/noaa/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   export obs_datapath2=/work/noaa/sfc-perts/gbates/hrlyda_dumps/6hrly
+   export obs_datapath2=/work/noaa/global/glopara/dump
    export obs_datapath=/work/noaa/sfc-perts/gbates/hrlyda_dumps/short
    ulimit -s unlimited
    source $MODULESHOME/init/sh
@@ -173,8 +173,8 @@ else
 fi
 
 # radiance thinning parameters for GSI
-export dmesh1=145
-export dmesh2=145
+export dmesh1=125
+export dmesh2=125
 export dmesh3=100
 
 #export use_ipd="YES" # use IPD instead of CCPP
@@ -301,11 +301,11 @@ export covinflatemin=1.0
 export analpertwtnh=0.9
 export analpertwtsh=0.9
 export analpertwttr=0.9
-export analpertwtnh_rtpp=0.4
-export analpertwtsh_rtpp=0.4
-export analpertwttr_rtpp=0.4
+export analpertwtnh_rtpp=0.5
+export analpertwtsh_rtpp=0.5
+export analpertwttr_rtpp=0.5
 export pseudo_rh=.true.
-export write_ensmean=.false. # write out ens mean analysis in EnKF
+export write_ensmean=.true. # write out ens mean analysis in EnKF
 if [[ $write_ensmean == ".true." ]]; then
    export ENKFVARS="write_ensmean=${write_ensmean},"
 fi
@@ -317,9 +317,11 @@ export getkf_inflation=.false.
 export modelspace_vloc=.true.
 export letkf_novlocal=.true.
 export nobsl_max=10000
-export corrlengthnh=1250
-export corrlengthtr=1250
-export corrlengthsh=1250
+# neg value means loc dist is distance to find nobsl_max obs,
+# bounded by abs(corrlength) and abs(corrlength)/10
+export corrlengthnh=-2500
+export corrlengthtr=-2500
+export corrlengthsh=-2500
 # The lnsigcutoff* parameters are ignored if modelspace_vloc=T
 export lnsigcutoffnh=1.5
 export lnsigcutofftr=1.5
@@ -343,7 +345,11 @@ export readin_beta=.false.
 export readin_localization=.false.
 export s_ens_h=343.     # 1250 km horiz localization in GSI
 #export s_ens_v=-0.58    # 1.5 scale heights in GSI
-export s_ens_v=5.4     # 14 levels
+if [ $LEVS -eq 64 ]; then
+  export s_ens_v=5.4 # 14 levels
+elif [ $LEVS -eq 127 ]; then
+  export s_ens_v=7.7 # 20 levels
+fi
 # use pre-generated bias files.
 #export biascorrdir=${datadir}/biascor
 

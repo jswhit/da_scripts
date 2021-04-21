@@ -249,6 +249,9 @@ else
       FHMAX_FCST=2
    else
       FHMAX_FCST=$FHMAX
+      if [ $FHMAX -eq 4 ] && [ $cold_start != "true" ]; then
+          FHMAX_FCST=2 # hours 3,4 symlinked to 2 
+      fi
    fi
    longer_fcst="NO"
 fi
@@ -442,6 +445,12 @@ while [ $fh -le $FHMAX_FCST ]; do
   else
      /bin/mv -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
      /bin/mv -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
+     if [ $FHMAX_FCST -eq 2 ] && [ $FHMAX -eq 4 ] && [ $fh -eq 2 ] && [ $cold_start != "true" ]; then
+        /bin/ln -fs ${DATOUT}/sfg_${analdatep1}_fhr07_${charnanal}  ${DATOUT}/sfg_${analdatep1}_fhr08_${charnanal}
+        /bin/ln -fs ${DATOUT}/sfg_${analdatep1}_fhr07_${charnanal}  ${DATOUT}/sfg_${analdatep1}_fhr09_${charnanal}
+        /bin/ln -fs ${DATOUT}/bfg_${analdatep1}_fhr07_${charnanal}  ${DATOUT}/bfg_${analdatep1}_fhr08_${charnanal}
+        /bin/ln -fs ${DATOUT}/bfg_${analdatep1}_fhr07_${charnanal}  ${DATOUT}/bfg_${analdatep1}_fhr09_${charnanal}
+     fi
   fi
   if [ $? -ne 0 ]; then
      echo "netcdf file missing..."
