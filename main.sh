@@ -242,8 +242,10 @@ errexit=0
 if [ $replay_controlfcst == 'true' ]; then
    charnanal='control'
    echo "$analdate change resolution of control forecast to ens resolution `date`"
-   fh=3
-   while [ $fh -le 9 ]; do
+   #fh=3
+   #while [ $fh -le 9 ]; do
+   fh=6
+   while [ $fh -le 6 ]; do
      fhr=`printf %02i $fh`
      # run concurrently, wait
      if [ -s $datapath2/sfg_${analdate}_fhr${fhr}_${charnanal} ]; then
@@ -317,11 +319,9 @@ else
 fi
 
 # compute ensemble mean analyses.
-if [ $write_ensmean == ".false." ]; then
-   echo "$analdate starting ens mean analysis computation `date`"
-   sh ${enkfscripts}/compute_ensmean_enkf.sh > ${current_logdir}/compute_ensmean_anal.out 2>&1
-   echo "$analdate done computing ensemble mean analyses `date`"
-fi
+echo "$analdate starting ens mean analysis computation `date`"
+sh ${enkfscripts}/compute_ensmean_enkf.sh > ${current_logdir}/compute_ensmean_anal.out 2>&1
+echo "$analdate done computing ensemble mean analyses `date`"
 
 # blend enkf mean and 3dvar increments, recenter ensemble
 if [ $recenter_anal == "true" ]; then

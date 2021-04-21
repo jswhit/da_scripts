@@ -446,10 +446,11 @@ while [ $fh -le $FHMAX_FCST ]; do
      /bin/mv -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
      /bin/mv -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
      if [ $FHMAX_FCST -eq 2 ] && [ $FHMAX -eq 4 ] && [ $fh -eq 2 ] && [ $cold_start != "true" ]; then
-        /bin/ln -fs ${DATOUT}/sfg_${analdatep1}_fhr07_${charnanal}  ${DATOUT}/sfg_${analdatep1}_fhr08_${charnanal}
-        /bin/ln -fs ${DATOUT}/sfg_${analdatep1}_fhr07_${charnanal}  ${DATOUT}/sfg_${analdatep1}_fhr09_${charnanal}
-        /bin/ln -fs ${DATOUT}/bfg_${analdatep1}_fhr07_${charnanal}  ${DATOUT}/bfg_${analdatep1}_fhr08_${charnanal}
-        /bin/ln -fs ${DATOUT}/bfg_${analdatep1}_fhr07_${charnanal}  ${DATOUT}/bfg_${analdatep1}_fhr09_${charnanal}
+        # symlink last two forecast times (only needed to trick GSI into believing window is symmetric)
+        /bin/ln -fs ${DATOUT}/sfg_${analdatep1}_fhr07_${charnanal} ${DATOUT}/sfg_${analdatep1}_fhr08_${charnanal}
+        /bin/ln -fs ${DATOUT}/sfg_${analdatep1}_fhr07_${charnanal} ${DATOUT}/sfg_${analdatep1}_fhr09_${charnanal}
+        /bin/ln -fs ${DATOUT}/bfg_${analdatep1}_fhr07_${charnanal} ${DATOUT}/bfg_${analdatep1}_fhr08_${charnanal}
+        /bin/ln -fs ${DATOUT}/bfg_${analdatep1}_fhr07_${charnanal} ${DATOUT}/bfg_${analdatep1}_fhr09_${charnanal}
      fi
   fi
   if [ $? -ne 0 ]; then
