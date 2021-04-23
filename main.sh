@@ -271,7 +271,7 @@ fi
 if [ -f ${datapathm1}/cold_start_bias ]; then
    export cold_start_bias="true"
 else
-   export cold_start_bias "false"
+   export cold_start_bias="false"
 fi
 
 # use ensmean mean background for 3dvar analysis/observer calculatino
