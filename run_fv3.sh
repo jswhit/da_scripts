@@ -426,26 +426,10 @@ fi
 export DATOUT=${DATOUT:-$datapathp1}
 ls -l dyn*.nc
 ls -l phy*.nc
-if [ $cold_start == "true" ] && [ $ANALINC -eq 1 ]; then
 fh=$FHMIN
-while [ $fh -le $FHMAX ]; do
-  charfhr2="f"`printf %03i $fh`
-  fhx=`expr $fh - 5`
-  charfhr="fhr"`printf %02i $fhx`
-  /bin/mv -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
-  if [ $? -ne 0 ]; then
-     echo "netcdffile missing..."
-     exit 1
-  fi
-  /bin/mv -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
-  if [ $? -ne 0 ]; then
-     echo "netcdffile missing..."
-     exit 1
-  fi
-  fh=$[$fh+$FHOUT]
-done
-else
-fh=$FHMIN
+if [ $longer_fcst = "YES" ]; then
+  fh=0
+fi
 while [ $fh -le $FHMAX ]; do
   charfhr="fhr"`printf %02i $fh`
   charfhr2="f"`printf %03i $fh`
@@ -471,12 +455,12 @@ while [ $fh -le $FHMAX ]; do
 done
 if [ $longer_fcst = "YES" ]; then
     fh=$FHMAX
-    analdatep2=`$incdate $analdatep1 3`
+    analdatep2=`$incdate $analdate 3`
     mkdir -p $datapath/$analdatep2
     while [ $fh -le $FHMAX_LONGER ]; do
       charfhr="fhr"`printf %02i $fh`
       charfhr2="f"`printf %03i $fh`
-      fh3=`expr $fh + 2`
+      fh3=`expr $fh + 3`
       charfhr3="fhr"`printf %02i $fh3`
       /bin/mv -f dyn${charfhr2}.nc ${datapath}/${analdatep2}/sfg2_${analdatep2}_${charfhr3}_${charnanal}
       if [ $? -ne 0 ]; then
@@ -490,7 +474,6 @@ if [ $longer_fcst = "YES" ]; then
       fi
       fh=$[$fh+$FHOUT]
     done
-fi
 fi
 /bin/rm -f phy*nc dyn*nc
 

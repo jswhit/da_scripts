@@ -26,7 +26,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybgain_hourly"
+export exptname="C${RES}_hybgain1"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 
@@ -93,7 +93,7 @@ elif [ "$machine" == 'orion' ]; then
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    export obs_datapath2=/work/noaa/sfc-perts/gbates/hrlyda_dumps/6hrly
-   export obs_datapath=/work/noaa/sfc-perts/gbates/hrlyda_dumps/veryshort_nolatency
+   export obs_datapath=/work/noaa/sfc-perts/gbates/hrlyda_dumps/6hrly
    ulimit -s unlimited
    source $MODULESHOME/init/sh
    module purge
@@ -270,21 +270,10 @@ export LATA=$LATB
 
 export ANALINC=1 # assimilation window length
 
-if [ $ANALINC -eq 1 ]; then
 export FHMIN=1
 export FHMAX=1
 export FHOUT=1
-export FHMAX_LONGER=7
-elif [ $ANALINC -eq 6 ]; then
-export FHMIN=3
-export FHMAX=9
-export FHOUT=3
-export FHMAX_LONGER=15
-export obs_datapath=$obs_datapath2
-else
-echo "ANALINC must be 6 or 1"
-exit 1
-fi
+export FHMAX_LONGER=6
 FHMAXP1=`expr $FHMAX + 1`
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
 export nhr_anal=$ANALINC # analysis increment computed at center of window
@@ -293,7 +282,7 @@ export nhr_anal=$ANALINC # analysis increment computed at center of window
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
 
-export RUN=gdas # use gdas obs
+export RUN=gfs
 
 # Analysis increments to zero out
 export INCREMENTS_TO_ZERO="'liq_wat_inc','icmr_inc'"
@@ -314,9 +303,9 @@ export covinflatemin=1.0
 export analpertwtnh=0.9
 export analpertwtsh=0.9
 export analpertwttr=0.9
-export analpertwtnh_rtpp=0.4
-export analpertwtsh_rtpp=0.4
-export analpertwttr_rtpp=0.4
+export analpertwtnh_rtpp=0.5
+export analpertwtsh_rtpp=0.5
+export analpertwttr_rtpp=0.5
 export pseudo_rh=.true.
 export write_ensmean=.false. # write out ens mean analysis in EnKF
 if [[ $write_ensmean == ".true." ]]; then
@@ -428,7 +417,7 @@ export HYBENSINFO=${fixgsi}/global_hybens_info.l${LEVS}.txt # only used if readi
 # in stratosphere/mesosphere
 #export HYBENSMOOTHINFO=${fixgsi}/global_hybens_smoothinfo.l${LEVS}.txt
 export OZINFO=${fixgsi}/global_ozinfo.txt
-export CONVINFO=${fixgsi}/global_convinfo.txt
+export CONVINFO=${enkfscripts}/global_convinfo.txt
 export SATINFO=${fixgsi}/global_satinfo.txt
 export NLAT=$((${LATA}+2))
 # default is to use berror file in gsi fix dir.

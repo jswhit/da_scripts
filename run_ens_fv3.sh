@@ -28,10 +28,10 @@ while [ $nanal -le $nanals ]; do
  outfiles=""
  while [ $fhr -le $FHMAX ]; do
     charhr="fhr`printf %02i $fhr`"
-    if [ $cold_start == "true" ]; then
-       fhx=`expr $fhr - 5`
-       charhr="fhr"`printf %02i $fhx`
-    fi
+    #if [ $cold_start == "true" ]; then
+    #   fhx=`expr $fhr - 5`
+    #   charhr="fhr"`printf %02i $fhx`
+    #fi
     outfiles="${outfiles} ${datapath}/${analdatep1}/sfg_${analdatep1}_${charhr}_${charnanal} ${datapath}/${analdatep1}/bfg_${analdatep1}_${charhr}_${charnanal}"
     fhr=$((fhr+FHOUT))
  done 
@@ -81,10 +81,10 @@ while [ $nanal -le $nanals ]; do
     outfiles="${datapath}/${analdatep1}/${charnanal}/INPUT/sfc_data.tile6.nc"
     while [ $fhr -le $FHMAX ]; do
        charhr="fhr`printf %02i $fhr`"
-       if [ $cold_start == "true" ]; then
-          fhx=`expr $fhr - 5`
-          charhr="fhr"`printf %02i $fhx`
-       fi
+       #if [ $cold_start == "true" ]; then
+       #   fhx=`expr $fhr - 5`
+       #   charhr="fhr"`printf %02i $fhx`
+       #fi
        outfiles="${outfiles} ${datapath}/${analdatep1}/sfg_${analdatep1}_${charhr}_${charnanal} ${datapath}/${analdatep1}/bfg_${analdatep1}_${charhr}_${charnanal}"
        fhr=$((fhr+FHOUT))
     done

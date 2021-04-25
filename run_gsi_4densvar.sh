@@ -53,9 +53,6 @@ hha=`echo $adate | cut -c9-10`
 hham1=`echo $analdatem1 | cut -c9-10`
 hhg=`echo $gdate | cut -c9-10`
 RUN=${RUN:-gdas}
-prefix_obs=${RUN}.t${hha}z
-prefix_obsm1=${RUN}.t${hham1}z
-prefix_tbc=${RUN}.t${hhg}z
 suffix=tm00.bufr_d
 
 datges=${datapath2:-/lfs1/projects/fim/whitaker/gfsenkf_test/$adate}
@@ -64,10 +61,11 @@ ATMPREFIX=${ATMPREFIX:-'sfg'}
 SFCPREFIX=${SFCPREFIX:-'bfg'}
 adate0=`echo $adate | cut -c1-8`
 echo "adate = $adate"
-iy=`echo $adate | cut -c1-4`
-im=`echo $adate | cut -c5-6`
-id=`echo $adate | cut -c7-8`
-ih=`echo $adate | cut -c9-10`
+echo "obdate = $obdate"
+iy=`echo $obdate | cut -c1-4`
+im=`echo $obdate | cut -c5-6`
+id=`echo $obdate | cut -c7-8`
+ih=`echo $obdate | cut -c9-10`
 echo "iy,im,id,ih = $iy $im $id $ih"
 date_fhour=`$python ${enkfscripts}/getidate.py ${datges}/${SFCPREFIX}_${adate}_fhr0${ANALINC}_${charnanal}`
 fdatei=`echo $date_fhour | cut -f1 -d " "`
@@ -77,6 +75,8 @@ echo "fdatei=$fdatei fhr=$fhr fdatev=$fdatev"
 gdate0=`echo $gdate | cut -c1-8`
 obs_datapath=${obs_datapath:-/scratch1/NCEPDEV/global/glopara/dump}
 datobs=$obs_datapath/${RUN}.${iy}${im}${id}/${ih}
+prefix_obs=${RUN}.t${ih}z
+prefix_tbc=${RUN}.t${hhg}z
 
 # Set runtime and save directories
 tmpdir=${tmpdir:-$datges/gsitmp$$}
@@ -152,10 +152,11 @@ elif [ $ANALINC -eq 1 ]; then
    lwrite4danl=.false.
    nhr_obsbin=1
    time_window_max=0.5
+   nhr_assimilation=1
 else
    echo "ANALINC must be 1 or 6"
 fi
-SETUP="verbose=.true.,reduce_diag=.true.,lwrite_peakwt=.true.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=$l4densvar,ens_nstarthr=$FHMIN,iwrtinc=-1,nhr_assimilation=$ANALINC,nhr_obsbin=$nhr_obsbin,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=$lobsdiag_forenkf,lwrite_predterms=.true.,thin4d=$thin4d,lupdqc=$lupdqc,min_offset=$min_offset"
+SETUP="verbose=.true.,reduce_diag=.true.,lwrite_peakwt=.true.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=$l4densvar,ens_nstarthr=$FHMIN,iwrtinc=-1,nhr_assimilation=$nhr_assimilation,nhr_obsbin=$nhr_obsbin,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=$lobsdiag_forenkf,lwrite_predterms=.true.,thin4d=$thin4d,lupdqc=$lupdqc,min_offset=$min_offset,offtime_data=.true."
 
 if [[ "$HXONLY" = "YES" ]]; then
    #SETUP="$SETUP,lobserver=.true.,l4dvar=.true." # can't use reduce_diag=T
