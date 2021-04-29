@@ -427,9 +427,6 @@ export DATOUT=${DATOUT:-$datapathp1}
 ls -l dyn*.nc
 ls -l phy*.nc
 fh=$FHMIN
-if [ $longer_fcst = "YES" ]; then
-  fh=0
-fi
 while [ $fh -le $FHMAX ]; do
   charfhr="fhr"`printf %02i $fh`
   charfhr2="f"`printf %03i $fh`
@@ -454,7 +451,7 @@ while [ $fh -le $FHMAX ]; do
   fh=$[$fh+$FHOUT]
 done
 if [ $longer_fcst = "YES" ]; then
-    fh=$FHMAX
+    fh=0
     analdatep2=`$incdate $analdate 3`
     mkdir -p $datapath/$analdatep2
     while [ $fh -le $FHMAX_LONGER ]; do
