@@ -1,0 +1,71 @@
+diff --git a/src/gsi/read_prepbufr.f90 b/src/gsi/read_prepbufr.f90
+index 9041d97..80ea88c 100644
+--- a/src/gsi/read_prepbufr.f90
++++ b/src/gsi/read_prepbufr.f90
+@@ -1074,7 +1074,7 @@ subroutine read_prepbufr(nread,ndata,nodata,infile,obstype,lunout,twindin,sis,&
+               zeps=1.0e-8_r_kind
+               if (t4dv<zero  .and.t4dv>      -zeps) t4dv=zero
+               if (t4dv>winlen.and.t4dv<winlen+zeps) t4dv=winlen
+-              t4dv=t4dv + time_correction
++              !t4dv=t4dv + time_correction
+               time=timeobs + time_correction
+            end if
+            if(use_prepb_satwnd .and. (kx >= 240 .and. kx <= 260)) iobsub = hdr(7)
+@@ -1084,12 +1084,13 @@ subroutine read_prepbufr(nread,ndata,nodata,infile,obstype,lunout,twindin,sis,&
+            driftl=kx==120.or.kx==220.or.kx==221
+ 
+            if (.not. (aircraft_t_bc .and. acft_profl_file)) then
+-              if (l4dvar.or.l4densvar) then
+-                 if ((t4dv<zero.OR.t4dv>winlen) .and. .not.driftl) cycle loop_readsb ! outside time window
+-              else
+-                 if((real(abs(time)) > real(ctwind(nc)) .or. real(abs(time)) > real(twindin)) &
+-                    .and. .not. driftl)cycle loop_readsb ! outside time window
+-              endif
++              !if (l4dvar.or.l4densvar) then
++              !   if ((t4dv<zero.OR.t4dv>winlen) .and. .not.driftl) cycle loop_readsb ! outside time window
++              !else
++              !   if((real(abs(time)) > real(ctwind(nc)) .or. real(abs(time)) > real(twindin)) &
++              !      .and. .not. driftl)cycle loop_readsb ! outside time window
++              !endif
++              if (t4dv<zero.OR.t4dv>winlen) cycle loop_readsb ! outside time window
+ 
+               timex=time
+            end if
+@@ -1811,13 +1812,14 @@ subroutine read_prepbufr(nread,ndata,nodata,infile,obstype,lunout,twindin,sis,&
+                  zeps=1.0e-8_r_kind
+                  if (t4dv<zero  .and.t4dv>      -zeps) t4dv=zero
+                  if (t4dv>winlen.and.t4dv<winlen+zeps) t4dv=winlen
+-                 t4dv=t4dv + time_correction
++                 !t4dv=t4dv + time_correction
+                  time=timeobs + time_correction
+-                 if (l4dvar.or.l4densvar) then
+-                    if (t4dv<zero.OR.t4dv>winlen) cycle LOOP_K_LEVS
+-                 else
+-                    if (real(abs(time))>real(ctwind(nc)) .or.  real(abs(time))>real(twindin)) cycle LOOP_K_LEVS
+-                 endif
++                 !if (l4dvar.or.l4densvar) then
++                 !   if (t4dv<zero.OR.t4dv>winlen) cycle LOOP_K_LEVS
++                 !else
++                 !   if (real(abs(time))>real(ctwind(nc)) .or.  real(abs(time))>real(twindin)) cycle LOOP_K_LEVS
++                 !endif
++                 if (t4dv<zero.OR.t4dv>winlen) cycle loop_readsb ! outside time window
+               end if
+ 
+ !             If needed, extract drift information.   
+@@ -1849,11 +1851,12 @@ subroutine read_prepbufr(nread,ndata,nodata,infile,obstype,lunout,twindin,sis,&
+                        if (t4dv<zero .or. t4dv>winlen) CYCLE LOOP_K_LEVS
+                     end if
+                  else
+-                    if(abs(time_drift) > ctwind(nc) .or. abs(time_drift) > twindin)then
+-                       time_drift=timex
+-                       if(abs(timex) > ctwind(nc) .or. abs(timex) > twindin) CYCLE LOOP_K_LEVS
+-                    end if
++                    !if(abs(time_drift) > ctwind(nc) .or. abs(time_drift) > twindin)then
++                    !   time_drift=timex
++                    !   if(abs(timex) > ctwind(nc) .or. abs(timex) > twindin) CYCLE LOOP_K_LEVS
++                    !end if
+                     t4dv = toff + time_drift
++                    if (t4dv<zero .or. t4dv>winlen) CYCLE LOOP_K_LEVS
+                  endif
+ 
+                  dlat_earth_deg = drfdat(2,k)
