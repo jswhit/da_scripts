@@ -49,7 +49,7 @@ done
 fh=3
 charfhr="fhr`printf %02i $fh`"
 fhend=`expr $FHMAX_LONGER + 3`
-while [ $fh -le $fhend9 ]; do
+while [ $fh -le $fhend ]; do
 
   if [ -s ${datapath2}/bfg2_${analdate}_${charfhr}_mem001 ]; then
      if [ $cleanup_ensmean == 'true' ] || ([ $cleanup_ensmean == 'false' ]  && [ ! -s ${datapath}/${analdate}/bfg_${analdate}_${charfhr}_ensmean ]); then
