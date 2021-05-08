@@ -84,7 +84,7 @@ done
 fi
 
 # now compute ensemble mean restart files (only at 00UTC).
-if [ $ensmean_restart == 'true' ] && [ $cold_start == 'false' ] && [ $hr == '06' ]; then
+if [ $ensmean_restart == 'true' ] && [ $cold_start == 'false' ]; then
 if [ $cleanup_ensmean == 'true' ] || ([ $cleanup_ensmean == 'false' ]  && [ ! -s ${datapath2}/ensmean/INPUT/fv_core.res.tile1.nc ]); then
    echo "compute ensemble mean restart files `date`"
    export nprocs=1
@@ -96,7 +96,7 @@ if [ $cleanup_ensmean == 'true' ] || ([ $cleanup_ensmean == 'false' ]  && [ ! -s
    tiles="tile1 tile2 tile3 tile4 tile5 tile6"
    for tile in $tiles; do
       files="fv_core.res.${tile}.nc fv_tracer.res.${tile}.nc fv_srf_wnd.res.${tile}.nc sfc_data.${tile}.nc phy_data.${tile}.nc"
-      for file in $files; do
+      for filename in $files; do
          export PGM="${nces} -O `ls -1 ${datapath2}/mem*/INPUT/${filename}` ${pathout}/${filename}"
          echo "computing ens mean for $filename"
          #${enkfscripts}/runmpi &
