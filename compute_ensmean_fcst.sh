@@ -83,7 +83,7 @@ while [ $fh -le $FHMAX_LONGER ] && [ -s ${datapath2}/sfg2_${analdate}_${charfhr}
 done
 fi
 
-# now compute ensemble mean restart files (only at 00UTC).
+# now compute ensemble mean restart files
 if [ $ensmean_restart == 'true' ] && [ $cold_start == 'false' ]; then
 if [ $cleanup_ensmean == 'true' ] || ([ $cleanup_ensmean == 'false' ]  && [ ! -s ${datapath2}/ensmean/INPUT/fv_core.res.tile1.nc ]); then
    echo "compute ensemble mean restart files `date`"
