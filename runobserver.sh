@@ -19,7 +19,7 @@ export RUN='gfs'
 export RES='192'
 export basedir=/work/noaa/gsienkf/${USER}
 export datadir=$basedir
-export exptname="C${RES}_hybgain_owhourly"
+export exptname="C${RES}_hybgain_owhourly2"
 export obs_datapath=/work/noaa/sfc-perts/gbates/hrlyda_dumps/6hrly
 source $MODULESHOME/init/sh
 module purge
@@ -161,7 +161,7 @@ export skipcat="false"
 export cleanup_observer="true"
 export analdate=2020031312
 export nitermax=1
-while [ $analdate -le 2020032006 ]; do
+while [ $analdate -le 2020032100 ]; do
    export yr=`echo $analdate | cut -c1-4`
    export mon=`echo $analdate | cut -c5-6`
    export day=`echo $analdate | cut -c7-8`

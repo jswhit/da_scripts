@@ -12,7 +12,7 @@ export RES_CTL=384
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
 export hybgain="true" # hybrid gain approach, if false use hybrid covariance
-export alpha=250 # percentage of 3dvar increment (beta_2*1000) 
+export alpha=200 # percentage of 3dvar increment (beta_2*1000) 
 export beta=1000 # percentage of enkf increment (*10)
 # if replay_controlfcst='true', weight given to ens mean vs control 
 # forecast in recentered backgrond ensemble (x100).  if recenter_control_wgt=0, then
@@ -28,7 +28,7 @@ export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
 export exptname="C${RES}_hybgain_owhourly2"
 # for 'passive' or 'replay' cycling of control fcst 
-export replay_controlfcst='false'
+export replay_controlfcst='true'
 
 export fg_gfs="run_ens_fv3.sh"
 export ensda="enkf_run.sh"
@@ -91,7 +91,8 @@ elif [ "$machine" == 'orion' ]; then
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    export obs_datapath2=/work/noaa/global/glopara/dump
-   export obs_datapath=/work/noaa/sfc-perts/gbates/hrlyda_dumps/short
+   #export obs_datapath=/work/noaa/sfc-perts/gbates/hrlyda_dumps/short
+   export obs_datapath=/work/noaa/gsienkf/cmccoll/hrlyda_dumps/short
    ulimit -s unlimited
    source $MODULESHOME/init/sh
    module purge
@@ -148,7 +149,7 @@ export NST_GSI=0
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
 
-export LEVS=64   
+export LEVS=127  
 if [ $LEVS -eq 64 ]; then
   export nsig_ext=12
   export gpstop=50
@@ -322,6 +323,7 @@ export nobsl_max=10000
 export corrlengthnh=-2500
 export corrlengthtr=-2500
 export corrlengthsh=-2500
+export mincorrlength_fact=0.1
 # The lnsigcutoff* parameters are ignored if modelspace_vloc=T
 export lnsigcutoffnh=1.5
 export lnsigcutofftr=1.5
@@ -354,8 +356,8 @@ fi
 #export biascorrdir=${datadir}/biascor
 
 export nanals=80                                                    
-export nanals2=-1 # longer extension. Set to -1 to disable 
-#export nanals2=$nanals
+#export nanals2=-1 # longer extension. Set to -1 to disable 
+export nanals2=$nanals
 export nitermax=2 # number of retries
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
@@ -428,7 +430,7 @@ export NLAT=$((${LATA}+2))
 #export BERROR=${basedir}/staticB/global_berror_enkf.l${LEVS}y${NLAT}.f77
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_janjulysmooth0p5
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_annmeansmooth0p5
-export REALTIME=YES # if NO, use historical files set in main.sh
+export REALTIME=NO # if NO, use historical files set in main.sh
 
 # parameters for hybrid gain
 if [ $hybgain == "true" ]; then

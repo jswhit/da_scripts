@@ -343,7 +343,7 @@ write_tasks_per_group:   ${write_tasks}
 num_files:               2
 filename_base:           'dyn' 'phy'
 output_grid:             'gaussian_grid'
-output_file:             'netcdf_parallel' 'netcdf'
+output_file:             'netcdf' 'netcdf'
 nbits:                   14
 ideflate:                1
 ichunk2d:                ${LONB}
