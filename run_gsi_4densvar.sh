@@ -123,14 +123,16 @@ BIASO=${BIASO:-$savdir/${RUN}.t${hha}z.abias}
 BIASOAIR=${BIASOAIR:-$savdir/${RUN}.t${hha}z.abias_air}
 BIASO_PC=${BIASO_PC:-$savdir/${RUN}.t${hha}z.abias_pc}
 
-lwrite4danl=.false.
 if [[ "$HXONLY" = "YES" ]]; then
-  l4densvar = .false.
+  l4densvar=.false.
+  echo "HXONLY=$HXONLY"
 else
-  l4densvar = .true.
+  l4densvar=.true.
 fi
 if [[ $beta_s0 > 0.999 ]]; then
    lwrite4danl=.false.
+else
+   lwrite4danl=.true.
 fi
 # if satwnd bufr file exists, use it.
 if [[ -s $datobs/${prefix_obs}.satwnd.${suffix} ]]; then

@@ -15,6 +15,7 @@ export corespernode=$SLURM_CPUS_ON_NODE
 export machine='orion'
 export cores=`expr $NODES \* $corespernode`
 echo "running on $machine using $NODES nodes and $cores CORES"
+#export RUN='gdas'
 export RUN='gfs'
 export RES='192'
 export basedir=/work/noaa/gsienkf/${USER}
@@ -64,7 +65,7 @@ export NST_GSI=0
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
 
-export LEVS=64   
+export LEVS=127  
 if [ $LEVS -eq 64 ]; then
   export nsig_ext=12
   export gpstop=50
@@ -152,16 +153,16 @@ export SATINFO=${fixgsi}/global_satinfo.txt
 export NLAT=$((${LATA}+2))
 
 export charnanal='ensmean' 
-export charnanal2='ensmean2' 
+export charnanal2='ensmean2b' 
 export ATMPREFIX='sfg2'
 export SFCPREFIX='bfg2'
 export lobsdiag_forenkf='.false.'
 export skipcat="false"
 
 export cleanup_observer="true"
-export analdate=2020031312
+export analdate=2020032106
 export nitermax=1
-while [ $analdate -le 2020032100 ]; do
+while [ $analdate -le 2020032312 ]; do
    export yr=`echo $analdate | cut -c1-4`
    export mon=`echo $analdate | cut -c5-6`
    export day=`echo $analdate | cut -c7-8`
@@ -174,9 +175,12 @@ while [ $analdate -le 2020032100 ]; do
    export datapathm1="${datapath}/${analdatem1}/"
    export datapathp1="${datapath}/${analdatep1}/"
    export current_logdir="${datapath2}/logs"
-   export PREINP="${RUN}.t${hr}z."
-   export PREINP1="${RUN}.t${hrp1}z."
-   export PREINPm1="${RUN}.t${hrm1}z."
+#  export PREINP="${RUN}.t${hr}z."
+#  export PREINP1="${RUN}.t${hrp1}z."
+#  export PREINPm1="${RUN}.t${hrm1}z."
+   export PREINP="gdas.t${hr}z."
+   export PREINP1="gdas.t${hrp1}z."
+   export PREINPm1="gdas.t${hrm1}z."
    echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
    sh ${enkfscripts}/run_gsiobserver.sh > ${current_logdir}/run_gsi_observer2.out 2>&1
    # once observer has completed, check log files.

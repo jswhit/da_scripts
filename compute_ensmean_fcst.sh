@@ -57,7 +57,8 @@ done
 
 fh=3
 charfhr="fhr`printf %02i $fh`"
-while [ $fh -le 9 ] && [ -s ${datapath2}/sfg2_${analdate}_${charfhr}_mem001 ]; do
+fhend=`expr $FHMAX_LONGER + 2`
+while [ $fh -le $fhend ] && [ -s ${datapath2}/sfg2_${analdate}_${charfhr}_mem001 ]; do
 
   if [ $cleanup_ensmean == 'true' ] || ([ $cleanup_ensmean == 'false' ]  && [ ! -s ${datapath}/${analdate}/bfg_${analdate}_${charfhr}_ensmean ]); then
       echo "running  ${execdir}/getsfcensmeanp.x ${datapath2}/ bfg2_${analdate}_${charfhr}_ensmean bfg2_${analdate}_${charfhr} ${nanals}"
