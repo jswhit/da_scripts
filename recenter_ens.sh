@@ -8,8 +8,12 @@ recenter_control_wgt=${recenter_control_wgt:-"100"}
 fileprefix=${fileprefix:-"sanl"}
 pushd ${datapath2}
 
-fh=${FHMIN}
-while [ $fh -le $FHMAX ]; do
+#fh=${FHMIN}
+#while [ $fh -le $FHMAX ]; do
+fhrs=`echo $enkfanalfhrs | sed 's/,/ /g'`
+echo  "fhrs= $fhrs"
+
+for fh in $fhrs; do
    charfhr="fhr"`printf %02i $fh`
    
    echo "recenter ensemble perturbations"

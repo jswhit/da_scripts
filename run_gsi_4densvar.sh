@@ -125,11 +125,10 @@ BIASO_PC=${BIASO_PC:-$savdir/${RUN}.t${hha}z.abias_pc}
 
 if [[ "$HXONLY" = "YES" ]]; then
   l4densvar=.false.
-  echo "HXONLY=$HXONLY"
 else
   l4densvar=.true.
 fi
-if [[ $beta_s0 > 0.999 ]]; then
+if [[ $beta_s0 > 0.999 ]] || [[ "$HXONLY" = "YES" ]]; then
    lwrite4danl=.false.
 else
    lwrite4danl=.true.
