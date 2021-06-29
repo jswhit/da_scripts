@@ -5,7 +5,7 @@ if [ -z $charnanal2 ]; then
   export charnanal2=$charnanal
 fi
 
-if [ $charnanal == "control" ]; then
+if [ $charnanal == "control" ] && [ $JCAP_CTL -lt 1534 ]; then
    # run observer on full res control forecast grid
    export LONA=$LONB_CTL
    export LATA=$LATB_CTL

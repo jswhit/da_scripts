@@ -28,7 +28,9 @@ while [ $nanal -le $nanals ]; do
  outfiles=""
  for fhr in $fhrs; do
     charhr="fhr`printf %02i $fhr`"
+    if [ $fhr -ge 6 ]; then
     outfiles="${outfiles} ${datapath}/${analdatep1}/sfg_${analdatep1}_${charhr}_${charnanal} ${datapath}/${analdatep1}/bfg_${analdatep1}_${charhr}_${charnanal}"
+    fi
  done 
  filemissing='no'
  for outfile in $outfiles; do
@@ -75,7 +77,9 @@ while [ $nanal -le $nanals ]; do
     outfiles="${datapath}/${analdatep1}/${charnanal}/INPUT/sfc_data.tile6.nc"
     for fhr in $fhrs; do
        charhr="fhr`printf %02i $fhr`"
+       if [ $fhr -ge 6 ]; then
        outfiles="${outfiles} ${datapath}/${analdatep1}/sfg_${analdatep1}_${charhr}_${charnanal} ${datapath}/${analdatep1}/bfg_${analdatep1}_${charhr}_${charnanal}"
+       fi
     done
     filemissing='no'
     for outfile in $outfiles; do

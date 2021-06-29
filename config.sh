@@ -91,8 +91,8 @@ elif [ "$machine" == 'orion' ]; then
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    export obs_datapath2=/work/noaa/global/glopara/dump
-   #export obs_datapath=/work/noaa/sfc-perts/gbates/hrlyda_dumps/short
-   export obs_datapath=/work/noaa/gsienkf/cmccoll/hrlyda_dumps/short
+   export obs_datapath=/work/noaa/sfc-perts/gbates/hrlyda_dumps/short
+   #export obs_datapath=/work/noaa/gsienkf/cmccoll/hrlyda_dumps/short
    ulimit -s unlimited
    source $MODULESHOME/init/sh
    module purge
@@ -238,7 +238,7 @@ if [ $RES_CTL -eq 768 ]; then
    export JCAP_CTL=1534
    export LONB_CTL=3072
    export LATB_CTL=1536
-   export dt_atmos_ctl=150    
+   export dt_atmos_ctl=120    
 elif [ $RES_CTL -eq 384 ]; then
    export dt_atmos_ctl=225
    export cdmbgwd_ctl="1.1,0.72,1.0,1.0"
@@ -273,6 +273,7 @@ export FHMIN=0
 export FHMAX=4 # only really need to run two hours (this allows GSI to see a symmetric window)
 export FHOUT=1
 export FHMAX_LONGER=7 # to compare with 6-h cycling system 4 times per day
+#export FHMAX_LONGER=13 # to compare with 6-h cycling system 4 times per day
 
 export enkfstatefhrs="3, 4, 5, 6, 7, 8, 9"
 export enkfanalfhrs="4, 5, 6"
@@ -432,8 +433,21 @@ export NLAT=$((${LATA}+2))
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_annmeansmooth0p5
 export REALTIME=NO # if NO, use historical files set in main.sh
 
-# parameters for hybrid gain
-if [ $hybgain == "true" ]; then
+# GSI sees ensemble mean background (high-res control forecast is a replay to ens mean analysis)
+# (s_ens_h, s_ens_v, beta_s0, beta_e0, alpha, beta used)
+if [ $hybgain == "false" ]; then
+   # use static B weights and localization scales for GSI from files.
+   # (alpha, beta ignored)
+   #export readin_localization=".true."
+   #export readin_beta=".true."
+   # use constant values (alpha and beta parameters)
+   export readin_beta=.false.
+   export readin_localization=.false.
+   # these only used for hybrid covariance (hyb 4denvar) in GSI
+   export beta_s0=`python -c "from __future__ import print_function; print($alpha / 1000.)"` # weight given to static B in hyb cov
+   # beta_e0 parameter (ensemble weight) in my GSI branch (not in GSI/develop)
+   export beta_e0=`python -c "from __future__ import print_function; print($beta / 1000.)"` # weight given to ensemble B in hyb cov
+else
    export beta_s0=1.000 # 3dvar
    export beta_e0=0.0
    export readin_beta=.false. # not relevant for 3dvar
