@@ -319,9 +319,11 @@ else
 fi
 
 # compute ensemble mean analyses.
+if [ $write_ensmean != ".true." ]; then
 echo "$analdate starting ens mean analysis computation `date`"
 sh ${enkfscripts}/compute_ensmean_enkf.sh > ${current_logdir}/compute_ensmean_anal.out 2>&1
 echo "$analdate done computing ensemble mean analyses `date`"
+fi
 
 # blend enkf mean and 3dvar increments, recenter ensemble
 if [ $recenter_anal == "true" ]; then
@@ -353,6 +355,11 @@ if [ $recenter_anal == "true" ]; then
       fi
    fi
 fi
+
+# copy analysis files to be background files for the next analysis time
+echo "$analdate copying analysis files to be background files for the next time `date`"
+sh ${enkfscripts}/cpanl.sh > ${current_logdir}/recenter_ens_anal.out 2>&1
+echo "$analdate done copying analysis files `date`"
 
 # for passive (replay) cycling of control forecast, optionally run GSI observer
 # on control forecast background (diag files saved with 'control' suffix)
