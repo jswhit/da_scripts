@@ -4,7 +4,7 @@ cd ${datapath2}
 
 fhrs=`echo $enkfanalfhrs | sed 's/,/ /g'`
 
-echo "copy analysis files to be background files for the next analysis time...."
+#echo "copy analysis files to be background files for the next analysis time...."
 
 for nhr_anal in $fhrs; do
 
@@ -21,7 +21,7 @@ if [ $nhr_anal -lt 6 ]; then # skip analysis time, use one timestep forecasts
       charnanal="mem`printf %03i $nanal`"
       /bin/mv -f ${datapath2}/sanl_${analdate}_${charfhr}_${charnanal} ${datapath}/${analdatep1}/sfg_${analdatep1}_${charfhr_out}_${charnanal}
       # also copy bfg files
-      /bin/cp -f ${datapath2}/bfg_${analdate}_${charfhr}_${charnanal} ${datapath}/${analdatep1}/bfg_${analdatep1}_${charfhr_out}_${charnanal}
+      /bin/mv -f ${datapath2}/bfg_${analdate}_${charfhr}_${charnanal} ${datapath}/${analdatep1}/bfg_${analdatep1}_${charfhr_out}_${charnanal}
       nanal=$((nanal+1))
    done
 fi

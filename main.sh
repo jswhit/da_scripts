@@ -358,7 +358,7 @@ fi
 
 # copy analysis files to be background files for the next analysis time
 echo "$analdate copying analysis files to be background files for the next time `date`"
-sh ${enkfscripts}/cpanl.sh > ${current_logdir}/recenter_ens_anal.out 2>&1
+sh ${enkfscripts}/cpanl.sh 
 echo "$analdate done copying analysis files `date`"
 
 # for passive (replay) cycling of control forecast, optionally run GSI observer
