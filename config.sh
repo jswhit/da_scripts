@@ -6,8 +6,8 @@ echo "running on $machine using $NODES nodes and $cores CORES"
 
 export ndates_job=1 # number of DA cycles to run in one job submission
 # resolution of control and ensmemble.
-export RES=192 
-export RES_CTL=384
+export RES=384 
+export RES_CTL=768
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
@@ -26,7 +26,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybgain_owhourly2"
+export exptname="C${RES}_hybgain_owhourly"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='true'
 
@@ -47,13 +47,13 @@ export replay_run_observer='true' # run observer on replay control forecast
 # YYYYMMDDHH analysis date string to see if
 # full ensemble should be saved to HPSS (returns 0 if 
 # HPSS save should be done)
-if [ $machine == "orion" ]; then
+#if [ $machine == "orion" ]; then
    export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
    export save_hpss="false"
-else
-   export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
-   export save_hpss="true"
-fi
+#else
+#   export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
+#   export save_hpss="true"
+#fi
 export recenter_anal="true"
 
 # override values from above for debugging.
@@ -86,6 +86,17 @@ if [ "$machine" == 'hera' ]; then
    module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
    module load hdf5_parallel/1.10.6
    #module load netcdf_parallel/4.7.4
+elif [ "$machine" == 'jet' ]; then
+   export basedir=/lfs1/BMC/wrfruc/whitaker
+   export datadir=$basedir
+   export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
+   export obs_datapath2=${basedir}/dump
+   export obs_datapath=${basedir}/hrlyda_dumps/short
+   module use /lfs4/HFIP/hfv3gfs/nwprod/hpc-stack/libs/modulefiles/stack
+   module load hpc/1.1.0
+   module load hpc-intel/18.0.5.274
+   module load hpc-impi/2018.4.274
+   module load prod_util/1.2.2
 elif [ "$machine" == 'orion' ]; then
    export basedir=/work/noaa/gsienkf/${USER}
    export datadir=$basedir
@@ -238,7 +249,7 @@ if [ $RES_CTL -eq 768 ]; then
    export JCAP_CTL=1534
    export LONB_CTL=3072
    export LATB_CTL=1536
-   export dt_atmos_ctl=120    
+   export dt_atmos_ctl=90    
 elif [ $RES_CTL -eq 384 ]; then
    export dt_atmos_ctl=225
    export cdmbgwd_ctl="1.1,0.72,1.0,1.0"
@@ -372,6 +383,18 @@ if [ "$machine" == 'hera' ]; then
    export gsipath=/scratch1/NCEPDEV/global/glopara/git/global-workflow/gfsv16b/sorc/gsi.fd
    export fixgsi=${gsipath}/fix
    export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0
+   export execdir=${enkfscripts}/exec_${machine}
+   export enkfbin=${execdir}/global_enkf
+   export gsiexec=${execdir}/global_gsi
+   export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
+elif [ "$machine" == 'jet' ]; then
+   export python=/contrib/anaconda/5.3.1/bin/python  
+   export fv3gfspath=/lfs4/BMC/gsd-fv3-dev/FV3
+   export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
+   export FIXGLOBAL=${fv3gfspath}/fix/fix_am
+   export gsipath=${basedir}/gsi-enkf-64bit
+   export fixgsi=${gsipath}/fix
+   export fixcrtm=/lfs4/BMC/nrtrr/FIX_EXEC_MODULE/crtm/CRTM_v2.3.0
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export gsiexec=${execdir}/global_gsi

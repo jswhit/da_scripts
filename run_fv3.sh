@@ -26,6 +26,17 @@ elif [ "$machine" == 'orion' ]; then
    module load hpc-impi/2018.4
    module load wgrib
    export WGRIB=`which wgrib`
+elif [ "$machine" == 'jet' ]; then
+   module use /lfs4/HFIP/hfv3gfs/nwprod/hpc-stack/libs/modulefiles/stack
+   # At this time (2020/11/30), this is the pre-release version 1.0.0
+   module load hpc/1.1.0
+   module load hpc-intel/18.0.5.274
+   module load hpc-impi/2018.4.274
+   module load hdf5/1.10.6
+   module load netcdf/4.7.4
+   module load esmf/8_1_0_beta_snapshot_27
+   module load wgrib
+   export WGRIB=`which wgrib`
 fi
 module list
 
@@ -343,7 +354,7 @@ write_tasks_per_group:   ${write_tasks}
 num_files:               2
 filename_base:           'dyn' 'phy'
 output_grid:             'gaussian_grid'
-output_file:             'netcdf' 'netcdf'
+output_file:             'netcdf_parallel' 'netcdf_parallel'
 nbits:                   14
 ideflate:                1
 ichunk2d:                ${LONB}
