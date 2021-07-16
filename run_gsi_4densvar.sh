@@ -738,32 +738,35 @@ if [ $ANALINC -eq 6 ]; then
 
 SFCG03=${SFCG03:-$datges/${SFCPREFIX}_${adate}_fhr03_${charnanal}}
 $nln $SFCG03               ./sfcf03
-SFCG04=${SFCG04:-$datges/${SFCPREFIX}_${adate}_fhr04_${charnanal}}
-$nln $SFCG04               ./sfcf04
-SFCG05=${SFCG05:-$datges/${SFCPREFIX}_${adate}_fhr05_${charnanal}}
-$nln $SFCG05               ./sfcf05
 SFCG06=${SFCG06:-$datges/${SFCPREFIX}_${adate}_fhr06_${charnanal}}
 $nln $SFCG06               ./sfcf06
-SFCG07=${SFCG07:-$datges/${SFCPREFIX}_${adate}_fhr07_${charnanal}}
-$nln $SFCG07               ./sfcf07
-SFCG08=${SFCG08:-$datges/${SFCPREFIX}_${adate}_fhr08_${charnanal}}
-$nln $SFCG08               ./sfcf08
 SFCG09=${SFCG09:-$datges/${SFCPREFIX}_${adate}_fhr09_${charnanal}}
 $nln $SFCG09               ./sfcf09
 SIGG03=${SIGG03:-$datges/${ATMPREFIX}_${adate}_fhr03_${charnanal}}
 $nln $SIGG03               ./sigf03
+SIGG06=${SIGG06:-$datges/${ATMPREFIX}_${adate}_fhr06_${charnanal}}
+$nln $SIGG06               ./sigf06
+SIGG09=${SIGG09:-$datges/${ATMPREFIX}_${adate}_fhr09_${charnanal}}
+$nln $SIGG09               ./sigf09
+
+if [ $HRLY_BKG == "YES" ]; then
+SFCG04=${SFCG04:-$datges/${SFCPREFIX}_${adate}_fhr04_${charnanal}}
+$nln $SFCG04               ./sfcf04
+SFCG05=${SFCG05:-$datges/${SFCPREFIX}_${adate}_fhr05_${charnanal}}
+$nln $SFCG05               ./sfcf05
+SFCG07=${SFCG07:-$datges/${SFCPREFIX}_${adate}_fhr07_${charnanal}}
+$nln $SFCG07               ./sfcf07
+SFCG08=${SFCG08:-$datges/${SFCPREFIX}_${adate}_fhr08_${charnanal}}
+$nln $SFCG08               ./sfcf08
 SIGG04=${SIGG04:-$datges/${ATMPREFIX}_${adate}_fhr04_${charnanal}}
 $nln $SIGG04               ./sigf04
 SIGG05=${SIGG05:-$datges/${ATMPREFIX}_${adate}_fhr05_${charnanal}}
 $nln $SIGG05               ./sigf05
-SIGG06=${SIGG06:-$datges/${ATMPREFIX}_${adate}_fhr06_${charnanal}}
-$nln $SIGG06               ./sigf06
 SIGG07=${SIGG07:-$datges/${ATMPREFIX}_${adate}_fhr07_${charnanal}}
 $nln $SIGG07               ./sigf07
 SIGG08=${SIGG08:-$datges/${ATMPREFIX}_${adate}_fhr08_${charnanal}}
 $nln $SIGG08               ./sigf08
-SIGG09=${SIGG09:-$datges/${ATMPREFIX}_${adate}_fhr09_${charnanal}}
-$nln $SIGG09               ./sigf09
+fi
 
 elif [ $ANALINC -eq 1 ]; then
 SIGG06=${SIGG01:-$datges/${ATMPREFIX}_${adate}_fhr01_${charnanal}}

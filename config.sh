@@ -12,7 +12,7 @@ export RES_CTL=384
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
 export hybgain="true" # hybrid gain approach, if false use hybrid covariance
-export alpha=250 # percentage of 3dvar increment (beta_2*1000) 
+export alpha=200 # percentage of 3dvar increment (beta_2*1000) 
 export beta=1000 # percentage of enkf increment (*10)
 # if replay_controlfcst='true', weight given to ens mean vs control 
 # forecast in recentered backgrond ensemble (x100).  if recenter_control_wgt=0, then
@@ -26,7 +26,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybgain1"
+export exptname="C${RES}_hybgain1_gdas"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 
@@ -94,6 +94,8 @@ elif [ "$machine" == 'orion' ]; then
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    export obs_datapath2=/work/noaa/sfc-perts/gbates/hrlyda_dumps/6hrly
    export obs_datapath=/work/noaa/sfc-perts/gbates/hrlyda_dumps/6hrly
+   #export obs_datapath2=/work/noaa/global/glopara/dump
+   #export obs_datapath=/work/noaa/global/glopara/dump
    ulimit -s unlimited
    source $MODULESHOME/init/sh
    module purge
@@ -175,8 +177,8 @@ else
 fi
 
 # radiance thinning parameters for GSI
-export dmesh1=145
-export dmesh2=145
+export dmesh1=125
+export dmesh2=125
 export dmesh3=100
 
 #export use_ipd="YES" # use IPD instead of CCPP
@@ -282,7 +284,7 @@ export nhr_anal=$ANALINC # analysis increment computed at center of window
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
 
-export RUN=gfs
+export RUN=gdas
 
 # Analysis increments to zero out
 export INCREMENTS_TO_ZERO="'liq_wat_inc','icmr_inc'"
@@ -322,6 +324,12 @@ export nobsl_max=10000
 export corrlengthnh=1250
 export corrlengthtr=1250
 export corrlengthsh=1250
+# neg value means loc dist is distance to find nobsl_max obs,
+# bounded by abs(corrlength) and abs(corrlength)/10
+export corrlengthnh=-2500
+export corrlengthtr=-2500
+export corrlengthsh=-2500
+export mincorrlength_fact=0.1
 # The lnsigcutoff* parameters are ignored if modelspace_vloc=T
 export lnsigcutoffnh=1.5
 export lnsigcutofftr=1.5
@@ -424,7 +432,7 @@ export NLAT=$((${LATA}+2))
 #export BERROR=${basedir}/staticB/global_berror_enkf.l${LEVS}y${NLAT}.f77
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_janjulysmooth0p5
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_annmeansmooth0p5
-export REALTIME=YES # if NO, use historical files set in main.sh
+export REALTIME=NO # if NO, use historical files set in main.sh
 
 # parameters for hybrid gain
 if [ $hybgain == "true" ]; then
