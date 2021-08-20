@@ -77,6 +77,7 @@ export yearprev=`echo $analdatem1 |cut -c 1-4`
 export monprev=`echo $analdatem1 |cut -c 5-6`
 export dayprev=`echo $analdatem1 |cut -c 7-8`
 export hourprev=`echo $analdatem1 |cut -c 9-10`
+#analdatep1m3=`$incdate $analdatep1 -3`
 if [ "${iau_delthrs}" != "-1" ] && [ "${cold_start}" == "false" ]; then
 # assume model is started at beginning of analysis window
 # (if IAU on or initial cold start)
@@ -106,13 +107,17 @@ else
    export mon_start=`echo $analdate |cut -c 5-6`
    export day_start=`echo $analdate |cut -c 7-8`
    export hour_start=`echo $analdate |cut -c 9-10`
+   export yrp3=`echo $analdatep1m3 |cut -c 1-4`
+   export monp3=`echo $analdatep1m3 |cut -c 5-6`
+   export dayp3=`echo $analdatep1m3 |cut -c 7-8`
+   export hrp3=`echo $analdatep1m3 |cut -c 9-10`
    # time for restart file
    if [ "${iau_delthrs}" != "-1" ] ; then
       # beginning of next analysis window
-      export yrnext=`echo $analdatep1m3 |cut -c 1-4`
-      export monnext=`echo $analdatep1m3 |cut -c 5-6`
-      export daynext=`echo $analdatep1m3 |cut -c 7-8`
-      export hrnext=`echo $analdatep1m3 |cut -c 9-10`
+      export yrnext=$yrp3
+      export monnext=$monp3
+      export daynext=$dayp3
+      export hrnext=$hrp3
    else
       # end of next analysis window
       export yrnext=`echo $analdatep1 |cut -c 1-4`
@@ -333,7 +338,6 @@ if [ "${iau_delthrs}" != "-1" ]; then
    FHSTOCH=`expr $FHRESTART + $ANALINC \/ 2`
    if [ ${cold_start} = "true" ]; then
       FHSTOCH=${FHSTOCH:-$ANALINC}
-      FHRESTART=`expr $ANALINC \/ 2`
       if [ $longer_fcst = "YES" ]; then
          FHMAX_FCST=$FHMAX_LONGER
       else
@@ -406,6 +410,14 @@ if [ $NST_GSI -gt 0 ] && [ $FHCYC -gt 0 ]; then
    fnsnoa='        '
    fnacna='        '
 fi
+export timestep_hrs=`python -c "from __future__ import print_function; print($dt_atmos / 3600.)"`
+if [ $cold_start == "true" ] && [ $analdate -gt 2021032400 ]; then
+   restart_interval="$timestep_hrs $ANALINC"
+   output_1st_tstep_rst=".true."
+else
+   restart_interval=$FHRESTART
+   output_1st_tstep_rst=".false."
+fi
 
 cat > model_configure <<EOF
 print_esmf:              .true.
@@ -421,14 +433,14 @@ nhours_fcst:             ${FHMAX_FCST}
 RUN_CONTINUE:            F
 ENS_SPS:                 F
 dt_atmos:                ${dt_atmos} 
-output_1st_tstep_rst:    .false.
+output_1st_tstep_rst:    ${output_1st_tstep_rst}
 calendar:                'julian'
 cpl:                     F
 memuse_verbose:          F
 atmos_nthreads:          ${OMP_NUM_THREADS}
 use_hyper_thread:        F
 ncores_per_node:         ${corespernode}
-restart_interval:        ${FHRESTART}
+restart_interval:        ${restart_interval}
 quilting:                .true.
 write_groups:            ${write_groups}
 write_tasks_per_group:   ${write_tasks}
@@ -460,6 +472,11 @@ if [ "${iau_delthrs}" != "-1" ]  && [ "${cold_start}" == "false" ]; then
    echo "     2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)" > INPUT/coupler.res
    echo "  ${year}  ${mon}  ${day}  ${hour}     0     0        Model start time:   year, month, day, hour, minute, second" >> INPUT/coupler.res
    echo "  ${year_start}  ${mon_start}  ${day_start}  ${hour_start}     0     0        Current model time: year, month, day, hour, minute, second" >> INPUT/coupler.res
+   cat INPUT/coupler.res
+   elif [ $cold_start == "true" ] && [ $analdate -gt 2021032400 ]; then
+   echo "     2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)" > INPUT/coupler.res
+   echo "  ${year}  ${mon}  ${day}  ${hour}     0     0        Model start time:   year, month, day, hour, minute, second" >> INPUT/coupler.res
+   echo "  ${yrp3}  ${monp3}  ${dayp3}  ${hrp3}     0     0        Current model time: year, month, day, hour, minute, second" >> INPUT/coupler.res
    cat INPUT/coupler.res
 else
    /bin/rm -f INPUT/coupler.res # assume current time == start time
@@ -578,7 +595,7 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
    mkdir -p ${datapathp1}/${charnanal}/INPUT
    cd RESTART
    ls -l
-   datestring="${yrnext}${monnext}${daynext}.${hrnext}0000."
+   datestring="${yrnext}${monnext}${daynext}.${hrnext}"
    for file in ${datestring}*nc; do
       file2=`echo $file | cut -f3-10 -d"."`
       /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT/$file2
