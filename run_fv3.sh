@@ -338,6 +338,9 @@ if [ "${iau_delthrs}" != "-1" ]; then
    FHSTOCH=`expr $FHRESTART + $ANALINC \/ 2`
    if [ ${cold_start} = "true" ]; then
       FHSTOCH=${FHSTOCH:-$ANALINC}
+      if [ $analdate -le 2021032400 ]; then
+         FHRESTART=`expr $ANALINC \/ 2`
+      fi
       if [ $longer_fcst = "YES" ]; then
          FHMAX_FCST=$FHMAX_LONGER
       else
