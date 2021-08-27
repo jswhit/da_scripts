@@ -6,7 +6,7 @@ echo "running on $machine using $NODES nodes and $cores CORES"
 
 export ndates_job=1 # number of DA cycles to run in one job submission
 # resolution of control and ensmemble.
-export RES=384 
+export RES=384
 export RES_CTL=768
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
@@ -90,8 +90,10 @@ elif [ "$machine" == 'jet' ]; then
    export basedir=/lfs1/BMC/wrfruc/whitaker
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   export obs_datapath2=${basedir}/dump
-   export obs_datapath=${basedir}/hrlyda_dumps/short
+   #export obs_datapath2=${basedir}/dump
+   #export obs_datapath=${basedir}/hrlyda_dumps/short
+   export obs_datapath2=${basedir}/dumps
+   export obs_datapath=/lfs1/BMC/wrfruc/cmccoll/hrlyda_dumps
    module use /lfs4/HFIP/hfv3gfs/nwprod/hpc-stack/libs/modulefiles/stack
    module load hpc/1.1.0
    module load hpc-intel/18.0.5.274
@@ -114,6 +116,10 @@ elif [ "$machine" == 'orion' ]; then
    module load mkl/2018.4
    module load hpc-impi/2018.4
    module load python/3.7.5
+   module load hdf5/1.10.6
+   module load netcdf/4.7.4
+   module load pio/2.5.1
+   module load esmf/8_1_0_beta_snapshot_27
    export PYTHONPATH=/home/jwhitake/.local/lib/python3.7/site-packages
    export HDF5_DISABLE_VERSION_CHECK=1
    module list
@@ -175,9 +181,9 @@ elif [ $LEVS -eq 127 ]; then
   export gpstop=55
   export GRIDOPTS="nlayers(63)=1,nlayers(64)=1,"
   if [ $DONST == "YES" ]; then
-     export SUITE="FV3_GFS_v16beta"
+     export SUITE="FV3_GFS_v16"
   else
-     export SUITE="FV3_GFS_v16beta_no_nsst"
+     export SUITE="FV3_GFS_v16_no_nsst"
   fi
 else
   echo "LEVS must be 64 or 127"
@@ -329,6 +335,10 @@ export getkf=.true.
 export getkf_inflation=.false.
 export modelspace_vloc=.true.
 export letkf_novlocal=.true.
+#export corrlengthnh=600  
+#export corrlengthtr=600  
+#export corrlengthsh=600  
+#export nobsl_max=-1
 export nobsl_max=10000
 # neg value means loc dist is distance to find nobsl_max obs,
 # bounded by abs(corrlength) and abs(corrlength)/10
