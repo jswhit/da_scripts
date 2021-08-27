@@ -1,0 +1,115 @@
+#!/bin/sh
+#SBATCH --partition=kjet
+###SBATCH -q debug
+#SBATCH -q batch
+#SBATCH -t 06:00:00
+#SBATCH --account rtwrfruc
+#SBATCH --reservation rrfsens
+#SBATCH -N 80    
+#SBATCH -J retro_C384_hybgain_owhourly
+#SBATCH -e C384_hybgain_owhourly.err
+#SBATCH -o C384_hybgain_owhourly.out
+#SBATCH --chdir=.
+
+export NODES=$SLURM_NNODES
+export corespernode=$SLURM_CPUS_ON_NODE
+export machine='jet'
+
+# for control forecast
+if [ $NODES -eq 20 ]; then
+  # 20 nodes, 2 threads
+  export control_threads=2
+  export control_proc=800
+  export write_groups_ctl=4 # write groups for control forecast.
+  export write_tasks_ctl=4
+  export layout_ctl="8,8" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+elif [ $NODES -eq 40 ]; then
+  # 40 nodes, 4 threads
+  export control_threads=4 
+  export control_proc=1600 
+  export write_groups_ctl=4
+  export write_tasks_ctl=4
+  export layout_ctl="8, 8"
+  # 32 nodes, 4 threads
+  #export control_threads=4 
+  #export control_proc=1280 
+  #export write_groups_ctl=4
+  #export write_tasks_ctl=8
+  #export layout_ctl="8, 6"
+elif [ $NODES -eq 80 ]; then
+  # 80 nodes, 8 threads
+  export control_threads=8 
+  export control_proc=3200 
+  export write_groups_ctl=4
+  export write_tasks_ctl=4
+  export layout_ctl="8, 8"
+elif [ $NODES -eq 120 ]; then
+  # 80 nodes, 8 threads
+  export control_threads=8 
+  export control_proc=4800 
+  export write_groups_ctl=4
+  export write_tasks_ctl=6
+  export layout_ctl="8, 12"
+elif [ $NODES -eq 160 ]; then
+  # 160 nodes, 8 threads
+  export control_threads=8
+  export control_proc=6400
+  export write_groups_ctl=4
+  export write_tasks_ctl=8
+  export layout_ctl="8, 16"
+elif [ $NODES -eq 320 ]; then
+  # 160 nodes, 8 threads
+  export control_threads=8
+  export control_proc=12800
+  export write_groups_ctl=4
+  export write_tasks_ctl=16
+  export layout_ctl="16, 16"
+else
+  echo "processor layout for $NODES nodes not set"
+  exit 1
+fi
+
+# for ensemble forecast and GSI
+
+# C192 ensemble, C384 control (run with 20 nodes)
+export fg_proc=$corespernode 
+export fg_threads=1
+export enkf_threads=4 
+export gsi_control_threads=2
+export write_groups=4
+# 40 cores per node 
+export write_tasks=1 
+export layout="3, 2"
+# 24 cores per node
+#export layout="3, 1" 
+
+# C384 ensemble, C768 control (run with 80 nodes)
+if [ $NODES -eq 120 ]; then
+   export fg_proc=`expr 6 \* $corespernode` # C384
+   export fg_threads=1
+   export enkf_threads=40
+   export gsi_control_threads=40
+   # 40 cores per node
+   export write_groups=4
+   export write_tasks=6 
+   if [ $fg_threads -eq 2 ]; then
+   export layout="4, 4"
+   else
+   export layout="6, 6" # for 1 thread
+   fi
+else
+   export fg_proc=`expr 8 \* $corespernode` # C384
+   export fg_threads=1
+   export enkf_threads=40
+   export gsi_control_threads=40
+   # 40 cores per node
+   if [ $fg_threads -eq 2 ]; then
+   export layout="6, 4"
+   export write_groups=4
+   export write_tasks=4 
+   else
+   export layout="8, 6" # for 1 thread
+   export write_groups=4
+   export write_tasks=8 
+   fi
+fi
