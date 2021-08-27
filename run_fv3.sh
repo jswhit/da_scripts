@@ -27,11 +27,11 @@ elif [ "$machine" == 'orion' ]; then
    module load wgrib
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'jet' ]; then
-   module use /lfs4/HFIP/hfv3gfs/nwprod/hpc-stack/libs/modulefiles/stack
-   # At this time (2020/11/30), this is the pre-release version 1.0.0
-   module load hpc/1.1.0
-   module load hpc-intel/18.0.5.274
-   module load hpc-impi/2018.4.274
+   #module use /lfs4/HFIP/hfv3gfs/nwprod/hpc-stack/libs/modulefiles/stack
+   ## At this time (2020/11/30), this is the pre-release version 1.0.0
+   #module load hpc/1.1.0
+   #module load hpc-intel/18.0.5.274
+   #module load hpc-impi/2018.4.274
    module load hdf5/1.10.6
    module load netcdf/4.7.4
    module load esmf/8_1_0_beta_snapshot_27
@@ -142,6 +142,7 @@ ln -fs $FIXGLOBAL/global_climaeropac_global.txt     aerosol.dat
 for file in `ls $FIXGLOBAL/global_volcanic_aerosols* ` ; do
    ln -fs $file $(echo $(basename $file) |sed -e "s/global_//g")
 done
+ln -sf ${enkfscripts}/fd_nems.yaml .
 # for Thompson microphysics
 #ln -fs $FIXGLOBAL/CCN_ACTIVATE.BIN CCN_ACTIVATE.BIN
 #ln -fs $FIXGLOBAL/freezeH2O.dat freezeH2O.dat
@@ -328,8 +329,8 @@ fi
 
 cat > model_configure <<EOF
 print_esmf:              .true.
-total_member:            1
 PE_MEMBER01:             ${nprocs}
+ncores_per_node:         ${corespernode}
 start_year:              ${year}
 start_month:             ${mon}
 start_day:               ${day}
@@ -337,16 +338,11 @@ start_hour:              ${hour}
 start_minute:            0
 start_second:            0
 nhours_fcst:             ${FHMAX_FCST}
-RUN_CONTINUE:            F
-ENS_SPS:                 F
-dt_atmos:                ${dt_atmos} 
+fhrot:                   ${FHROT:-0}
+dt_atmos:                ${dt_atmos}
 output_1st_tstep_rst:    .true.
 calendar:                'julian'
 cpl:                     F
-memuse_verbose:          F
-atmos_nthreads:          ${OMP_NUM_THREADS}
-use_hyper_thread:        F
-ncores_per_node:         ${corespernode}
 restart_interval:        ${FHRESTART}
 quilting:                .true.
 write_groups:            ${write_groups}
@@ -362,8 +358,7 @@ jchunk2d:                ${LATB}
 ichunk3d:                0
 jchunk3d:                0
 kchunk3d:                0
-write_nemsioflip:        .true.
-write_fsyncflag:         .true.
+write_nsflip:            .true.
 iau_offset:              -1
 imo:                     ${LONB}
 jmo:                     ${LATB}
@@ -495,9 +490,9 @@ fi
 # if random pattern restart file exists, copy it.
 ls -l stoch_out*
 if [ $cold_start == "true" ]; then
-  fhr = 1
+  fhr=1
 else
-  fhr = 6
+  fhr=6
 fi
 charfh="F"`printf %06i $fhr`
 if [ -s stoch_out.${charfh} ]; then
