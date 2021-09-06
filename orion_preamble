@@ -2,12 +2,12 @@
 #SBATCH -q urgent
 #SBATCH -t 03:00:00
 #SBATCH -A gsienkf
-#SBATCH -N 20  
+#SBATCH -N 40  
 #SBATCH --ntasks-per-node=40
 #SBATCH -p orion
-#SBATCH -J C192_hybgain1
-#SBATCH -e C192_hybgain1.err
-#SBATCH -o C192_hybgain1.out
+#SBATCH -J C192_hybgain_hourly
+#SBATCH -e C192_hybgain_hourly.err
+#SBATCH -o C192_hybgain_hourly.out
 
 export NODES=$SLURM_NNODES
 export corespernode=$SLURM_CPUS_ON_NODE
