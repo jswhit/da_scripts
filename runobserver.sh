@@ -1,7 +1,7 @@
 #!/bin/sh
-##SBATCH -q urgent
+##SBATCH -q debug
 #SBATCH -p orion
-#SBATCH -t 01:00:00
+#SBATCH -t 06:00:00
 #SBATCH -A gsienkf
 #SBATCH -N 10    
 #SBATCH --ntasks-per-node=40
@@ -15,11 +15,12 @@ export corespernode=$SLURM_CPUS_ON_NODE
 export machine='orion'
 export cores=`expr $NODES \* $corespernode`
 echo "running on $machine using $NODES nodes and $cores CORES"
-export RUN='gfs'
+#export RUN='gdas'
+export RUN='gdas'
 export RES='192'
 export basedir=/work/noaa/gsienkf/${USER}
 export datadir=$basedir
-export exptname="C${RES}_hybgain1"
+export exptname="C${RES}_hybgain1_gdas"
 export obs_datapath=/work/noaa/sfc-perts/gbates/hrlyda_dumps/6hrly
 source $MODULESHOME/init/sh
 module purge
@@ -129,7 +130,7 @@ export use_correlated_oberrs=".true."
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
-export rungsi='run_gsi_4densvar.sh'
+export rungsi='run_gsi_4densvar2.sh'
 
 export python=`which python`
 export fv3gfspath=/work/noaa/global/glopara
@@ -150,20 +151,18 @@ export OZINFO=${fixgsi}/global_ozinfo.txt
 export CONVINFO=${fixgsi}/global_convinfo.txt
 export SATINFO=${fixgsi}/global_satinfo.txt
 export NLAT=$((${LATA}+2))
-export biascorrdir=/work/noaa/gsienkf/whitaker/C192_hybgain
 
 export charnanal='ensmean' 
-export charnanal2='ensmean2' 
+export charnanal2='ensmean2b' 
 export ATMPREFIX='sfg2'
 export SFCPREFIX='bfg2'
 export lobsdiag_forenkf='.false.'
 export skipcat="false"
 
 export cleanup_observer="true"
-export analdate=2020031318
+export analdate=2020031312
 export nitermax=1
-while [ $analdate -le 2020031612 ]; do
-   export obdate=$analdate
+while [ $analdate -le 2020031706 ]; do
    export yr=`echo $analdate | cut -c1-4`
    export mon=`echo $analdate | cut -c5-6`
    export day=`echo $analdate | cut -c7-8`
@@ -176,9 +175,12 @@ while [ $analdate -le 2020031612 ]; do
    export datapathm1="${datapath}/${analdatem1}/"
    export datapathp1="${datapath}/${analdatep1}/"
    export current_logdir="${datapath2}/logs"
-   export PREINP="${RUN}.t${hr}z."
-   export PREINP1="${RUN}.t${hrp1}z."
-   export PREINPm1="${RUN}.t${hrm1}z."
+#  export PREINP="${RUN}.t${hr}z."
+#  export PREINP1="${RUN}.t${hrp1}z."
+#  export PREINPm1="${RUN}.t${hrm1}z."
+   export PREINP="gdas.t${hr}z."
+   export PREINP1="gdas.t${hrp1}z."
+   export PREINPm1="gdas.t${hrm1}z."
    echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
    sh ${enkfscripts}/run_gsiobserver.sh > ${current_logdir}/run_gsi_observer2.out 2>&1
    # once observer has completed, check log files.

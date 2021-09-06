@@ -45,7 +45,7 @@ cat <<EOF > enkf.nml
   paoverpb_thresh=$paoverpb_thresh,letkf_flag=$letkf_flag,denkf=$denkf,
   getkf_inflation=$getkf_inflation,letkf_novlocal=$letkf_novlocal,modelspace_vloc=$modelspace_vloc,save_inflation=.false.,
   reducedgrid=${reducedgrid},nlevs=$LEVS,nanals=$nanals,deterministic=$deterministic,imp_physics=$imp_physics,
-  lobsdiag_forenkf=.true.,write_spread_diag=.false.,netcdf_diag=.true.,
+  lobsdiag_forenkf=.true.,write_spread_diag=.false.,netcdf_diag=.true.,mincorrlength_fact=$mincorrlength_fact,
   sortinc=$sortinc,nhr_anal=$nhr_anal,nhr_state=$enkfstatefhrs,getkf=$getkf,
   use_correlated_oberrs=${use_correlated_oberrs},use_gfs_ncio=.true.,nccompress=T,paranc=F,write_fv3_incr=${write_fv3_increment},
   adp_anglebc=.true.,angord=4,newpc4pred=.true.,use_edges=.false.,emiss_bc=.true.,biasvar=-500,nobsl_max=$nobsl_max,use_qsatensmean=.true.,
