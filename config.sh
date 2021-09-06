@@ -92,8 +92,10 @@ elif [ "$machine" == 'orion' ]; then
    export basedir=/work/noaa/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   export obs_datapath2=/work/noaa/sfc-perts/gbates/hrlyda_dumps/6hrly
-   export obs_datapath=/work/noaa/sfc-perts/gbates/hrlyda_dumps/6hrly
+   #export obs_datapath2=/work/noaa/sfc-perts/gbates/hrlyda_dumps/6hrly
+   #export obs_datapath=/work/noaa/sfc-perts/gbates/hrlyda_dumps/6hrly
+   export obs_datapath=/work/noaa/rstprod/dump
+   export obs_datapath2=/work/noaa/rstprod/dump
    #export obs_datapath2=/work/noaa/global/glopara/dump
    #export obs_datapath=/work/noaa/global/glopara/dump
    ulimit -s unlimited
