@@ -75,7 +75,7 @@ if [ "$machine" == 'hera' ]; then
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    export obs_datapath2=/scratch1/NCEPDEV/global/glopara/dump # for sst,snow,ice grib
-   export obs_datapath=/scratch2/BMC/gsienkf/whitaker/gdas1bufr # for bufr
+   export obs_datapath=$obs_datapath2
    module purge
    module load intel/18.0.5.274
    module load impi/2018.0.4 
