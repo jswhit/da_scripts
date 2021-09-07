@@ -5,13 +5,13 @@ echo "running on $machine using $NODES nodes and $cores CORES"
 export ndates_job=1 # number of DA cycles to run in one job submission
 # resolution of control and ensmemble.
 export RES=192 
-export RES_CTL=384
+export RES_CTL=$RES
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
 export hybgain="true" # hybrid gain approach, if false use hybrid covariance
-export alpha=250 # percentage of 3dvar increment (beta_2*1000) 
-export beta=1000 # percentage of enkf increment (*10)
+export alpha=1000 # percentage of 3dvar increment (beta_2*1000) 
+export beta=0 # percentage of enkf increment (*10)
 # if replay_controlfcst='true', weight given to ens mean vs control 
 # forecast in recentered backgrond ensemble (x100).  if recenter_control_wgt=0, then
 # no recentering is done. If recenter_control_wgt=100, then the background
@@ -24,7 +24,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybgain_iau"
+export exptname="C${RES}_3dvar_test"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 
@@ -135,7 +135,7 @@ export logdir="${datadir}/logs/${exptname}"
 export NOSAT="NO" # if yes, no radiances assimilated
 export NOCONV="NO"
 export NOTLNMC="NO" # no TLNMC in GSI in GSI EnVar
-export NOOUTERLOOP="NO" # no outer loop in GSI EnVar
+export NOOUTERLOOP="YES" # no outer loop in GSI EnVar
 # model NSST parameters contained within nstf_name in FV3 namelist
 # (comment out to get default - no NSST)
 # nstf_name(1) : NST_MODEL (NSST Model) : 0 = OFF, 1 = ON but uncoupled, 2 = ON and coupled
@@ -162,7 +162,7 @@ export NST_GSI=0
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
 
-export LEVS=64   
+export LEVS=127  
 if [ $LEVS -eq 64 ]; then
   export nsig_ext=12
   export gpstop=50
@@ -193,20 +193,13 @@ export dmesh3=100
 
 #export use_ipd="YES" # use IPD instead of CCPP
 
-# stochastic physics parameters.
-export DO_SPPT=T
-export SPPT=0.5
-export DO_SHUM=T
-export SHUM=0.005
-export DO_SKEB=T
-export SKEB=0.3
 # turn off stochastic physics
-#export SKEB=0
-#export DO_SKEB=F
-#export SPPT=0
-#export DO_SPPT=F
-#export SHUM=0
-#export DO_SHUM=F
+export SKEB=0
+export DO_SKEB=F
+export SPPT=0
+export DO_SPPT=F
+export SHUM=0
+export DO_SHUM=F
 
 export imp_physics=11 # used by GSI, not model
 
@@ -288,11 +281,11 @@ export FHOUT=3
 FHMAXP1=`expr $FHMAX + 1`
 export FHMAX_LONGER=`expr $FHMAX + $ANALINC`
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
-export iaufhrs="3,6,9"
-export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
+#export iaufhrs="3,6,9"
+#export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 # IAU off
-#export iaufhrs="6"
-#export iau_delthrs=-1
+export iaufhrs="6"
+export iau_delthrs=-1
 
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
@@ -366,7 +359,7 @@ fi
 # use pre-generated bias files.
 #export biascorrdir=${datadir}/biascor
 
-export nanals=80                                                    
+export nanals=1                                                    
 # if nanals2>0, extend nanals2 members out to FHMAX + ANALINC (one extra assim window)
 export nanals2=-1 # longer extension. Set to -1 to disable 
 #export nanals2=$NODES
@@ -442,11 +435,13 @@ export NLAT=$((${LATA}+2))
 #export BERROR=${basedir}/staticB/global_berror_enkf.l${LEVS}y${NLAT}.f77
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_janjulysmooth0p5
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_annmeansmooth0p5
-export REALTIME=NO # if NO, use historical files set in main.sh
+export REALTIME=YES # if NO, use historical files set in main.sh
 
 cd $enkfscripts
 echo "run main driver script"
-if [ $controlanal == "true" ]; then
+if [ $nanals -eq 1 ]; then
+    sh ./main3dvar.sh
+elif [ $controlanal == "true" ]; then
    # run as in NCEP ops, with high-res control forecast updated by GSI hyb 4denvar,
    # and enkf analysis recentered around upscaled control analysis.
    # use static B weights and localization scales for GSI from files.

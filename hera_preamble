@@ -1,18 +1,32 @@
 #!/bin/sh
-##SBATCH -q debug
-#SBATCH -t 04:00:00
-#SBATCH -A da-cpu   
-#SBATCH -N 20    
-#SBATCH -J C192_hybgain_iau
-#SBATCH -e C192_hybgain_iau.err
-#SBATCH -o C192_hybgain_iau.out
+#SBATCH -q debug
+#SBATCH -t 00:30:00
+#SBATCH -A gsienkf
+#SBATCH -N 8    
+#SBATCH -J C192_3dvar_test
+#SBATCH -e C192_3dvar_test.err
+#SBATCH -o C192_3dvar_test.out
 
 export NODES=$SLURM_NNODES
 export corespernode=$SLURM_CPUS_ON_NODE
 export machine='hera'
 
 # for control forecast
-if [ $NODES -eq 20 ]; then
+if [ $NODES -eq 4 ]; then
+  # 4 nodes 1thread
+  export control_threads=1
+  export control_proc=160
+  export write_groups_ctl=4 # write groups for control forecast.
+  export write_tasks_ctl=4
+  export layout_ctl="6,4" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+elif [ $NODES -eq 8 ]; then
+  # 4 nodes 1thread
+  export control_threads=1
+  export control_proc=320
+  export write_groups_ctl=8 # write groups for control forecast.
+  export write_tasks_ctl=4
+  export layout_ctl="6,8" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+elif [ $NODES -eq 20 ]; then
   # 20 nodes, 2 threads
   export control_threads=2
   export control_proc=800
@@ -50,7 +64,7 @@ fi
 export fg_proc=$corespernode 
 export fg_threads=1
 export enkf_threads=10 
-export gsi_control_threads=4
+export gsi_control_threads=2
 export write_groups=4
 # 40 cores per node 
 export write_tasks=1 
