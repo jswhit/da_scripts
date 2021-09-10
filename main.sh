@@ -49,7 +49,11 @@ if [ "$REALTIME" == "NO" ]; then
 #cd ..
 
 #   Set CONVINFO
-if [[  "$analdate" -ge 2020091612 ]]; then
+if [[  "$analdate" -ge 2021052012 ]]; then
+    export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2021052012
+elif [[  "$analdate" -ge 2021032212 ]]; then
+    export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2021032212
+elif [[  "$analdate" -ge 2020091612 ]]; then
     export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2020091612
 elif [[  "$analdate" -ge 2020091612 ]]; then
     export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2020052612
@@ -97,7 +101,9 @@ else
 fi
 
 #   Set SATINFO
-if [[ "$analdate" -ge "2020022012" ]]; then
+if [[ "$analdate" -ge "2021052118" ]]; then
+    export SATINFO=$fixgsi/gfsv16_historical/global_satinfo.txt.2021052118
+elif [[ "$analdate" -ge "2020022012" ]]; then
     export SATINFO=$fixgsi/gfsv16_historical/global_satinfo.txt.2020022012
 elif [[ "$analdate" -ge "2019110706" ]]; then
     export SATINFO=$fixgsi/gfsv16_historical/global_satinfo.txt.2019110706
