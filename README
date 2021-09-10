@@ -20,3 +20,4 @@ date you want the experiment to start and end.
 * to turn off IAU, set iaudelthrs=-1 and iaufhrs=6 in config.sh
 
 Requires gsi/enkf and utils from https://github.com/jswhit/GSI (branch enkf-64bit)
+Uses ufs-weather-model branch GFSv16_CCPP
