@@ -26,7 +26,7 @@ export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
 export exptname="C${RES}_hybgain_iau"
 # for 'passive' or 'replay' cycling of control fcst 
-export replay_controlfcst='false'
+export replay_controlfcst='true'
 
 export fg_gfs="run_ens_fv3.sh"
 export ensda="enkf_run.sh"
@@ -69,7 +69,8 @@ export controlanal="false" # hybrid-cov high-res control analysis as in ops
 #export cleanup_fg='false'
 #export resubmit='false'
 #export do_cleanup='false'
-#export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
+export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
+export save_hpss="false"
 
 source $MODULESHOME/init/sh
 if [ "$machine" == 'hera' ]; then
@@ -162,7 +163,7 @@ export NST_GSI=0
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
 
-export LEVS=64   
+export LEVS=127  
 if [ $LEVS -eq 64 ]; then
   export nsig_ext=12
   export gpstop=50
@@ -284,7 +285,7 @@ export ANALINC=6
 
 export FHMIN=3
 export FHMAX=9
-export FHOUT=3
+export FHOUT=1
 FHMAXP1=`expr $FHMAX + 1`
 export FHMAX_LONGER=`expr $FHMAX + $ANALINC`
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
@@ -442,7 +443,7 @@ export NLAT=$((${LATA}+2))
 #export BERROR=${basedir}/staticB/global_berror_enkf.l${LEVS}y${NLAT}.f77
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_janjulysmooth0p5
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_annmeansmooth0p5
-export REALTIME=NO # if NO, use historical files set in main.sh
+export REALTIME=YES # if NO, use historical files set in main.sh
 
 cd $enkfscripts
 echo "run main driver script"
