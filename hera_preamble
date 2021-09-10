@@ -1,6 +1,6 @@
 #!/bin/sh
 ##SBATCH -q debug
-#SBATCH -t 04:00:00
+#SBATCH -t 02:30:00
 #SBATCH -A da-cpu   
 #SBATCH -N 20    
 #SBATCH -J C192_hybgain_iau
@@ -16,8 +16,8 @@ if [ $NODES -eq 20 ]; then
   # 20 nodes, 2 threads
   export control_threads=2
   export control_proc=800
-  export write_groups_ctl=4 # write groups for control forecast.
-  export write_tasks_ctl=4
+  export write_groups_ctl=2 # write groups for control forecast.
+  export write_tasks_ctl=8
   export layout_ctl="8,8" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
 elif [ $NODES -eq 40 ]; then
   # 40 nodes, 4 threads
@@ -49,8 +49,8 @@ fi
 # C192 ensemble, C384 control
 export fg_proc=$corespernode 
 export fg_threads=1
-export enkf_threads=10 
-export gsi_control_threads=4
+export enkf_threads=20 
+export gsi_control_threads=8
 export write_groups=4
 # 40 cores per node 
 export write_tasks=1 
