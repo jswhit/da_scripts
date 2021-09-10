@@ -421,6 +421,11 @@ else
    restart_interval=$FHRESTART
    output_1st_tstep_rst=".false."
 fi
+if [ "${iau_delthrs}" != "-1" ]  && [ "${cold_start}" == "false" ]; then
+   FHROT=3
+else
+   FHROT=0
+fi
 
 cat > model_configure <<EOF
 print_esmf:              .true.
@@ -433,6 +438,7 @@ start_hour:              ${hour}
 start_minute:            0
 start_second:            0
 nhours_fcst:             ${FHMAX_FCST}
+fhrot:                   ${FHROT}
 RUN_CONTINUE:            F
 ENS_SPS:                 F
 dt_atmos:                ${dt_atmos} 
@@ -470,20 +476,22 @@ nsout:                   -1
 EOF
 cat model_configure
 
+# coupler.res no longer needed (use fhrot in model_configure if current time != start time)
+
 # setup coupler.res (needed for restarts if current time != start time)
-if [ "${iau_delthrs}" != "-1" ]  && [ "${cold_start}" == "false" ]; then
-   echo "     2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)" > INPUT/coupler.res
-   echo "  ${year}  ${mon}  ${day}  ${hour}     0     0        Model start time:   year, month, day, hour, minute, second" >> INPUT/coupler.res
-   echo "  ${year_start}  ${mon_start}  ${day_start}  ${hour_start}     0     0        Current model time: year, month, day, hour, minute, second" >> INPUT/coupler.res
-   cat INPUT/coupler.res
-   elif [ $cold_start == "true" ] && [ $analdate -gt 2021032400 ]; then
-   echo "     2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)" > INPUT/coupler.res
-   echo "  ${year}  ${mon}  ${day}  ${hour}     0     0        Model start time:   year, month, day, hour, minute, second" >> INPUT/coupler.res
-   echo "  ${yrp3}  ${monp3}  ${dayp3}  ${hrp3}     0     0        Current model time: year, month, day, hour, minute, second" >> INPUT/coupler.res
-   cat INPUT/coupler.res
-else
-   /bin/rm -f INPUT/coupler.res # assume current time == start time
-fi
+#if [ "${iau_delthrs}" != "-1" ]  && [ "${cold_start}" == "false" ]; then
+#   echo "     2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)" > INPUT/coupler.res
+#   echo "  ${year}  ${mon}  ${day}  ${hour}     0     0        Model start time:   year, month, day, hour, minute, second" >> INPUT/coupler.res
+#   echo "  ${year_start}  ${mon_start}  ${day_start}  ${hour_start}     0     0        Current model time: year, month, day, hour, minute, second" >> INPUT/coupler.res
+#   cat INPUT/coupler.res
+#   elif [ $cold_start == "true" ] && [ $analdate -gt 2021032400 ]; then
+#   echo "     2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)" > INPUT/coupler.res
+#   echo "  ${year}  ${mon}  ${day}  ${hour}     0     0        Model start time:   year, month, day, hour, minute, second" >> INPUT/coupler.res
+#   echo "  ${yrp3}  ${monp3}  ${dayp3}  ${hrp3}     0     0        Current model time: year, month, day, hour, minute, second" >> INPUT/coupler.res
+#   cat INPUT/coupler.res
+#else
+#   /bin/rm -f INPUT/coupler.res # assume current time == start time
+#fi
 
 # copy template namelist file, replace variables.
 /bin/cp -f ${enkfscripts}/${SUITE}.nml input.nml
