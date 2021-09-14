@@ -122,7 +122,6 @@ mkdir -p INPUT
 # make symlinks for fixed files and initial conditions.
 cd INPUT
 if [ "$cold_start" == "true" ]; then
-   ls -l *nc
    for file in ../*nc; do
        file2=`basename $file`
        ln -fs $file $file2
@@ -132,16 +131,24 @@ fi
 # Grid and orography data
 n=1
 while [ $n -le 6 ]; do
- ln -fs $FIXDIR/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/C${RES}_grid.tile${n}.nc    C${RES}_grid.tile${n}.nc
- ln -fs $FIXDIR/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/oro_C${RES}.${OCNRES}.tile${n}.nc oro_data.tile${n}.nc
- #ln -fs $FIXDIR/fix_fv3_gmted2010/C${RES}/C${RES}_grid.tile${n}.nc    C${RES}_grid.tile${n}.nc
- #ln -fs $FIXDIR/fix_fv3_gmted2010/C${RES}/C${RES}_oro_data.tile${n}.nc  oro_data.tile${n}.nc
+ if [ $FRAC_GRID == ".true." ]; then
+   ln -fs $FIXDIR/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/C${RES}_grid.tile${n}.nc    C${RES}_grid.tile${n}.nc
+   ln -fs $FIXDIR/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/oro_C${RES}.${OCNRES}.tile${n}.nc oro_data.tile${n}.nc
+ else
+   ln -fs $FIXDIR/fix_fv3_gmted2010/C${RES}/C${RES}_grid.tile${n}.nc    C${RES}_grid.tile${n}.nc
+   ln -fs $FIXDIR/fix_fv3_gmted2010/C${RES}/C${RES}_oro_data.tile${n}.nc  oro_data.tile${n}.nc
+ fi
  ln -fs $FIXDIR/fix_ugwd/C${RES}/C${RES}_oro_data_ls.tile${n}.nc oro_data_ls.tile${n}.nc
  ln -fs $FIXDIR/fix_ugwd/C${RES}/C${RES}_oro_data_ss.tile${n}.nc oro_data_ss.tile${n}.nc
  n=$((n+1))
 done
-ln -fs $FIXDIR/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/C${RES}_mosaic.nc  C${RES}_mosaic.nc
-ln -fs $FIXDIR/fix_cpl/aC${RES}o${ORES3}/grid_spec.nc  grid_spec.nc
+if [ $FRAC_GRID == ".true." ]; then
+   ln -fs $FIXDIR/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/C${RES}_mosaic.nc  C${RES}_mosaic.nc
+   ln -fs $FIXDIR/fix_cpl/aC${RES}o${ORES3}/grid_spec.nc  grid_spec.nc
+else
+   ln -fs $FIXDIR/fix_fv3_gmted2010/C${RES}/C${RES}_mosaic.nc  C${RES}_mosaic.nc
+   ln -fs $FIXDIR/fix_fv3_gmted2010/C${RES}/C${RES}_mosaic.nc  grid_spec.nc
+fi
 cd ..
 # new ozone and h2o physics for stratosphere
 ln -fs $FIXDIR/fix_am/ozprdlos_2015_new_sbuvO3_tclm15_nuchem.f77 global_o3prdlos.f77
@@ -165,6 +172,7 @@ ln -fs  $FIXDIR/fix_lut/optics_OC.v1_3.dat  optics_OC.dat
 ln -fs  $FIXDIR/fix_lut/optics_DU.v15_3.dat optics_DU.dat
 ln -fs  $FIXDIR/fix_lut/optics_SS.v3_3.dat  optics_SS.dat
 ln -fs  $FIXDIR/fix_lut/optics_SU.v1_3.dat  optics_SU.dat
+ls -l 
 
 # create netcdf increment files.
 if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
@@ -301,8 +309,6 @@ else
    fi
 fi
 
-ls -l 
-
 if [ $nanals2 -gt 0 ] && [ $nmem -le $nanals2 ]; then
    longer_fcst="YES"
 else
@@ -348,22 +354,35 @@ export FNMXIC="${FIXDIR}/fix_am/global_maxice.2x2.grb"
 export FNTSFC="${FIXDIR}/fix_am/RTGSST.1982.2012.monthly.clim.grb"
 export FNSNOC="${FIXDIR}/fix_am/global_snoclim.1.875.grb"
 export FNZORC="igbp"
+export FNAISC="${FIXDIR}/fix_am/CFSR.SEAICE.1982.2012.monthly.clim.grb"
+ if [ $FRAC_GRID == ".true." ]; then
 export FNALBC="${FIXDIR}/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/fix_sfc/C${RES}.snowfree_albedo.tileX.nc"
 export FNALBC2="${FIXDIR}/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/fix_sfc/C${RES}.facsf.tileX.nc"
-export FNAISC="${FIXDIR}/fix_am/CFSR.SEAICE.1982.2012.monthly.clim.grb"
 export FNTG3C="${FIXDIR}/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/fix_sfc/C${RES}.substrate_temperature.tileX.nc"
 export FNVEGC="${FIXDIR}/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/fix_sfc/C${RES}.vegetation_greenness.tileX.nc"
 export FNVETC="${FIXDIR}/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/fix_sfc/C${RES}.vegetation_type.tileX.nc"
 export FNSOTC="${FIXDIR}/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/fix_sfc/C${RES}.soil_type.tileX.nc"
+export FNVMNC="${FIXDIR}/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/fix_sfc/C${RES}.vegetation_greenness.tileX.nc"
+export FNVMXC="${FIXDIR}/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/fix_sfc/C${RES}.vegetation_greenness.tileX.nc"
+export FNSLPC="${FIXDIR}/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/fix_sfc/C${RES}.slope_type.tileX.nc"
+export FNABSC="${FIXDIR}/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/fix_sfc/C${RES}.maximum_snow_albedo.tileX.nc"
+else
+export FNALBC="${FIXDIR}/fix_fv3_gmted2010/C${RES}/fix_sfc/C${RES}.snowfree_albedo.tileX.nc"
+export FNALBC2="${FIXDIR}/fix_fv3_gmted2010/C${RES}/fix_sfc/C${RES}.facsf.tileX.nc"
+export FNTG3C="${FIXDIR}/fix_fv3_gmted2010/C${RES}/fix_sfc/C${RES}.substrate_temperature.tileX.nc"
+export FNVEGC="${FIXDIR}/fix_fv3_gmted2010/C${RES}/fix_sfc/C${RES}.vegetation_greenness.tileX.nc"
+export FNVETC="${FIXDIR}/fix_fv3_gmted2010/C${RES}/fix_sfc/C${RES}.vegetation_type.tileX.nc"
+export FNSOTC="${FIXDIR}/fix_fv3_gmted2010/C${RES}/fix_sfc/C${RES}.soil_type.tileX.nc"
+export FNVMNC="${FIXDIR}/fix_fv3_gmted2010/C${RES}/fix_sfc/C${RES}.vegetation_greenness.tileX.nc"
+export FNVMXC="${FIXDIR}/fix_fv3_gmted2010/C${RES}/fix_sfc/C${RES}.vegetation_greenness.tileX.nc"
+export FNSLPC="${FIXDIR}/fix_fv3_gmted2010/C${RES}/fix_sfc/C${RES}.slope_type.tileX.nc"
+export FNABSC="${FIXDIR}/fix_fv3_gmted2010/C${RES}/fix_sfc/C${RES}.maximum_snow_albedo.tileX.nc"
+fi
 export FNSMCC="${FIXDIR}/fix_am/global_soilmgldas.statsgo.t766.1536.768.grb"
 export FNMSKH="${FIXDIR}/fix_am/global_slmask.t1534.3072.1536.grb"
 export FNTSFA="${fntsfa}"
 export FNACNA="${fnacna}"
 export FNSNOA="${fnsnoa}"
-export FNVMNC="${FIXDIR}/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/fix_sfc/C${RES}.vegetation_greenness.tileX.nc"
-export FNVMXC="${FIXDIR}/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/fix_sfc/C${RES}.vegetation_greenness.tileX.nc"
-export FNSLPC="${FIXDIR}/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/fix_sfc/C${RES}.slope_type.tileX.nc"
-export FNABSC="${FIXDIR}/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/fix_sfc/C${RES}.maximum_snow_albedo.tileX.nc"
 export LDEBUG=.false.
 export FSMCL2=99999 
 export FSMCL3=99999 

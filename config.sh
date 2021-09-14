@@ -141,16 +141,9 @@ export NOSAT="NO" # if yes, no radiances assimilated
 export NOCONV="NO"
 export NOTLNMC="NO" # no TLNMC in GSI in GSI EnVar
 export NOOUTERLOOP="NO" # no outer loop in GSI EnVar
-# model NSST parameters contained within nstf_name in FV3 namelist
-# (comment out to get default - no NSST)
-# nstf_name(1) : NST_MODEL (NSST Model) : 0 = OFF, 1 = ON but uncoupled, 2 = ON and coupled
+
+# NST settings
 export DONST="YES"
-export NST_MODEL=2
-# nstf_name(2) : NST_SPINUP : 0 = OFF, 1 = ON,
-export NST_SPINUP=0 # (will be set to 1 if cold_start=='true')
-# nstf_name(3) : NST_RESV (Reserved, NSST Analysis) : 0 = OFF, 1 = ON
-export NST_RESV=0
-# nstf_name(4,5) : ZSEA1, ZSEA2 the two depths to apply vertical average (bias correction)
 export ZSEA1=0
 export ZSEA2=0
 export NSTINFO=0          # number of elements added in obs. data array (default = 0)
@@ -159,9 +152,8 @@ export NST_GSI=3          # default 0: No NST info at all;
                           #         2: Input NST info, used in CRTM simulation, no Tr analysis
                           #         3: Input NST info, used in both CRTM simulation and Tr analysis
 
-# turn off NST
-export DONST="NO"
-export NST_MODEL=0
+# turn off NST in GSI, but run passively in model
+export DONST="YES"
 export NST_GSI=0
 
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
@@ -172,8 +164,8 @@ export nsig_ext=56
 export gpstop=55
 export GRIDOPTS="nlayers(63)=1,nlayers(64)=1,"
 export SUITE="FV3_GFS_v16_coupled_nsstNoahmpUGWPv1"
-export NSTFNAME="2,0,0,0"
-export FRAC_GRID=T
+export NSTFNAME="2,0,0,0" # set to 2,1,0,0 if cold_start=.true.
+export FRAC_GRID=.true.
 
 # radiance thinning parameters for GSI
 export dmesh1=145
