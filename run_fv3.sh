@@ -3,51 +3,21 @@
 echo "starting at `date`"
 source $MODULESHOME/init/sh
 
-use_ipd=${use_ipd:-"NO"}
-if [ "$machine" == 'hera' ]; then
-   module purge
-   module use /scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/v1.0.0-beta1/modulefiles/stack
-   module load hpc/1.0.0-beta1
-   module load hpc-intel/18.0.5.274
-   module load hpc-impi/2018.0.4
-   module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
-   module load netcdf_parallel/4.7.4.release
-   module load esmf/8.1.0bs25_ParallelNetCDF.release
-   module load hdf5_parallel/1.10.6.release
-   module load wgrib
-   export WGRIB=`which wgrib`
-elif [ "$machine" == 'orion' ]; then
-   module purge
-   module use /apps/contrib/NCEP/libs/hpc-stack/modulefiles/stack
-   module load hpc/1.1.0
-   module load hpc-intel/2018.4
-   module unload mkl/2020.2
-   module load mkl/2018.4
-   module load hpc-impi/2018.4
-   module load wgrib
-   export WGRIB=`which wgrib`
-elif [ "$machine" == 'gaea' ]; then
-   module purge
-   module load PrgEnv-intel/6.0.3
-   module rm intel
-   module load intel/18.0.3.222
-   #module load cray-netcdf-hdf5parallel/4.6.1.3
-   #module load cray-hdf5-parallel/1.10.2.0
-   module load cray-netcdf
-   module use -a /lustre/f2/pdata/ncep_shared/NCEPLIBS/lib//modulefiles
-   module load esmflocal/8_0_48b
-   module load nco/4.6.4
-   module load wgrib
-   export WGRIB=`which wgrib`
-   export HDF5_DISABLE_VERSION_CHECK=1
-fi
-module list
-
 export VERBOSE=${VERBOSE:-"NO"}
-hydrostatic=${hydrostatic:=".false."}
-launch_level=$(echo "$LEVS/2.35" |bc)
 if [ $VERBOSE = "YES" ]; then
  set -x
+fi
+
+#FHCYC=0 # use global_cycle
+#FHCYC=6 # use gcyc in model
+if [ $FHCYC -gt 0 ]; then
+  skip_global_cycle=1
+fi
+
+if [ "$cold_start" == "true" ] || [ "${iau_delthrs}" == "-1" ]; then
+   FHROT=0
+else
+   FHROT=3
 fi
 
 ulimit -s unlimited
@@ -60,6 +30,7 @@ else
    nmem=0
 fi
 charnanal2=`printf %02i $nmem`
+export ISEED_CA=$analdate
 export ISEED_SPPT=$((analdate*1000 + nmem*10 + 0 + niter))
 export ISEED_SKEB=$((analdate*1000 + nmem*10 + 1 + niter))
 export ISEED_SHUM=$((analdate*1000 + nmem*10 + 2 + niter))
@@ -138,6 +109,7 @@ fi
 export DIAG_TABLE=${DIAG_TABLE:-$enkfscripts/diag_table}
 /bin/cp -f $DIAG_TABLE diag_table
 /bin/cp -f $enkfscripts/nems.configure .
+/bin/cp -f $enkfscripts/fd_nems.yaml .
 # insert correct starting time and output interval in diag_table template.
 sed -i -e "s/YYYY MM DD HH/${year} ${mon} ${day} ${hour}/g" diag_table
 sed -i -e "s/FHOUT/${FHOUT}/g" diag_table
@@ -160,31 +132,39 @@ fi
 # Grid and orography data
 n=1
 while [ $n -le 6 ]; do
- ln -fs $FIXFV3/C${RES}/C${RES}_grid.tile${n}.nc     C${RES}_grid.tile${n}.nc
- ln -fs $FIXFV3/C${RES}/C${RES}_oro_data.tile${n}.nc oro_data.tile${n}.nc
+ ln -fs $FIXDIR/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/C${RES}_grid.tile${n}.nc    C${RES}_grid.tile${n}.nc
+ ln -fs $FIXDIR/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/oro_C${RES}.${OCNRES}.tile${n}.nc oro_data.tile${n}.nc
+ #ln -fs $FIXDIR/fix_fv3_gmted2010/C${RES}/C${RES}_grid.tile${n}.nc    C${RES}_grid.tile${n}.nc
+ #ln -fs $FIXDIR/fix_fv3_gmted2010/C${RES}/C${RES}_oro_data.tile${n}.nc  oro_data.tile${n}.nc
+ ln -fs $FIXDIR/fix_ugwd/C${RES}/C${RES}_oro_data_ls.tile${n}.nc oro_data_ls.tile${n}.nc
+ ln -fs $FIXDIR/fix_ugwd/C${RES}/C${RES}_oro_data_ss.tile${n}.nc oro_data_ss.tile${n}.nc
  n=$((n+1))
 done
-ln -fs $FIXFV3/C${RES}/C${RES}_mosaic.nc  grid_spec.nc
+ln -fs $FIXDIR/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/C${RES}_mosaic.nc  C${RES}_mosaic.nc
+ln -fs $FIXDIR/fix_cpl/aC${RES}o${ORES3}/grid_spec.nc  grid_spec.nc
 cd ..
-#ln -fs $FIXGLOBAL/global_o3prdlos.f77               global_o3prdlos.f77
 # new ozone and h2o physics for stratosphere
-ln -fs $FIXGLOBAL/ozprdlos_2015_new_sbuvO3_tclm15_nuchem.f77 global_o3prdlos.f77
-ln -fs $FIXGLOBAL/global_h2o_pltc.f77 global_h2oprdlos.f77 # used if h2o_phys=T
+ln -fs $FIXDIR/fix_am/ozprdlos_2015_new_sbuvO3_tclm15_nuchem.f77 global_o3prdlos.f77
+ln -fs $FIXDIR/fix_am/global_h2o_pltc.f77 global_h2oprdlos.f77 # used if h2o_phys=T
 # co2, ozone, surface emiss and aerosol data.
-ln -fs $FIXGLOBAL/global_solarconstant_noaa_an.txt  solarconstant_noaa_an.txt
-ln -fs $FIXGLOBAL/global_sfc_emissivity_idx.txt     sfc_emissivity_idx.txt
-ln -fs $FIXGLOBAL/global_co2historicaldata_glob.txt co2historicaldata_glob.txt
-ln -fs $FIXGLOBAL/co2monthlycyc.txt                 co2monthlycyc.txt
-for file in `ls $FIXGLOBAL/co2dat_4a/global_co2historicaldata* ` ; do
+ln -fs $FIXDIR/fix_am/global_solarconstant_noaa_an.txt solarconstant_noaa_an.txt
+ln -fs $FIXDIR/fix_am/global_sfc_emissivity_idx.txt     sfc_emissivity_idx.txt
+ln -fs $FIXDIR/fix_am/global_co2historicaldata_glob.txt co2historicaldata_glob.txt
+ln -fs $FIXDIR/fix_am/co2monthlycyc.txt                 co2monthlycyc.txt
+for file in `ls $FIXDIR/fix_am/global_co2historicaldata* ` ; do
    ln -fs $file $(echo $(basename $file) |sed -e "s/global_//g")
 done
-ln -fs $FIXGLOBAL/global_climaeropac_global.txt     aerosol.dat
-for file in `ls $FIXGLOBAL/global_volcanic_aerosols* ` ; do
-   ln -fs $file $(echo $(basename $file) |sed -e "s/global_//g")
+ln -fs $FIXDIR/fix_am/global_climaeropac_global.txt aerosol.dat
+# for ugwpv1 and MERRA aerosol climo (IAER=1011)
+ln -fs $FIXDIR/fix_ugwd/ugwp_limb_tau.nc ugwp_limb_tau.nc
+for n in 01 02 03 04 05 06 07 08 09 10 11 12; do
+  ln -fs $FIXDIR/fix_aer/merra2.aerclim.2003-2014.m${n}.nc aeroclim.m${n}.nc
 done
-# for Thompson microphysics
-#ln -fs $FIXGLOBAL/CCN_ACTIVATE.BIN CCN_ACTIVATE.BIN
-#ln -fs $FIXGLOBAL/freezeH2O.dat freezeH2O.dat
+ln -fs  $FIXDIR/fix_lut/optics_BC.v1_3.dat  optics_BC.dat
+ln -fs  $FIXDIR/fix_lut/optics_OC.v1_3.dat  optics_OC.dat
+ln -fs  $FIXDIR/fix_lut/optics_DU.v15_3.dat optics_DU.dat
+ln -fs  $FIXDIR/fix_lut/optics_SS.v3_3.dat  optics_SS.dat
+ln -fs  $FIXDIR/fix_lut/optics_SU.v1_3.dat  optics_SU.dat
 
 # create netcdf increment files.
 if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
@@ -323,7 +303,6 @@ fi
 
 ls -l 
 
-FHRESTART=${FHRESTART:-$ANALINC}
 if [ $nanals2 -gt 0 ] && [ $nmem -le $nanals2 ]; then
    longer_fcst="YES"
 else
@@ -335,12 +314,9 @@ if [ "${iau_delthrs}" != "-1" ]; then
    else
       FHMAX_FCST=`expr $FHMAX + $ANALINC`
    fi
-   FHSTOCH=`expr $FHRESTART + $ANALINC \/ 2`
+   FHSTOCH=`expr $RESTART_FREQ + $ANALINC \/ 2`
    if [ ${cold_start} = "true" ]; then
       FHSTOCH=${FHSTOCH:-$ANALINC}
-      if [ $analdate -le 2021032400 ]; then
-         FHRESTART=`expr $ANALINC \/ 2`
-      fi
       if [ $longer_fcst = "YES" ]; then
          FHMAX_FCST=$FHMAX_LONGER
       else
@@ -348,7 +324,7 @@ if [ "${iau_delthrs}" != "-1" ]; then
       fi
    fi
 else
-   FHSTOCH=$FHRESTART
+   FHSTOCH=$RESTART_FREQ
    if [ $longer_fcst = "YES" ]; then
       FHMAX_FCST=$FHMAX_LONGER
    else
@@ -356,10 +332,141 @@ else
    fi
 fi
 
+# use these for both model gcyc and global_cycle util.
+# &NAMCYC
+#  idim=$CRES, jdim=$CRES, lsoil=$LSOIL,
+#  iy=$iy, im=$im, id=$id, ih=$ih, fh=$FHOUR,
+#  deltsfc=$DELTSFC,ialb=$IALB,use_ufo=$use_ufo,donst=$DONST,
+#  do_sfccycle=$DO_SFCCYCLE,do_lndinc=$DO_LNDINC,isot=$ISOT,ivegsrc=$IVEGSRC,
+#  zsea1_mm=$zsea1,zsea2_mm=$zsea2,MAX_TASKS=$MAX_TASKS_CY
+# /
+#export IALB=1 # modis albedo (default)
+#export ISOT=1 # statsgo soil type (default)
+#export IVEGSRC=1 # igbp veg type (default)
+export FNGLAC="${FIXDIR}/fix_am/global_glacier.2x2.grb"
+export FNMXIC="${FIXDIR}/fix_am/global_maxice.2x2.grb"
+export FNTSFC="${FIXDIR}/fix_am/RTGSST.1982.2012.monthly.clim.grb"
+export FNSNOC="${FIXDIR}/fix_am/global_snoclim.1.875.grb"
+export FNZORC="igbp"
+export FNALBC="${FIXDIR}/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/fix_sfc/C${RES}.snowfree_albedo.tileX.nc"
+export FNALBC2="${FIXDIR}/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/fix_sfc/C${RES}.facsf.tileX.nc"
+export FNAISC="${FIXDIR}/fix_am/CFSR.SEAICE.1982.2012.monthly.clim.grb"
+export FNTG3C="${FIXDIR}/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/fix_sfc/C${RES}.substrate_temperature.tileX.nc"
+export FNVEGC="${FIXDIR}/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/fix_sfc/C${RES}.vegetation_greenness.tileX.nc"
+export FNVETC="${FIXDIR}/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/fix_sfc/C${RES}.vegetation_type.tileX.nc"
+export FNSOTC="${FIXDIR}/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/fix_sfc/C${RES}.soil_type.tileX.nc"
+export FNSMCC="${FIXDIR}/fix_am/global_soilmgldas.statsgo.t766.1536.768.grb"
+export FNMSKH="${FIXDIR}/fix_am/global_slmask.t1534.3072.1536.grb"
+export FNTSFA="${fntsfa}"
+export FNACNA="${fnacna}"
+export FNSNOA="${fnsnoa}"
+export FNVMNC="${FIXDIR}/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/fix_sfc/C${RES}.vegetation_greenness.tileX.nc"
+export FNVMXC="${FIXDIR}/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/fix_sfc/C${RES}.vegetation_greenness.tileX.nc"
+export FNSLPC="${FIXDIR}/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/fix_sfc/C${RES}.slope_type.tileX.nc"
+export FNABSC="${FIXDIR}/fix_fv3_fracoro/C${RES}.${OCNRES}_frac/fix_sfc/C${RES}.maximum_snow_albedo.tileX.nc"
+export LDEBUG=.false.
+export FSMCL2=99999 
+export FSMCL3=99999 
+export FSMCL4=99999 
+export LANDICE=.false.
+export FTSFS=99999
+export FAISL=99999
+export FAISS=99999
+export FSNOS=99999
+export FSICL=99999    
+export FSICS=99999
+export FTSFL=99999
+export FVETL=99999
+export FSOTL=99999
+export FvmnL=99999
+export FvmxL=99999
+export FSLPL=99999
+export FABSL=99999
+export CYCLVARS="FSNOL=${FSNOL},FSNOS=${FSNOS},LANDICE=${LANDICE}"
+export NAMSFC="$PWD/namsfc.nml" # must be absolute path
+if [ -z $skip_global_cycle ]; then
+cat << EOF > $NAMSFC
+&NAMSFC
+  FNGLAC="$FNGLAC",
+  FNMXIC="$FNMXIC",
+  FNTSFC="$FNTSFC",
+  FNSNOC="$FNSNOC",
+  FNZORC="$FNZORC",
+  FNALBC="$FNALBC",
+  FNALBC2="$FNALBC2",
+  FNAISC="$FNAISC",
+  FNTG3C="$FNTG3C",
+  FNVEGC="$FNVEGC",
+  FNVETC="$FNVETC",
+  FNSOTC="$FNSOTC",
+  FNSMCC="$FNSMCC",
+  FNVMNC="$FNVMNC",
+  FNVMXC="$FNVMXC",
+  FNSLPC="$FNSLPC",
+  FNABSC="$FNABSC",
+  FNMSKH="$FNMSKH",
+  FNTSFA="$FNTSFA",
+  FNACNA="$FNACNA",
+  FNSNOA="$FNSNOA",
+  LDEBUG=$LDEBUG,
+  FSLPL=$FSLPL,
+  FSOTL=$FSOTL,
+  FVETL=$FVETL,
+  FSMCL(2)=$FSMCL2,
+  FSMCL(3)=$FSMCL3,
+  FSMCL(4)=$FSMCL4,
+  $CYCLVARS
+ /
+EOF
+else
+cat << EOF > $NAMSFC
+&namsfc
+  FNGLAC="$FNGLAC",
+  FNMXIC="$FNMXIC",
+  FNTSFC="$FNTSFC",
+  FNSNOC="$FNSNOC",
+  FNZORC="$FNZORC",
+  FNALBC="$FNALBC",
+  FNALBC2="$FNALBC2",
+  FNAISC="$FNAISC",
+  FNTG3C="$FNTG3C",
+  FNVEGC="$FNVEGC",
+  FNVETC="$FNVETC",
+  FNSOTC="$FNSOTC",
+  FNSMCC="$FNSMCC",
+  FNVMNC="$FNVMNC",
+  FNVMXC="$FNVMXC",
+  FNSLPC="$FNSLPC",
+  FNABSC="$FNABSC",
+  FNMSKH="$FNMSKH",
+  FNTSFA="$FNTSFA",
+  FNACNA="$FNACNA",
+  FNSNOA="$FNSNOA",
+  LDEBUG   = $LDEBUG,
+  FSMCL(2) = $FSMCL2,
+  FSMCL(3) = $FSMCL3,
+  FSMCL(4) = $FSMCL4,
+  LANDICE = $LANDICE,
+  FTSFS = 99999
+  FAISL = 99999
+  FAISS = 99999
+  FSNOL = $FSNOL
+  FSNOS = $FSNOS
+  FSICL = 99999    
+  FSICS = 99999
+  FTSFL = 99999
+  FVETL = 99999
+  FSOTL = 99999
+  FvmnL = 99999
+  FvmxL = 99999
+  FSLPL = 99999
+  FABSL = 99999
+/
+EOF
+fi
+
 if [ $cold_start = "false" ] && [ -z $skip_global_cycle ]; then
    # run global_cycle to update surface in restart file.
-   export BASE_GSM=${fv3gfspath}
-   export FIXfv3=$FIXFV3
    # global_cycle chokes for 3,9,15,18 UTC hours in CDATE
    #export CDATE="${year_start}${mon_start}${day_start}${hour_start}"
    export CDATE=${analdate}
@@ -372,8 +479,10 @@ if [ $cold_start = "false" ] && [ -z $skip_global_cycle ]; then
    export FNACNA="${fnacna}"
    export CASE="C${RES}"
    export PGM="${execdir}/global_cycle"
-   if [ $NST_GSI -gt 0 ]; then
-       export GSI_FILE=${datapath2}/${PREINP}dtfanl.nc
+   if [ $NST_GSI -gt 1 ]; then
+       export NST_FILE=${datapath2}/${PREINP}dtfanl.nc
+   else
+       export NST_FILE="NULL"
    fi
    sh ${enkfscripts}/global_cycle_driver.sh
    n=1
@@ -392,39 +501,13 @@ if [ $cold_start = "false" ] && [ -z $skip_global_cycle ]; then
    /bin/rm -rf rundir*
 fi
 
-# NSST Options
-# nstf_name contains the NSST related parameters
-# nstf_name(1) : NST_MODEL (NSST Model) : 0 = OFF, 1 = ON but uncoupled, 2 = ON and coupled
-# nstf_name(2) : NST_SPINUP : 0 = OFF, 1 = ON,
-# nstf_name(3) : NST_RESV (Reserved, NSST Analysis) : 0 = OFF, 1 = ON
-# nstf_name(4) : ZSEA1 (in mm) : 0
-# nstf_name(5) : ZSEA2 (in mm) : 0
-NST_MODEL=${NST_MODEL:-0}
-NST_SPINUP=${NST_SPINUP:-0}
-if [ $cold_start = "true" ] && [ $NST_GSI -gt 0 ]; then
-   NST_SPINUP=1
-fi
-NST_RESV=${NST_RESV-0}
-ZSEA1=${ZSEA1:-0}
-ZSEA2=${ZSEA2:-0}
-nstf_name=${nstf_name:-"$NST_MODEL,$NST_SPINUP,$NST_RESV,$ZSEA1,$ZSEA2"}
-if [ $NST_GSI -gt 0 ] && [ $FHCYC -gt 0 ]; then
-   fntsfa='        ' # no input file, use GSI foundation temp
-   fnsnoa='        '
-   fnacna='        '
-fi
 export timestep_hrs=`python -c "from __future__ import print_function; print($dt_atmos / 3600.)"`
 if [ $cold_start == "true" ] && [ $analdate -gt 2021032400 ]; then
    restart_interval="$timestep_hrs $ANALINC"
    output_1st_tstep_rst=".true."
 else
-   restart_interval=$FHRESTART
+   restart_interval="$RESTART_FREQ -1"
    output_1st_tstep_rst=".false."
-fi
-if [ "${iau_delthrs}" != "-1" ]  && [ "${cold_start}" == "false" ]; then
-   FHROT=3
-else
-   FHROT=0
 fi
 
 cat > model_configure <<EOF
@@ -438,7 +521,6 @@ start_hour:              ${hour}
 start_minute:            0
 start_second:            0
 nhours_fcst:             ${FHMAX_FCST}
-fhrot:                   ${FHROT}
 RUN_CONTINUE:            F
 ENS_SPS:                 F
 dt_atmos:                ${dt_atmos} 
@@ -450,13 +532,14 @@ atmos_nthreads:          ${OMP_NUM_THREADS}
 use_hyper_thread:        F
 ncores_per_node:         ${corespernode}
 restart_interval:        ${restart_interval}
+fhrot:                   ${FHROT}
 quilting:                .true.
 write_groups:            ${write_groups}
 write_tasks_per_group:   ${write_tasks}
 num_files:               2
 filename_base:           'dyn' 'phy'
 output_grid:             'gaussian_grid'
-output_file:             'netcdf' 'netcdf'
+output_file:             'netcdf_parallel' 'netcdf'
 nbits:                   14
 ideflate:                1
 ichunk2d:                ${LONB}
@@ -464,8 +547,7 @@ jchunk2d:                ${LATB}
 ichunk3d:                0
 jchunk3d:                0
 kchunk3d:                0
-write_nemsioflip:        .true.
-write_fsyncflag:         .true.
+write_nsflip:            .true.
 iau_offset:              ${iaudelthrs}
 imo:                     ${LONB}
 jmo:                     ${LATB}
@@ -476,63 +558,40 @@ nsout:                   -1
 EOF
 cat model_configure
 
-# coupler.res no longer needed (use fhrot in model_configure if current time != start time)
-
-# setup coupler.res (needed for restarts if current time != start time)
-#if [ "${iau_delthrs}" != "-1" ]  && [ "${cold_start}" == "false" ]; then
-#   echo "     2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)" > INPUT/coupler.res
-#   echo "  ${year}  ${mon}  ${day}  ${hour}     0     0        Model start time:   year, month, day, hour, minute, second" >> INPUT/coupler.res
-#   echo "  ${year_start}  ${mon_start}  ${day_start}  ${hour_start}     0     0        Current model time: year, month, day, hour, minute, second" >> INPUT/coupler.res
-#   cat INPUT/coupler.res
-#   elif [ $cold_start == "true" ] && [ $analdate -gt 2021032400 ]; then
-#   echo "     2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)" > INPUT/coupler.res
-#   echo "  ${year}  ${mon}  ${day}  ${hour}     0     0        Model start time:   year, month, day, hour, minute, second" >> INPUT/coupler.res
-#   echo "  ${yrp3}  ${monp3}  ${dayp3}  ${hrp3}     0     0        Current model time: year, month, day, hour, minute, second" >> INPUT/coupler.res
-#   cat INPUT/coupler.res
-#else
-#   /bin/rm -f INPUT/coupler.res # assume current time == start time
-#fi
-
 # copy template namelist file, replace variables.
 /bin/cp -f ${enkfscripts}/${SUITE}.nml input.nml
-if [ $use_ipd = "YES" ]; then
-    sed -i -e '/SUITE/d' input.nml
-    sed -i -e '/oz_phys/d' input.nml
-else
-    sed -i -e "s/SUITE/${SUITE}/g" input.nml
-fi
+#sed -i -e "s/SUITE/${SUITE}/g" input.nml
 sed -i -e "s/LAYOUT/${layout}/g" input.nml
-sed -i -e "s/NSTF_NAME/${nstf_name}/g" input.nml
 sed -i -e "s/NPX/${npx}/g" input.nml
 sed -i -e "s/NPY/${npx}/g" input.nml
 sed -i -e "s/LEVP/${LEVP}/g" input.nml
 sed -i -e "s/LEVS/${LEVS}/g" input.nml
-sed -i -e "s/LONB/${LONB}/g" input.nml
-sed -i -e "s/LATB/${LATB}/g" input.nml
-sed -i -e "s/JCAP/${JCAP}/g" input.nml
-sed -i -e "s/SPPT/${SPPT}/g" input.nml
-sed -i -e "s/DO_sppt/${DO_SPPT}/g" input.nml
-sed -i -e "s/SHUM/${SHUM}/g" input.nml
-sed -i -e "s/DO_shum/${DO_SHUM}/g" input.nml
-sed -i -e "s/SKEB/${SKEB}/g" input.nml
-sed -i -e "s/DO_skeb/${DO_SKEB}/g" input.nml
-sed -i -e "s/STOCHINI/${stochini}/g" input.nml
-sed -i -e "s/FHSTOCH/${FHSTOCH}/g" input.nml
-sed -i -e "s/FHOUT/${FHOUT}/g" input.nml
-sed -i -e "s/CDMBGWD/${cdmbgwd}/g" input.nml
-sed -i -e "s/ISEED_sppt/${ISEED_SPPT}/g" input.nml
-sed -i -e "s/ISEED_shum/${ISEED_SHUM}/g" input.nml
-sed -i -e "s/ISEED_skeb/${ISEED_SKEB}/g" input.nml
-sed -i -e "s/IAU_FHRS/${iaufhrs}/g" input.nml
 sed -i -e "s/IAU_DELTHRS/${iaudelthrs}/g" input.nml
 sed -i -e "s/IAU_INC_FILES/${iau_inc_files}/g" input.nml
 sed -i -e "s/WARM_START/${warm_start}/g" input.nml
+sed -i -e "s/CDMBGWD/${cdmbgwd}/g" input.nml
 sed -i -e "s/EXTERNAL_IC/${externalic}/g" input.nml
+sed -i -e "s/NA_INIT/${na_init}/g" input.nml
 sed -i -e "s/MOUNTAIN/${mountain}/g" input.nml
+sed -i -e "s/FRAC_GRID/${FRAC_GRID}/g" input.nml
+sed -i -e "s/ISEED_CA/${ISEED_CA}/g" input.nml
 sed -i -e "s/RESLATLONDYNAMICS/${reslatlondynamics}/g" input.nml
 sed -i -e "s/READ_INCREMENT/${readincrement}/g" input.nml
-sed -i -e "s/HYDROSTATIC/${hydrostatic}/g" input.nml
-sed -i -e "s/LAUNCH_LEVEL/${launch_level}/g" input.nml
+# gcycle related params
+sed -i -e "s/FHCYC/${FHCYC}/g" input.nml
+#sed -i -e "s/CRES/C${RES}/g" input.nml
+#sed -i -e "s/ORES/${OCNRES}/g" input.nml
+#sed -i -e "s!SSTFILE!${fntsfa}!g" input.nml
+#sed -i -e "s!FIXDIR!${FIXDIR}!g" input.nml
+#sed -i -e "s!ICEFILE!${fnacna}!g" input.nml
+#sed -i -e "s!SNOFILE!${fnsnoa}!g" input.nml
+#sed -i -e "s/FSNOL_PARM/${FSNOL}/g" input.nml
+if [ $NSTFNAME == "2,0,0,0" ] && [ $cold_start == "true" ]; then
+   NSTFNAME="2,1,0,0"
+fi
+sed -i -e "s/NSTFNAME/${NSTFNAME}/g" input.nml
+cp input.nml input.nml.tmp
+cat input.nml.tmp $NAMSFC > input.nml
 cat input.nml
 ls -l INPUT
 
