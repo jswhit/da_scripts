@@ -82,7 +82,6 @@ if [ "$machine" == 'hera' ]; then
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    export obs_datapath=/scratch1/NCEPDEV/global/glopara/dump
-   export obs_datapath=/scratch2/BMC/gsienkf/Henry.Winterbottom/work/UFSRNR_BDP_TO_LOCAL
    module purge
    module use /scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack
    module load hpc/1.1.0
@@ -255,7 +254,6 @@ else
    echo "model parameters for control resolution C$RES_CTL not set"
    exit 1
 fi
-export FHCYC=0 # run global_cycle instead of gcycle inside model
 
 # analysis is done at ensemble resolution
 export LONA=$LONB

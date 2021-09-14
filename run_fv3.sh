@@ -8,8 +8,6 @@ if [ $VERBOSE = "YES" ]; then
  set -x
 fi
 
-#FHCYC=0 # use global_cycle
-#FHCYC=6 # use gcyc in model
 if [ $FHCYC -gt 0 ]; then
   skip_global_cycle=1
 fi
@@ -218,7 +216,6 @@ if [ "$cold_start" == "true" ]; then
    stochini=F
    reslatlondynamics=""
    readincrement=F
-   FHCYC=0
    iaudelthrs=-1
    #iau_inc_files="fv3_increment.nc"
    iau_inc_files=""
@@ -253,7 +250,6 @@ else
    fi
    
    iaudelthrs=${iau_delthrs}
-   FHCYC=${FHCYC}
    if [ "${iau_delthrs}" != "-1" ]; then
       if [ "$iaufhrs" == "3,4,5,6,7,8,9" ]; then
          iau_inc_files="'fv3_increment3.nc','fv3_increment4.nc','fv3_increment5.nc','fv3_increment6.nc','fv3_increment7.nc','fv3_increment8.nc','fv3_increment9.nc'"
