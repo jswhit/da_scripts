@@ -6,6 +6,10 @@ export ndates_job=1 # number of DA cycles to run in one job submission
 # resolution of control and ensmemble.
 export RES=192 
 export RES_CTL=384
+export OCNRES=mx050
+export ORES3=`echo $OCNRES | cut -c3-5`
+export OCNRES_CTL=mx025
+export ORES3_CTL=`echo $OCNRES_CTL | cut -c3-5`
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
@@ -24,7 +28,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybgain_iau"
+export exptname="C${RES}_hybgain_P7"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='true'
 
@@ -78,18 +82,18 @@ if [ "$machine" == 'hera' ]; then
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    export obs_datapath=/scratch1/NCEPDEV/global/glopara/dump
+   export obs_datapath=/scratch2/BMC/gsienkf/Henry.Winterbottom/work/UFSRNR_BDP_TO_LOCAL
    module purge
-   module load intel/18.0.5.274
-   module load impi/2018.0.4 
-   #module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
-   #module load netcdf_parallel/4.7.4
-   #module load hdf5_parallel/1.10.6.release
-   module use -a /scratch1/NCEPDEV/global/gwv/lp/lib/modulefiles
-   module load netcdfp/4.7.4
-   #module load esmflocal/8.0.1.08bs
-   module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
-   module load hdf5_parallel/1.10.6
-   #module load netcdf_parallel/4.7.4
+   module use /scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack
+   module load hpc/1.1.0
+   module load hpc-intel/18.0.5.274
+   module load hpc-impi/2018.0.4
+   module load hdf5/1.10.6
+   module load netcdf/4.7.4
+   module load esmf/8_1_1
+   module load fms/2020.04.03
+   module load wgrib
+   export WGRIB=`which wgrib`
 elif [ "$machine" == 'orion' ]; then
    export basedir=/work/noaa/gsienkf/${USER}
    export datadir=$basedir
@@ -164,28 +168,12 @@ if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
 
 export LEVS=127  
-if [ $LEVS -eq 64 ]; then
-  export nsig_ext=12
-  export gpstop=50
-  export GRIDOPTS="nlayers(63)=3,nlayers(64)=6,"
-  if [ $DONST == "YES" ]; then
-     export SUITE="FV3_GFS_v15p2"
-  else
-     export SUITE="FV3_GFS_v15p2_no_nsst"
-  fi
-elif [ $LEVS -eq 127 ]; then
-  export nsig_ext=56
-  export gpstop=55
-  export GRIDOPTS="nlayers(63)=1,nlayers(64)=1,"
-  if [ $DONST == "YES" ]; then
-     export SUITE="FV3_GFS_v16beta"
-  else
-     export SUITE="FV3_GFS_v16beta_no_nsst"
-  fi
-else
-  echo "LEVS must be 64 or 127"
-  exit 1
-fi
+export nsig_ext=56
+export gpstop=55
+export GRIDOPTS="nlayers(63)=1,nlayers(64)=1,"
+export SUITE="FV3_GFS_v16_coupled_nsstNoahmpUGWPv1"
+export NSTFNAME="2,0,0,0"
+export FRAC_GRID=T
 
 # radiance thinning parameters for GSI
 export dmesh1=145
@@ -285,7 +273,9 @@ export ANALINC=6
 
 export FHMIN=3
 export FHMAX=9
-export FHOUT=1
+export FHOUT=3
+export RESTART_FREQ=3
+export FHCYC=6 # use gcycle in model instead of global_cycle
 FHMAXP1=`expr $FHMAX + 1`
 export FHMAX_LONGER=`expr $FHMAX + $ANALINC`
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
@@ -379,8 +369,8 @@ export incdate="${enkfscripts}/incdate.sh"
 if [ "$machine" == 'hera' ]; then
    export python=/contrib/anaconda/2.3.0/bin/python
    export fv3gfspath=/scratch1/NCEPDEV/global/glopara
-   export FIXFV3=${fv3gfspath}/fix_nco_gfsv16/fix_fv3_gmted2010
-   export FIXGLOBAL=${fv3gfspath}/fix_nco_gfsv16/fix_am
+   #export FIXDIR=/scratch2/NCEPDEV/climate/role.ufscpara/Prototype7.0/global-workflow/fix
+   export FIXDIR=/scratch2/BMC/gsienkf/whitaker/forhenry/P7fix
    export gsipath=${basedir}/gsi/GSI-github-jswhit-master
    export fixgsi=${gsipath}/fix
    export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0

@@ -17,6 +17,8 @@ echo "mpitaskspernode = $mpitaskspernode"
 
 export RES=$RES_CTL
 echo "RES = $RES"
+export OCNRES=$OCNRES_CTL
+export ORES3=$ORES3_CTL
 export LONB=$LONB_CTL
 echo "LONB = ${LONB_CTL}"
 export LATB=$LATB_CTL
