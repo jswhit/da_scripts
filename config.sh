@@ -91,8 +91,9 @@ if [ "$machine" == 'hera' ]; then
    module load netcdf/4.7.4
    module load esmf/8_1_1
    module load fms/2020.04.03
-   module use /work/noaa/noaatest/gwv/l530/lib/modulefiles
-   module load grib_util-intel-sandybridge # sets WGRIB
+   module load wgrib
+   export WGRIB=`which wgrib`
+   module list
 elif [ "$machine" == 'orion' ]; then
    export basedir=/work/noaa/gsienkf/${USER}
    export datadir=$basedir
@@ -111,9 +112,7 @@ elif [ "$machine" == 'orion' ]; then
    module load pio/2.5.2
    module load esmf/8_1_1
    module load fms/2020.04.03
-   module load wgrib
-   export WGRIB=`which wgrib`
-   which wgrib
+   export WGRIB=/apps/contrib/NCEP/libs/intel-2018.4/grib_util/develop/bin/wgrib
    export PYTHONPATH=/home/jwhitake/.local/lib/python3.7/site-packages
    export HDF5_DISABLE_VERSION_CHECK=1
    module list
