@@ -91,35 +91,29 @@ if [ "$machine" == 'hera' ]; then
    module load netcdf/4.7.4
    module load esmf/8_1_1
    module load fms/2020.04.03
-   module load wgrib
-   export WGRIB=`which wgrib`
+   module use /work/noaa/noaatest/gwv/l530/lib/modulefiles
+   module load grib_util-intel-sandybridge # sets WGRIB
 elif [ "$machine" == 'orion' ]; then
    export basedir=/work/noaa/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   export obs_datapath=/work/noaa/sfc-perts/gbates/hrlyda_dumps/6hrly
+   export obs_datapath=/work/noaa/rstprod/dump
    ulimit -s unlimited
    source $MODULESHOME/init/sh
-
    module purge
-   #module load intel/2018.4
-   #module load impi/2018.4
-   #module load mkl/2018.4
-   #export NCEPLIBS=/apps/contrib/NCEPLIBS/lib
-   #module use -a $NCEPLIBS/modulefiles
-   #module unload netcdf 
-   #module unload hdf5
-   #module load netcdfp/4.7.4
-
-
    module use /apps/contrib/NCEP/libs/hpc-stack/modulefiles/stack
    module load hpc/1.1.0
    module load hpc-intel/2018.4
-   module unload mkl/2020.2
-   module load mkl/2018.4
    module load hpc-impi/2018.4
-
    module load python/3.7.5
+   module load hdf5/1.10.6
+   module load netcdf/4.7.4
+   module load pio/2.5.2
+   module load esmf/8_1_1
+   module load fms/2020.04.03
+   module load wgrib
+   export WGRIB=`which wgrib`
+   which wgrib
    export PYTHONPATH=/home/jwhitake/.local/lib/python3.7/site-packages
    export HDF5_DISABLE_VERSION_CHECK=1
    module list
@@ -371,8 +365,7 @@ if [ "$machine" == 'hera' ]; then
 elif [ "$machine" == 'orion' ]; then
    export python=`which python`
    export fv3gfspath=/work/noaa/global/glopara
-   export FIXFV3=$fv3gfspath/fix_nco_gfsv16/fix_fv3_gmted2010
-   export FIXGLOBAL=$fv3gfspath/fix_nco_gfsv16/fix_am
+   export FIXDIR=/work/noaa/gsienkf/whitaker/P7fix
    export gsipath=${basedir}/GSI-enkf64bit
    export fixgsi=${gsipath}/fix
    #export fixcrtm=${basedir}/fix/crtm/v2.2.6/fix
