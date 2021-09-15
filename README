@@ -21,3 +21,4 @@ date you want the experiment to start and end.
 
 Requires gsi/enkf and utils from https://github.com/jswhit/GSI (branch feature/enkf-64bit)
 Uses ufs-weather-model tag release/P7c (with patch to fix iau_offset/restart_interval bug).
+Model executable (fv3-nonhydro.ext) NOT included in repo (too big).
