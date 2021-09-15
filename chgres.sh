@@ -1,5 +1,5 @@
 export LEVSp1=`expr $LEVS \+ 1`
-SIGLEVEL=${SIGLEVEL:-${FIXDIR/fix_am/global_hyblev.l${LEVSp1}.txt}
+SIGLEVEL=${SIGLEVEL:-${FIXDIR}/fix_am/global_hyblev.l${LEVSp1}.txt}
 export CHGRESEXEC=${CHGRESEXEC:-${execdir}/enkf_chgres_recenter_nc.x}
 
 DATA=$datapath2/chgrestmp$$
