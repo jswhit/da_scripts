@@ -1,3 +1,4 @@
+if [ $cleanup_ensmean == 'true' ] || ([ $cleanup_ensmean == 'false' ]  && [ ! -s $3 ]); then
 export LEVSp1=`expr $LEVS \+ 1`
 SIGLEVEL=${SIGLEVEL:-${FIXDIR}/fix_am/global_hyblev.l${LEVSp1}.txt}
 export CHGRESEXEC=${CHGRESEXEC:-${execdir}/enkf_chgres_recenter_nc.x}
@@ -49,4 +50,5 @@ fi
 
 popd
 /bin/rm -rf $DATA
+fi
 exit 0
