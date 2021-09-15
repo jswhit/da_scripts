@@ -112,7 +112,8 @@ elif [ "$machine" == 'orion' ]; then
    module load pio/2.5.2
    module load esmf/8_1_1
    module load fms/2020.04.03
-   export WGRIB=/apps/contrib/NCEP/libs/intel-2018.4/grib_util/develop/bin/wgrib
+   module load wgrib/1.8.0b
+   export WGRIB=`which wgrib`
    export PYTHONPATH=/home/jwhitake/.local/lib/python3.7/site-packages
    export HDF5_DISABLE_VERSION_CHECK=1
    module list
@@ -415,7 +416,7 @@ export NLAT=$((${LATA}+2))
 #export BERROR=${basedir}/staticB/global_berror_enkf.l${LEVS}y${NLAT}.f77
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_janjulysmooth0p5
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_annmeansmooth0p5
-export REALTIME=YES # if NO, use historical files set in main.sh
+export REALTIME=NO # if NO, use historical files set in main.sh
 
 cd $enkfscripts
 echo "run main driver script"
