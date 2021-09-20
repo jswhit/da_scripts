@@ -73,8 +73,8 @@ export controlanal="false" # hybrid-cov high-res control analysis as in ops
 #export cleanup_fg='false'
 #export resubmit='false'
 #export do_cleanup='false'
-export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
-export save_hpss="false"
+#export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
+#export save_hpss="false"
 
 source $MODULESHOME/init/sh
 if [ "$machine" == 'hera' ]; then
@@ -228,6 +228,7 @@ if [ $RES_CTL -eq 768 ]; then
    export dt_atmos_ctl=150    
 elif [ $RES_CTL -eq 384 ]; then
    export dt_atmos_ctl=225
+   #export dt_atmos_ctl=180
    export cdmbgwd_ctl="1.1,0.72,1.0,1.0"
    export JCAP_CTL=766
    export LONB_CTL=1536
