@@ -52,10 +52,10 @@
   n_sponge = 42,
   nudge_qv = .true.,
   nudge_dz = .false.,
-  tau = 10.0
-  rf_cutoff = 7.5e3
+  tau = 5.0
+  rf_cutoff = 1.e3
   d2_bg_k1 = 0.20
-  d2_bg_k2 = 0.04
+  d2_bg_k2 = 0.0
   d2_bg = 0.
   kord_tm = -9,
   kord_mt = 9,
