@@ -28,13 +28,10 @@ else
    nmem=0
 fi
 charnanal2=`printf %02i $nmem`
-export ISEED_CA=$analdate
-export ISEED_SPPT=$((analdate*1000 + nmem*10 + 0 + niter))
-export ISEED_SKEB=$((analdate*1000 + nmem*10 + 1 + niter))
-export ISEED_SHUM=$((analdate*1000 + nmem*10 + 2 + niter))
-#export ISEED_SPPT=$((analdate*1000 + nmem*10 + 0))
-#export ISEED_SKEB=$((analdate*1000 + nmem*10 + 1))
-#export ISEED_SHUM=$((analdate*1000 + nmem*10 + 2))
+export ISEED_CA=$((analdate+nmem))
+export ISEED_SPPT=$((analdate*1000 + nmem*10))
+export ISEED_SKEB=$((analdate*1000 + nmem*10 + 1))
+export ISEED_SHUM=$((analdate*1000 + nmem*10 + 2))
 export npx=`expr $RES + 1`
 export LEVP=`expr $LEVS \+ 1`
 # yr,mon,day,hr at middle of assim window (analysis time)
@@ -227,26 +224,12 @@ else
    externalic=F
    mountain=T
    # warm start from restart file with lat/lon increments ingested by the model
-   if [ $niter == 1 ] ; then
-     if [ -s stoch_ini ]; then
-       echo "stoch_ini available, setting stochini=T"
-       stochini=T # restart random patterns from existing file
-     else
-       echo "stoch_ini not available, setting stochini=F"
-       stochini=F
-     fi
-   elif [ $niter == 2 ]; then
-      echo "WARNING: iteration ${niter}, setting stochini=F for ${charnanal}" > ${current_logdir}/stochini_fg_ens.log
-      stochini=F
+   if [ -s INPUT/atm_stoch.res.nc ]; then
+      echo "stoch restart available, setting stochini=T"
+      stochini=T # restart random patterns from existing file
    else
-      # last try, turn stochastic physics off
-      echo "WARNING: iteration ${niter}, seting SPPT=0 for ${charnanal}" > ${current_logdir}/stochini_fg_ens.log
-      SPPT=0
-      SKEB=0
-      SHUM=0
-      # set to large value so no random patterns will be output
-      # and random pattern will be reinitialized
-      FHSTOCH=240
+      echo "stoch restart not available, setting stochini=F"
+      stochini=F
    fi
    
    iaudelthrs=${iau_delthrs}
@@ -316,9 +299,7 @@ if [ "${iau_delthrs}" != "-1" ]; then
    else
       FHMAX_FCST=`expr $FHMAX + $ANALINC`
    fi
-   FHSTOCH=`expr $RESTART_FREQ + $ANALINC \/ 2`
    if [ ${cold_start} = "true" ]; then
-      FHSTOCH=${FHSTOCH:-$ANALINC}
       if [ $longer_fcst = "YES" ]; then
          FHMAX_FCST=$FHMAX_LONGER
       else
@@ -326,7 +307,6 @@ if [ "${iau_delthrs}" != "-1" ]; then
       fi
    fi
 else
-   FHSTOCH=$RESTART_FREQ
    if [ $longer_fcst = "YES" ]; then
       FHMAX_FCST=$FHMAX_LONGER
    else
@@ -605,6 +585,22 @@ if [ $NSTFNAME == "2,0,0,0" ] && [ $cold_start == "true" ]; then
    NSTFNAME="2,1,0,0"
 fi
 sed -i -e "s/NSTFNAME/${NSTFNAME}/g" input.nml
+
+sed -i -e "s/DO_sppt/${DO_SPPT}/g" input.nml
+sed -i -e "s/DO_shum/${DO_SHUM}/g" input.nml
+sed -i -e "s/DO_skeb/${DO_SKEB}/g" input.nml
+
+sed -i -e "s/LONB/${LONB}/g" input.nml
+sed -i -e "s/LATB/${LATB}/g" input.nml
+sed -i -e "s/JCAP/${JCAP}/g" input.nml
+sed -i -e "s/SPPT/${SPPT}/g" input.nml
+sed -i -e "s/SHUM/${SHUM}/g" input.nml
+sed -i -e "s/SKEB/${SKEB}/g" input.nml
+sed -i -e "s/STOCHINI/${stochini}/g" input.nml
+sed -i -e "s/ISEED_sppt/${ISEED_SPPT}/g" input.nml
+sed -i -e "s/ISEED_shum/${ISEED_SHUM}/g" input.nml
+sed -i -e "s/ISEED_skeb/${ISEED_SKEB}/g" input.nml
+
 cp input.nml input.nml.tmp
 cat input.nml.tmp $NAMSFC > input.nml
 cat input.nml
@@ -690,15 +686,6 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
       fi
    done
    cd ..
-fi
-
-# if random pattern restart file exists for end of IAU window, copy it.
-ls -l stoch_out*
-charfh="F"`printf %06i $FHSTOCH`
-if [ -s stoch_out.${charfh} ]; then
-  mkdir -p ${DATOUT}/${charnanal}
-  echo "copying stoch_out.${charfh} ${DATOUT}/${charnanal}/stoch_ini"
-  /bin/mv -f "stoch_out.${charfh}" ${DATOUT}/${charnanal}/stoch_ini
 fi
 
 ls -l ${DATOUT}

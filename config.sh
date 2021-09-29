@@ -165,8 +165,6 @@ export dmesh1=145
 export dmesh2=145
 export dmesh3=100
 
-#export use_ipd="YES" # use IPD instead of CCPP
-
 # stochastic physics parameters.
 export DO_SPPT=T
 export SPPT=0.5
@@ -228,7 +226,6 @@ if [ $RES_CTL -eq 768 ]; then
    export dt_atmos_ctl=150    
 elif [ $RES_CTL -eq 384 ]; then
    export dt_atmos_ctl=225
-   #export dt_atmos_ctl=180
    export cdmbgwd_ctl="1.1,0.72,1.0,1.0"
    export JCAP_CTL=766
    export LONB_CTL=1536
@@ -343,6 +340,7 @@ fi
 #export biascorrdir=${datadir}/biascor
 
 export nanals=80                                                    
+# if nanals==0, then 3dvar is assumed.
 # if nanals2>0, extend nanals2 members out to FHMAX + ANALINC (one extra assim window)
 export nanals2=-1 # longer extension. Set to -1 to disable 
 #export nanals2=$NODES
@@ -350,6 +348,11 @@ export nitermax=1 # number of retries
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
+if [ $nanals -eq 0 ]; then
+   export threedvar="YES"
+else
+   export threedvar="NO"
+fi
 
 if [ "$machine" == 'hera' ]; then
    export python=/contrib/anaconda/2.3.0/bin/python
@@ -421,7 +424,13 @@ export REALTIME=NO # if NO, use historical files set in main.sh
 
 cd $enkfscripts
 echo "run main driver script"
-if [ $controlanal == "true" ]; then
+if [ $threedvar == "YES" ]; then
+   export beta_s0=1.000 # 3dvar
+   export beta_e0=0.0
+   export readin_beta=.false.
+   export readin_localization=.false.
+   sh ./main_3dvar.sh
+elif [ $controlanal == "true" ]; then
    # run as in NCEP ops, with high-res control forecast updated by GSI hyb 4denvar,
    # and enkf analysis recentered around upscaled control analysis.
    # use static B weights and localization scales for GSI from files.

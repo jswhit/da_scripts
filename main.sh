@@ -264,7 +264,7 @@ else
    export cold_start_bias="false"
 fi
 
-# use ensmean mean background for 3dvar analysis/observer calculatino
+# use ensmean mean background for 3dvar analysis/observer calculation
 export charnanal="varanal"
 export charnanal2='ensmean'
 export lobsdiag_forenkf='.true.'
