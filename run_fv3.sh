@@ -8,6 +8,10 @@ if [ $VERBOSE = "YES" ]; then
  set -x
 fi
 
+if [ $cold_start == "true" ]; then
+  FHCYC=0
+fi
+
 if [ $FHCYC -gt 0 ]; then
   skip_global_cycle=1
 fi
