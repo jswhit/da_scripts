@@ -148,6 +148,7 @@ else
    ln -fs $FIXDIR/fix_fv3_gmted2010/C${RES}/C${RES}_mosaic.nc  C${RES}_mosaic.nc
    ln -fs $FIXDIR/fix_fv3_gmted2010/C${RES}/C${RES}_mosaic.nc  grid_spec.nc
 fi
+ln -fs $FIXDIR/fix_mom6/${ORES3}/ocean_mosaic.nc ocean_mosaic.nc
 cd ..
 # new ozone and h2o physics for stratosphere
 ln -fs $FIXDIR/fix_am/ozprdlos_2015_new_sbuvO3_tclm15_nuchem.f77 global_o3prdlos.f77
@@ -506,6 +507,9 @@ if [ $cold_start == "true" ] && [ $analdate -gt 2021032400 ]; then
    output_1st_tstep_rst=".true."
 else
    restart_interval="$RESTART_FREQ -1"
+   #restart_interval="0 $RESTART_FREQ"
+   #FHMAXP1=`expr $FHMAX_FCST + 1`
+   #restart_interval=`python -c "from __future__ import print_function; print(list(range(0,${FHMAXP1},${RESTART_INTERVAL})))" | cut -f2 -d"[" | cut -f1 -d"]"`
    output_1st_tstep_rst=".false."
 fi
 

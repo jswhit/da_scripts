@@ -89,8 +89,12 @@ if [ "$machine" == 'hera' ]; then
    module load hpc-impi/2018.0.4
    module load hdf5/1.10.6
    module load netcdf/4.7.4
+   # for release/P7c
    module load esmf/8_1_1
    module load fms/2020.04.03
+   # for develop (20210930)
+   #module load esmf/8_2_0_beta_snapshot_14
+   #module load fms/2021.03-avx
    module load wgrib
    export WGRIB=`which wgrib`
    module list
@@ -157,6 +161,7 @@ export nsig_ext=56
 export gpstop=55
 export GRIDOPTS="nlayers(63)=1,nlayers(64)=1,"
 export SUITE="FV3_GFS_v16_coupled_nsstNoahmpUGWPv1"
+#export SUITE="FV3_GFS_v16_nsstNoahmpUGWPv1"
 export NSTFNAME="2,0,0,0" # set to 2,1,0,0 if cold_start=.true.
 export FRAC_GRID=.true.
 
@@ -361,6 +366,7 @@ if [ "$machine" == 'hera' ]; then
    export python=/contrib/anaconda/2.3.0/bin/python
    export fv3gfspath=/scratch1/NCEPDEV/global/glopara
    #export FIXDIR=/scratch2/NCEPDEV/climate/role.ufscpara/Prototype7.0/global-workflow/fix
+   #export FIXDIR=/scratch1/NCEPDEV/nems/emc.nemspara/RT/NEMSfv3gfs/input-data-20210930
    export FIXDIR=/scratch2/BMC/gsienkf/whitaker/forhenry/P7fix
    export gsipath=${basedir}/gsi/GSI-github-jswhit-master
    export fixgsi=${gsipath}/fix
