@@ -127,7 +127,7 @@ export logdir="${datadir}/logs/${exptname}"
 export NOSAT="NO" # if yes, no radiances assimilated
 export NOCONV="NO"
 export NOTLNMC="NO" # no TLNMC in GSI in GSI EnVar
-export NOOUTERLOOP="NO" # no outer loop in GSI EnVar
+export NOOUTERLOOP="YES" # no outer loop in GSI EnVar
 # model NSST parameters contained within nstf_name in FV3 namelist
 # (comment out to get default - no NSST)
 # nstf_name(1) : NST_MODEL (NSST Model) : 0 = OFF, 1 = ON but uncoupled, 2 = ON and coupled
@@ -372,7 +372,8 @@ if [ "$machine" == 'hera' ]; then
    export fv3gfspath=/scratch1/NCEPDEV/global/glopara
    export FIXFV3=${fv3gfspath}/fix_nco_gfsv16/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix_nco_gfsv16/fix_am
-   export gsipath=/scratch1/NCEPDEV/global/glopara/git/global-workflow/gfsv16b/sorc/gsi.fd
+   export gsipath=${basedir}/gsi/GSI-github-jswhit-master
+   #export gsipath=/scratch1/NCEPDEV/global/glopara/git/global-workflow/gfsv16b/sorc/gsi.fd
    export fixgsi=${gsipath}/fix
    export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0
    export execdir=${enkfscripts}/exec_${machine}
@@ -434,7 +435,7 @@ export NLAT=$((${LATA}+2))
 #export BERROR=${basedir}/staticB/global_berror_enkf.l${LEVS}y${NLAT}.f77
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_janjulysmooth0p5
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_annmeansmooth0p5
-export REALTIME=YES # if NO, use historical files set in main.sh
+export REALTIME=NO # if NO, use historical files set in main.sh
 
 # parameters for hybrid gain
 if [ $hybgain == "true" ]; then
