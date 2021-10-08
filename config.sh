@@ -6,8 +6,8 @@ echo "running on $machine using $NODES nodes and $cores CORES"
 
 export ndates_job=1 # number of DA cycles to run in one job submission
 # resolution of control and ensmemble.
-export RES=192 
-export RES_CTL=384
+export RES=384 
+export RES_CTL=768
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
@@ -77,19 +77,18 @@ if [ "$machine" == 'hera' ]; then
    export obs_datapath2=/scratch1/NCEPDEV/global/glopara/dump # for sst,snow,ice grib
    export obs_datapath=$obs_datapath2
    module purge
-   module load intel/18.0.5.274
-   module load impi/2018.0.4 
-   #module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
-   #module load netcdf_parallel/4.7.4
-   #module load hdf5_parallel/1.10.6.release
-   module use -a /scratch1/NCEPDEV/global/gwv/lp/lib/modulefiles
-   module load netcdfp/4.7.4
-   #module load esmflocal/8.0.1.08bs
+   module use /scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/v1.0.0-beta1/modulefiles/stack
+   module load hpc/1.0.0-beta1
+   module load hpc-intel/18.0.5.274
+   module load hpc-impi/2018.0.4
    module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
-   module load hdf5_parallel/1.10.6
-   #module load netcdf_parallel/4.7.4
+   module load netcdf_parallel/4.7.4.release
+   module load esmf/8.1.0bs25_ParallelNetCDF.release
+   module load hdf5_parallel/1.10.6.release
+   module load wgrib
+   export WGRIB=`which wgrib`
 elif [ "$machine" == 'orion' ]; then
-   export basedir=/work/noaa/gsienkf/${USER}
+   export basedir=/work2/noaa/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    #export obs_datapath2=/work/noaa/sfc-perts/gbates/hrlyda_dumps/6hrly
@@ -108,9 +107,11 @@ elif [ "$machine" == 'orion' ]; then
    module load mkl/2018.4
    module load hpc-impi/2018.4
    module load python/3.7.5
+   module load hdf5/1.10.6-parallel
+   module load wgrib/1.8.0b
    export PYTHONPATH=/home/jwhitake/.local/lib/python3.7/site-packages
    export HDF5_DISABLE_VERSION_CHECK=1
-   module list
+   export WGRIB=`which wgrib`
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f2/dev/${USER}
    export datadir=/lustre/f2/scratch/${USER}
@@ -154,7 +155,7 @@ export NST_GSI=0
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
 
-export LEVS=127  
+export LEVS=64   
 if [ $LEVS -eq 64 ]; then
   export nsig_ext=12
   export gpstop=50
@@ -243,7 +244,7 @@ if [ $RES_CTL -eq 768 ]; then
    export JCAP_CTL=1534
    export LONB_CTL=3072
    export LATB_CTL=1536
-   export dt_atmos_ctl=150    
+   export dt_atmos_ctl=120    
 elif [ $RES_CTL -eq 384 ]; then
    export dt_atmos_ctl=225
    export cdmbgwd_ctl="1.1,0.72,1.0,1.0"
@@ -385,9 +386,8 @@ elif [ "$machine" == 'orion' ]; then
    export fv3gfspath=/work/noaa/global/glopara
    export FIXFV3=$fv3gfspath/fix_nco_gfsv16/fix_fv3_gmted2010
    export FIXGLOBAL=$fv3gfspath/fix_nco_gfsv16/fix_am
-   export gsipath=${basedir}/GSI-enkf64bit
+   export gsipath=/work/noaa/gsienkf/whitaker/GSI-enkf64bit
    export fixgsi=${gsipath}/fix
-   #export fixcrtm=${basedir}/fix/crtm/v2.2.6/fix
    export fixcrtm=$fv3gfspath/crtm/crtm_v2.3.0
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
