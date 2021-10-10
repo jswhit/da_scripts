@@ -35,7 +35,7 @@ elif [ $NODES -eq 40 ]; then
   #export write_tasks_ctl=8
   #export layout_ctl="8, 6"
 elif [ $NODES -eq 80 ]; then
-  # 80 nodes, 8 threads
+  # 80 nodes, 4 threads
   export control_threads=8 
   export control_proc=3200 
   export write_groups_ctl=4
