@@ -6,8 +6,8 @@ echo "running on $machine using $NODES nodes and $cores CORES"
 
 export ndates_job=1 # number of DA cycles to run in one job submission
 # resolution of control and ensmemble.
-export RES=384 
-export RES_CTL=768
+export RES=192
+export RES_CTL=384
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
@@ -155,7 +155,7 @@ export NST_GSI=0
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
 
-export LEVS=64   
+export LEVS=127  
 if [ $LEVS -eq 64 ]; then
   export nsig_ext=12
   export gpstop=50
@@ -170,9 +170,9 @@ elif [ $LEVS -eq 127 ]; then
   export gpstop=55
   export GRIDOPTS="nlayers(63)=1,nlayers(64)=1,"
   if [ $DONST == "YES" ]; then
-     export SUITE="FV3_GFS_v16beta"
+     export SUITE="FV3_GFS_v16"
   else
-     export SUITE="FV3_GFS_v16beta_no_nsst"
+     export SUITE="FV3_GFS_v16_no_nsst"
   fi
 else
   echo "LEVS must be 64 or 127"
@@ -326,6 +326,7 @@ export nobsl_max=10000
 export corrlengthnh=1250
 export corrlengthtr=1250
 export corrlengthsh=1250
+export mincorrlength_fact=1.0
 # neg value means loc dist is distance to find nobsl_max obs,
 # bounded by abs(corrlength) and abs(corrlength)/10
 #export corrlengthnh=-2500
@@ -355,7 +356,11 @@ export readin_beta=.false.
 export readin_localization=.false.
 export s_ens_h=343.     # 1250 km horiz localization in GSI
 #export s_ens_v=-0.58    # 1.5 scale heights in GSI
-export s_ens_v=5.4     # 14 levels
+if [ $LEVS -eq 64 ]; then
+  export s_ens_v=5.4 # 14 levels
+elif [ $LEVS -eq 127 ]; then
+  export s_ens_v=7.7 # 20 levels
+fi
 # use pre-generated bias files.
 #export biascorrdir=${datadir}/biascor
 
