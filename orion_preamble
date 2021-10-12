@@ -5,9 +5,9 @@
 #SBATCH -N 80  
 #SBATCH --ntasks-per-node=40
 #SBATCH -p orion
-#SBATCH -J C384_hybcov_hourly
-#SBATCH -e C384_hybcov_hourly.err
-#SBATCH -o C384_hybcov_hourly.out
+#SBATCH -J C384_hybgain_hourly
+#SBATCH -e C384_hybgain_hourly.err
+#SBATCH -o C384_hybgain_hourly.out
 
 export NODES=$SLURM_NNODES
 export corespernode=$SLURM_CPUS_ON_NODE

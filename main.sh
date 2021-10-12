@@ -22,18 +22,9 @@ export mon=`echo $analdate | cut -c5-6`
 export day=`echo $analdate | cut -c7-8`
 export hr=`echo $analdate | cut -c9-10`
 # previous analysis time.
-if [ $ANALINC -eq 1 ]; then
-export FHOFFSET=1
-else
-export FHOFFSET=`expr $ANALINC \/ 2`
-fi
 export analdatem1=`${incdate} $analdate -$ANALINC`
 # next analysis time.
 export analdatep1=`${incdate} $analdate $ANALINC`
-# beginning of current assimilation window
-export analdatem3=`${incdate} $analdate -$FHOFFSET`
-# beginning of next assimilation window
-export analdatep1m3=`${incdate} $analdate $FHOFFSET`
 export hrp1=`echo $analdatep1 | cut -c9-10`
 export hrm1=`echo $analdatem1 | cut -c9-10`
 # next analysis time.

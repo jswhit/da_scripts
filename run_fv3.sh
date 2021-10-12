@@ -26,42 +26,18 @@ charnanal2=`printf %02i $nmem`
 export ISEED_SPPT=$((analdate*1000 + nmem*10 + 0 + niter))
 export ISEED_SKEB=$((analdate*1000 + nmem*10 + 1 + niter))
 export ISEED_SHUM=$((analdate*1000 + nmem*10 + 2 + niter))
-#export ISEED_SPPT=$((analdate*1000 + nmem*10 + 0))
-#export ISEED_SKEB=$((analdate*1000 + nmem*10 + 1))
-#export ISEED_SHUM=$((analdate*1000 + nmem*10 + 2))
 export npx=`expr $RES + 1`
 export LEVP=`expr $LEVS \+ 1`
 # yr,mon,day,hr at middle of assim window (nominal analysis time)
-fhdiff=`expr $nhr_anal - $ANALINC`
-# actual analysis time (may be end of window)
-analdatex=`$incdate $analdate $fhdiff`
 export year=`echo $analdate |cut -c 1-4`
 export mon=`echo $analdate |cut -c 5-6`
 export day=`echo $analdate |cut -c 7-8`
 export hour=`echo $analdate |cut -c 9-10`
-if [ "$cold_start" == "true" ]; then
-export yeara=`echo $analdate |cut -c 1-4`
-export mona=`echo $analdate |cut -c 5-6`
-export daya=`echo $analdate |cut -c 7-8`
-export houra=`echo $analdate |cut -c 9-10`
-else
-export yeara=`echo $analdatex |cut -c 1-4`
-export mona=`echo $analdatex |cut -c 5-6`
-export daya=`echo $analdatex |cut -c 7-8`
-export houra=`echo $analdatex |cut -c 9-10`
-fi
-# previous nominal analysis time
-analdatem6=`$incdate $analdate -6`
-export yearprev=`echo $analdatem6 |cut -c 1-4`
-export monprev=`echo $analdatem6 |cut -c 5-6`
-export dayprev=`echo $analdatem6 |cut -c 7-8`
-export hourprev=`echo $analdatem6 |cut -c 9-10`
 # time for restart to initialize next background forecast
-analdatexp1=`$incdate $analdatex $ANALINC`
-export yrnext=`echo $analdatexp1 |cut -c 1-4`
-export monnext=`echo $analdatexp1 |cut -c 5-6`
-export daynext=`echo $analdatexp1 |cut -c 7-8`
-export hrnext=`echo $analdatexp1 |cut -c 9-10`
+export yrnext=`echo $analdatep1 |cut -c 1-4`
+export monnext=`echo $analdatep1 |cut -c 5-6`
+export daynext=`echo $analdatep1 |cut -c 7-8`
+export hrnext=`echo $analdatep1 |cut -c 9-10`
 
 # copy data, diag and field tables.
 cd ${datapath2}/${charnanal}
@@ -73,6 +49,7 @@ fi
 export DIAG_TABLE=${DIAG_TABLE:-$enkfscripts/diag_table}
 /bin/cp -f $DIAG_TABLE diag_table
 /bin/cp -f $enkfscripts/nems.configure .
+/bin/cp -f $enkfscripts/fd_nems.yaml .
 # insert correct starting time and output interval in diag_table template.
 sed -i -e "s/YYYY MM DD HH/${year} ${mon} ${day} ${hour}/g" diag_table
 sed -i -e "s/FHOUT/${FHOUT}/g" diag_table
@@ -167,26 +144,12 @@ else
    externalic=F
    mountain=T
    # warm start from restart file with lat/lon increments ingested by the model
-   if [ $niter == 1 ] ; then
-     if [ -s stoch_ini ]; then
-       echo "stoch_ini available, setting stochini=T"
-       stochini=T # restart random patterns from existing file
-     else
-       echo "stoch_ini not available, setting stochini=F"
-       stochini=F
-     fi
-   elif [ $niter == 2 ]; then
-      echo "WARNING: iteration ${niter}, setting stochini=F for ${charnanal}" > ${current_logdir}/stochini_fg_ens.log
-      stochini=F
+   if [ -s INPUT/atm_stoch.res.nc ]; then
+     echo "atm_stoch.res.nc available, setting stochini=T"
+     stochini=T # restart random patterns from existing file
    else
-      # last try, turn stochastic physics off
-      echo "WARNING: iteration ${niter}, seting SPPT=0 for ${charnanal}" > ${current_logdir}/stochini_fg_ens.log
-      SPPT=0
-      SKEB=0
-      SHUM=0
-      # set to large value so no random patterns will be output
-      # and random pattern will be reinitialized
-      FHSTOCH=240
+     echo "atm_stoch.res.nc not available, setting stochini=F"
+     stochini=F
    fi
    
    FHCYC=${FHCYC}
@@ -231,8 +194,8 @@ fi
 
 ls -l 
 
-FHRESTART=$FHOFFSET
-FHSTOCH=$FHOFFSET # half of window length (set in main.sh)3
+#FHRESTART="$ANALINC -1"
+FHRESTART=$ANALINC
 if [ $nanals2 -gt 0 ] && [ $nmem -le $nanals2 ]; then
    FHMAX_FCST=$FHMAX_LONGER
    longer_fcst="YES"
@@ -313,7 +276,7 @@ nhours_fcst:             ${FHMAX_FCST}
 RUN_CONTINUE:            F
 ENS_SPS:                 F
 dt_atmos:                ${dt_atmos} 
-output_1st_tstep_rst:    .true.
+output_1st_tstep_rst:    .false.
 calendar:                'julian'
 cpl:                     F
 memuse_verbose:          F
@@ -335,8 +298,7 @@ jchunk2d:                ${LATB}
 ichunk3d:                0
 jchunk3d:                0
 kchunk3d:                0
-write_nemsioflip:        .true.
-write_fsyncflag:         .true.
+write_nsflip:            .true.
 iau_offset:              -1
 imo:                     ${LONB}
 jmo:                     ${LATB}
@@ -347,20 +309,9 @@ nsout:                   -1
 EOF
 cat model_configure
 
-# setup coupler.res (needed for restarts if current time != start time)
-echo "     2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)" > INPUT/coupler.res
-echo "  ${year}  ${mon}  ${day}  ${hour}     0     0        Model start time:   year, month, day, hour, minute, second" >> INPUT/coupler.res
-echo "  ${yeara}  ${mona}  ${daya}  ${houra}     0     0        Current model time: year, month, day, hour, minute, second" >> INPUT/coupler.res
-cat INPUT/coupler.res
-
 # copy template namelist file, replace variables.
 /bin/cp -f ${enkfscripts}/${SUITE}.nml input.nml
-if [ $use_ipd = "YES" ]; then
-    sed -i -e '/SUITE/d' input.nml
-    sed -i -e '/oz_phys/d' input.nml
-else
-    sed -i -e "s/SUITE/${SUITE}/g" input.nml
-fi
+sed -i -e "s/SUITE/${SUITE}/g" input.nml
 sed -i -e "s/LAYOUT/${layout}/g" input.nml
 sed -i -e "s/NSTF_NAME/${nstf_name}/g" input.nml
 sed -i -e "s/NPX/${npx}/g" input.nml
@@ -377,7 +328,6 @@ sed -i -e "s/DO_shum/${DO_SHUM}/g" input.nml
 sed -i -e "s/SKEB/${SKEB}/g" input.nml
 sed -i -e "s/DO_skeb/${DO_SKEB}/g" input.nml
 sed -i -e "s/STOCHINI/${stochini}/g" input.nml
-sed -i -e "s/FHSTOCH/${FHSTOCH}/g" input.nml
 sed -i -e "s/FHOUT/${FHOUT}/g" input.nml
 sed -i -e "s/CDMBGWD/${cdmbgwd}/g" input.nml
 sed -i -e "s/ISEED_sppt/${ISEED_SPPT}/g" input.nml
@@ -466,10 +416,10 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
    cd RESTART
    ls -l
    if [ $nhr_anal -eq $FHMAX_FCST ] || [ $cold_start == "true" ]; then
-      /bin/mv -f fv_core.res.nc ${datapathp1}/${charnanal}/INPUT
+      /bin/mv -f fv_core.res.nc atm_stoch.res.nc ${datapathp1}/${charnanal}/INPUT
       tiles="tile1 tile2 tile3 tile4 tile5 tile6"
       for tile in $tiles; do
-         files="fv_core.res.${tile}.nc fv_tracer.res.${tile}.nc fv_srf_wnd.res.${tile}.nc sfc_data.${tile}.nc phy_data.${tile}.nc"
+         files="ca_data.res.${tile}.nc fv_core.res.${tile}.nc fv_tracer.res.${tile}.nc fv_srf_wnd.res.${tile}.nc sfc_data.${tile}.nc phy_data.${tile}.nc"
          for file in $files; do
              /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT
          done
@@ -485,16 +435,10 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
          fi
       done
    fi
+   if [ -s  ${datapathp1}/${charnanal}/INPUT/ca_data.tile1.nc ]; then
+      touch ${datapathp1}/${charnanal}/INPUT/ca_data.nc
+   fi
    cd ..
-fi
-
-# if random pattern restart file exists, copy it.
-ls -l stoch_out*
-charfh="F"`printf %06i $nhr_anal`
-if [ -s stoch_out.${charfh} ]; then
-  mkdir -p ${DATOUT}/${charnanal}
-  echo "copying stoch_out.${charfh} ${DATOUT}/${charnanal}/stoch_ini"
-  /bin/mv -f "stoch_out.${charfh}" ${DATOUT}/${charnanal}/stoch_ini
 fi
 
 ls -l ${DATOUT}
