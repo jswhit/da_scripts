@@ -282,7 +282,6 @@ export FHMAX_LONGER=6
 FHMAXP1=`expr $FHMAX + 1`
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
 export nhr_anal=$ANALINC # analysis increment computed at center of window
-#export nhr_anal=$FHMAX # analysis increment computed at end of window
 
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
