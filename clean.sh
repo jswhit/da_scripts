@@ -47,9 +47,11 @@ if [ $save_hpss_subset == "false" ] && [ $save_hpss_full == "false" ]; then
   /bin/rm -rf fgens fgens2
   /bin/rm -f diag*cris* diag*airs* diag*iasi*
   /bin/rm -rf ensmean
-  #if [ $hr != '00' ]; then
-  #    /bin/rm -rf control
-  #fi
+  # save restarts at end of assimlation window for comparison with forecasts
+  # with 6-h cycling system.
+  if [ $hr != '03' ] || [ $hr != '09' ] || [ $hr != '15'] || [ $hr != '21' ]   ; then
+      /bin/rm -rf control
+  fi
   # save backup of next analysis time once per day
   # so analysis can be restarted
   hr=`echo $analdatep1 | cut -c9-10`
