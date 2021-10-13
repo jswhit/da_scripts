@@ -11,7 +11,7 @@ export RES_CTL=384
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
-export hybgain="true" # hybrid gain approach, if false use hybrid covariance
+export hybgain="false" # hybrid gain approach, if false use hybrid covariance
 export alpha=200 # percentage of 3dvar increment (beta_2*1000) 
 export beta=1000 # percentage of enkf increment (*10)
 # if replay_controlfcst='true', weight given to ens mean vs control 
@@ -77,14 +77,15 @@ if [ "$machine" == 'hera' ]; then
    export obs_datapath2=/scratch1/NCEPDEV/global/glopara/dump # for sst,snow,ice grib
    export obs_datapath=$obs_datapath2
    module purge
-   module use /scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/v1.0.0-beta1/modulefiles/stack
-   module load hpc/1.0.0-beta1
+   module use /scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack
+   module load hpc/1.1.0
    module load hpc-intel/18.0.5.274
    module load hpc-impi/2018.0.4
-   module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
-   module load netcdf_parallel/4.7.4.release
-   module load esmf/8.1.0bs25_ParallelNetCDF.release
-   module load hdf5_parallel/1.10.6.release
+   module load hdf5/1.10.6
+   module load netcdf/4.7.4
+   module load pio/2.5.2
+   module load esmf/8_2_0_beta_snapshot_14
+   module load fms/2021.03
    module load wgrib
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'orion' ]; then
@@ -183,8 +184,6 @@ fi
 export dmesh1=125
 export dmesh2=125
 export dmesh3=100
-
-#export use_ipd="YES" # use IPD instead of CCPP
 
 # stochastic physics parameters.
 export DO_SPPT=T
