@@ -379,7 +379,7 @@ cat << EOF > fort.36
   idim=$CRES, jdim=$CRES, lsoil=$LSOIL,
   iy=$iy, im=$im, id=$id, ih=$ih, fh=$FHOUR,
   deltsfc=$DELTSFC,ialb=$IALB,use_ufo=$use_ufo,donst=$DONST,
-  isot=$ISOT,ivegsrc=$IVEGSRC,
+  do_sfccycle=.true.,isot=$ISOT,ivegsrc=$IVEGSRC,
   zsea1_mm=$zsea1,zsea2_mm=$zsea2,MAX_TASKS=$MAX_TASKS_CY
  /
 EOF
