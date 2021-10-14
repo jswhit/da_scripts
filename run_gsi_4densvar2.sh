@@ -78,6 +78,7 @@ echo "fdatei=$fdatei fhr=$fhr fdatev=$fdatev"
 gdate0=`echo $gdate | cut -c1-8`
 obs_datapath=${obs_datapath:-/scratch1/NCEPDEV/global/glopara/dump}
 datobs=$obs_datapath/${RUN}.${iy}${im}${id}/${ih}
+datobsx=$obs_datapath/${RUN}x.${iy}${im}${id}/${ih}
 
 # Set runtime and save directories
 tmpdir=${tmpdir:-$datges/gsitmp$$}
@@ -678,14 +679,14 @@ fi
 if [[ -s $datobs/${prefix_obs}.ahicsr.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.ahicsr.${suffix}      ./ahibufr
 fi
-if [[ -s $datobs/${prefix_obs}.gsrcsr.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.gsrcsr.${suffix}      ./abibufr
+if [[ -s $datobsx/${prefix_obs}.gsrcsr.${suffix} ]]; then
+$nln $datobsx/${prefix_obs}.gsrcsr.${suffix}      ./abibufr
 fi
-if [[ -s $datobs/${prefix_obs}.gm1cr.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.gm1cr.${suffix}      ./gmibufr
+if [[ -s $datobsx/${prefix_obs}.gmi1cr.${suffix} ]]; then
+$nln $datobsx/${prefix_obs}.gmi1cr.${suffix}      ./gmibufr
 fi
-if [[ -s $datobs/${prefix_obs}.cris.${suffix} ]]; then
-$nln $datobs/${prefix_obs}.cris.${suffix}      ./crisbufr
+if [[ -s $datobsx/${prefix_obs}.cris.${suffix} ]]; then
+$nln $datobsx/${prefix_obs}.cris.${suffix}      ./crisbufr
 fi
 if [[ -s $datobs/${prefix_obs}.escris.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.escris.${suffix}      ./crisbufrears
