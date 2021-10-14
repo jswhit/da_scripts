@@ -109,7 +109,10 @@ else
    cd ${analdate}
    /bin/rm -f diag*cris* diag*airs* diag*iasi*
    /bin/rm -rf ensmean
-   if [ $hr != '03' ] || [ $hr != '09' ] || [ $hr != '15'] || [ $hr != '21' ]   ; then
+   if [ $hr != '03' ] || [ $hr != '09' ] || [ $hr != '15'] || [ $hr != '21' ]; then
+       echo "analhr=$hr keep control dir"
+   else
+       echo "analhr=$hr remove control dir"
        /bin/rm -rf control
    fi
 fi
