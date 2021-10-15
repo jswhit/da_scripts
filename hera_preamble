@@ -3,9 +3,9 @@
 #SBATCH -t 02:30:00
 #SBATCH -A gsienkf
 #SBATCH -N 20    
-#SBATCH -J C192_hybgain_hourly
-#SBATCH -e C192_hybgain_hourly.err
-#SBATCH -o C192_hybgain_hourly.out
+#SBATCH -J C192_hybcov_hourly
+#SBATCH -e C192_hybcov_hourly.err
+#SBATCH -o C192_hybcov_hourly.out
 
 export NODES=$SLURM_NNODES
 export corespernode=$SLURM_CPUS_ON_NODE
@@ -16,8 +16,8 @@ if [ $NODES -eq 20 ]; then
   # 20 nodes, 2 threads
   export control_threads=2
   export control_proc=800
-  export write_groups_ctl=4 # write groups for control forecast.
-  export write_tasks_ctl=4
+  export write_groups_ctl=2 # write groups for control forecast.
+  export write_tasks_ctl=8
   export layout_ctl="8,8" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
 elif [ $NODES -eq 40 ]; then
   # 40 nodes, 4 threads
