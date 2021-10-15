@@ -49,7 +49,7 @@ if [ $save_hpss_subset == "false" ] && [ $save_hpss_full == "false" ]; then
   /bin/rm -rf ensmean
   # save restarts at end of assimlation window for comparison with forecasts
   # with 6-h cycling system.
-  if [ $hr != '03' ] || [ $hr != '09' ] || [ $hr != '15'] || [ $hr != '21' ]; then
+  if [ $hr == '03' ] || [ $hr == '09' ] || [ $hr == '15'] || [ $hr == '21' ]; then
       echo "analhr=$hr keep control dir"
   else
       echo "analhr=$hr remove control dir"
