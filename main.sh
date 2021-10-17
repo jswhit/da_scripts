@@ -87,8 +87,6 @@ elif [[  "$analdate" -ge 2020011600 ]]; then
     export OZINFO=$fixgsi/gfsv16_historical/global_ozinfo.txt.2020021900
 elif [[  "$analdate" -ge 2020011806 ]]; then
     export OZINFO=$fixgsi/gfsv16_historical/global_ozinfo.txt.2020011806
-elif [[ "$analdate" -ge "2020011806" ]]; then
-    export OZINFO=$fixgsi/fv3_historical/global_ozinfo.txt.2020011806
 elif [[ "$analdate" -ge "2020011600" ]]; then
     export OZINFO=$fixgsi/fv3_historical/global_ozinfo.txt.2020011600
 elif [[ "$analdate" -ge "2018110700" ]]; then

@@ -11,7 +11,6 @@
   blocksize = 32
   dycore_only = F
   ccpp_suite = "SUITE"
-  fdiag = FHOUT
 /
 
 &diag_manager_nml
@@ -19,7 +18,6 @@
 /
 
 &fms_io_nml
-  checksum_required = F,
   max_files_r = 100,
   max_files_w = 100,
 /
@@ -122,7 +120,6 @@
   fhcyc          = 0
   use_ufo        = T
   pre_rad        = F
-  ncld           = 5
   imp_physics    = 11
   pdfcld         = F
   fhswr          = 3600.
@@ -170,9 +167,9 @@
   do_sppt        = DO_sppt
   do_shum        = DO_shum
   iau_filter_increments = F
-  iaufhrs = IAU_FHRS
-  iau_delthrs = IAU_DELTHRS
-  iau_inc_files = IAU_INC_FILES
+  iaufhrs = 6
+  iau_delthrs = -1
+  iau_inc_files = 
 /
 
 &gfdl_cloud_microphysics_nml
@@ -271,7 +268,6 @@
   skebnorm=0,
   iseed_skeb=ISEED_skeb,
   use_zmtnblck=.true.,
-  fhstoch=FHSTOCH,
   stochini=STOCHINI,
   new_lscale=.true.
 /

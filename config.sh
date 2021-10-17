@@ -69,8 +69,8 @@ export controlanal="false" # hybrid-cov high-res control analysis as in ops
 #export cleanup_fg='false'
 #export resubmit='false'
 #export do_cleanup='false'
-export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
-export save_hpss="false"
+#export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
+#export save_hpss="false"
 
 source $MODULESHOME/init/sh
 if [ "$machine" == 'hera' ]; then
@@ -79,47 +79,36 @@ if [ "$machine" == 'hera' ]; then
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    export obs_datapath=/scratch1/NCEPDEV/global/glopara/dump
    module purge
-   module load intel/18.0.5.274
-   module load impi/2018.0.4 
-   #module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
-   #module load netcdf_parallel/4.7.4
-   #module load hdf5_parallel/1.10.6.release
-   module use -a /scratch1/NCEPDEV/global/gwv/lp/lib/modulefiles
-   module load netcdfp/4.7.4
-   #module load esmflocal/8.0.1.08bs
-   module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
-   module load hdf5_parallel/1.10.6
-   #module load netcdf_parallel/4.7.4
+   module use /scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack
+   module load hpc/1.1.0
+   module load hpc-intel/18.0.5.274
+   module load hpc-impi/2018.0.4
+   module load hdf5/1.10.6
+   module load netcdf/4.7.4
+   module load pio/2.5.2
+   module load esmf/8_2_0_beta_snapshot_14
+   module load fms/2021.03
+   module load wgrib
+   export WGRIB=`which wgrib`
 elif [ "$machine" == 'orion' ]; then
    export basedir=/work/noaa/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   export obs_datapath=/work/noaa/sfc-perts/gbates/hrlyda_dumps/6hrly
+   export obs_datapath=/work/noaa/rstprod/dump
    ulimit -s unlimited
    source $MODULESHOME/init/sh
-
-   module purge
-   #module load intel/2018.4
-   #module load impi/2018.4
-   #module load mkl/2018.4
-   #export NCEPLIBS=/apps/contrib/NCEPLIBS/lib
-   #module use -a $NCEPLIBS/modulefiles
-   #module unload netcdf 
-   #module unload hdf5
-   #module load netcdfp/4.7.4
-
-
    module use /apps/contrib/NCEP/libs/hpc-stack/modulefiles/stack
    module load hpc/1.1.0
    module load hpc-intel/2018.4
    module unload mkl/2020.2
    module load mkl/2018.4
    module load hpc-impi/2018.4
-
    module load python/3.7.5
+   module load hdf5/1.10.6-parallel
+   module load wgrib/1.8.0b
    export PYTHONPATH=/home/jwhitake/.local/lib/python3.7/site-packages
    export HDF5_DISABLE_VERSION_CHECK=1
-   module list
+   export WGRIB=`which wgrib`
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f2/dev/${USER}
    export datadir=/lustre/f2/scratch/${USER}
@@ -178,9 +167,9 @@ elif [ $LEVS -eq 127 ]; then
   export gpstop=55
   export GRIDOPTS="nlayers(63)=1,nlayers(64)=1,"
   if [ $DONST == "YES" ]; then
-     export SUITE="FV3_GFS_v16beta"
+     export SUITE="FV3_GFS_v16"
   else
-     export SUITE="FV3_GFS_v16beta_no_nsst"
+     export SUITE="FV3_GFS_v16_no_nsst"
   fi
 else
   echo "LEVS must be 64 or 127"
@@ -286,6 +275,7 @@ export ANALINC=6
 export FHMIN=3
 export FHMAX=9
 export FHOUT=1
+export RESTART_FREQ=3
 FHMAXP1=`expr $FHMAX + 1`
 export FHMAX_LONGER=`expr $FHMAX + $ANALINC`
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
@@ -323,7 +313,7 @@ export analpertwtnh_rtpp=0.0
 export analpertwtsh_rtpp=0.0
 export analpertwttr_rtpp=0.0
 export pseudo_rh=.true.
-export write_ensmean=.false. # write out ens mean analysis in EnKF
+export write_ensmean=.true. # write out ens mean analysis in EnKF
 if [[ $write_ensmean == ".true." ]]; then
    export ENKFVARS="write_ensmean=${write_ensmean},"
 fi
@@ -431,7 +421,7 @@ fi
 
 export ANAVINFO=${fixgsi}/global_anavinfo.l${LEVS}.txt
 export ANAVINFO_ENKF=${ANAVINFO}
-export HYBENSINFO=${fixgsi}/global_hybens_info.l${LEVS}.txt # only used if readin_beta or readin_localization=T
+export HYBENSINFO=${enkfscripts}/global_hybens_info.l${LEVS}.txt # only used if readin_beta or readin_localization=T
 # comment out next line to disable smoothing of ensemble perturbations
 # in stratosphere/mesosphere
 #export HYBENSMOOTHINFO=${fixgsi}/global_hybens_smoothinfo.l${LEVS}.txt
@@ -443,7 +433,7 @@ export NLAT=$((${LATA}+2))
 #export BERROR=${basedir}/staticB/global_berror_enkf.l${LEVS}y${NLAT}.f77
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_janjulysmooth0p5
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_annmeansmooth0p5
-export REALTIME=YES # if NO, use historical files set in main.sh
+export REALTIME=NO # if NO, use historical files set in main.sh
 
 cd $enkfscripts
 echo "run main driver script"
@@ -466,11 +456,11 @@ else
    if [ $hybgain == "false" ]; then
       # use static B weights and localization scales for GSI from files.
       # (alpha, beta ignored)
-      #export readin_localization=".true."
-      #export readin_beta=".true."
+      export readin_localization=".true."
+      export readin_beta=".true."
       # use constant values (alpha and beta parameters)
-      export readin_beta=.false.
-      export readin_localization=.false.
+      #export readin_beta=.false.
+      #export readin_localization=.false.
       # these only used for hybrid covariance (hyb 4denvar) in GSI
       export beta_s0=`python -c "from __future__ import print_function; print($alpha / 1000.)"` # weight given to static B in hyb cov
       # beta_e0 parameter (ensemble weight) in my GSI branch (not in GSI/develop)
