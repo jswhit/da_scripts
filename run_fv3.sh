@@ -3,7 +3,6 @@
 echo "starting at `date`"
 source $MODULESHOME/init/sh
 
-use_ipd=${use_ipd:-"NO"}
 module list
 
 export VERBOSE=${VERBOSE:-"NO"}
