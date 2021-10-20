@@ -47,7 +47,7 @@ while [ $fh -le $FHMAX ]; do
 done
 
 if [ $nanals2 -gt 0 ]; then
-fh=${FHMAX}
+fh=`expr ${FHMAX_LONGER} - ${ANALINC}`
 while [ $fh -le $FHMAX_LONGER ] && [ -s ${datapath2}/sfg2_${analdate}_${charfhr}_mem001 ]; do
 
   charfhr="fhr`printf %02i $fh`"

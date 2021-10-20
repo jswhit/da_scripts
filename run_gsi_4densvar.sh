@@ -154,7 +154,11 @@ fi
 if [[ "$HXONLY" != "YES" ]]; then
    if [[ $beta_s0 > 0.999 ]]; then # 3dvar or hybrid gain
       STRONGOPTS="tlnmc_option=1,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5"
-      SETUP="$SETUP,miter=1,niter(1)=150,niter(2)=0"
+      if [ $NOOUTERLOOP == "YES" ]; then
+         SETUP="$SETUP,miter=1,niter(1)=150,niter(2)=0"
+      else
+         SETUP="$SETUP,miter=2,niter(1)=100,niter(2)=100"
+      fi
    else # envar
       STRONGOPTS="tlnmc_option=3,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
       # balance constraint on 3dvar part of envar increment

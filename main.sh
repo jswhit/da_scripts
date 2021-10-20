@@ -191,6 +191,17 @@ export PREINP="${RUN}.t${hr}z."
 export PREINP1="${RUN}.t${hrp1}z."
 export PREINPm1="${RUN}.t${hrm1}z."
 
+# if nanals2>0, extend nanals2 members out to FHMAX_LONGER
+# but only at 00,12TC 
+if [ $nanals2 -gt 0 ]; then
+if [ $hr = "00" ] || [ $hr = "12" ]; then
+  echo "will run $nanals2 members out to hour $FHMAX_LONGER"
+else
+  export nanals2=-1
+  echo "no longer forecast extension"
+fi
+fi
+
 if [ $fg_only ==  'false' ]; then
 
 niter=1
@@ -407,14 +418,15 @@ fi
 # run gsi observer on ensemble mean forecast extension
 if [ $nanals2 -gt 0 ] && [ -s $datapath2/sfg2_${analdate}_fhr${FHMAX_LONGER}_ensmean ]; then
    # symlink ensmean files (fhr12_ensmean --> fhr06_ensmean2, etc)
-   fh=$FHMAX
+   fh=`expr $FHMAX_LONGER - $ANALINC`
+   nhr=3
    while [ $fh -le $FHMAX_LONGER ]; do
      fhr=`printf %02i $fh`
-     fh2=`expr $fh - $ANALINC`
-     fhr2=`printf %02i $fh2`
+     fhr2=`printf %02i $nhr`
      /bin/ln -fs ${datapath2}/sfg2_${analdate}_fhr${fhr}_ensmean ${datapath2}/sfg_${analdate}_fhr${fhr2}_ensmean2
      /bin/ln -fs ${datapath2}/bfg2_${analdate}_fhr${fhr}_ensmean ${datapath2}/bfg_${analdate}_fhr${fhr2}_ensmean2
      fh=$((fh+FHOUT))
+     nhr=$((nhr+FHOUT))
    done
    export charnanal='ensmean2' 
    export charnanal2='ensmean2' 

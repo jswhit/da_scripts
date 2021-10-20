@@ -495,8 +495,9 @@ while [ $fh -le $FHMAX ]; do
   fh=$[$fh+$FHOUT]
 done
 if [ $longer_fcst = "YES" ]; then
-    fh=$FHMAX
-    analdatep2=`$incdate $analdatep1 $ANALINC`
+    fh=`expr $FHMAX_LONGER - $ANALINC`
+    fhmax2=`expr $FHMAX_LONGER - $ANALINC \/ 2`
+    analdatep2=`$incdate $analdate $fhmax2`
     mkdir -p $datapath/$analdatep2
     while [ $fh -le $FHMAX_LONGER ]; do
       charfhr="fhr"`printf %02i $fh`
