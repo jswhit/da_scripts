@@ -11,7 +11,7 @@ export RES_CTL=384
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
-export hybgain="true" # hybrid gain approach, if false use hybrid covariance
+export hybgain="false" # hybrid gain approach, if false use hybrid covariance
 export alpha=200 # percentage of 3dvar increment (beta_2*1000) 
 export beta=1000 # percentage of enkf increment (*10)
 # if replay_controlfcst='true', weight given to ens mean vs control 
@@ -26,7 +26,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybgain_hourly"
+export exptname="C${RES}_hybcov_hourly"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='true'
 
@@ -310,7 +310,7 @@ export analpertwtnh_rtpp=0.5
 export analpertwtsh_rtpp=0.5
 export analpertwttr_rtpp=0.5
 export pseudo_rh=.true.
-export write_ensmean=.false. # write out ens mean analysis in EnKF
+export write_ensmean=.true. # write out ens mean analysis in EnKF
 if [[ $write_ensmean == ".true." ]]; then
    export ENKFVARS="write_ensmean=${write_ensmean},"
 fi
