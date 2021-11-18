@@ -27,6 +27,7 @@ export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
 export exptname="C${RES}_hybgain1"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
+export enkfonly='false' # pure EnKF
 
 export fg_gfs="run_ens_fv3.sh"
 export ensda="enkf_run.sh"

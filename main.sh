@@ -55,7 +55,7 @@ elif [[  "$analdate" -ge 2021032212 ]]; then
     export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2021032212
 elif [[  "$analdate" -ge 2020091612 ]]; then
     export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2020091612
-elif [[  "$analdate" -ge 2020091612 ]]; then
+elif [[  "$analdate" -ge 2020052612 ]]; then
     export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2020052612
 elif [[  "$analdate" -ge 2020040718 ]]; then
     export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2020040718
@@ -274,33 +274,50 @@ else
 fi
 
 # use ensmean mean background for 3dvar analysis/observer calculatino
-export charnanal="varanal"
-export charnanal2='ensmean'
-export lobsdiag_forenkf='.true.'
-export skipcat="false"
-# run Var analysis
-# symlink ens mean backgrounds to "varanal"
-fh=$FHMIN
-while [ $fh -le $FHMAX ]; do
-  fhr=`printf %02i $fh`
-  /bin/ln -fs ${datapath2}/sfg_${analdate}_fhr${fhr}_ensmean ${datapath2}/sfg_${analdate}_fhr${fhr}_${charnanal}
-  /bin/ln -fs ${datapath2}/bfg_${analdate}_fhr${fhr}_ensmean ${datapath2}/bfg_${analdate}_fhr${fhr}_${charnanal}
-  fh=$((fh+FHOUT))
-done
-if [ $hybgain == "true" ]; then
-  type="3DVar"
-else
-  type="hybrid 4DEnVar"
-fi
-echo "$analdate run $type `date`"
-sh ${enkfscripts}/run_gsianal.sh > ${current_logdir}/run_gsianal.out 2>&1
-# once gsi has completed, check log files.
-gsi_done=`cat ${current_logdir}/run_gsi_anal.log`
-if [ $gsi_done == 'yes' ]; then
- echo "$analdate $type analysis completed successfully `date`"
-else
- echo "$analdate $type analysis did not complete successfully, exiting `date`"
- exit 1
+if [ $enkfonly != "true" ]; then
+   export charnanal="varanal"
+   export charnanal2='ensmean'
+   export lobsdiag_forenkf='.true.'
+   export skipcat="false"
+   # run Var analysis
+   # symlink ens mean backgrounds to "varanal"
+   fh=$FHMIN
+   while [ $fh -le $FHMAX ]; do
+     fhr=`printf %02i $fh`
+     /bin/ln -fs ${datapath2}/sfg_${analdate}_fhr${fhr}_ensmean ${datapath2}/sfg_${analdate}_fhr${fhr}_${charnanal}
+     /bin/ln -fs ${datapath2}/bfg_${analdate}_fhr${fhr}_ensmean ${datapath2}/bfg_${analdate}_fhr${fhr}_${charnanal}
+     fh=$((fh+FHOUT))
+   done
+   if [ $hybgain == "true" ]; then
+     type="3DVar"
+   else
+     type="hybrid 4DEnVar"
+   fi
+   echo "$analdate run $type `date`"
+   sh ${enkfscripts}/run_gsianal.sh > ${current_logdir}/run_gsianal.out 2>&1
+   # once gsi has completed, check log files.
+   gsi_done=`cat ${current_logdir}/run_gsi_anal.log`
+   if [ $gsi_done == 'yes' ]; then
+    echo "$analdate $type analysis completed successfully `date`"
+   else
+    echo "$analdate $type analysis did not complete successfully, exiting `date`"
+    exit 1
+   fi
+else # just run observer (EnKF only)
+   export charnanal='ensmean' 
+   export charnanal2='ensmean' 
+   export lobsdiag_forenkf='.true.'
+   export skipcat="false"
+   echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
+   sh ${enkfscripts}/run_gsiobserver.sh > ${current_logdir}/run_gsi_observer.out 2>&1
+   # once observer has completed, check log files.
+   gsi_done=`cat ${current_logdir}/run_gsi_observer.log`
+   if [ $gsi_done == 'yes' ]; then
+     echo "$analdate gsi observer completed successfully `date`"
+   else
+     echo "$analdate gsi observer did not complete successfully, exiting `date`"
+     exit 1
+   fi
 fi
 
 # loop over members run observer sequentially (for testing)
@@ -367,6 +384,7 @@ if [ $write_ensmean == ".false." ]; then
 fi
 
 # blend enkf mean and 3dvar increments, recenter ensemble
+if [ $enkfonly != "true" ]; then
 if [ $recenter_anal == "true" ]; then
    if [ $hybgain == "true" ]; then 
        if [ $alpha -gt 0 ]; then
@@ -395,6 +413,7 @@ if [ $recenter_anal == "true" ]; then
       fi
    fi
 fi
+fi
 
 # for passive (replay) cycling of control forecast, optionally run GSI observer
 # on control forecast background (diag files saved with 'control' suffix)
@@ -404,7 +423,7 @@ if [ $replay_controlfcst == 'true' ] && [ $replay_run_observer == "true" ]; then
    export lobsdiag_forenkf='.false.'
    export skipcat="false"
    echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
-   sh ${enkfscripts}/run_gsiobserver.sh > ${current_logdir}/run_gsi_observer.out 2>&1
+   sh ${enkfscripts}/run_gsiobserver.sh > ${current_logdir}/run_gsi_observer_control.out 2>&1
    # once observer has completed, check log files.
    gsi_done=`cat ${current_logdir}/run_gsi_observer.log`
    if [ $gsi_done == 'yes' ]; then
