@@ -356,17 +356,22 @@ if [ $NST_GSI -gt 0 ] && [ $FHCYC -gt 0 ]; then
    fnacna='        '
 fi
 export timestep_hrs=`python -c "from __future__ import print_function; print($dt_atmos / 3600.)"`
+if [ "${iau_delthrs}" != "-1" ]  && [ "${cold_start}" == "false" ]; then
+   FHROT=3
+else
+   if [ $cold_start == "true" ] && [ $analdate -gt 2021032400 ]; then
+     FHROT=3
+   else
+     FHROT=0
+   fi
+fi
 if [ $cold_start == "true" ] && [ $analdate -gt 2021032400 ]; then
-   restart_interval="$timestep_hrs $ANALINC"
+   # cold start ICS at end of window, need one timestep restart
+   restart_interval=`python -c "from __future__ import print_function; print($FHROT + $timestep_hrs)"`
    output_1st_tstep_rst=".true."
 else
    restart_interval="$RESTART_FREQ -1"
    output_1st_tstep_rst=".false."
-fi
-if [ "${iau_delthrs}" != "-1" ]  && [ "${cold_start}" == "false" ]; then
-   FHROT=3
-else
-   FHROT=0
 fi
 
 cat > model_configure <<EOF
@@ -467,6 +472,18 @@ else
 fi
 
 export DATOUT=${DATOUT:-$datapathp1}
+# this is a hack to work around the fact that first time step history
+# file is not written if restart file requested at first time step.
+if [ $cold_start == "true" ] && [ $analdate -gt 2021032400 ]; then
+   if [ ! -s  dynf003.nc ]; then
+     echo "dynf003.nc missing, copy dynf004"
+     /bin/cp -f dynf004.nc dynf003.nc
+   fi
+   if [ ! -s  phyf003.nc ]; then
+     echo "phyf003.nc missing, copy phyf004"
+     /bin/cp -f phyf004.nc phyf003.nc
+   fi
+fi
 # rename netcdf history files.
 ls -l dyn*.nc
 ls -l phy*.nc
