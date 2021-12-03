@@ -3,41 +3,6 @@
 echo "starting at `date`"
 source $MODULESHOME/init/sh
 
-use_ipd=${use_ipd:-"NO"}
-if [ "$machine" == 'hera' ]; then
-   module purge
-   module use /scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/v1.0.0-beta1/modulefiles/stack
-   module load hpc/1.0.0-beta1
-   module load hpc-intel/18.0.5.274
-   module load hpc-impi/2018.0.4
-   module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
-   module load netcdf_parallel/4.7.4.release
-   module load esmf/8.1.0bs25_ParallelNetCDF.release
-   module load hdf5_parallel/1.10.6.release
-   module load wgrib
-   export WGRIB=`which wgrib`
-elif [ "$machine" == 'orion' ]; then
-   module purge
-   module use /apps/contrib/NCEP/libs/hpc-stack/modulefiles/stack
-   module load hpc/1.1.0
-   module load hpc-intel/2018.4
-   module unload mkl/2020.2
-   module load mkl/2018.4
-   module load hpc-impi/2018.4
-   module load wgrib
-   export WGRIB=`which wgrib`
-elif [ "$machine" == 'jet' ]; then
-   #module use /lfs4/HFIP/hfv3gfs/nwprod/hpc-stack/libs/modulefiles/stack
-   ## At this time (2020/11/30), this is the pre-release version 1.0.0
-   #module load hpc/1.1.0
-   #module load hpc-intel/18.0.5.274
-   #module load hpc-impi/2018.4.274
-   module load hdf5/1.10.6
-   module load netcdf/4.7.4
-   module load esmf/8_1_0_beta_snapshot_27
-   module load wgrib
-   export WGRIB=`which wgrib`
-fi
 module list
 
 export VERBOSE=${VERBOSE:-"NO"}
@@ -98,6 +63,7 @@ fi
 export DIAG_TABLE=${DIAG_TABLE:-$enkfscripts/diag_table}
 /bin/cp -f $DIAG_TABLE diag_table
 /bin/cp -f $enkfscripts/nems.configure .
+/bin/cp -f $enkfscripts/fd_nems.yaml .
 # insert correct starting time and output interval in diag_table template.
 sed -i -e "s/YYYY MM DD HH/${year} ${mon} ${day} ${hour}/g" diag_table
 sed -i -e "s/FHOUT/${FHOUT}/g" diag_table
@@ -142,7 +108,6 @@ ln -fs $FIXGLOBAL/global_climaeropac_global.txt     aerosol.dat
 for file in `ls $FIXGLOBAL/global_volcanic_aerosols* ` ; do
    ln -fs $file $(echo $(basename $file) |sed -e "s/global_//g")
 done
-ln -sf ${enkfscripts}/fd_nems.yaml .
 # for Thompson microphysics
 #ln -fs $FIXGLOBAL/CCN_ACTIVATE.BIN CCN_ACTIVATE.BIN
 #ln -fs $FIXGLOBAL/freezeH2O.dat freezeH2O.dat
@@ -169,13 +134,13 @@ if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
       exit 1
    fi
    cd ..
-else
-   if [ $cold_start == "false" ] ; then
-      cd INPUT
-      export increment_file="fv3_increment${fh}.nc"
-      /bin/mv -f ${datapath2}/incr_${analdate}_fhr06_{charnanal} ${increment_file}
-      cd ..
-   fi
+#else
+#   if [ $cold_start == "false" ] ; then
+#      cd INPUT
+#      export increment_file="fv3_increment${fh}.nc"
+#      /bin/mv -f ${datapath2}/incr_${analdate}_fhr06_{charnanal} ${increment_file}
+#      cd ..
+#   fi
 fi
 
 # setup model namelist parameters
@@ -189,35 +154,25 @@ if [ "$cold_start" == "true" ]; then
    externalic=T
    mountain=F
 else
+   if [ ! -z $skip_calc_increment ]; then
+     stochini=F
+     reslatlondynamics=""
+     readincrement=F
+   else
+     FHCYC=${FHCYC}
+     reslatlondynamics="fv3_increment6.nc"
+     readincrement=T
+   fi
    warm_start=T
    externalic=F
    mountain=T
-   # warm start from restart file with lat/lon increments ingested by the model
-   if [ $niter == 1 ] ; then
-     if [ -s stoch_ini ]; then
-       echo "stoch_ini available, setting stochini=T"
-       stochini=T # restart random patterns from existing file
-     else
-       echo "stoch_ini not available, setting stochini=F"
-       stochini=F
-     fi
-   elif [ $niter == 2 ]; then
-      echo "WARNING: iteration ${niter}, setting stochini=F for ${charnanal}" > ${current_logdir}/stochini_fg_ens.log
-      stochini=F
+   if [ -s INPUT/atm_stoch.res.nc ]; then
+      echo "stoch_ini available, setting stochini=T"
+      stochini=T # restart random patterns from existing file
    else
-      # last try, turn stochastic physics off
-      echo "WARNING: iteration ${niter}, seting SPPT=0 for ${charnanal}" > ${current_logdir}/stochini_fg_ens.log
-      SPPT=0
-      SKEB=0
-      SHUM=0
-      # set to large value so no random patterns will be output
-      # and random pattern will be reinitialized
-      FHSTOCH=240
+      echo "stoch_ini not available, setting stochini=F"
+      stochini=F
    fi
-   
-   FHCYC=${FHCYC}
-   reslatlondynamics="fv3_increment6.nc"
-   readincrement=T
 fi
 
 snoid='SNOD'
@@ -251,8 +206,6 @@ fi
 
 ls -l 
 
-FHRESTART=$FHOFFSET
-FHSTOCH=$FHOFFSET # half of window length (set in main.sh)3
 if [ $nanals2 -gt 0 ] && [ $nmem -le $nanals2 ]; then
    FHMAX_FCST=$FHMAX_LONGER
    longer_fcst="YES"
@@ -327,6 +280,7 @@ if [ $NST_GSI -gt 0 ] && [ $FHCYC -gt 0 ]; then
    fnacna='        '
 fi
 
+restart_interval="$FHOUT -1"
 cat > model_configure <<EOF
 print_esmf:              .true.
 PE_MEMBER01:             ${nprocs}
@@ -343,7 +297,7 @@ dt_atmos:                ${dt_atmos}
 output_1st_tstep_rst:    .true.
 calendar:                'julian'
 cpl:                     F
-restart_interval:        ${FHRESTART}
+restart_interval:        ${restart_interval}
 quilting:                .true.
 write_groups:            ${write_groups}
 write_tasks_per_group:   ${write_tasks}
@@ -371,12 +325,7 @@ cat model_configure
 
 # copy template namelist file, replace variables.
 /bin/cp -f ${enkfscripts}/${SUITE}.nml input.nml
-if [ $use_ipd = "YES" ]; then
-    sed -i -e '/SUITE/d' input.nml
-    sed -i -e '/oz_phys/d' input.nml
-else
-    sed -i -e "s/SUITE/${SUITE}/g" input.nml
-fi
+sed -i -e "s/SUITE/${SUITE}/g" input.nml
 sed -i -e "s/LAYOUT/${layout}/g" input.nml
 sed -i -e "s/NSTF_NAME/${nstf_name}/g" input.nml
 sed -i -e "s/NPX/${npx}/g" input.nml
@@ -393,7 +342,6 @@ sed -i -e "s/DO_shum/${DO_SHUM}/g" input.nml
 sed -i -e "s/SKEB/${SKEB}/g" input.nml
 sed -i -e "s/DO_skeb/${DO_SKEB}/g" input.nml
 sed -i -e "s/STOCHINI/${stochini}/g" input.nml
-sed -i -e "s/FHSTOCH/${FHSTOCH}/g" input.nml
 sed -i -e "s/FHOUT/${FHOUT}/g" input.nml
 sed -i -e "s/CDMBGWD/${cdmbgwd}/g" input.nml
 sed -i -e "s/ISEED_sppt/${ISEED_SPPT}/g" input.nml
@@ -475,7 +423,7 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
    mkdir -p ${datapathp1}/${charnanal}/INPUT
    cd RESTART
    ls -l
-   datestring="${yrnext}${monnext}${daynext}.${hrnext}0000."
+   datestring="${yrnext}${monnext}${daynext}.${hrnext}"
    for file in ${datestring}*nc; do
       file2=`echo $file | cut -f3-10 -d"."`
       /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT/$file2
@@ -484,21 +432,10 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
         exit 1
       fi
    done
+   if [ -s  ${datapathp1}/${charnanal}/INPUT/ca_data.tile1.nc ]; then
+      touch ${datapathp1}/${charnanal}/INPUT/ca_data.nc
+   fi
    cd ..
-fi
-
-# if random pattern restart file exists, copy it.
-ls -l stoch_out*
-if [ $cold_start == "true" ]; then
-  fhr=1
-else
-  fhr=6
-fi
-charfh="F"`printf %06i $fhr`
-if [ -s stoch_out.${charfh} ]; then
-  mkdir -p ${DATOUT}/${charnanal}
-  echo "copying stoch_out.${charfh} ${DATOUT}/${charnanal}/stoch_ini"
-  /bin/mv -f "stoch_out.${charfh}" ${DATOUT}/${charnanal}/stoch_ini
 fi
 
 ls -l ${DATOUT}

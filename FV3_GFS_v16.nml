@@ -18,7 +18,6 @@
 /
 
 &fms_io_nml
-  checksum_required = F,
   max_files_r = 100,
   max_files_w = 100,
 /
@@ -169,9 +168,6 @@
   iopt_stc       = 1
   debug          = T
   lgfdlmprad     = .true.
-  cplchm         = .false
-  cplwav         = .false.
-  cplwav2atm     = .false.
   effr_in        = .true.
   cdmbgwd        = CDMBGWD
   psautco        = 0.0008,0.0005
@@ -187,10 +183,6 @@
   do_skeb        = DO_skeb
   do_sppt        = DO_sppt
   do_shum        = DO_shum
-  iau_filter_increments = F
-  iaufhrs = 6
-  iau_delthrs = -1
-  iau_inc_files = 
 /
 
 &gfdl_cloud_microphysics_nml
@@ -290,7 +282,6 @@
   skebint=0,
   iseed_skeb=ISEED_skeb,
   use_zmtnblck=.true.,
-  fhstoch=FHSTOCH,
   stochini=STOCHINI,
   new_lscale=.true.
 /
