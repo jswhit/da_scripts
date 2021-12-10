@@ -44,7 +44,7 @@ cat <<EOF > enkf.nml
   lnsigcutoffsatnh=$lnsigcutoffsatnh,lnsigcutoffsatsh=$lnsigcutoffsatsh,lnsigcutoffsattr=$lnsigcutoffsattr,
   lnsigcutoffpsnh=$lnsigcutoffpsnh,lnsigcutoffpssh=$lnsigcutoffpssh,lnsigcutoffpstr=$lnsigcutoffpstr,
   nlons=$LONA,nlats=$LATA,smoothparm=$SMOOTHINF,letkf_bruteforce_search=${letkf_bruteforce_search},
-  readin_localization=$readin_localization,saterrfact=$saterrfact,
+  readin_localization=.false.,saterrfact=$saterrfact,
   paoverpb_thresh=$paoverpb_thresh,letkf_flag=$letkf_flag,denkf=$denkf,
   getkf_inflation=$getkf_inflation,letkf_novlocal=$letkf_novlocal,modelspace_vloc=$modelspace_vloc,save_inflation=.false.,
   reducedgrid=${reducedgrid},nlevs=$LEVS,nanals=$nanals,deterministic=$deterministic,imp_physics=$imp_physics,
