@@ -187,14 +187,12 @@ mkdir -p ${current_logdir}
 
 # if nanals2>0, extend nanals2 members out to FHMAX_LONGER=6
 # but only at 03,09,15,21 UTC (for comparison with 6-h cycled system)
-if [ $ANALINC -eq 1 ]; then
-if [ $hr = "03" ] || [ $hr = "09" ] || [ $hr = "15" ] || [ $hr = "21" ]; then
+if ( [ $hr = "03" ] || [ $hr = "09" ] || [ $hr = "15" ] || [ $hr = "21" ] ) && [ $cold_start == 'false' ]; then
   export nanals2=80
   echo "will run $nanals2 members out to hour $FHMAX_LONGER"
 else
   export nanals2=-1
   echo "no longer forecast extension"
-fi
 fi
 # only run global cycle at synoptic times.
 if [ $hr = "00" ] || [ $hr = "06" ] || [ $hr = "12" ] || [ $hr = "18" ]; then
@@ -425,7 +423,7 @@ if [ $replay_controlfcst == 'true' ] && [ $replay_run_observer == "true" ]; then
 fi
 
 # run gsi observer on forecast extension
-if ([ $hr = "00" ] || [ $hr = "06" ] || [ $hr = "12" ] || [ $hr = "18" ]) && [ -s $datapath2/sfg2_${analdate}_fhr0${FHMAX_LONGER}_ensmean ]; then
+if [ -s $datapath2/sfg2_${analdate}_fhr06_ensmean ]; then
    export rungsi='run_gsi_4densvar2.sh'
    export charnanal='ensmean' 
    export charnanal2='ensmean2' 
