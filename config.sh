@@ -28,7 +28,7 @@ export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
 export exptname="C${RES}_hybcov_hourly"
 # for 'passive' or 'replay' cycling of control fcst 
-export replay_controlfcst='true'
+export replay_controlfcst='false'
 
 export fg_gfs="run_ens_fv3.sh"
 export ensda="enkf_run.sh"
@@ -156,7 +156,7 @@ export NST_GSI=0
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
 
-export LEVS=127  
+export LEVS=64   
 if [ $LEVS -eq 64 ]; then
   export nsig_ext=12
   export gpstop=50
@@ -181,8 +181,8 @@ else
 fi
 
 # radiance thinning parameters for GSI
-export dmesh1=125
-export dmesh2=125
+export dmesh1=145
+export dmesh2=145
 export dmesh3=100
 
 # stochastic physics parameters.
@@ -277,10 +277,10 @@ export ANALINC=1 # assimilation window length
 export FHMIN=1
 export FHMAX=1
 export FHOUT=1
-export FHMAX_LONGER=6
+export nhr_anal=$ANALINC # background forecast hour at analysis time
+export FHMAX_LONGER=12
 FHMAXP1=`expr $FHMAX + 1`
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
-export nhr_anal=$ANALINC # analysis increment computed at center of window
 
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
