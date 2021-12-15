@@ -195,7 +195,7 @@ ls -l
 
 #FHRESTART="$ANALINC -1"
 FHRESTART=$ANALINC
-if [ $cold_start == 'false '] &&[ $nanals2 -gt 0 ] && [ $nmem -le $nanals2 ]; then
+if [ $cold_start == 'false' ] && [ $nanals2 -gt 0 ] && [ $nmem -le $nanals2 ]; then
    FHMAX_FCST=$FHMAX_LONGER
    longer_fcst="YES"
 else

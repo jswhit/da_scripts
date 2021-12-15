@@ -187,9 +187,14 @@ mkdir -p ${current_logdir}
 
 # if nanals2>0, extend nanals2 members out to FHMAX_LONGER=6
 # but only at 03,09,15,21 UTC (for comparison with 6-h cycled system)
-if ( [ $hr = "03" ] || [ $hr = "09" ] || [ $hr = "15" ] || [ $hr = "21" ] ) && [ $cold_start == 'false' ]; then
-  export nanals2=80
-  echo "will run $nanals2 members out to hour $FHMAX_LONGER"
+if [ $hr = "03" ] || [ $hr = "09" ] || [ $hr = "15" ] || [ $hr = "21" ]; then
+  if [ $cold_start == "true" ]; then
+    export nanals2=-1
+    echo "no longer forecast extension"
+  else
+     export nanals2=80
+     echo "will run $nanals2 members out to hour $FHMAX_LONGER"
+  fi
 else
   export nanals2=-1
   echo "no longer forecast extension"
