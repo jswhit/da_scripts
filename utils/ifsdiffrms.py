@@ -223,7 +223,7 @@ plt.axis('tight')
 plt.ylim(1000,ptop)
 plt.grid(True)
 
-plt.figtext(0.5,0.93,'%s-h ens mean fcst RMS vs ERA5 %s-%s' % (hr, date1,date2),horizontalalignment='center',fontsize=18)
+plt.figtext(0.5,0.93,'%s-h ens mean fcst RMS vs IFS %s-%s' % (hr, date1,date2),horizontalalignment='center',fontsize=18)
 plt.savefig('ifsdiffrms_%s_%s_%s.png' % (expt1,expt2,region))
 
 fig = plt.figure(figsize=(11,6))
@@ -252,7 +252,7 @@ plt.ylim(1000,ptop)
 plt.axvline(0)
 plt.grid(True)
 
-plt.figtext(0.5,0.93,'%s-h ens mean fcst bias vs ERA5 %s-%s' % (hr,date1,date2),horizontalalignment='center',fontsize=18)
+plt.figtext(0.5,0.93,'%s-h ens mean fcst bias vs IFS %s-%s' % (hr,date1,date2),horizontalalignment='center',fontsize=18)
 plt.savefig('ifsdiffbias_%s_%s_%s.png' % (expt1,expt2,region))
 
 plt.show()
