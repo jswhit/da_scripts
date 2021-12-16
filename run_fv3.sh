@@ -274,6 +274,12 @@ ls -l
 
 if [ $nanals2 -gt 0 ] && [ $nmem -le $nanals2 ]; then
    longer_fcst="YES"
+   # if longfcst_singletime=0, FHMAX_LONGER is divisible by 6, and only a single forecast time
+   # (the end of the forecast) beyond FHMAX is saved.  If longfcst_singletime=3, then it is 
+   # assumed that all the times in the 6-h window centered on FHMAX_LONGER - 3 are desired so
+   # that the GSI observer can be run.
+   longfcst_singletime=`python -c "from __future__ import print_function; print($FHMAX_LONGER % 6)"`
+   echo "longfcst_singletime=$longfcst_singletime"
 else
    longer_fcst="NO"
 fi
@@ -491,20 +497,22 @@ fh=$FHMIN
 while [ $fh -le $FHMAX ]; do
   charfhr="fhr"`printf %02i $fh`
   charfhr2="f"`printf %03i $fh`
-  #if [ $longer_fcst = "YES" ] && [ $fh -eq $FHMAX ]; then
-  #   /bin/cp -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
-  #else
+  if [ $longer_fcst = "YES" ] && [ $fh -eq $FHMAX ] && [ $longfcst_singletime -gt 0 ];; then
+     # copy file, it will be duplicated as sfg2
+     /bin/cp -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
+  else
      /bin/mv -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
-  #fi
+  fi
   if [ $? -ne 0 ]; then
      echo "netcdffile missing..."
      exit 1
   fi
-  #if [ $longer_fcst = "YES" ] && [ $fh -eq $FHMAX ]; then
-  #   /bin/cp -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
-  #else
+  if [ $longer_fcst = "YES" ] && [ $fh -eq $FHMAX ] && [ $longfcst_singletime -gt 0 ];; then
+     # copy file, it will be duplicated as bfg2
+     /bin/cp -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
+  else
      /bin/mv -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
-  #fi
+  fi
   if [ $? -ne 0 ]; then
      echo "netcdf file missing..."
      exit 1
@@ -512,30 +520,35 @@ while [ $fh -le $FHMAX ]; do
   fh=$[$fh+$FHOUT]
 done
 if [ $longer_fcst = "YES" ]; then
-    analdatep2=`$incdate $analdate $FHMAX_LONGER`
-    charfhr="fhr"`printf %02i $FHMAX_LONGER`
-    charfhr2="f"`printf %03i $FHMAX_LONGER`
-    /bin/mv -f dyn${charfhr2}.nc ${datapath}/${analdatep2}/sfg_${analdatep2}_${charfhr}_${charnanal}
-    /bin/mv -f phy${charfhr2}.nc ${datapath}/${analdatep2}/bfg_${analdatep2}_${charfhr}_${charnanal}
-    #fh=`expr $FHMAX_LONGER - $ANALINC`
-    #fhmax2=`expr $FHMAX_LONGER - $ANALINC \/ 2`
-    #analdatep2=`$incdate $analdate $fhmax2`
-    #mkdir -p $datapath/$analdatep2
-    #while [ $fh -le $FHMAX_LONGER ]; do
-    #  charfhr="fhr"`printf %02i $fh`
-    #  charfhr2="f"`printf %03i $fh`
-    #  /bin/mv -f dyn${charfhr2}.nc ${datapath}/${analdatep2}/sfg2_${analdatep2}_${charfhr}_${charnanal}
-    #  if [ $? -ne 0 ]; then
-    #     echo "netcdffile missing..."
-    #     exit 1
-    #  fi
-    #  /bin/mv -f phy${charfhr2}.nc ${datapath}/${analdatep2}/bfg2_${analdatep2}_${charfhr}_${charnanal}
-    #  if [ $? -ne 0 ]; then
-    #     echo "netcdf file missing..."
-    #     exit 1
-    #  fi
-    #  fh=$[$fh+$FHOUT]
-    #done
+    if [ $longfcst_singletime -eq 0 ]; then
+       # save just the last file (to compare with IFS analysis in grid space, no time interp
+       # needed for GSI observer
+       analdatep2=`$incdate $analdate $FHMAX_LONGER`
+       charfhr="fhr"`printf %02i $FHMAX_LONGER`
+       charfhr2="f"`printf %03i $FHMAX_LONGER`
+       /bin/mv -f dyn${charfhr2}.nc ${datapath}/${analdatep2}/sfg2_${analdatep2}_${charfhr}_${charnanal}
+       /bin/mv -f phy${charfhr2}.nc ${datapath}/${analdatep2}/bfg2_${analdatep2}_${charfhr}_${charnanal}
+    else
+       fh=`expr $FHMAX_LONGER - $ANALINC`
+       fhmax2=`expr $FHMAX_LONGER - $ANALINC \/ 2`
+       analdatep2=`$incdate $analdate $fhmax2`
+       mkdir -p $datapath/$analdatep2
+       while [ $fh -le $FHMAX_LONGER ]; do
+         charfhr="fhr"`printf %02i $fh`
+         charfhr2="f"`printf %03i $fh`
+         /bin/mv -f dyn${charfhr2}.nc ${datapath}/${analdatep2}/sfg2_${analdatep2}_${charfhr}_${charnanal}
+         if [ $? -ne 0 ]; then
+            echo "netcdffile missing..."
+            exit 1
+         fi
+         /bin/mv -f phy${charfhr2}.nc ${datapath}/${analdatep2}/bfg2_${analdatep2}_${charfhr}_${charnanal}
+         if [ $? -ne 0 ]; then
+            echo "netcdf file missing..."
+            exit 1
+         fi
+         fh=$[$fh+$FHOUT]
+       done
+    fi
 fi
 /bin/rm -f phy*nc dyn*nc
 

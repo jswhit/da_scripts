@@ -431,7 +431,8 @@ if [ $replay_controlfcst == 'true' ] && [ $replay_run_observer == "true" ]; then
 fi
 
 # run gsi observer on ensemble mean forecast extension
-if [ $nanals2 -gt 0 ] && [ -s $datapath2/sfg2_${analdate}_fhr${FHMAX_LONGER}_ensmean ]; then
+run_gsiobserver=`python -c "from __future__ import print_function; print($FHMAX_LONGER % 6)"`
+if [ $nanals2 -gt 0 ] && [ $run_gsiobserver -ne 0 ] && [ -s $datapath2/sfg2_${analdate}_fhr${FHMAX_LONGER}_ensmean ]; then
    # symlink ensmean files (fhr12_ensmean --> fhr06_ensmean2, etc)
    fh=`expr $FHMAX_LONGER - $ANALINC`
    nhr=3
