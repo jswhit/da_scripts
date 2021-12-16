@@ -522,8 +522,9 @@ done
 if [ $longer_fcst = "YES" ]; then
     if [ $longfcst_singletime -eq 0 ]; then
        # save just the last file (to compare with IFS analysis in grid space, no time interp
-       # needed for GSI observer
+       # needed for GSI observer)
        analdatep2=`$incdate $analdate $FHMAX_LONGER`
+       mkdir -p $datapath/$analdatep2
        charfhr="fhr"`printf %02i $FHMAX_LONGER`
        charfhr2="f"`printf %03i $FHMAX_LONGER`
        /bin/mv -f dyn${charfhr2}.nc ${datapath}/${analdatep2}/sfg2_${analdatep2}_${charfhr}_${charnanal}
