@@ -512,25 +512,30 @@ while [ $fh -le $FHMAX ]; do
   fh=$[$fh+$FHOUT]
 done
 if [ $longer_fcst = "YES" ]; then
-    fh=`expr $FHMAX_LONGER - $ANALINC`
-    fhmax2=`expr $FHMAX_LONGER - $ANALINC \/ 2`
-    analdatep2=`$incdate $analdate $fhmax2`
-    mkdir -p $datapath/$analdatep2
-    while [ $fh -le $FHMAX_LONGER ]; do
-      charfhr="fhr"`printf %02i $fh`
-      charfhr2="f"`printf %03i $fh`
-      /bin/mv -f dyn${charfhr2}.nc ${datapath}/${analdatep2}/sfg2_${analdatep2}_${charfhr}_${charnanal}
-      if [ $? -ne 0 ]; then
-         echo "netcdffile missing..."
-         exit 1
-      fi
-      /bin/mv -f phy${charfhr2}.nc ${datapath}/${analdatep2}/bfg2_${analdatep2}_${charfhr}_${charnanal}
-      if [ $? -ne 0 ]; then
-         echo "netcdf file missing..."
-         exit 1
-      fi
-      fh=$[$fh+$FHOUT]
-    done
+    analdatep2=`$incdate $analdate $FHMAX_LONGER`
+    charfhr="fhr"`printf %02i $FHMAX_LONGER`
+    charfhr2="f"`printf %03i $FHMAX_LONGER`
+    /bin/mv -f dyn${charfhr2}.nc ${datapath}/${analdatep2}/sfg_${analdatep2}_${charfhr}_${charnanal}
+    /bin/mv -f phy${charfhr2}.nc ${datapath}/${analdatep2}/bfg_${analdatep2}_${charfhr}_${charnanal}
+    #fh=`expr $FHMAX_LONGER - $ANALINC`
+    #fhmax2=`expr $FHMAX_LONGER - $ANALINC \/ 2`
+    #analdatep2=`$incdate $analdate $fhmax2`
+    #mkdir -p $datapath/$analdatep2
+    #while [ $fh -le $FHMAX_LONGER ]; do
+    #  charfhr="fhr"`printf %02i $fh`
+    #  charfhr2="f"`printf %03i $fh`
+    #  /bin/mv -f dyn${charfhr2}.nc ${datapath}/${analdatep2}/sfg2_${analdatep2}_${charfhr}_${charnanal}
+    #  if [ $? -ne 0 ]; then
+    #     echo "netcdffile missing..."
+    #     exit 1
+    #  fi
+    #  /bin/mv -f phy${charfhr2}.nc ${datapath}/${analdatep2}/bfg2_${analdatep2}_${charfhr}_${charnanal}
+    #  if [ $? -ne 0 ]; then
+    #     echo "netcdf file missing..."
+    #     exit 1
+    #  fi
+    #  fh=$[$fh+$FHOUT]
+    #done
 fi
 /bin/rm -f phy*nc dyn*nc
 
