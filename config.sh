@@ -24,7 +24,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybgain1"
+export exptname="C${RES}_hybgain"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 export enkfonly='false' # pure EnKF
@@ -41,7 +41,7 @@ export cleanup_anal='true'
 export cleanup_controlanl='true'
 export cleanup_observer='true' 
 export resubmit='true'
-export replay_run_observer='true' # run observer on replay control forecast
+export replay_run_observer='false' # run observer on replay control forecast
 # python script checkdate.py used to check
 # YYYYMMDDHH analysis date string to see if
 # full ensemble should be saved to HPSS (returns 0 if 
@@ -153,7 +153,7 @@ export NST_GSI=0
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
 
-export LEVS=127  
+export LEVS=64   
 if [ $LEVS -eq 64 ]; then
   export nsig_ext=12
   export gpstop=50
@@ -278,13 +278,16 @@ export FHMAX=9
 export FHOUT=1
 export RESTART_FREQ=3
 FHMAXP1=`expr $FHMAX + 1`
-export FHMAX_LONGER=27
+# if FHMAX_LONGER divisible by 6, only the last output time saved.
+# if not divisible by 6, all times in 6-h window at the end of forecast saved
+# so GSI observer can be run.
+export FHMAX_LONGER=12
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
-#export iaufhrs="3,6,9"
-#export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
+export iaufhrs="3,6,9"
+export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 # IAU off
-export iaufhrs="6"
-export iau_delthrs=-1
+#export iaufhrs="6"
+#export iau_delthrs=-1
 
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
@@ -360,8 +363,9 @@ fi
 
 export nanals=80                                                    
 # if nanals2>0, extend nanals2 members out to FHMAX + ANALINC (one extra assim window)
-export nanals2=-1 # longer extension. Set to -1 to disable 
-export nanals2=$NODES
+#export nanals2=-1 # longer extension. Set to -1 to disable 
+#export nanals2=$NODES
+export nanals2=$nanals
 export nitermax=1 # number of retries
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
@@ -370,8 +374,8 @@ export incdate="${enkfscripts}/incdate.sh"
 if [ "$machine" == 'hera' ]; then
    export python=/contrib/anaconda/2.3.0/bin/python
    export fv3gfspath=/scratch1/NCEPDEV/global/glopara
-   export FIXFV3=${fv3gfspath}/fix_nco_gfsv16/fix_fv3_gmted2010
-   export FIXGLOBAL=${fv3gfspath}/fix_nco_gfsv16/fix_am
+   export FIXFV3=${fv3gfspath}/fix_NEW/fix_fv3_gmted2010
+   export FIXGLOBAL=${fv3gfspath}/fix_NEW/fix_am
    export gsipath=${basedir}/gsi/GSI-github-jswhit-master
    export fixgsi=${gsipath}/fix
    export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0
@@ -382,11 +386,10 @@ if [ "$machine" == 'hera' ]; then
 elif [ "$machine" == 'orion' ]; then
    export python=`which python`
    export fv3gfspath=/work/noaa/global/glopara
-   export FIXFV3=$fv3gfspath/fix_nco_gfsv16/fix_fv3_gmted2010
-   export FIXGLOBAL=$fv3gfspath/fix_nco_gfsv16/fix_am
+   export FIXFV3=$fv3gfspath/fix_NEW/fix_fv3_gmted2010
+   export FIXGLOBAL=$fv3gfspath/fix_NEW/fix_am
    export gsipath=/work/noaa/gsienkf/whitaker/GSI-enkf64bit
    export fixgsi=${gsipath}/fix
-   #export fixcrtm=${basedir}/fix/crtm/v2.2.6/fix
    export fixcrtm=$fv3gfspath/crtm/crtm_v2.3.0
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
@@ -457,12 +460,12 @@ else
    # (s_ens_h, s_ens_v, beta_s0, beta_e0, alpha, beta used)
    if [ $hybgain == "false" ]; then
       # use static B weights and localization scales for GSI from files.
-      # (alpha, beta ignored)
-      #export readin_localization=".true."
-      #export readin_beta=".true."
-      # use constant values (alpha and beta parameters)
-      export readin_beta=.false.
-      export readin_localization=.false.
+      # (beta_s0, beta_e0 ignored)
+      export readin_localization=".true."
+      export readin_beta=".true."
+      # use constant values (beta_s0,beta_e0 parameters)
+      #export readin_beta=.false.
+      #export readin_localization=.false.
       # these only used for hybrid covariance (hyb 4denvar) in GSI
       export beta_s0=`python -c "from __future__ import print_function; print($alpha / 1000.)"` # weight given to static B in hyb cov
       # beta_e0 parameter (ensemble weight) in my GSI branch (not in GSI/develop)
