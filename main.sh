@@ -191,14 +191,11 @@ export PREINP1="${RUN}.t${hrp1}z."
 export PREINPm1="${RUN}.t${hrm1}z."
 
 # if nanals2>0, extend nanals2 members out to FHMAX_LONGER
-# but only at 00,12TC 
-if [ $nanals2 -gt 0 ]; then
-if [ $hr = "00" ] || [ $hr = "12" ]; then
+if [ $nanals2 -gt 0 ] && [ $cold_start != "true" ]; then
   echo "will run $nanals2 members out to hour $FHMAX_LONGER"
 else
   export nanals2=-1
   echo "no longer forecast extension"
-fi
 fi
 
 if [ $fg_only ==  'false' ]; then
