@@ -48,10 +48,10 @@ done
 
 if [ $nanals2 -gt 0 ]; then
 fh=`expr ${FHMAX_LONGER} - ${ANALINC}`
-charfhr="fhr`printf %02i $fh`"
-while [ $fh -le $FHMAX_LONGER ] && [ -s ${datapath2}/sfg2_${analdate}_${charfhr}_mem001 ]; do
-
+while [ $fh -le $FHMAX_LONGER ];
   charfhr="fhr`printf %02i $fh`"
+
+  if [ -s ${datapath2}/sfg2_${analdate}_${charfhr}_mem001 ]; then
 
   if [ $cleanup_ensmean == 'true' ] || ([ $cleanup_ensmean == 'false' ]  && [ ! -s ${datapath}/${analdate}/bfg2_${analdate}_${charfhr}_ensmean ]); then
       echo "running  ${execdir}/getsfcensmeanp.x ${datapath2}/ bfg2_${analdate}_${charfhr}_ensmean bfg2_${analdate}_${charfhr} ${nanals2}"
@@ -77,6 +77,8 @@ while [ $fh -le $FHMAX_LONGER ] && [ -s ${datapath2}/sfg2_${analdate}_${charfhr}
          echo "getsigensmeanp_smooth.x failed..."
          exit 1
       fi
+  fi
+
   fi
 
   fh=$((fh+FHOUT))
