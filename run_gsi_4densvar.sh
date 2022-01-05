@@ -272,7 +272,7 @@ cat <<EOF > gsiparm.anl
  &OBSQC
    dfact=0.75,dfact1=3.0,noiqc=.true.,oberrflg=.false.,c_varqc=0.04,
    use_poq7=.true.,qc_noirjaco3_pole=.true.,vqc=.false.,nvqc=.true.,
-   aircraft_t_bc=.true.,biaspredt=1.0e5,upd_aircraft=.true.,cleanup_tail=.true.,
+   aircraft_t_bc=$aircraft_t_bc,biaspredt=1.0e5,upd_aircraft=$upd_aircraft,cleanup_tail=.true.,
    tcp_width=60.0,tcp_ermin=2.0,tcp_ermax=12.0,
    $OBSQC
  /
