@@ -12,9 +12,11 @@ if [ -z $biascorrdir ]; then # cycled bias correction files
       export GBIASAIR=${datapath2}/${PREINP}abias_air
     fi
 else # externally specified bias correction files.
-    export GBIAS=${biascorrdir}/${analdate}//${PREINP}abias
-    export GBIAS_PC=${biascorrdir}/${analdate}//${PREINP}abias_pc
-    export GBIASAIR=${biascorrdir}/${analdate}//${PREINP}abias_air
+    hhbias=`echo $obdate | cut -c9-10`
+    export GBIAS=${biascorrdir}/${obdate}/${RUN}.t${hhbias}z.abias
+    export GBIAS_PC=${biascorrdir}/${obdate}//${RUN}.t${hhbias}z.abias_pc
+    export GBIASAIR=${biascorrdir}/${obdate}//${RUN}.t${hhbias}z.abias_air
+    export ABIAS=${biascorrdir}/${obdate}//${RUN}.t${hhbias}z.abias
 fi
 export GSATANG=$fixgsi/global_satangbias.txt # not used, but needs to exist
 
@@ -37,6 +39,7 @@ ln -fs ${current_logdir}/convinfo.out ${datapath2}/fort.205
 # remove previous analyses
 if [ $cleanup_anal == 'true' ]; then
    /bin/rm -f ${datapath2}/sanl_*mem*
+   /bin/rm -f ${datapath2}/sanl_*ensmean
 fi
 
 niter=1
