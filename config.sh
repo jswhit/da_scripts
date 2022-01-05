@@ -153,7 +153,9 @@ export NST_GSI=0
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
 
-export LEVS=64   
+export LEVS=127
+export aircraft_t_bc=.true.
+export aircraft_t_bc=.true.
 if [ $LEVS -eq 64 ]; then
   export nsig_ext=12
   export gpstop=50
