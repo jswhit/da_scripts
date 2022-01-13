@@ -156,7 +156,7 @@ export NST_GSI=0
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
 
-export LEVS=127  
+export LEVS=64   
 if [ $LEVS -eq 64 ]; then
   export nsig_ext=12
   export gpstop=50
@@ -374,8 +374,8 @@ export incdate="${enkfscripts}/incdate.sh"
 if [ "$machine" == 'hera' ]; then
    export python=/contrib/anaconda/2.3.0/bin/python
    export fv3gfspath=/scratch1/NCEPDEV/global/glopara
-   export FIXFV3=${fv3gfspath}/fix_nco_gfsv16/fix_fv3_gmted2010
-   export FIXGLOBAL=${fv3gfspath}/fix_nco_gfsv16/fix_am
+   export FIXFV3=${fv3gfspath}/fix_NEW/fix_fv3_gmted2010
+   export FIXGLOBAL=${fv3gfspath}/fix_NEW/fix_am
    export gsipath=${basedir}/gsi/GSI-github-jswhit-master
    #export gsipath=/scratch1/NCEPDEV/global/glopara/git/global-workflow/gfsv16b/sorc/gsi.fd
    export fixgsi=${gsipath}/fix
@@ -387,8 +387,8 @@ if [ "$machine" == 'hera' ]; then
 elif [ "$machine" == 'orion' ]; then
    export python=`which python`
    export fv3gfspath=/work/noaa/global/glopara
-   export FIXFV3=$fv3gfspath/fix_nco_gfsv16/fix_fv3_gmted2010
-   export FIXGLOBAL=$fv3gfspath/fix_nco_gfsv16/fix_am
+   export FIXFV3=$fv3gfspath/fix_NEW/fix_fv3_gmted2010
+   export FIXGLOBAL=$fv3gfspath/fix_NEW/fix_am
    export gsipath=/work/noaa/gsienkf/whitaker/GSI-enkf64bit
    export fixgsi=${gsipath}/fix
    export fixcrtm=$fv3gfspath/crtm/crtm_v2.3.0
