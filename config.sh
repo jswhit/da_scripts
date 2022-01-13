@@ -156,7 +156,7 @@ export NST_GSI=0
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
 
-export LEVS=64   
+export LEVS=127  
 if [ $LEVS -eq 64 ]; then
   export nsig_ext=12
   export gpstop=50
@@ -278,7 +278,7 @@ export FHMIN=1
 export FHMAX=1
 export FHOUT=1
 export nhr_anal=$ANALINC # background forecast hour at analysis time
-export FHMAX_LONGER=12
+export FHMAX_LONGER=9
 FHMAXP1=`expr $FHMAX + 1`
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
 
