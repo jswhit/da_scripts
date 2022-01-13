@@ -53,8 +53,10 @@ if [ $save_hpss_subset == "false" ] && [ $save_hpss_full == "false" ]; then
   # save backup of next analysis time once per day
   # so analysis can be restarted
   hr=`echo $analdatep1 | cut -c9-10`
-  if [ $hr == '00' ]; then
+  if [ $machine == 'orion' ] && [ $hr == '00' ]; then
+     pushd $datapath
      tar -cvf ${analdatep1}_restart.tar ${analdatep1}
+     popd
   fi
 fi
 echo "unwanted files removed `date`"
