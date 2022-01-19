@@ -379,7 +379,8 @@ if [ $replay_controlfcst == 'true' ] && [ $replay_run_observer == "true" ]; then
 fi
 
 # run gsi observer on forecast extension
-if ([ $hr = "02" ] || [ $hr = "08" ] || [ $hr = "14" ] || [ $hr = "20" ]) && [ -s $datapath2/sfg2_${analdate}_fhr0${FHMAX_LONGER}_ensmean ]; then
+if [ -s $datapath2/sfg2_${analdate}_fhr06_ensmean ]; then
+   rungsi_save=$rungsi
    export rungsi='run_gsi_4densvar2.sh'
    export charnanal='ensmean' 
    export charnanal2='ensmean2' 
@@ -387,6 +388,8 @@ if ([ $hr = "02" ] || [ $hr = "08" ] || [ $hr = "14" ] || [ $hr = "20" ]) && [ -
    export skipcat="false"
    FHMIN_SAVE=$FHMIN
    FHMAX_SAVE=$FHMAX
+   obs_datapath_save=$obs_datapath
+   export obs_datapath=/scratch1/NCEPDEV/global/glopara/dump
    export FHMIN=3
    export FHMAX=9
    export ATMPREFIX='sfg2'
@@ -424,6 +427,8 @@ if ([ $hr = "02" ] || [ $hr = "08" ] || [ $hr = "14" ] || [ $hr = "20" ]) && [ -
    fi
    export FHMIN=$FHMIN_SAVE
    export FHMAX=$FHMAX_SAVE
+   export obs_datapath=$obs_datapath_save
+   export rungsi=$rungsi_save
    export analdatem1=$analdatem1_save
    export datapathm1=$datapathm1_save
    unset ATMPREFIX
