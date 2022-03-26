@@ -115,6 +115,7 @@
 /
 
 &gfs_physics_nml
+  print_diff_pgr = T
   fhzero         = 3
   ldiag3d        = F
   fhcyc          = 0
@@ -143,10 +144,10 @@
   hybedmf        = F
   satmedmf       = T
   isatmedmf      = 1
-  lheatstrg      = T
+  lheatstrg      = F
   random_clds    = .false.
   trans_trac     = T
-  cnvcld         = .false.
+  cnvcld         = .true.
   imfshalcnv     = 2
   imfdeepcnv     = 2
   prslrd0        = 0
