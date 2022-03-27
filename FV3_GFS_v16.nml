@@ -46,7 +46,7 @@
   fv_debug = F,
   range_warn = F,
   reset_eta = F,
-  n_sponge = 10,
+  n_sponge = 42,
   nudge_qv = T,
   nudge_dz = F,
   tau = 5.0
@@ -83,7 +83,7 @@
   res_latlon_dynamics=RESLATLONDYNAMICS,
   read_increment=READ_INCREMENT,
   gfs_phil = F,
-  agrid_vel_rst = F,
+  agrid_vel_rst = T,
   nggps_ic = T,
   mountain = MOUNTAIN,
   ncep_ic = F,
@@ -115,6 +115,7 @@
 /
 
 &gfs_physics_nml
+  print_diff_pgr = T
   fhzero         = 3
   ldiag3d        = F
   fhcyc          = 0
@@ -143,10 +144,10 @@
   hybedmf        = F
   satmedmf       = T
   isatmedmf      = 1
-  lheatstrg      = T
+  lheatstrg      = F
   random_clds    = .false.
   trans_trac     = T
-  cnvcld         = .false.
+  cnvcld         = .true.
   imfshalcnv     = 2
   imfdeepcnv     = 2
   prslrd0        = 0
@@ -183,10 +184,6 @@
   do_skeb        = DO_skeb
   do_sppt        = DO_sppt
   do_shum        = DO_shum
-  iau_filter_increments = F
-  iaufhrs = IAU_FHRS
-  iau_delthrs = IAU_DELTHRS
-  iau_inc_files = IAU_INC_FILES
 /
 
 &gfdl_cloud_microphysics_nml
