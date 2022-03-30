@@ -117,6 +117,7 @@
 /
 
 &gfs_physics_nml
+  print_diff_pgr = T
   fhzero         = 3
   ldiag3d        = F
   fhcyc          = 0
