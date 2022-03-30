@@ -28,7 +28,7 @@ export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
 export exptname="C${RES}_hybcov_owhourly"
 # for 'passive' or 'replay' cycling of control fcst 
-export replay_controlfcst='true'
+export replay_controlfcst='false'
 
 export fg_gfs="run_ens_fv3.sh"
 export ensda="enkf_run.sh"
@@ -168,7 +168,7 @@ export NST_GSI=0
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
 
-export LEVS=64   
+export LEVS=127  
 if [ $LEVS -eq 64 ]; then
   export nsig_ext=12
   export gpstop=50
@@ -289,8 +289,9 @@ export LATA=$LATB
 export FHMIN=0
 export FHMAX=4 # only really need to run two hours (this allows GSI to see a symmetric window)
 export FHOUT=1
-export FHMAX_LONGER=7 # to compare with 6-h cycling system 4 times per day
-#export FHMAX_LONGER=13 # to compare with 6-h cycling system 4 times per day
+#export FHMAX_LONGER=7 # to compare with 6-h cycling system 4 times per day
+# fhour=4 -> 6-h forecast in 6-h system, fhour=10 -> 12-h forecast in 6-h system
+export FHMAX_LONGER=10 # to compare with 6-h cycling system 4 times per day
 
 export enkfstatefhrs="3, 4, 5, 6, 7, 8, 9"
 export enkfanalfhrs="4, 5, 6"
