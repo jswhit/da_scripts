@@ -287,14 +287,20 @@ export LATA=$LATB
 # fhr=1 mapped to fhr=6, fhr=2 mapped to fhr=7 etc
 # fhrs 3,4,5 are previous analyses.  
 export FHMIN=0
-export FHMAX=4 # only really need to run two hours (this allows GSI to see a symmetric window)
+# will actually on run two hours (fhrs 3,4 allow GSI to see a symmetric window)
+# fcst hours 3 and 4 will be symlinked to hour 2
+export FHMAX=4 
 export FHOUT=1
-#export FHMAX_LONGER=7 # to compare with 6-h cycling system 4 times per day
 # fhour=4 -> 6-h forecast in 6-h system, fhour=10 -> 12-h forecast in 6-h system
-export FHMAX_LONGER=10 # to compare with 6-h cycling system 4 times per day
+#export FHMAX_LONGER=7 # to compare with 6-h cycling system 4 times per day
+export FHMAX_LONGER=10 # to compare with 6-h cycling system 4 times per day 
 
 export enkfstatefhrs="3, 4, 5, 6, 7, 8, 9"
-export enkfanalfhrs="4, 5, 6"
+# analyses produced at fhr=1, plus previous two hours
+# these become backgrounds for first three (of 7) times in next assim window (hrs=3,4,5).
+# model is started from analhr=6 (actually the 1-h fcst, then run for two hours (hrs=6,7)
+# last two backgrounds in next assim window are symlinked to 2-h forecast (hrs=8,9 symlinked to hr=7)
+export enkfanalfhrs="4, 5, 6" 
 
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
