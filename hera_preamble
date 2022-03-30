@@ -50,7 +50,7 @@ fi
 # C192 ensemble, C384 control (run with 20 nodes)
 export fg_proc=$corespernode 
 export fg_threads=1
-export enkf_threads=4 
+export enkf_threads=10 
 export gsi_control_threads=2
 export write_groups=4
 # 40 cores per node 
