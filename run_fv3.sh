@@ -103,7 +103,7 @@ export DIAG_TABLE=${DIAG_TABLE:-$enkfscripts/diag_table}
 /bin/cp -f $enkfscripts/fd_nems.yaml .
 # insert correct starting time and output interval in diag_table template.
 sed -i -e "s/YYYY MM DD HH/${year} ${mon} ${day} ${hour}/g" diag_table
-sed -i -e "s/FHOUT/${FHOUT}/g" diag_table
+sed -i -e "s/FHOUT/${RESTART_FREQ}/g" diag_table
 /bin/cp -f $enkfscripts/field_table_${SUITE} field_table
 /bin/cp -f $enkfscripts/data_table . 
 /bin/rm -rf RESTART
@@ -371,7 +371,7 @@ else
      FHROT=0
    fi
 fi
-if [ $cold_start == "true" ] && [ $analdate -gt 2021032400 ]; then
+if [ $cold_start == "true" ] && [ $analdate -gt 2021032400 ] && [ "${iau_delthrs}" != "-1" ]; then
    # cold start ICS at end of window, need one timestep restart
    restart_interval=`python -c "from __future__ import print_function; print($FHROT + $timestep_hrs)"`
    output_1st_tstep_rst=".true."
