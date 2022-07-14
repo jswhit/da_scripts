@@ -3,9 +3,9 @@
 #SBATCH -t 02:30:00
 #SBATCH -A gsienkf  
 #SBATCH -N 20    
-#SBATCH -J C192_hybgain
-#SBATCH -e C192_hybgain.err
-#SBATCH -o C192_hybgain.out
+#SBATCH -J C192_hybcov_p8
+#SBATCH -e C192_hybcov_p8.err
+#SBATCH -o C192_hybcov_p8.out
 
 export NODES=$SLURM_NNODES
 export corespernode=$SLURM_CPUS_ON_NODE
@@ -47,8 +47,10 @@ fi
 # for ensemble forecast and GSI
 
 # C192 ensemble, C384 control
-export fg_proc=$corespernode 
-export fg_threads=1
+#export fg_proc=$corespernode 
+#export fg_threads=1
+export fg_proc=`expr 2 \* $corespernode` 
+export fg_threads=2
 export enkf_threads=20 
 export gsi_control_threads=8
 export write_groups=4

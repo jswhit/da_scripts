@@ -6,11 +6,13 @@ export ndates_job=1 # number of DA cycles to run in one job submission
 # resolution of control and ensmemble.
 export RES=192 
 export RES_CTL=384
+export OCNRES=mx050
+export ORES3=`echo $OCNRES | cut -c3-5`
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
-export hybgain="true" # hybrid gain approach, if false use hybrid covariance
-export alpha=200 # percentage of 3dvar increment (beta_2*1000) 
+export hybgain="false" # hybrid gain approach, if false use hybrid covariance
+export alpha=250 # percentage of 3dvar increment (beta_2*1000) 
 export beta=1000 # percentage of enkf increment (*10)
 # if replay_controlfcst='true', weight given to ens mean vs control 
 # forecast in recentered backgrond ensemble (x100).  if recenter_control_wgt=0, then
@@ -24,7 +26,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybgain"
+export exptname="C${RES}_hybcov_6hourly_iau_p8"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 export enkfonly='false' # pure EnKF
@@ -149,6 +151,8 @@ export NST_GSI=3          # default 0: No NST info at all;
 export DONST="NO"
 export NST_MODEL=0
 export NST_GSI=0
+# fraction grid
+export FRAC_GRID=F
 
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
@@ -170,9 +174,9 @@ elif [ $LEVS -eq 127 ]; then
   export gpstop=55
   export GRIDOPTS="nlayers(63)=1,nlayers(64)=1,"
   if [ $DONST == "YES" ]; then
-     export SUITE="FV3_GFS_v16"
+     export SUITE="FV3_GFS_v17_p8"
   else
-     export SUITE="FV3_GFS_v16_no_nsst"
+     export SUITE="FV3_GFS_v17_p8_nonsst"
   fi
 else
   echo "LEVS must be 64 or 127"
@@ -193,6 +197,8 @@ export DO_SHUM=T
 export SHUM=0.005
 export DO_SKEB=T
 export SKEB=0.3
+export PERT_MP=.true.
+export PERT_CLDS=.true.
 # turn off stochastic physics
 #export SKEB=0
 #export DO_SKEB=F
@@ -267,7 +273,8 @@ else
    echo "model parameters for control resolution C$RES_CTL not set"
    exit 1
 fi
-export FHCYC=0 # run global_cycle instead of gcycle inside model
+#export FHCYC=6 # if == 0 run global_cycle instead of gcycle inside model
+export FHCYC=0 # if == 0 run global_cycle instead of gcycle inside model
 
 # analysis is done at ensemble resolution
 export LONA=$LONB
@@ -374,11 +381,11 @@ export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
 
 if [ "$machine" == 'hera' ]; then
+   export FIXDIR=/scratch1/NCEPDEV/nems/emc.nemspara/RT/NEMSfv3gfs/input-data-20220414
    export python=/contrib/anaconda/2.3.0/bin/python
    export fv3gfspath=/scratch1/NCEPDEV/global/glopara
-   export FIXFV3=${fv3gfspath}/fix_NEW/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix_NEW/fix_am
-   export gsipath=${basedir}/gsi/GSI-github-jswhit-master
+   export gsipath=${basedir}/gsi/GSI
    export fixgsi=${gsipath}/fix
    export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0
    export execdir=${enkfscripts}/exec_${machine}
@@ -463,11 +470,11 @@ else
    if [ $hybgain == "false" ]; then
       # use static B weights and localization scales for GSI from files.
       # (beta_s0, beta_e0 ignored)
-      export readin_localization=".true."
-      export readin_beta=".true."
+      #export readin_localization=".true."
+      #export readin_beta=".true."
       # use constant values (beta_s0,beta_e0 parameters)
-      #export readin_beta=.false.
-      #export readin_localization=.false.
+      export readin_beta=.false.
+      export readin_localization=.false.
       # these only used for hybrid covariance (hyb 4denvar) in GSI
       export beta_s0=`python -c "from __future__ import print_function; print($alpha / 1000.)"` # weight given to static B in hyb cov
       # beta_e0 parameter (ensemble weight) in my GSI branch (not in GSI/develop)

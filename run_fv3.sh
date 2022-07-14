@@ -14,6 +14,14 @@ fi
 
 ulimit -s unlimited
 
+if [ $cold_start == "true" ]; then
+  FHCYC=0
+fi
+
+if [ $FHCYC -gt 0 ]; then
+  skip_global_cycle=1
+fi
+
 niter=${niter:-1}
 if [ "$charnanal" != "control" ] && [ "$charnanal" != "ensmean" ]; then
    nmem=`echo $charnanal | cut -f3 -d"m"`
@@ -22,6 +30,7 @@ else
    nmem=0
 fi
 charnanal2=`printf %02i $nmem`
+export ISEED_CA=${analdate}
 export ISEED_SPPT=$((analdate*1000 + nmem*10 + 0 + niter))
 export ISEED_SKEB=$((analdate*1000 + nmem*10 + 1 + niter))
 export ISEED_SHUM=$((analdate*1000 + nmem*10 + 2 + niter))
@@ -105,6 +114,7 @@ export DIAG_TABLE=${DIAG_TABLE:-$enkfscripts/diag_table}
 sed -i -e "s/YYYY MM DD HH/${year} ${mon} ${day} ${hour}/g" diag_table
 sed -i -e "s/FHOUT/${RESTART_FREQ}/g" diag_table
 /bin/cp -f $enkfscripts/field_table_${SUITE} field_table
+/bin/cp -f ${enkfscripts}/${SUITE}.nml input.nml
 /bin/cp -f $enkfscripts/data_table . 
 /bin/rm -rf RESTART
 mkdir -p RESTART
@@ -112,8 +122,8 @@ mkdir -p INPUT
 
 # make symlinks for fixed files and initial conditions.
 cd INPUT
-if [ "$cold_start" == "true" ]; then
-   ls -l *nc
+find -type l -delete
+if [ "$fg_only" == "true" ] && [ "$cold_start" == "true" ]; then
    for file in ../*nc; do
        file2=`basename $file`
        ln -fs $file $file2
@@ -122,32 +132,52 @@ fi
 
 # Grid and orography data
 n=1
+if [[ $RES -eq 96 ]]; then
+   fv3_input_data=FV3_input_data
+else
+   fv3_input_data=FV3_input_data${RES}
+fi
 while [ $n -le 6 ]; do
- ln -fs $FIXFV3/C${RES}/C${RES}_grid.tile${n}.nc     C${RES}_grid.tile${n}.nc
- ln -fs $FIXFV3/C${RES}/C${RES}_oro_data.tile${n}.nc oro_data.tile${n}.nc
+ ln -fs $FIXDIR/${fv3_input_data}/INPUT/C${RES}_grid.tile${n}.nc    C${RES}_grid.tile${n}.nc
+ if [ $FRAC_GRID == ".true." ]; then
+    ln -fs $FIXDIR/FV3_fix_tiled/C${RES}/oro_C${RES}.${OCNRES}.tile${n}.nc oro_data.tile${n}.nc
+ else
+    ln -fs $FIXDIR/${fv3_input_data}/INPUT/oro_data.tile${n}.nc  oro_data.tile${n}.nc
+ fi
+ ln -fs $FIXDIR/${fv3_input_data}/INPUT_L127/oro_data_ls.tile${n}.nc oro_data_ls.tile${n}.nc
+ ln -fs $FIXDIR/${fv3_input_data}/INPUT_L127/oro_data_ss.tile${n}.nc oro_data_ss.tile${n}.nc
  n=$((n+1))
 done
-ln -fs $FIXFV3/C${RES}/C${RES}_mosaic.nc  grid_spec.nc
+if [ $FRAC_GRID == ".true." ]; then
+   ln -fs $FIXDIR/${fv3_input_data}/INPUT/grid_spec.nc  C${RES}_mosaic.nc
+   ln -fs $FIXDIR/CPL_FIX/aC${RES}o${ORES3}/grid_spec.nc  grid_spec.nc
+   ln -fs $FIXDIR/MOM6_FIX/${ORES3}/ocean_mosaic.nc ocean_mosaic.nc
+else
+   ln -fs $FIXDIR/${fv3_input_data}/INPUT_L127/C${RES}_mosaic.nc  C${RES}_mosaic.nc 
+   ln -fs $FIXDIR/${fv3_input_data}/INPUT_L127/C${RES}_mosaic.nc  grid_spec.nc
+fi
+# symlinks one level up from INPUT
 cd ..
-#ln -fs $FIXGLOBAL/global_o3prdlos.f77               global_o3prdlos.f77
-# new ozone and h2o physics for stratosphere
-ln -fs $FIXGLOBAL/ozprdlos_2015_new_sbuvO3_tclm15_nuchem.f77 global_o3prdlos.f77
-ln -fs $FIXGLOBAL/global_h2o_pltc.f77 global_h2oprdlos.f77 # used if h2o_phys=T
-# co2, ozone, surface emiss and aerosol data.
-ln -fs $FIXGLOBAL/global_solarconstant_noaa_an.txt  solarconstant_noaa_an.txt
-ln -fs $FIXGLOBAL/global_sfc_emissivity_idx.txt     sfc_emissivity_idx.txt
-ln -fs $FIXGLOBAL/global_co2historicaldata_glob.txt co2historicaldata_glob.txt
-ln -fs $FIXGLOBAL/co2monthlycyc.txt                 co2monthlycyc.txt
-for file in `ls $FIXGLOBAL/co2dat_4a/global_co2historicaldata* ` ; do
-   ln -fs $file $(echo $(basename $file) |sed -e "s/global_//g")
+ln -fs $FIXDIR/FV3_fix/fix_co2_proj/* .
+#ln -fs $FIXDIR/FV3_fix/*grb .
+ln -fs $FIXDIR/FV3_fix/*txt .
+ln -fs $FIXDIR/FV3_fix/*f77 .
+ln -fs $FIXDIR/FV3_fix/*dat .
+ln -fs $FIXDIR/FV3_input_data_RRTMGP/* .
+ln -fs $FIXDIR/FV3_input_data_gsd/CCN_ACTIVATE.BIN CCN_ACTIVATE.BIN 
+ln -fs $FIXDIR/FV3_input_data_gsd/freezeH2O.dat freezeH2O.dat   
+ln -fs $FIXDIR/FV3_input_data_gsd/qr_acr_qg.dat qr_acr_qg.dat
+ln -fs $FIXDIR/FV3_input_data_gsd/qr_acr_qs.dat qr_acr_qs.dat 
+ln -fs $FIXDIR/FV3_input_data/ugwp_C384_tau.nc ugwp_limb_tau.nc
+# for ugwpv1 and MERRA aerosol climo (IAER=1011)
+for n in 01 02 03 04 05 06 07 08 09 10 11 12; do
+  ln -fs $FIXDIR/FV3_input_data_INCCN_aeroclim/MERRA2/merra2.aerclim.2003-2014.m${n}.nc aeroclim.m${n}.nc
 done
-ln -fs $FIXGLOBAL/global_climaeropac_global.txt     aerosol.dat
-for file in `ls $FIXGLOBAL/global_volcanic_aerosols* ` ; do
-   ln -fs $file $(echo $(basename $file) |sed -e "s/global_//g")
-done
-# for Thompson microphysics
-#ln -fs $FIXGLOBAL/CCN_ACTIVATE.BIN CCN_ACTIVATE.BIN
-#ln -fs $FIXGLOBAL/freezeH2O.dat freezeH2O.dat
+ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_BC.v1_3.dat  optics_BC.dat
+ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_OC.v1_3.dat  optics_OC.dat
+ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_DU.v15_3.dat optics_DU.dat
+ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_SS.v3_3.dat  optics_SS.dat
+ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_SU.v1_3.dat  optics_SU.dat
 
 # create netcdf increment files.
 if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
@@ -191,7 +221,7 @@ fi
 if [ "$cold_start" == "true" ]; then
    # cold start from chgres'd GFS analyes
    stochini=F
-   reslatlondynamics=""
+   reslatlondynamics='""'
    readincrement=F
    FHCYC=0
    iaudelthrs=-1
@@ -226,7 +256,7 @@ else
          echo "illegal value for iaufhrs"
          exit 1
       fi
-      reslatlondynamics=""
+      reslatlondynamics='""'
       readincrement=F
    else
       reslatlondynamics="fv3_increment6.nc"
@@ -250,6 +280,7 @@ fnacna=${obs_datapath}/${RUN}.${yeara}${mona}${daya}/${houra}/${RUN}.t${houra}z.
 fnsnoa=${obs_datapath}/${RUN}.${yeara}${mona}${daya}/${houra}/${RUN}.t${houra}z.snogrb_t1534.3072.1536
 fnsnog=${obs_datapath}/${RUN}.${yearprev}${monprev}${dayprev}/${hourprev}/${RUN}.t${hourprev}z.snogrb_t1534.3072.1536
 nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
+nrecs_snow=0 # force no snow update (do this if NOAH-MP used)
 if [ $nrecs_snow -eq 0 ]; then
    # no snow depth in file, use model
    fnsnoa=' ' # no input file
@@ -307,7 +338,6 @@ fi
 if [ $cold_start = "false" ] && [ -z $skip_global_cycle ]; then
    # run global_cycle to update surface in restart file.
    export BASE_GSM=${fv3gfspath}
-   export FIXfv3=$FIXFV3
    # global_cycle chokes for 3,9,15,18 UTC hours in CDATE
    #export CDATE="${year_start}${mon_start}${day_start}${hour_start}"
    export CDATE=${analdate}
@@ -429,7 +459,6 @@ EOF
 cat model_configure
 
 # copy template namelist file, replace variables.
-/bin/cp -f ${enkfscripts}/${SUITE}.nml input.nml
 sed -i -e "s/SUITE/${SUITE}/g" input.nml
 sed -i -e "s/LAYOUT/${layout}/g" input.nml
 sed -i -e "s/NSTF_NAME/${nstf_name}/g" input.nml
@@ -446,6 +475,8 @@ sed -i -e "s/SHUM/${SHUM}/g" input.nml
 sed -i -e "s/DO_shum/${DO_SHUM}/g" input.nml
 sed -i -e "s/SKEB/${SKEB}/g" input.nml
 sed -i -e "s/DO_skeb/${DO_SKEB}/g" input.nml
+sed -i -e "s/PERT_MP/${PERT_MP}/g" input.nml
+sed -i -e "s/PERT_CLDS/${PERT_CLDS}/g" input.nml
 sed -i -e "s/STOCHINI/${stochini}/g" input.nml
 sed -i -e "s/FHOUT/${FHOUT}/g" input.nml
 sed -i -e "s/CDMBGWD/${cdmbgwd}/g" input.nml
@@ -462,6 +493,14 @@ sed -i -e "s/RESLATLONDYNAMICS/${reslatlondynamics}/g" input.nml
 sed -i -e "s/READ_INCREMENT/${readincrement}/g" input.nml
 sed -i -e "s/HYDROSTATIC/${hydrostatic}/g" input.nml
 sed -i -e "s/LAUNCH_LEVEL/${launch_level}/g" input.nml
+sed -i -e "s/FRAC_GRID/${FRAC_GRID}/g" input.nml
+sed -i -e "s/FHCYC/${FHCYC}/g" input.nml
+sed -i -e "s/ISEED_CA/${ISEED_CA}/g" input.nml
+sed -i -e "s!FIXDIR!${FIXDIR}!g" input.nml
+sed -i -e "s!SSTFILE!${fntsfa}!g" input.nml
+sed -i -e "s!ICEFILE!${fnacna}!g" input.nml
+sed -i -e "s!SNOFILE!${fnsnoa}!g" input.nml
+sed -i -e "s/FSNOL_PARM/${FSNOL}/g" input.nml
 cat input.nml
 ls -l INPUT
 
