@@ -69,7 +69,7 @@ export controlanal="false" # hybrid-cov high-res control analysis as in ops
 #export cleanup_observer='false'
 #export cleanup_anal='false'
 #export recenter_anal="false"
-#export cleanup_fg='false'
+export cleanup_fg='false'
 #export resubmit='false'
 #export do_cleanup='false'
 #export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
@@ -151,8 +151,16 @@ export NST_GSI=3          # default 0: No NST info at all;
 export DONST="NO"
 export NST_MODEL=0
 export NST_GSI=0
-# fraction grid
-export FRAC_GRID=F
+
+# turn off NST in GSI, but run passively in model
+#export DONST="YES"
+#export NST_MODEL=2
+#export NST_GSI=0
+
+# fractional grid
+export FRAC_GRID=.false.
+#export FRAC_GRID=.true.
+
 
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
@@ -175,8 +183,11 @@ elif [ $LEVS -eq 127 ]; then
   export GRIDOPTS="nlayers(63)=1,nlayers(64)=1,"
   if [ $DONST == "YES" ]; then
      export SUITE="FV3_GFS_v17_p8"
+     #export SUITE="FV3_GFS_v16"
   else
      export SUITE="FV3_GFS_v17_p8_nonsst"
+     #export SUITE="FV3_GFS_v16_no_nsst"
+     #export SUITE="FV3_GFS_v16_coupled_nsstNoahmpUGWPv1"
   fi
 else
   echo "LEVS must be 64 or 127"
@@ -221,6 +232,7 @@ elif [ $RES -eq 192 ]; then
    export LONB=768   
    export LATB=384  
    export dt_atmos=450
+   #export dt_atmos=225
    export cdmbgwd="0.23,1.5,1.0,1.0"
 elif [ $RES -eq 128 ]; then
    export JCAP=254 
@@ -273,8 +285,8 @@ else
    echo "model parameters for control resolution C$RES_CTL not set"
    exit 1
 fi
-#export FHCYC=6 # if == 0 run global_cycle instead of gcycle inside model
-export FHCYC=0 # if == 0 run global_cycle instead of gcycle inside model
+export FHCYC=6 # if == 0 run global_cycle instead of gcycle inside model
+#export FHCYC=0 # if == 0 run global_cycle instead of gcycle inside model
 
 # analysis is done at ensemble resolution
 export LONA=$LONB
@@ -375,13 +387,14 @@ export nanals=80
 #export nanals2=-1 # longer extension. Set to -1 to disable 
 #export nanals2=$NODES
 export nanals2=$nanals
-export nitermax=1 # number of retries
+export nitermax=2 # number of retries
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
 
 if [ "$machine" == 'hera' ]; then
    export FIXDIR=/scratch1/NCEPDEV/nems/emc.nemspara/RT/NEMSfv3gfs/input-data-20220414
+   export FIXGLOBAL=${FIXDIR}/fix_NEW/fix_am
    export python=/contrib/anaconda/2.3.0/bin/python
    export fv3gfspath=/scratch1/NCEPDEV/global/glopara
    export FIXGLOBAL=${fv3gfspath}/fix_NEW/fix_am
@@ -432,6 +445,7 @@ else
 fi
 
 
+#export ANAVINFO=${fixgsi}/global_anavinfo_allhydro.l${LEVS}.txt
 export ANAVINFO=${fixgsi}/global_anavinfo.l${LEVS}.txt
 export ANAVINFO_ENKF=${ANAVINFO}
 export HYBENSINFO=${fixgsi}/global_hybens_info.l${LEVS}.txt # only used if readin_beta or readin_localization=T

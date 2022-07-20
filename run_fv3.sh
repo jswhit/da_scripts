@@ -98,7 +98,6 @@ else
    fi
 fi
 
-
 # copy data, diag and field tables.
 cd ${datapath2}/${charnanal}
 if [ $? -ne 0 ]; then
@@ -131,6 +130,15 @@ if [ "$fg_only" == "true" ] && [ "$cold_start" == "true" ]; then
 fi
 
 # Grid and orography data
+
+#n=1
+#while [ $n -le 6 ]; do
+# ln -fs $FIXFV3/C${RES}/C${RES}_grid.tile${n}.nc     C${RES}_grid.tile${n}.nc
+# ln -fs $FIXFV3/C${RES}/C${RES}_oro_data.tile${n}.nc oro_data.tile${n}.nc
+# n=$((n+1))
+#done
+#ln -fs $FIXFV3/C${RES}/C${RES}_mosaic.nc  grid_spec.nc
+
 n=1
 if [[ $RES -eq 96 ]]; then
    fv3_input_data=FV3_input_data
@@ -154,7 +162,8 @@ if [ $FRAC_GRID == ".true." ]; then
    ln -fs $FIXDIR/MOM6_FIX/${ORES3}/ocean_mosaic.nc ocean_mosaic.nc
 else
    ln -fs $FIXDIR/${fv3_input_data}/INPUT_L127/C${RES}_mosaic.nc  C${RES}_mosaic.nc 
-   ln -fs $FIXDIR/${fv3_input_data}/INPUT_L127/C${RES}_mosaic.nc  grid_spec.nc
+   #ln -fs $FIXDIR/${fv3_input_data}/INPUT_L127/C${RES}_mosaic.nc  grid_spec.nc
+   ln -fs $FIXDIR/${fv3_input_data}/INPUT_L127/grid_spec.nc  grid_spec.nc
 fi
 # symlinks one level up from INPUT
 cd ..
@@ -178,6 +187,32 @@ ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_OC.v1_3.dat  
 ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_DU.v15_3.dat optics_DU.dat
 ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_SS.v3_3.dat  optics_SS.dat
 ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_SU.v1_3.dat  optics_SU.dat
+
+# Grid and orography data
+#n=1
+#while [ $n -le 6 ]; do
+# ln -fs $FIXFV3/C${RES}/C${RES}_grid.tile${n}.nc     C${RES}_grid.tile${n}.nc
+# ln -fs $FIXFV3/C${RES}/C${RES}_oro_data.tile${n}.nc oro_data.tile${n}.nc
+# n=$((n+1))
+#done
+#ln -fs $FIXFV3/C${RES}/C${RES}_mosaic.nc  grid_spec.nc
+#cd ..
+##ln -fs $FIXGLOBAL/global_o3prdlos.f77               global_o3prdlos.f77
+## new ozone and h2o physics for stratosphere
+#ln -fs $FIXGLOBAL/ozprdlos_2015_new_sbuvO3_tclm15_nuchem.f77 global_o3prdlos.f77
+#ln -fs $FIXGLOBAL/global_h2o_pltc.f77 global_h2oprdlos.f77 # used if h2o_phys=T
+## co2, ozone, surface emiss and aerosol data.
+#ln -fs $FIXGLOBAL/global_solarconstant_noaa_an.txt  solarconstant_noaa_an.txt
+#ln -fs $FIXGLOBAL/global_sfc_emissivity_idx.txt     sfc_emissivity_idx.txt
+#ln -fs $FIXGLOBAL/global_co2historicaldata_glob.txt co2historicaldata_glob.txt
+#ln -fs $FIXGLOBAL/co2monthlycyc.txt                 co2monthlycyc.txt
+#for file in `ls $FIXGLOBAL/co2dat_4a/global_co2historicaldata* ` ; do
+#   ln -fs $file $(echo $(basename $file) |sed -e "s/global_//g")
+#done
+#ln -fs $FIXGLOBAL/global_climaeropac_global.txt     aerosol.dat
+#for file in `ls $FIXGLOBAL/global_volcanic_aerosols* ` ; do
+#   ln -fs $file $(echo $(basename $file) |sed -e "s/global_//g")
+#done
 
 # create netcdf increment files.
 if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
@@ -404,6 +439,7 @@ fi
 if [ $cold_start == "true" ] && [ $analdate -gt 2021032400 ] && [ "${iau_delthrs}" != "-1" ]; then
    # cold start ICS at end of window, need one timestep restart
    restart_interval=`python -c "from __future__ import print_function; print($FHROT + $timestep_hrs)"`
+   #restart_interval="$timestep_hrs $ANALINC" # for P7c
    output_1st_tstep_rst=".true."
 else
    restart_interval="$RESTART_FREQ -1"
@@ -501,6 +537,8 @@ sed -i -e "s!SSTFILE!${fntsfa}!g" input.nml
 sed -i -e "s!ICEFILE!${fnacna}!g" input.nml
 sed -i -e "s!SNOFILE!${fnsnoa}!g" input.nml
 sed -i -e "s/FSNOL_PARM/${FSNOL}/g" input.nml
+sed -i -e "s/CRES/C${RES}/g" input.nml
+#sed -i -e "s/ORES/${OCNRES}/g" input.nml
 cat input.nml
 ls -l INPUT
 

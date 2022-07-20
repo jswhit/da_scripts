@@ -1,8 +1,8 @@
 #!/bin/sh
 ##SBATCH -q debug
-#SBATCH -t 02:30:00
+#SBATCH -t 03:00:00
 #SBATCH -A gsienkf  
-#SBATCH -N 20    
+#SBATCH -N 40    
 #SBATCH -J C192_hybcov_p8
 #SBATCH -e C192_hybcov_p8.err
 #SBATCH -o C192_hybcov_p8.out

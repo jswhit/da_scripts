@@ -291,5 +291,48 @@
   new_lscale=.true.
 /
 
+&namsfc
+  FNGLAC   = "FIXDIR/FV3_fix/global_glacier.2x2.grb",
+  FNMXIC   = "FIXDIR/FV3_fix/global_maxice.2x2.grb",
+  FNTSFC   = "FIXDIR/FV3_fix/RTGSST.1982.2012.monthly.clim.grb",
+  FNSNOC   = "FIXDIR/FV3_fix/global_snoclim.1.875.grb",
+  FNZORC   = "igbp",
+  FNALBC   = "FIXDIR/FV3_fix_tiled/CRES/CRES.snowfree_albedo.tileX.nc",
+  FNALBC2  = "FIXDIR/FV3_fix_tiled/CRES/CRES.facsf.tileX.nc",
+  FNAISC   = "FIXDIR/FV3_fix/CFSR.SEAICE.1982.2012.monthly.clim.grb",
+  FNTG3C   = "FIXDIR/FV3_fix_tiled/CRES/CRES.substrate_temperature.tileX.nc"
+  FNVEGC   = "FIXDIR/FV3_fix_tiled/CRES/CRES.vegetation_greenness.tileX.nc",
+  FNVETC   = "FIXDIR/FV3_fix_tiled/CRES/CRES.vegetation_type.tileX.nc",
+  FNSOTC   = "FIXDIR/FV3_fix_tiled/CRES/CRES.soil_type.tileX.nc",
+  FNSMCC   = "FIXDIR/FV3_input_data/global_soilmgldas.statsgo.t1534.3072.1536.grb",
+  FNMSKH   = "FIXDIR/FV3_input_data/global_slmask.t1534.3072.1536.grb",
+  FNTSFA   = "SSTFILE",
+  FNACNA   = "ICEFILE",
+  FNSNOA   = "SNOFILE",
+  FNVMNC   = "FIXDIR/FV3_fix_tiled/CRES/CRES.vegetation_greenness.tileX.nc",
+  FNVMXC   = "FIXDIR/FV3_fix_tiled/CRES/CRES.vegetation_greenness.tileX.nc",
+  FNSLPC   = "FIXDIR/FV3_fix_tiled/CRES/CRES.slope_type.tileX.nc",
+  FNABSC   = "FIXDIR/FV3_fix_tiled/CRES/CRES.maximum_snow_albedo.tileX.nc",
+  LDEBUG   =.false.,
+  FSMCL(2) = 99999 
+  FSMCL(3) = 99999 
+  FSMCL(4) = 99999 
+  LANDICE = .false.
+  FTSFS = 99999
+  FAISL = 99999
+  FAISS = 99999
+  FSNOL = FSNOL_PARM
+  FSNOS = 99999
+  FSICL = 99999    
+  FSICS = 99999
+  FTSFL = 99999
+  FVETL = 99999
+  FSOTL = 99999
+  FvmnL = 99999
+  FvmxL = 99999
+  FSLPL = 99999
+  FABSL = 99999
+/
+
 &nam_sfcperts
 /
