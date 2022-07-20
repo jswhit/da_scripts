@@ -12,6 +12,13 @@ mpitaskspernode=`python -c "from __future__ import print_function; import math; 
 # -n: total number of mpi tasks
 # -N: number of nodes to run on
 # --ntasks-per-node:  mpi tasks on each node
+# reset threads to max allowed to avoid running out of stack
+export threadmax=${threadmax:-$corespernode}
+if [ $count -gt $threadmax ]; then
+  count=$threadmax
+  echo "resetting threads to $count"
+fi
+export OMP_NUM_THREADS=$count
 echo "running srun -N $totnodes -n $nprocs -c $count --ntasks-per-node=$mpitaskspernode  --exclusive --cpu-bind=cores --verbose $PGM"
 eval srun -N $totnodes -n $nprocs -c $count --ntasks-per-node=$mpitaskspernode --exclusive --cpu-bind=cores --verbose $PGM
 rc=$?
