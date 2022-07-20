@@ -35,9 +35,18 @@ else
 fi
 export HXONLY='NO'
 export VERBOSE=YES  
+#export KMP_AFFINITY=disabled
 export OMP_NUM_THREADS=$gsi_control_threads
 export OMP_STACKSIZE=2048M
 export MKL_NUM_THREADS=1
+#export threadmax=5
+#export NTHSTACK=1024000000
+#export I_MPI_ADJUST_ALLREDUCE=5
+#export MPI_BUFS_PER_PROC=2048
+#export MPI_BUFS_PER_HOST=2048
+#export MPI_GROUP_MAX=256
+#export MPI_MEMMAP_OFF=1
+#export MP_STDOUTMODE="ORDERED"
 #cores=`python -c "print (${NODES} - 1) * ${corespernode}"`
 export nprocs=`expr $cores \/ $OMP_NUM_THREADS`
 export mpitaskspernode=`expr $corespernode \/ $OMP_NUM_THREADS`

@@ -213,6 +213,14 @@ dmesh1=${dmesh1:-145.0}
 dmesh2=${dmesh2:-150.0}
 dmesh3=${dmesh3:-100.0}
 if [ "$HXONLY" = "NO" ] && [[ $beta_s0 < 0.999 ]]; then
+# use hybrid_ensemble_parameters,only : l_hyb_ens,uv_hyb_ens,aniso_a_en,generate_ens,&
+#                        n_ens,nlon_ens,nlat_ens,jcap_ens,jcap_ens_test,oz_univ_static,&
+#                        regional_ensemble_option,fv3sar_ensemble_opt,merge_two_grid_ensperts, &
+#                        full_ensemble,pseudo_hybens,pwgtflg,&
+#                        beta_s0,beta_e0,s_ens_h,s_ens_v,init_hybrid_ensemble_parameters,&
+#                        readin_localization,write_ens_sprd,eqspace_ensgrid,grid_ratio_ens,&
+#                        readin_beta,use_localization_grid,use_gfs_ens,q_hyb_ens,i_en_perts_io, &
+#                        l_ens_in_diff_time,ensemble_path,ens_fast_read,sst_staticB
 HYBRIDENSDATA="l_hyb_ens=.true.,n_ens=$nens,beta_s0=$beta_s0,beta_e0=$beta_e0,s_ens_h=$s_ens_h,s_ens_v=$s_ens_v,generate_ens=.false.,uv_hyb_ens=.true.,jcap_ens=$JCAP_ENS,nlat_ens=$NLAT_ENS,nlon_ens=$LONA_ENS,aniso_a_en=.false.,jcap_ens_test=$JCAP_ENS,readin_localization=$readin_localization,write_ens_sprd=.false.,oz_univ_static=.false.,q_hyb_ens=.false.,ens_fast_read=.true.,readin_beta=$readin_beta"
 else
 HYBRIDENSDATA=""
@@ -228,7 +236,7 @@ fi
 cat <<EOF > gsiparm.anl
  &SETUP
    niter_no_qc(1)=50,niter_no_qc(2)=0,
-   write_diag(1)=.true.,write_diag(2)=.false.,write_diag(3)=.true.,
+   write_diag(1)=.true.,write_diag(2)=.false.,write_diag(3)=.false.,
    netcdf_diag=.true.,binary_diag=.false.,
    qoption=2,
    factqmin=0.5,factqmax=0.0002,deltim=$DELTIM,
@@ -796,6 +804,7 @@ done
 if [[ $NOSAT == "YES" ||  -s ./satbias_in ]]  && [ -s ./sfcf03 ] && [ -s ./sfcf06 ] && [ -s ./sfcf09 ] && [ -s ./sigf03 ] && [ -s ./sigf06 ] && [ -s ./sigf09 ] ; then
 cat gsiparm.anl
 ulimit -s unlimited
+ulimit -a
 
 pwd
 ls -l
@@ -803,10 +812,10 @@ echo "Time before GSI `date` "
 export PGM=$tmpdir/gsi.x
 ${enkfscripts}/runmpi
 rc=$?
-if [[ $rc -ne 0 ]];then
-  echo "GSI failed with exit code $rc"
-  exit $rc
-fi
+#if [[ $rc -ne 0 ]];then
+#  echo "GSI failed with exit code $rc"
+#  exit $rc
+#fi
 else
 echo "some input files missing, exiting ..."
 ls -l ./satbias_in
