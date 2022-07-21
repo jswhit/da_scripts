@@ -69,7 +69,7 @@ export controlanal="false" # hybrid-cov high-res control analysis as in ops
 #export cleanup_observer='false'
 #export cleanup_anal='false'
 #export recenter_anal="false"
-export cleanup_fg='false'
+#export cleanup_fg='false'
 #export resubmit='false'
 #export do_cleanup='false'
 #export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
@@ -384,9 +384,9 @@ fi
 
 export nanals=80                                                    
 # if nanals2>0, extend nanals2 members out to FHMAX + ANALINC (one extra assim window)
-#export nanals2=-1 # longer extension. Set to -1 to disable 
+export nanals2=-1 # longer extension. Set to -1 to disable 
 #export nanals2=$NODES
-export nanals2=$nanals
+#export nanals2=$nanals
 export nitermax=2 # number of retries
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
@@ -394,10 +394,9 @@ export incdate="${enkfscripts}/incdate.sh"
 
 if [ "$machine" == 'hera' ]; then
    export FIXDIR=/scratch1/NCEPDEV/nems/emc.nemspara/RT/NEMSfv3gfs/input-data-20220414
-   export FIXGLOBAL=${FIXDIR}/fix_NEW/fix_am
+   export FIXDIR_gcyc=$FIXDIR
+   #export FIXDIR_gcyc=/scratch1/NCEPDEV/global/glopara/fix # for GFSv16
    export python=/contrib/anaconda/2.3.0/bin/python
-   export fv3gfspath=/scratch1/NCEPDEV/global/glopara
-   export FIXGLOBAL=${fv3gfspath}/fix_NEW/fix_am
    export gsipath=${basedir}/gsi/GSI
    export fixgsi=${gsipath}/fix
    export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0

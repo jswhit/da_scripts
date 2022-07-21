@@ -48,15 +48,15 @@ fi
 
 # C192 ensemble, C384 control
 #export fg_proc=$corespernode 
-#export fg_threads=1
+export fg_threads=1
 export fg_proc=`expr 2 \* $corespernode` 
-export fg_threads=2
+#export fg_threads=2
 export enkf_threads=20 
 export gsi_control_threads=8
 export write_groups=4
 # 40 cores per node 
-export write_tasks=1 
-export layout="3, 2"
+export write_tasks=2 
+export layout="3, 4"
 
 # C384 ensemble, C768 control (run with 80 nodes)
 #export fg_proc=`expr 4 \* $corespernode` # C384

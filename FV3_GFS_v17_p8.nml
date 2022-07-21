@@ -234,7 +234,7 @@
   do_ugwp_v0_nst_only  = .false.
   do_gsl_drag_ls_bl    = .false.
   do_gsl_drag_ss       = .true.
-  do_gsl_drag_tofd     = .true.
+  do_gsl_drag_tofd     = .false.
   do_ugwp_v1_orog_only = .false.
   do_ca        = .true.
   ca_global    = .false.
