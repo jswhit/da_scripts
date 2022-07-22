@@ -39,6 +39,7 @@ export rungfs='run_fv3.sh' # ensemble forecast
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
 export cleanup_fg='true'
 export cleanup_ensmean='true'
+export cleanup_ensmean_enkf='true'
 export cleanup_anal='true'
 export cleanup_controlanl='true'
 export cleanup_observer='true' 
@@ -64,6 +65,7 @@ export controlanal="false" # hybrid-cov high-res control analysis as in ops
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
+#export cleanup_ensmean_enkf='false'
 #export recenter_fcst="false"
 #export cleanup_controlanl='false'
 #export cleanup_observer='false'
