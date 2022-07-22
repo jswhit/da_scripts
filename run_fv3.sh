@@ -300,6 +300,16 @@ else
    fi
 fi
 
+# halve time step if niter>1 and niter==nitermax
+if [[ $niter -gt 1 ]] && [[ $niter -eq $nitermax ]]; then
+    dt_atmos=`python -c "print(${dt_atmos}/2)"`
+    stochini=F
+    echo "dt_atmos changed to $dt_atmos..."
+    #DO_SKEB=F
+    #DO_SPPT=F
+    #DO_SHUM=F
+fi
+
 #fntsfa=${sstpath}/${yeara}/sst_${charnanal2}.grib
 #fnacna=${sstpath}/${yeara}/icec_${charnanal2}.grib
 #fnsnoa='        ' # no input file, use model snow
@@ -532,7 +542,7 @@ sed -i -e "s/LAUNCH_LEVEL/${launch_level}/g" input.nml
 sed -i -e "s/FRAC_GRID/${FRAC_GRID}/g" input.nml
 sed -i -e "s/FHCYC/${FHCYC}/g" input.nml
 sed -i -e "s/ISEED_CA/${ISEED_CA}/g" input.nml
-sed -i -e "s!FIXDIR!${FIXDIR}!g" input.nml
+sed -i -e "s!FIXDIR!${FIXDIR_gcyc}!g" input.nml
 sed -i -e "s!SSTFILE!${fntsfa}!g" input.nml
 sed -i -e "s!ICEFILE!${fnacna}!g" input.nml
 sed -i -e "s!SNOFILE!${fnsnoa}!g" input.nml
