@@ -212,7 +212,10 @@ export DO_SKEB=T
 export SKEB=0.3
 export PERT_MP=.false.
 export PERT_CLDS=.false.
-export PERT_RADTEND=.true.
+export PERT_RADTEND=.true. # should be .false. if PERT_CLDS=.true.
+if [ $PERT_CLDS == ".true." ]; then
+   export PERT_RADTEND=.false.
+fi
 # turn off stochastic physics
 #export SKEB=0
 #export DO_SKEB=F
