@@ -523,6 +523,7 @@ sed -i -e "s/SKEB/${SKEB}/g" input.nml
 sed -i -e "s/DO_skeb/${DO_SKEB}/g" input.nml
 sed -i -e "s/PERT_MP/${PERT_MP}/g" input.nml
 sed -i -e "s/PERT_CLDS/${PERT_CLDS}/g" input.nml
+sed -i -e "s/PERT_RADTEND/${PERT_RADTEND}/g" input.nml
 sed -i -e "s/STOCHINI/${stochini}/g" input.nml
 sed -i -e "s/FHOUT/${FHOUT}/g" input.nml
 sed -i -e "s/CDMBGWD/${cdmbgwd}/g" input.nml

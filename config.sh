@@ -210,8 +210,9 @@ export DO_SHUM=T
 export SHUM=0.005
 export DO_SKEB=T
 export SKEB=0.3
-export PERT_MP=.true.
-export PERT_CLDS=.true.
+export PERT_MP=.false.
+export PERT_CLDS=.false.
+export PERT_RADTEND=.true.
 # turn off stochastic physics
 #export SKEB=0
 #export DO_SKEB=F

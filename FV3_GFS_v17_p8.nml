@@ -67,7 +67,7 @@
   beta = 0,
   a_imp = 1.0,
   p_fac = 0.1,
-  k_split  = 2,
+  k_split  = 1,
   n_split  = 6,
   nwat = 6,
   na_init = 0,
@@ -215,7 +215,7 @@
   do_shum        = DO_shum  
   pert_mp        = PERT_MP
   pert_clds      = PERT_CLDS
-  pert_radtend   = .false.
+  pert_radtend   = PERT_RADTEND
   cplchm       = .false.
   cplwav       = .false.
   cplwav2atm   = .false.
