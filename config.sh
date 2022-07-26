@@ -6,12 +6,12 @@ echo "running on $machine using $NODES nodes and $cores CORES"
 
 export ndates_job=1 # number of DA cycles to run in one job submission
 # resolution of control and ensmemble.
-export RES=384 
-export RES_CTL=768
+export RES=192
+export RES_CTL=384
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
-export hybgain="true" # hybrid gain approach, if false use hybrid covariance
+export hybgain="false" # hybrid gain approach, if false use hybrid covariance
 export alpha=200 # percentage of 3dvar increment (beta_2*1000) 
 export beta=1000 # percentage of enkf increment (*10)
 # if replay_controlfcst='true', weight given to ens mean vs control 
@@ -26,9 +26,9 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybgain_owhourly"
+export exptname="C${RES}_hybcov_owhourly"
 # for 'passive' or 'replay' cycling of control fcst 
-export replay_controlfcst='true'
+export replay_controlfcst='false'
 
 export fg_gfs="run_ens_fv3.sh"
 export ensda="enkf_run.sh"
@@ -47,13 +47,13 @@ export replay_run_observer='true' # run observer on replay control forecast
 # YYYYMMDDHH analysis date string to see if
 # full ensemble should be saved to HPSS (returns 0 if 
 # HPSS save should be done)
-#if [ $machine == "orion" ]; then
+if [ $machine == "orion" ]; then
    export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
    export save_hpss="false"
-#else
-#   export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
-#   export save_hpss="true"
-#fi
+else
+   export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
+   export save_hpss="true"
+fi
 export recenter_anal="true"
 
 # override values from above for debugging.
@@ -73,37 +73,29 @@ if [ "$machine" == 'hera' ]; then
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    export obs_datapath2=/scratch1/NCEPDEV/global/glopara/dump # for sst,snow,ice grib
-   export obs_datapath=/scratch2/BMC/gsienkf/whitaker/gdas1bufr_short # for bufr
+   export obs_datapath=/scratch2/BMC/gsienkf/whitaker/hrlyda_dumps2
    module purge
-   module load intel/18.0.5.274
-   module load impi/2018.0.4 
-   #module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
-   #module load netcdf_parallel/4.7.4
-   #module load hdf5_parallel/1.10.6.release
-   module use -a /scratch1/NCEPDEV/global/gwv/lp/lib/modulefiles
-   module load netcdfp/4.7.4
-   #module load esmflocal/8.0.1.08bs
-   module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
-   module load hdf5_parallel/1.10.6
-   #module load netcdf_parallel/4.7.4
-elif [ "$machine" == 'jet' ]; then
-   export basedir=/lfs1/BMC/wrfruc/whitaker
-   export datadir=$basedir
-   export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   export obs_datapath2=${basedir}/dump
-   export obs_datapath=${basedir}/hrlyda_dumps/short
-   module use /lfs4/HFIP/hfv3gfs/nwprod/hpc-stack/libs/modulefiles/stack
+   module use /scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack
    module load hpc/1.1.0
    module load hpc-intel/18.0.5.274
-   module load hpc-impi/2018.4.274
-   module load prod_util/1.2.2
+   module load hpc-impi/2018.0.4
+   module load hdf5/1.10.6
+   module load netcdf/4.7.4
+   module load pio/2.5.2
+   module load esmf/8_2_0_beta_snapshot_14
+   module load fms/2021.03
+   module load wgrib
+   export WGRIB=`which wgrib`
 elif [ "$machine" == 'orion' ]; then
-   export basedir=/work/noaa/gsienkf/${USER}
+   export basedir=/work2/noaa/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   export obs_datapath2=/work/noaa/global/glopara/dump
-   export obs_datapath=/work/noaa/sfc-perts/gbates/hrlyda_dumps/short
-   #export obs_datapath=/work/noaa/gsienkf/cmccoll/hrlyda_dumps/short
+   #export obs_datapath2=/work/noaa/sfc-perts/gbates/hrlyda_dumps/6hrly
+   #export obs_datapath=/work/noaa/sfc-perts/gbates/hrlyda_dumps/6hrly
+   export obs_datapath=/work/noaa/rstprod/dump
+   export obs_datapath2=/work/noaa/rstprod/dump
+   #export obs_datapath2=/work/noaa/global/glopara/dump
+   #export obs_datapath=/work/noaa/global/glopara/dump
    ulimit -s unlimited
    source $MODULESHOME/init/sh
    module purge
@@ -114,8 +106,24 @@ elif [ "$machine" == 'orion' ]; then
    module load mkl/2018.4
    module load hpc-impi/2018.4
    module load python/3.7.5
+   module load hdf5/1.10.6-parallel
+   module load wgrib/1.8.0b
    export PYTHONPATH=/home/jwhitake/.local/lib/python3.7/site-packages
    export HDF5_DISABLE_VERSION_CHECK=1
+   export WGRIB=`which wgrib`
+elif [ "$machine" == 'jet' ]; then
+   export basedir=/lfs1/BMC/wrfruc/whitaker
+   export datadir=$basedir
+   export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
+   #export obs_datapath2=${basedir}/dump
+   #export obs_datapath=${basedir}/hrlyda_dumps/short
+   export obs_datapath2=${basedir}/dumps
+   export obs_datapath=/lfs1/BMC/wrfruc/cmccoll/hrlyda_dumps
+   module use /lfs4/HFIP/hfv3gfs/nwprod/hpc-stack/libs/modulefiles/stack
+   module load hpc/1.1.0
+   module load hpc-intel/18.0.5.274
+   module load hpc-impi/2018.4.274
+   module load prod_util/1.2.2
    module list
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f2/dev/${USER}
@@ -133,7 +141,7 @@ export logdir="${datadir}/logs/${exptname}"
 export NOSAT="NO" # if yes, no radiances assimilated
 export NOCONV="NO"
 export NOTLNMC="NO" # no TLNMC in GSI in GSI EnVar
-export NOOUTERLOOP="NO" # no outer loop in GSI EnVar
+export NOOUTERLOOP="YES" # no outer loop in GSI EnVar
 # model NSST parameters contained within nstf_name in FV3 namelist
 # (comment out to get default - no NSST)
 # nstf_name(1) : NST_MODEL (NSST Model) : 0 = OFF, 1 = ON but uncoupled, 2 = ON and coupled
@@ -175,9 +183,9 @@ elif [ $LEVS -eq 127 ]; then
   export gpstop=55
   export GRIDOPTS="nlayers(63)=1,nlayers(64)=1,"
   if [ $DONST == "YES" ]; then
-     export SUITE="FV3_GFS_v16beta"
+     export SUITE="FV3_GFS_v16"
   else
-     export SUITE="FV3_GFS_v16beta_no_nsst"
+     export SUITE="FV3_GFS_v16_no_nsst"
   fi
 else
   echo "LEVS must be 64 or 127"
@@ -188,8 +196,6 @@ fi
 export dmesh1=125
 export dmesh2=125
 export dmesh3=100
-
-#export use_ipd="YES" # use IPD instead of CCPP
 
 # stochastic physics parameters.
 export DO_SPPT=T
@@ -281,13 +287,21 @@ export LATA=$LATB
 # fhr=1 mapped to fhr=6, fhr=2 mapped to fhr=7 etc
 # fhrs 3,4,5 are previous analyses.  
 export FHMIN=0
-export FHMAX=4 # only really need to run two hours (this allows GSI to see a symmetric window)
+# will actually on run two hours (fhrs 3,4 allow GSI to see a symmetric window)
+# fcst hours 3 and 4 will be symlinked to hour 2
+export FHMAX=4 
 export FHOUT=1
-export FHMAX_LONGER=7 # to compare with 6-h cycling system 4 times per day
-#export FHMAX_LONGER=13 # to compare with 6-h cycling system 4 times per day
+# fhour=4 -> 6-h forecast in 6-h system, fhour=10 -> 12-h forecast in 6-h system
+#export FHMAX_LONGER=7 # to compare with 6-h cycling system 4 times per day
+export FHMAX_LONGER=10 # to compare with 6-h cycling system 4 times per day 
+export iau_delthrs=1 # 1 for IAU on, -1 for IAU off
 
 export enkfstatefhrs="3, 4, 5, 6, 7, 8, 9"
-export enkfanalfhrs="4, 5, 6"
+# analyses produced at fhr=1, plus previous two hours
+# these become backgrounds for first three (of 7) times in next assim window (hrs=3,4,5).
+# model is started from analhr=6 (actually the 1-h fcst, then run for two hours (hrs=6,7)
+# last two backgrounds in next assim window are symlinked to 2-h forecast (hrs=8,9 symlinked to hr=7)
+export enkfanalfhrs="4, 5, 6" 
 
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
@@ -329,13 +343,17 @@ export getkf=.true.
 export getkf_inflation=.false.
 export modelspace_vloc=.true.
 export letkf_novlocal=.true.
+export corrlengthnh=1250  
+export corrlengthtr=1250  
+export corrlengthsh=1250  
+#export nobsl_max=-1
 export nobsl_max=10000
 # neg value means loc dist is distance to find nobsl_max obs,
 # bounded by abs(corrlength) and abs(corrlength)/10
-export corrlengthnh=-2500
-export corrlengthtr=-2500
-export corrlengthsh=-2500
-export mincorrlength_fact=0.1
+#export corrlengthnh=-2500
+#export corrlengthtr=-2500
+#export corrlengthsh=-2500
+#export mincorrlength_fact=0.1
 # The lnsigcutoff* parameters are ignored if modelspace_vloc=T
 export lnsigcutoffnh=1.5
 export lnsigcutofftr=1.5
@@ -368,8 +386,8 @@ fi
 #export biascorrdir=${datadir}/biascor
 
 export nanals=80                                                    
-#export nanals2=-1 # longer extension. Set to -1 to disable 
-export nanals2=$nanals
+export nanals2=-1 # longer extension. Set to -1 to disable 
+#export nanals2=$nanals
 export nitermax=2 # number of retries
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
@@ -380,7 +398,7 @@ if [ "$machine" == 'hera' ]; then
    export fv3gfspath=/scratch1/NCEPDEV/global/glopara
    export FIXFV3=${fv3gfspath}/fix_nco_gfsv16/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix_nco_gfsv16/fix_am
-   export gsipath=/scratch1/NCEPDEV/global/glopara/git/global-workflow/gfsv16b/sorc/gsi.fd
+   export gsipath=${basedir}/gsi/GSI-github-jswhit-master 
    export fixgsi=${gsipath}/fix
    export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0
    export execdir=${enkfscripts}/exec_${machine}
@@ -441,6 +459,7 @@ fi
 
 
 export ANAVINFO=${fixgsi}/global_anavinfo.l${LEVS}.txt
+#export ANAVINFO_ENKF=${enkfscripts}/global_anavinfo.l${LEVS}.txt
 export ANAVINFO_ENKF=${ANAVINFO}
 export HYBENSINFO=${fixgsi}/global_hybens_info.l${LEVS}.txt # only used if readin_beta or readin_localization=T
 # comment out next line to disable smoothing of ensemble perturbations
@@ -456,21 +475,7 @@ export NLAT=$((${LATA}+2))
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_annmeansmooth0p5
 export REALTIME=NO # if NO, use historical files set in main.sh
 
-# GSI sees ensemble mean background (high-res control forecast is a replay to ens mean analysis)
-# (s_ens_h, s_ens_v, beta_s0, beta_e0, alpha, beta used)
-if [ $hybgain == "false" ]; then
-   # use static B weights and localization scales for GSI from files.
-   # (alpha, beta ignored)
-   #export readin_localization=".true."
-   #export readin_beta=".true."
-   # use constant values (alpha and beta parameters)
-   export readin_beta=.false.
-   export readin_localization=.false.
-   # these only used for hybrid covariance (hyb 4denvar) in GSI
-   export beta_s0=`python -c "from __future__ import print_function; print($alpha / 1000.)"` # weight given to static B in hyb cov
-   # beta_e0 parameter (ensemble weight) in my GSI branch (not in GSI/develop)
-   export beta_e0=`python -c "from __future__ import print_function; print($beta / 1000.)"` # weight given to ensemble B in hyb cov
-else
+if [ $hybgain == "true" ]; then
    export beta_s0=1.000 # 3dvar
    export beta_e0=0.0
    export readin_beta=.false. # not relevant for 3dvar

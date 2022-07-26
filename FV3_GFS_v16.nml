@@ -18,7 +18,6 @@
 /
 
 &fms_io_nml
-  checksum_required = F,
   max_files_r = 100,
   max_files_w = 100,
 /
@@ -47,7 +46,7 @@
   fv_debug = F,
   range_warn = F,
   reset_eta = F,
-  n_sponge = 10,
+  n_sponge = 42,
   nudge_qv = T,
   nudge_dz = F,
   tau = 5.0
@@ -84,7 +83,7 @@
   res_latlon_dynamics=RESLATLONDYNAMICS,
   read_increment=READ_INCREMENT,
   gfs_phil = F,
-  agrid_vel_rst = F,
+  agrid_vel_rst = T,
   nggps_ic = T,
   mountain = MOUNTAIN,
   ncep_ic = F,
@@ -116,6 +115,7 @@
 /
 
 &gfs_physics_nml
+  print_diff_pgr = T
   fhzero         = 3
   ldiag3d        = F
   fhcyc          = 0
@@ -144,10 +144,10 @@
   hybedmf        = F
   satmedmf       = T
   isatmedmf      = 1
-  lheatstrg      = T
+  lheatstrg      = F
   random_clds    = .false.
   trans_trac     = T
-  cnvcld         = .false.
+  cnvcld         = .true.
   imfshalcnv     = 2
   imfdeepcnv     = 2
   prslrd0        = 0
@@ -169,9 +169,6 @@
   iopt_stc       = 1
   debug          = T
   lgfdlmprad     = .true.
-  cplchm         = .false
-  cplwav         = .false.
-  cplwav2atm     = .false.
   effr_in        = .true.
   cdmbgwd        = CDMBGWD
   psautco        = 0.0008,0.0005
@@ -188,9 +185,9 @@
   do_sppt        = DO_sppt
   do_shum        = DO_shum
   iau_filter_increments = F
-  iaufhrs = 6
-  iau_delthrs = -1
-  iau_inc_files = 
+  iaufhrs = 0.5
+  iau_delthrs = IAU_DELTHRS
+  iau_inc_files = fv3_increment6.nc
 /
 
 &gfdl_cloud_microphysics_nml
@@ -290,7 +287,6 @@
   skebint=0,
   iseed_skeb=ISEED_skeb,
   use_zmtnblck=.true.,
-  fhstoch=FHSTOCH,
   stochini=STOCHINI,
   new_lscale=.true.
 /
