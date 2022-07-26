@@ -176,7 +176,7 @@ else
         reslatlondynamics=""
         readincrement=F
         iau_offset=0
-        iau_inc_files"fv3_increment6.nc"
+        iau_inc_files="fv3_increment6.nc"
      fi
    fi
    warm_start=T
