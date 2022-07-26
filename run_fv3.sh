@@ -6,7 +6,6 @@ source $MODULESHOME/init/sh
 module list
 
 export VERBOSE=${VERBOSE:-"NO"}
-export iau_delthrs=${iau_delthrs:-"-1"}
 hydrostatic=${hydrostatic:=".false."}
 launch_level=$(echo "$LEVS/2.35" |bc)
 if [ "$VERBOSE" == "YES" ]; then
@@ -156,6 +155,7 @@ if [ "$cold_start" == "true" ]; then
    mountain=F
    iau_offset=-1
    iau_delthrs=-1
+   iau_inc_files=""
 else
    if [ ! -z $skip_calc_increment ]; then
      stochini=F
@@ -167,6 +167,7 @@ else
         reslatlondynamics="fv3_increment6.nc"
         readincrement=T
         iau_offset=-1
+        iau_inc_files=""
      else
         if [[ $iau_delthrs -ne 1 ]]; then
           echo "iau_delthrs must be -1 or 1!"
@@ -175,6 +176,7 @@ else
         reslatlondynamics=""
         readincrement=F
         iau_offset=0
+        iau_inc_files"fv3_increment6.nc"
      fi
    fi
    warm_start=T
@@ -367,6 +369,7 @@ sed -i -e "s/MOUNTAIN/${mountain}/g" input.nml
 sed -i -e "s/RESLATLONDYNAMICS/${reslatlondynamics}/g" input.nml
 sed -i -e "s/READ_INCREMENT/${readincrement}/g" input.nml
 sed -i -e "s/IAU_DELTHRS/${iau_delthrs}/g" input.nml
+sed -i -e "s/IAU_INC_FILES/${iau_inc_files}/g" input.nml
 sed -i -e "s/HYDROSTATIC/${hydrostatic}/g" input.nml
 sed -i -e "s/LAUNCH_LEVEL/${launch_level}/g" input.nml
 cat input.nml

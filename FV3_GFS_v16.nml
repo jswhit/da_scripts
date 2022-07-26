@@ -187,7 +187,7 @@
   iau_filter_increments = F
   iaufhrs = 0.5
   iau_delthrs = IAU_DELTHRS
-  iau_inc_files = fv3_increment6.nc
+  iau_inc_files = IAU_INC_FILES
 /
 
 &gfdl_cloud_microphysics_nml
