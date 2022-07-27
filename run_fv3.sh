@@ -143,7 +143,7 @@ if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
       nces -O fv3_increment6.nc fv3_increment7.nc fv3_increment67.nc
       if [ $? -eq 0 ] && [ -s fv3_increment67.nc ]; then
          echo "use average increment (over-write fv3_increment6.nc)" 
-         /bin/mv -f fv3_increment6.nc fv3_increment6.nc.save
+         #/bin/mv -f fv3_increment6.nc fv3_increment6.nc.save
          /bin/mv -f fv3_increment67.nc fv3_increment6.nc
          /bin/rm -f fv3_increment7.nc
       fi
