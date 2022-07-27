@@ -116,31 +116,39 @@ done
 if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
    cd INPUT
    fh=6
-   export increment_file="fv3_increment${fh}.nc"
-   if [ $charnanal == "control" ] && [ "$replay_controlfcst" == 'true' ]; then
-      export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_ensmean"
-      export fgfile="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}.chgres"
-   else
-      export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_${charnanal}"
-      export fgfile="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}"
-   fi
-   echo "create ${increment_file}"
-   /bin/rm -f ${increment_file}
-   # last three args:  no_mpinc no_delzinc, taper_strat (humidity increment)
-   export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file} T $hydrostatic T"
-   nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
-   if [ $? -ne 0 -o ! -s ${increment_file} ]; then
-      echo "problem creating ${increment_file}, stopping .."
-      exit 1
+   while [[ $fh -le 7 ]]; do
+      export increment_file="fv3_increment${fh}.nc"
+      if [ $charnanal == "control" ] && [ "$replay_controlfcst" == 'true' ]; then
+         export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_ensmean"
+         export fgfile="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}.chgres"
+      else
+         export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_${charnanal}"
+         export fgfile="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}"
+      fi
+      if [ -s ${analfile} ]; then
+         echo "create ${increment_file}"
+         /bin/rm -f ${increment_file}
+         # last three args:  no_mpinc no_delzinc, taper_strat (humidity increment)
+         export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file} T $hydrostatic T"
+         nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
+         if [ $? -ne 0 -o ! -s ${increment_file} ]; then
+            echo "problem creating ${increment_file}, stopping .."
+            exit 1
+         fi
+      fi
+      fh=$[$fh+1]
+   done
+   if [[ -s "fv3_increment6.nc" ]] && [[ -s "fv3_increment7.nc" ]]; then
+      echo "both fv3_increment6.nc and fv3_increment7.nc exist, compute average of two"
+      nces -O fv3_increment6.nc fv3_increment7.nc fv3_increment67.nc
+      if [ $? -eq 0 ] && [ -s fv3_increment67.nc ]; then
+         echo "use average increment (over-write fv3_increment6.nc)" 
+         /bin/mv -f fv3_increment6.nc fv3_increment6.nc.save
+         /bin/mv -f fv3_increment67.nc fv3_increment6.nc
+         /bin/rm -f fv3_increment7.nc
+      fi
    fi
    cd ..
-#else
-#   if [ $cold_start == "false" ] ; then
-#      cd INPUT
-#      export increment_file="fv3_increment${fh}.nc"
-#      /bin/mv -f ${datapath2}/incr_${analdate}_fhr06_{charnanal} ${increment_file}
-#      cd ..
-#   fi
 fi
 
 # setup model namelist parameters

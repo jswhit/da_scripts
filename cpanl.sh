@@ -19,9 +19,9 @@ if [ $nhr_anal -lt 6 ]; then # skip analysis time, use one timestep forecasts
    nanal=1
    while [ $nanal -le $nanals ]; do
       charnanal="mem`printf %03i $nanal`"
-      /bin/mv -f ${datapath2}/sanl_${analdate}_${charfhr}_${charnanal} ${datapath}/${analdatep1}/sfg_${analdatep1}_${charfhr_out}_${charnanal}
+      /bin/cp -f ${datapath2}/sanl_${analdate}_${charfhr}_${charnanal} ${datapath}/${analdatep1}/sfg_${analdatep1}_${charfhr_out}_${charnanal}
       # also copy bfg files
-      /bin/mv -f ${datapath2}/bfg_${analdate}_${charfhr}_${charnanal} ${datapath}/${analdatep1}/bfg_${analdatep1}_${charfhr_out}_${charnanal}
+      /bin/cp -f ${datapath2}/bfg_${analdate}_${charfhr}_${charnanal} ${datapath}/${analdatep1}/bfg_${analdatep1}_${charfhr_out}_${charnanal}
       nanal=$((nanal+1))
    done
 fi

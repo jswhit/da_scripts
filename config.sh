@@ -85,6 +85,7 @@ if [ "$machine" == 'hera' ]; then
    module load esmf/8_2_0_beta_snapshot_14
    module load fms/2021.03
    module load wgrib
+   module load nco
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'orion' ]; then
    export basedir=/work2/noaa/gsienkf/${USER}
@@ -301,7 +302,11 @@ export enkfstatefhrs="3, 4, 5, 6, 7, 8, 9"
 # these become backgrounds for first three (of 7) times in next assim window (hrs=3,4,5).
 # model is started from analhr=6 (actually the 1-h fcst, then run for two hours (hrs=6,7)
 # last two backgrounds in next assim window are symlinked to 2-h forecast (hrs=8,9 symlinked to hr=7)
-export enkfanalfhrs="4, 5, 6" 
+if [ $iau_delthrs -eq 1 ]; then
+   export enkfanalfhrs="4, 5, 6, 7" 
+else
+   export enkfanalfhrs="4, 5, 6" 
+fi
 
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
