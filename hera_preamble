@@ -1,6 +1,6 @@
 #!/bin/sh
 ##SBATCH -q debug
-#SBATCH -t 03:00:00
+#SBATCH -t 04:00:00
 #SBATCH -A gsienkf  
 #SBATCH -N 40    
 #SBATCH -J C192_hybcov_p8
