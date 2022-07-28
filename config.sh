@@ -238,7 +238,7 @@ elif [ $RES -eq 192 ]; then
    export LONB=768   
    export LATB=384  
    export dt_atmos=450
-   #export dt_atmos=225
+   #export dt_atmos=240
    export cdmbgwd="0.23,1.5,1.0,1.0"
 elif [ $RES -eq 128 ]; then
    export JCAP=254 
@@ -390,9 +390,9 @@ fi
 
 export nanals=80                                                    
 # if nanals2>0, extend nanals2 members out to FHMAX + ANALINC (one extra assim window)
-export nanals2=-1 # longer extension. Set to -1 to disable 
+#export nanals2=-1 # longer extension. Set to -1 to disable 
 #export nanals2=$NODES
-#export nanals2=$nanals
+export nanals2=$nanals
 export nitermax=2 # number of retries
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
