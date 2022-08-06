@@ -289,7 +289,6 @@
   skebint=0,
   iseed_skeb=ISEED_skeb,
   use_zmtnblck=.true.,
-  fhstoch=FHSTOCH,
   stochini=STOCHINI,
   new_lscale=.true.
 /

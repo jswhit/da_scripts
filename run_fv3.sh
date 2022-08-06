@@ -3,6 +3,19 @@
 echo "starting at `date`"
 source $MODULESHOME/init/sh
 
+#if [ $machine == 'orion' ]; then
+#   # use intel 2022 on orion (GSI uses 2018)
+#   module purge
+#   module use /apps/contrib/NCEP/libs/hpc-stack/modulefiles/stack
+#   module load hpc/1.1.0
+#   module load hpc-intel/2022.1.2
+#   module load hpc-impi/2022.1.2
+#   module load hdf5/1.10.6
+#   module load netcdf/4.7.4
+#   module load nco
+#   module load wgrib/1.8.0b
+#   export WGRIB=`which wgrib`
+#fi
 module list
 
 export VERBOSE=${VERBOSE:-"NO"}
@@ -304,9 +317,11 @@ if [ $NST_GSI -gt 0 ] && [ $FHCYC -gt 0 ]; then
    fnacna='        '
 fi
 
-restart_interval="$FHOUT -1"
+#restart_interval="$FHOUT -1"
+restart_interval=$FHOUT
 cat > model_configure <<EOF
 print_esmf:              .true.
+total_member:            1
 PE_MEMBER01:             ${nprocs}
 ncores_per_node:         ${corespernode}
 start_year:              ${year}
@@ -328,7 +343,7 @@ write_tasks_per_group:   ${write_tasks}
 num_files:               2
 filename_base:           'dyn' 'phy'
 output_grid:             'gaussian_grid'
-output_file:             'netcdf_parallel' 'netcdf_parallel'
+output_file:             'netcdf_parallel' 'netcdf'
 nbits:                   14
 ideflate:                1
 ichunk2d:                ${LONB}

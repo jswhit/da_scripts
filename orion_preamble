@@ -1,13 +1,14 @@
 #!/bin/sh
-#SBATCH -q urgent
-#SBATCH -t 02:30:00
-#SBATCH -A gsienkf
+##SBATCH -q urgent
+#SBATCH -t 03:00:00
+##SBATCH -A da-cpu  
+#SBATCH -A gsienkf 
 #SBATCH -N 20  
 #SBATCH --ntasks-per-node=40
 #SBATCH -p orion
-#SBATCH -J C192_hybgain_owhourly2
-#SBATCH -e C192_hybgain_owhourly2.err
-#SBATCH -o C192_hybgain_owhourly2.out
+#SBATCH -J C192_hybcov_owhourly2iau
+#SBATCH -e C192_hybcov_owhourly2iau.err
+#SBATCH -o C192_hybcov_owhourly2iau.out
 
 export NODES=$SLURM_NNODES
 export corespernode=$SLURM_CPUS_ON_NODE
@@ -51,10 +52,19 @@ fi
 export fg_proc=$corespernode
 export fg_threads=1 
 export enkf_threads=10
-export gsi_control_threads=4
+export gsi_control_threads=2
 export write_groups=4
 export write_tasks=1 
 export layout="3, 2"
+
+#export fg_threads=2
+#export fg_proc=`expr 2 \* $corespernode`
+#export enkf_threads=10
+#export gsi_control_threads=4
+#export write_groups=4
+## 40 cores per node
+#export write_tasks=1
+#export layout="3, 2"
 
 # for C384
 #export fg_proc=`expr 4 \* $corespernode`

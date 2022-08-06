@@ -26,7 +26,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybcov_owhourly"
+export exptname="C${RES}_hybcov_owhourly2iau"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 
@@ -88,7 +88,7 @@ if [ "$machine" == 'hera' ]; then
    module load nco
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'orion' ]; then
-   export basedir=/work2/noaa/gsienkf/${USER}
+   export basedir=/work/noaa/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    #export obs_datapath2=/work/noaa/sfc-perts/gbates/hrlyda_dumps/6hrly
@@ -97,6 +97,7 @@ elif [ "$machine" == 'orion' ]; then
    export obs_datapath2=/work/noaa/rstprod/dump
    #export obs_datapath2=/work/noaa/global/glopara/dump
    #export obs_datapath=/work/noaa/global/glopara/dump
+   export obs_datapath=/work/noaa/gsienkf/whitaker/hrlyda_dumps2
    ulimit -s unlimited
    source $MODULESHOME/init/sh
    module purge
@@ -109,6 +110,7 @@ elif [ "$machine" == 'orion' ]; then
    module load python/3.7.5
    module load hdf5/1.10.6-parallel
    module load wgrib/1.8.0b
+   module load nco
    export PYTHONPATH=/home/jwhitake/.local/lib/python3.7/site-packages
    export HDF5_DISABLE_VERSION_CHECK=1
    export WGRIB=`which wgrib`
@@ -186,7 +188,7 @@ elif [ $LEVS -eq 127 ]; then
   if [ $DONST == "YES" ]; then
      export SUITE="FV3_GFS_v16"
   else
-     export SUITE="FV3_GFS_v16_no_nsst"
+     export SUITE="FV3_GFS_v16beta_no_nsst"
   fi
 else
   echo "LEVS must be 64 or 127"
@@ -293,8 +295,8 @@ export FHMIN=0
 export FHMAX=4 
 export FHOUT=1
 # fhour=4 -> 6-h forecast in 6-h system, fhour=10 -> 12-h forecast in 6-h system
-#export FHMAX_LONGER=7 # to compare with 6-h cycling system 4 times per day
-export FHMAX_LONGER=10 # to compare with 6-h cycling system 4 times per day 
+export FHMAX_LONGER=7 # to compare with 6-h cycling system 4 times per day
+#export FHMAX_LONGER=10 # to compare with 6-h cycling system 4 times per day 
 export iau_delthrs=1 # 1 for IAU on, -1 for IAU off
 
 export enkfstatefhrs="3, 4, 5, 6, 7, 8, 9"
@@ -337,7 +339,7 @@ export analpertwtnh_rtpp=0.5
 export analpertwtsh_rtpp=0.5
 export analpertwttr_rtpp=0.5
 export pseudo_rh=.true.
-export write_ensmean=.true. # write out ens mean analysis in EnKF
+export write_ensmean=.false. # write out ens mean analysis in EnKF
 if [[ $write_ensmean == ".true." ]]; then
    export ENKFVARS="write_ensmean=${write_ensmean},"
 fi
@@ -393,7 +395,7 @@ fi
 export nanals=80                                                    
 export nanals2=-1 # longer extension. Set to -1 to disable 
 #export nanals2=$nanals
-export nitermax=2 # number of retries
+export nitermax=1 # number of retries
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
@@ -415,7 +417,7 @@ elif [ "$machine" == 'jet' ]; then
    export fv3gfspath=/lfs4/BMC/gsd-fv3-dev/FV3
    export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
-   export gsipath=${basedir}/gsi-enkf-64bit
+   export gsipath=${basedir}/GSI
    export fixgsi=${gsipath}/fix
    export fixcrtm=/lfs4/BMC/nrtrr/FIX_EXEC_MODULE/crtm/CRTM_v2.3.0
    export execdir=${enkfscripts}/exec_${machine}
@@ -427,7 +429,7 @@ elif [ "$machine" == 'orion' ]; then
    export fv3gfspath=/work/noaa/global/glopara
    export FIXFV3=$fv3gfspath/fix_nco_gfsv16/fix_fv3_gmted2010
    export FIXGLOBAL=$fv3gfspath/fix_nco_gfsv16/fix_am
-   export gsipath=${basedir}/GSI-enkf64bit
+   export gsipath=${basedir}/GSI
    export fixgsi=${gsipath}/fix
    #export fixcrtm=${basedir}/fix/crtm/v2.2.6/fix
    export fixcrtm=$fv3gfspath/crtm/crtm_v2.3.0
