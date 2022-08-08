@@ -67,7 +67,7 @@
   beta = 0,
   a_imp = 1.0,
   p_fac = 0.1,
-  k_split  = 1,
+  k_split  = 2,
   n_split  = 6,
   nwat = 6,
   na_init = 0,
@@ -141,7 +141,7 @@
   shal_cnv       = .true.
   cal_pre        = .false.
   redrag         = .true.
-  dspheat        = .true.
+  dspheat        = .false.
   hybedmf        = .false.
   satmedmf       = .true.
   isatmedmf      = 1

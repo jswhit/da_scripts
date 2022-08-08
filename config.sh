@@ -238,7 +238,7 @@ elif [ $RES -eq 192 ]; then
    export LONB=768   
    export LATB=384  
    export dt_atmos=450
-   #export dt_atmos=240
+   #export dt_atmos=300
    export cdmbgwd="0.23,1.5,1.0,1.0"
 elif [ $RES -eq 128 ]; then
    export JCAP=254 
@@ -451,7 +451,8 @@ fi
 
 
 #export ANAVINFO=${fixgsi}/global_anavinfo_allhydro.l${LEVS}.txt
-export ANAVINFO=${fixgsi}/global_anavinfo.l${LEVS}.txt
+#export ANAVINFO=${fixgsi}/global_anavinfo.l${LEVS}.txt
+export ANAVINFO=${enkfscripts}/global_anavinfo_clrsky.l${LEVS}.txt
 export ANAVINFO_ENKF=${ANAVINFO}
 export HYBENSINFO=${fixgsi}/global_hybens_info.l${LEVS}.txt # only used if readin_beta or readin_localization=T
 #export HYBENSINFO=${enkfscripts}/global_hybens_info.l${LEVS}.txt # only used if readin_beta or readin_localization=T
