@@ -188,7 +188,7 @@ elif [ $LEVS -eq 127 ]; then
   if [ $DONST == "YES" ]; then
      export SUITE="FV3_GFS_v16"
   else
-     export SUITE="FV3_GFS_v16beta_no_nsst"
+     export SUITE="FV3_GFS_v16_no_nsst"
   fi
 else
   echo "LEVS must be 64 or 127"
@@ -281,7 +281,8 @@ else
    echo "model parameters for control resolution C$RES_CTL not set"
    exit 1
 fi
-export FHCYC=0 # run global_cycle instead of gcycle inside model
+#export FHCYC=0 # run global_cycle instead of gcycle inside model
+export FHCYC=6
 
 # analysis is done at ensemble resolution
 export LONA=$LONB
@@ -401,6 +402,9 @@ export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
 
 if [ "$machine" == 'hera' ]; then
+   export FIXDIR=/scratch1/NCEPDEV/nems/emc.nemspara/RT/NEMSfv3gfs/input-data-20220414
+   #export FIXDIR_gcyc=$FIXDIR
+   export FIXDIR_gcyc=/scratch1/NCEPDEV/global/glopara/fix # for GFSv16
    export python=/contrib/anaconda/2.3.0/bin/python
    export fv3gfspath=/scratch1/NCEPDEV/global/glopara
    export FIXFV3=${fv3gfspath}/fix_nco_gfsv16/fix_fv3_gmted2010
@@ -425,6 +429,9 @@ elif [ "$machine" == 'jet' ]; then
    export gsiexec=${execdir}/global_gsi
    export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
 elif [ "$machine" == 'orion' ]; then
+   export FIXDIR=/work/noaa/nems/emc.nemspara/RT/NEMSfv3gfs/input-data-20220414
+   #export FIXDIR_gcyc=$FIXDIR
+   export FIXDIR_gcyc=/work/noaa/global/glopara/fix_NEW # for GFSv16
    export python=`which python`
    export fv3gfspath=/work/noaa/global/glopara
    export FIXFV3=$fv3gfspath/fix_nco_gfsv16/fix_fv3_gmted2010

@@ -160,9 +160,9 @@ if [[ "$HXONLY" != "YES" ]]; then
       SETUP="$SETUP,miter=1,niter(1)=150,niter(2)=0"
    else # envar
       #STRONGOPTS="tlnmc_option=3,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
-      #STRONGOPTS="tlnmc_option=3,nstrong=1,nvmodes_keep=48,period_max=1.,period_width=0.5,baldiag_full=.true.,baldiag_inc=.true.,"
+      STRONGOPTS="tlnmc_option=3,nstrong=1,nvmodes_keep=32,period_max=1.,period_width=0.5,baldiag_full=.true.,baldiag_inc=.true.,"
       # balance constraint on 3dvar part of envar increment
-      STRONGOPTS="tlnmc_option=4,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
+      #STRONGOPTS="tlnmc_option=4,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
       # no strong bal constraint
       if [ $NOTLNMC == "YES" ]; then
          STRONGOPTS="tlnmc_option=0,nstrong=0,nvmodes_keep=0,baldiag_full=.false.,baldiag_inc=.false.,"
@@ -959,9 +959,9 @@ fi
 if [ ! -s $savdir/diag_conv_t_ges.${adate}_${charnanal2}.nc4 ]; then
    exit 1
 fi
-if [ ! -s $savdir/diag_conv_q_ges.${adate}_${charnanal2}.nc4 ]; then
-   exit 1
-fi
+#if [ ! -s $savdir/diag_conv_q_ges.${adate}_${charnanal2}.nc4 ]; then
+#   exit 1
+#fi
 if [ ! -s $savdir/diag_conv_ps_ges.${adate}_${charnanal2}.nc4 ]; then
    exit 1
 fi
