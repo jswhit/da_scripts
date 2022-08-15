@@ -72,7 +72,7 @@
   nwat = 6,
   na_init = 0,
   d_ext = 0.0,
-  dnats = 2,
+  dnats = 0,
   fv_sg_adj = 450,
   nord = 2,
   dddmp = 0.1,
@@ -222,8 +222,8 @@
   cplflx       = .false.
   cplice       = .false.
   min_lakeice    = 0.15
-  min_seaice     = 1.0e-6
-  use_cice_alb   = .true.
+  min_seaice     = 0.15    
+  use_cice_alb   = .false.
   gwd_opt      = 2
   ldiag_ugwp   = .false.
   do_ugwp      = .false.
