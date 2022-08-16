@@ -309,6 +309,7 @@ if [[ $niter -gt 1 ]] && [[ $niter -eq $nitermax ]]; then
     #DO_SPPT=F
     #DO_SHUM=F
 fi
+#stochini=F
 
 #fntsfa=${sstpath}/${yeara}/sst_${charnanal2}.grib
 #fnacna=${sstpath}/${yeara}/icec_${charnanal2}.grib
@@ -424,7 +425,7 @@ fi
 # nstf_name(5) : ZSEA2 (in mm) : 0
 NST_MODEL=${NST_MODEL:-0}
 NST_SPINUP=${NST_SPINUP:-0}
-if [ $cold_start = "true" ] && [ $NST_GSI -gt 0 ]; then
+if [ $cold_start = "true" ] && [ $DONST == "YES" ]; then
    NST_SPINUP=1
 fi
 NST_RESV=${NST_RESV-0}
@@ -660,6 +661,10 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
    done
    if [ -s  ${datapathp1}/${charnanal}/INPUT/ca_data.tile1.nc ]; then
       touch ${datapathp1}/${charnanal}/INPUT/ca_data.nc
+   fi
+   if [[ $niter -gt 1 ]] && [[ $niter -eq $nitermax ]]; then
+     # delete atm restarts if niter=nitermax, since timestep was changed
+     /bin/rm -f ${datapathp1}/${charnanal}/INPUT/atm_stoch*
    fi
    cd ..
 fi
