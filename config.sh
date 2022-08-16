@@ -150,14 +150,14 @@ export NST_GSI=3          # default 0: No NST info at all;
                           #         3: Input NST info, used in both CRTM simulation and Tr analysis
 
 # turn off NST
-export DONST="NO"
-export NST_MODEL=0
-export NST_GSI=0
+#export DONST="NO"
+#export NST_MODEL=0
+#export NST_GSI=0
 
 # turn off NST in GSI, but run passively in model
-#export DONST="YES"
-#export NST_MODEL=2
-#export NST_GSI=0
+export DONST="YES"
+export NST_MODEL=2
+export NST_GSI=0
 
 # fractional grid
 export FRAC_GRID=.false.
@@ -187,7 +187,7 @@ elif [ $LEVS -eq 127 ]; then
      export SUITE="FV3_GFS_v17_p8"
      #export SUITE="FV3_GFS_v16"
   else
-     export SUITE="FV3_GFS_v17_p8_nonsst"
+     export SUITE="FV3_GFS_v17_p8"
      #export SUITE="FV3_GFS_v16_no_nsst"
      #export SUITE="FV3_GFS_v16_coupled_nsstNoahmpUGWPv1"
   fi
@@ -238,7 +238,7 @@ elif [ $RES -eq 192 ]; then
    export LONB=768   
    export LATB=384  
    export dt_atmos=450
-   #export dt_atmos=300
+   #export dt_atmos=400
    export cdmbgwd="0.23,1.5,1.0,1.0"
 elif [ $RES -eq 128 ]; then
    export JCAP=254 
@@ -393,7 +393,7 @@ export nanals=80
 #export nanals2=-1 # longer extension. Set to -1 to disable 
 #export nanals2=$NODES
 export nanals2=$nanals
-export nitermax=2 # number of retries
+export nitermax=1 # number of retries
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
