@@ -26,7 +26,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybcov_6hourly_iau_p8"
+export exptname="C${RES}_hybcov_p8"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 export enkfonly='false' # pure EnKF
@@ -64,7 +64,7 @@ export controlanal="false" # hybrid-cov high-res control analysis as in ops
 # (hybgain will be set to false if controlanal=true)
 
 # override values from above for debugging.
-#export cleanup_ensmean='false'
+export cleanup_ensmean='false'
 #export cleanup_ensmean_enkf='false'
 #export recenter_fcst="false"
 #export cleanup_controlanl='false'
@@ -96,10 +96,11 @@ if [ "$machine" == 'hera' ]; then
    module load wgrib
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'orion' ]; then
-   export basedir=/work2/noaa/gsienkf/${USER}
+   export basedir=/work/noaa/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   export obs_datapath=/work/noaa/rstprod/dump
+   #export obs_datapath=/work/noaa/rstprod/dump
+   export obs_datapath=/work/noaa/gsienkf/whitaker/dumps
    ulimit -s unlimited
    source $MODULESHOME/init/sh
    module use /apps/contrib/NCEP/libs/hpc-stack/modulefiles/stack
@@ -411,11 +412,12 @@ if [ "$machine" == 'hera' ]; then
    export gsiexec=${execdir}/global_gsi
    export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
 elif [ "$machine" == 'orion' ]; then
+   export FIXDIR=/work/noaa/nems/emc.nemspara/RT/NEMSfv3gfs/input-data-20220414
+   export FIXDIR_gcyc=$FIXDIR
+   #export FIXDIR_gcyc=/work/noaa/global/glopara/fix_NEW # for GFSv16
    export python=`which python`
    export fv3gfspath=/work/noaa/global/glopara
-   export FIXFV3=$fv3gfspath/fix_NEW/fix_fv3_gmted2010
-   export FIXGLOBAL=$fv3gfspath/fix_NEW/fix_am
-   export gsipath=/work/noaa/gsienkf/whitaker/GSI-enkf64bit
+   export gsipath=${basedir}/GSI
    export fixgsi=${gsipath}/fix
    export fixcrtm=$fv3gfspath/crtm/crtm_v2.3.0
    export execdir=${enkfscripts}/exec_${machine}
@@ -450,9 +452,8 @@ else
 fi
 
 
-#export ANAVINFO=${fixgsi}/global_anavinfo_allhydro.l${LEVS}.txt
-#export ANAVINFO=${fixgsi}/global_anavinfo.l${LEVS}.txt
-export ANAVINFO=${enkfscripts}/global_anavinfo_clrsky.l${LEVS}.txt
+export ANAVINFO=${fixgsi}/global_anavinfo.l${LEVS}.txt
+#export ANAVINFO=${enkfscripts}/global_anavinfo_clrsky.l${LEVS}.txt
 export ANAVINFO_ENKF=${ANAVINFO}
 export HYBENSINFO=${fixgsi}/global_hybens_info.l${LEVS}.txt # only used if readin_beta or readin_localization=T
 #export HYBENSINFO=${enkfscripts}/global_hybens_info.l${LEVS}.txt # only used if readin_beta or readin_localization=T
