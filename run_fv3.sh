@@ -118,6 +118,16 @@ if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
       echo "problem creating ${increment_file}, stopping .."
       exit 1
    fi
+   #if [[ -s "fv3_increment1.nc" ]] && [[ -s "fv3_increment2.nc" ]]; then
+   #   echo "both fv3_increment1.nc and fv3_increment2.nc exist, compute average of two"
+   #   nces -O fv3_increment1.nc fv3_increment2.nc fv3_increment12.nc
+   #   if [ $? -eq 0 ] && [ -s fv3_increment12.nc ]; then
+   #      echo "use average increment (over-write fv3_increment1.nc)" 
+   #      #/bin/mv -f fv3_increment1.nc fv3_increment1.nc.save
+   #      /bin/mv -f fv3_increment12.nc fv3_increment1.nc
+   #      /bin/rm -f fv3_increment2.nc
+   #   fi
+   !fi
    cd ..
 else
    if [ $cold_start == "false" ] ; then
@@ -138,7 +148,25 @@ if [ "$cold_start" == "true" ]; then
    warm_start=F
    externalic=T
    mountain=F
+   iau_offset=-1
+   iau_delthrs=-1
+   iau_inc_files=""
 else
+   if [[ $iau_delthrs -eq -1 ]]; then
+      reslatlondynamics="fv3_increment1.nc"
+      readincrement=T
+      iau_offset=-1
+      iau_inc_files=""
+   else
+      if [[ $iau_delthrs -ne 1 ]]; then
+        echo "iau_delthrs must be -1 or 1!"
+        exit 1
+      fi 
+      reslatlondynamics=""
+      readincrement=F
+      iau_offset=0
+      iau_inc_files="fv3_increment1.nc"
+   fi
    warm_start=T
    externalic=F
    mountain=T
@@ -150,10 +178,7 @@ else
      echo "atm_stoch.res.nc not available, setting stochini=F"
      stochini=F
    fi
-   
    FHCYC=${FHCYC}
-   reslatlondynamics="fv3_increment${nhr_anal}.nc"
-   readincrement=T
 fi
 
 snoid='SNOD'
@@ -298,7 +323,7 @@ ichunk3d:                0
 jchunk3d:                0
 kchunk3d:                0
 write_nsflip:            .true.
-iau_offset:              -1
+iau_offset:              ${iau_offset}
 imo:                     ${LONB}
 jmo:                     ${LATB}
 nfhout:                  ${FHOUT}
@@ -337,6 +362,9 @@ sed -i -e "s/EXTERNAL_IC/${externalic}/g" input.nml
 sed -i -e "s/MOUNTAIN/${mountain}/g" input.nml
 sed -i -e "s/RESLATLONDYNAMICS/${reslatlondynamics}/g" input.nml
 sed -i -e "s/READ_INCREMENT/${readincrement}/g" input.nml
+sed -i -e "s/IAU_DELTHRS/${iau_delthrs}/g" input.nml
+sed -i -e "s/IAU_INC_FILES/${iau_inc_files}/g" input.nml
+sed -i -e "s/IAU_FHRS/${iau_fhrs}/g" input.nml
 sed -i -e "s/HYDROSTATIC/${hydrostatic}/g" input.nml
 sed -i -e "s/LAUNCH_LEVEL/${launch_level}/g" input.nml
 cat input.nml

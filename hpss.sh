@@ -3,11 +3,16 @@
 hr=`echo $analdate | cut -c9-10`
 analdatem1=`${incdate} $analdate -6`
 exitstat=0
+
 source $MODULESHOME/init/sh
 if [ $machine == "gaea" ]; then
-   module load hsi
+   #module load hsi
+   htar=/sw/rdtn/hpss/default/bin/htar
+   hsi=/sw/rdtn/hpss/default/bin/hsi
 else
    module load hpss
+   htar=`which htar`
+   hsi=`which hsi`
 fi
 #env
 hsi ls -l $hsidir
