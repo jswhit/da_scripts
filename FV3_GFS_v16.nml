@@ -83,7 +83,7 @@
   res_latlon_dynamics=RESLATLONDYNAMICS,
   read_increment=READ_INCREMENT,
   gfs_phil = F,
-  agrid_vel_rst = T,
+  agrid_vel_rst = F,
   nggps_ic = T,
   mountain = MOUNTAIN,
   ncep_ic = F,

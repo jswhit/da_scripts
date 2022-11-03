@@ -428,56 +428,56 @@ if [ $replay_controlfcst == 'true' ] && [ $replay_run_observer == "true" ]; then
 fi
 
 # run gsi observer on forecast extension
-if [ -s $datapath2/sfg2_${analdate}_fhr06_ensmean ]; then
-   export rungsi='run_gsi_4densvar2.sh'
-   export charnanal='ensmean' 
-   export charnanal2='ensmean2' 
-   export lobsdiag_forenkf='.false.'
-   export skipcat="false"
-   FHMIN_SAVE=$FHMIN
-   FHMAX_SAVE=$FHMAX
-   export FHMIN=3
-   export FHMAX=9
-   export ATMPREFIX='sfg2'
-   export SFCPREFIX='bfg2'
-   analdatem1_save=$analdatem1
-   datapathm1_save=$datapathm1
-   # use bias correction from analysis 4 hours ago (fcst was initialized 3 hours ago)
-   export analdatem1=`${incdate} $analdate -4`
-   export hrm1=`echo $analdatem1 | cut -c9-10`
-   export datapathm1="${datapath}/${analdatem1}/"
-   export PREINPm1="gdas.t${hrm1}z."
-   echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
-   sh ${enkfscripts}/run_gsiobserver.sh > ${current_logdir}/run_gsiobserver2.out 2>&1
-   # once observer has completed, check log files.
-   gsi_done=`cat ${current_logdir}/run_gsi_observer.log`
-   if [ $gsi_done == 'yes' ]; then
-     echo "$analdate gsi observer completed successfully `date`"
-   else
-     echo "$analdate gsi observer did not complete successfully, exiting `date`"
-     exit 1
-   fi
-   if [ $replay_controlfcst == 'true' ] && [ $replay_run_observer == "true" ]; then
-      export charnanal='control'
-      export charnanal2='control2'
-      echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
-      sh ${enkfscripts}/run_gsiobserver.sh > ${current_logdir}/run_gsiobserver2c.out 2>&1
-      # once observer has completed, check log files.
-      gsi_done=`cat ${current_logdir}/run_gsi_observer.log`
-      if [ $gsi_done == 'yes' ]; then
-        echo "$analdate gsi observer completed successfully `date`"
-      else
-        echo "$analdate gsi observer did not complete successfully, exiting `date`"
-        exit 1
-      fi
-   fi
-   export FHMIN=$FHMIN_SAVE
-   export FHMAX=$FHMAX_SAVE
-   export analdatem1=$analdatem1_save
-   export datapathm1=$datapathm1_save
-   unset ATMPREFIX
-   unset SFCPREFIX
-fi
+#if [ -s $datapath2/sfg2_${analdate}_fhr06_ensmean ]; then
+#   export rungsi='run_gsi_4densvar2.sh'
+#   export charnanal='ensmean' 
+#   export charnanal2='ensmean2' 
+#   export lobsdiag_forenkf='.false.'
+#   export skipcat="false"
+#   FHMIN_SAVE=$FHMIN
+#   FHMAX_SAVE=$FHMAX
+#   export FHMIN=3
+#   export FHMAX=9
+#   export ATMPREFIX='sfg2'
+#   export SFCPREFIX='bfg2'
+#   analdatem1_save=$analdatem1
+#   datapathm1_save=$datapathm1
+#   # use bias correction from analysis 4 hours ago (fcst was initialized 3 hours ago)
+#   export analdatem1=`${incdate} $analdate -4`
+#   export hrm1=`echo $analdatem1 | cut -c9-10`
+#   export datapathm1="${datapath}/${analdatem1}/"
+#   export PREINPm1="gdas.t${hrm1}z."
+#   echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
+#   sh ${enkfscripts}/run_gsiobserver.sh > ${current_logdir}/run_gsiobserver2.out 2>&1
+#   # once observer has completed, check log files.
+#   gsi_done=`cat ${current_logdir}/run_gsi_observer.log`
+#   if [ $gsi_done == 'yes' ]; then
+#     echo "$analdate gsi observer completed successfully `date`"
+#   else
+#     echo "$analdate gsi observer did not complete successfully, exiting `date`"
+#     exit 1
+#   fi
+#   if [ $replay_controlfcst == 'true' ] && [ $replay_run_observer == "true" ]; then
+#      export charnanal='control'
+#      export charnanal2='control2'
+#      echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
+#      sh ${enkfscripts}/run_gsiobserver.sh > ${current_logdir}/run_gsiobserver2c.out 2>&1
+#      # once observer has completed, check log files.
+#      gsi_done=`cat ${current_logdir}/run_gsi_observer.log`
+#      if [ $gsi_done == 'yes' ]; then
+#        echo "$analdate gsi observer completed successfully `date`"
+#      else
+#        echo "$analdate gsi observer did not complete successfully, exiting `date`"
+#        exit 1
+#      fi
+#   fi
+#   export FHMIN=$FHMIN_SAVE
+#   export FHMAX=$FHMAX_SAVE
+#   export analdatem1=$analdatem1_save
+#   export datapathm1=$datapathm1_save
+#   unset ATMPREFIX
+#   unset SFCPREFIX
+#fi
 
 fi # skip to here if fg_only = true
 
@@ -494,50 +494,62 @@ if [ $replay_controlfcst == 'true' ]; then
     fi
 fi
 
-echo "$analdate run enkf ens first guess `date`"
-sh ${enkfscripts}/run_fg_ens.sh > ${current_logdir}/run_fg_ens.out  2>&1
-ens_done=`cat ${current_logdir}/run_fg_ens.log`
-if [ $ens_done == 'yes' ]; then
-  echo "$analdate enkf first-guess completed successfully `date`"
-else
-  echo "$analdate enkf first-guess did not complete successfully, exiting `date`"
-  exit 1
+if [ $fg_only == "true" ]; then
+   echo "$analdate run enkf ens first guess `date`"
+   sh ${enkfscripts}/run_fg_ens.sh > ${current_logdir}/run_fg_ens.out  2>&1
+   ens_done=`cat ${current_logdir}/run_fg_ens.log`
+   if [ $ens_done == 'yes' ]; then
+     echo "$analdate enkf first-guess completed successfully `date`"
+   else
+     echo "$analdate enkf first-guess did not complete successfully, exiting `date`"
+     exit 1
+   fi
 fi
 
 if [ $cold_start == 'false' ]; then
 
 # cleanup
-if [ $do_cleanup == 'true' ]; then
-   sh ${enkfscripts}/clean.sh > ${current_logdir}/clean.out 2>&1
-fi # do_cleanup = true
+if [ $fg_only == "true" ]; then
+   if [ $do_cleanup == 'true' ]; then
+      sh ${enkfscripts}/clean.sh > ${current_logdir}/clean.out 2>&1
+   fi # do_cleanup = true
+fi
 
 wait # wait for backgrounded processes to finish
 
-# only save full ensemble data to hpss if checkdate.py returns 0
-# a subset will be saved if save_hpss_subset="true" and save_hpss="true"
-date_check=`python ${homedir}/checkdate.py ${analdate}`
-if [ $date_check -eq 0 ]; then
-  export save_hpss_full="true"
-else
-  export save_hpss_full="false"
+if [ $fg_only == "true" ]; then
+   # only save full ensemble data to hpss if checkdate.py returns 0
+   # a subset will be saved if save_hpss_subset="true" and save_hpss="true"
+   date_check=`python ${homedir}/checkdate.py ${analdate}`
+   if [ $date_check -eq 0 ]; then
+     export save_hpss_full="true"
+   else
+     export save_hpss_full="false"
+   fi
+   cd $homedir
+   if [ $save_hpss == 'true' ]; then
+      cat ${machine}_preamble_hpss hpss.sh > job_hpss.sh
+   fi
+   sbatch --export=ALL job_hpss.sh
+   #sbatch --export=machine=${machine},analdate=${analdate},datapath2=${datapath2},hsidir=${hsidir},save_hpss_full=${save_hpss_full},save_hpss_subset=${save_hpss_subset} job_hpss.sh
 fi
-cd $homedir
-if [ $save_hpss == 'true' ]; then
-   cat ${machine}_preamble_hpss hpss.sh > job_hpss.sh
-fi
-sbatch --export=ALL job_hpss.sh
-#sbatch --export=machine=${machine},analdate=${analdate},datapath2=${datapath2},hsidir=${hsidir},save_hpss_full=${save_hpss_full},save_hpss_subset=${save_hpss_subset} job_hpss.sh
 
 fi # skip to here if cold_start = true
 
 echo "$analdate all done"
 
 # next analdate: increment by $ANALINC
-export analdate=`${incdate} $analdate $ANALINC`
+if [ $fg_only == 'true' ]; then
+   export analdate=`${incdate} $analdate $ANALINC`
+fi
 
 echo "export analdate=${analdate}" > $startupenv
 echo "export analdate_end=${analdate_end}" >> $startupenv
-echo "export fg_only=false" > $datapath/fg_only.sh
+if [ $fg_only == "true" ]; then
+   echo "export fg_only=false" > $datapath/fg_only.sh
+else
+   echo "export fg_only=true" > $datapath/fg_only.sh
+fi
 echo "export cold_start=false" >> $datapath/fg_only.sh
 
 cd $homedir
@@ -556,7 +568,11 @@ if [ $analdate -le $analdate_end ]  && [ $resubmit == 'true' ]; then
    if [ $resubmit == 'true' ]; then
       echo "resubmit script"
       echo "machine = $machine"
-      cat ${machine}_preamble config.sh > job.sh
+      if [ $fg_only == "true" ]; then
+         cat ${machine}_preamble config.sh > job.sh
+      else
+         cat ${machine}_preamble2 config.sh > job.sh
+      fi
       sbatch --export=ALL job.sh
    fi
 fi
