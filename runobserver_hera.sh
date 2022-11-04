@@ -1,7 +1,7 @@
 #!/bin/sh
-#SBATCH -q debug
-#SBATCH -t 00:30:00
-#SBATCH -A gsienkf
+#SBATCH -q batch  
+#SBATCH -t 01:30:00
+#SBATCH -A isp-1
 #SBATCH -N 10    
 #SBATCH -J observer
 #SBATCH -e observer.err
@@ -144,12 +144,12 @@ export HYBENSINFO=${fixgsi}/global_hybens_info.l${LEVS}.txt # only used if readi
 # comment out next line to disable smoothing of ensemble perturbations
 # in stratosphere/mesosphere
 #export HYBENSMOOTHINFO=${fixgsi}/global_hybens_smoothinfo.l${LEVS}.txt
-export OZINFO=${fixgsi}/global_ozinfo.txt
-export CONVINFO=${fixgsi}/global_convinfo.txt
-export SATINFO=${fixgsi}/global_satinfo.txt
-#export OZINFO=/scratch2/BMC/gsienkf/Jeffrey.S.Whitaker/gsi/GSI-github-jswhit-master/fix/gfsv16_historical/global_ozinfo.txt.2021011806
-#export CONVINFO=/scratch2/BMC/gsienkf/Jeffrey.S.Whitaker/gsi/GSI-github-jswhit-master/fix/gfsv16_historical/global_convinfo.txt.2021040718
-#export SATINFO=/scratch2/BMC/gsienkf/Jeffrey.S.Whitaker/gsi/GSI-github-jswhit-master/fix/gfsv16_historical/global_satinfo.txt.2021022012 
+#export OZINFO=${fixgsi}/global_ozinfo.txt
+#export CONVINFO=${fixgsi}/global_convinfo.txt
+#export SATINFO=${fixgsi}/global_satinfo.txt
+export OZINFO=/scratch2/BMC/gsienkf/Jeffrey.S.Whitaker/gsi/GSI-github-jswhit-master/fix/gfsv16_historical/global_ozinfo.txt.2021011806
+export CONVINFO=/scratch2/BMC/gsienkf/Jeffrey.S.Whitaker/gsi/GSI-github-jswhit-master/fix/gfsv16_historical/global_convinfo.txt.2021040718
+export SATINFO=/scratch2/BMC/gsienkf/Jeffrey.S.Whitaker/gsi/GSI-github-jswhit-master/fix/gfsv16_historical/global_satinfo.txt.2021022012 
 export NLAT=$((${LATA}+2))
 
 export charnanal='ensmean' 
@@ -162,7 +162,7 @@ export skipcat="false"
 export cleanup_observer="true"
 export analdate=2021083100
 export nitermax=1
-while [ $analdate -le 2021090100 ]; do
+while [ $analdate -le 2021090106 ]; do
    export yr=`echo $analdate | cut -c1-4`
    export mon=`echo $analdate | cut -c5-6`
    export day=`echo $analdate | cut -c7-8`
