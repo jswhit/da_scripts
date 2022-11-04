@@ -69,6 +69,8 @@ fhend=`expr $FHMAX_LONGER + 3`
 njob=0
 while [ $fh -le $fhend ]; do
 
+  if [ $fhend -eq 12 ] && [ $fh -ne 10 ] && [ $fh -ne 11 ]; then # skip forecast hours 10 and 11 (just keep last one, 12)
+
   if [ -s ${datapath2}/bfg2_${analdate}_${charfhr}_mem001 ]; then
      if [ $cleanup_ensmean == 'true' ] || ([ $cleanup_ensmean == 'false' ]  && [ ! -s ${datapath}/${analdate}/bfg2_${analdate}_${charfhr}_ensmean ]); then
          echo "running  ${execdir}/getsfcensmeanp.x ${datapath2}/ bfg2_${analdate}_${charfhr}_ensmean bfg2_${analdate}_${charfhr} ${nanals}"
@@ -102,6 +104,8 @@ while [ $fh -le $fhend ]; do
      wait
      njob=0
   fi
+
+  fi # skip fhrs 10 and 11 if fhend=12
 
   fh=$((fh+FHOUT))
   charfhr="fhr`printf %02i $fh`"
