@@ -162,7 +162,7 @@ export skipcat="false"
 export cleanup_observer="true"
 export analdate=2021083100
 export nitermax=1
-while [ $analdate -le 2021083100 ]; do
+while [ $analdate -le 2021090100 ]; do
    export yr=`echo $analdate | cut -c1-4`
    export mon=`echo $analdate | cut -c5-6`
    export day=`echo $analdate | cut -c7-8`
