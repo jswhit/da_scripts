@@ -14,7 +14,7 @@ for nob in range(nobs):
     if time[nob] < -0.5 and used[nob] == 1 and oberrinv[nob] > 1.e-5:
         print(time[nob], code[nob], oberrinv[nob])
         ncount += 1
-print(ncount)
+print(nobs, ncount)
 raise SystemExit
 imin = np.argmin(time); imax = np.argmax(time)
 print(time.min(), code[imin], used[imin], oberrinv[imin])
