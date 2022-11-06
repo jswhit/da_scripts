@@ -440,7 +440,7 @@ export NLAT=$((${LATA}+2))
 #export BERROR=${basedir}/staticB/global_berror_enkf.l${LEVS}y${NLAT}.f77
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_janjulysmooth0p5
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_annmeansmooth0p5
-export REALTIME=YES # if NO, use historical files set in main.sh
+export REALTIME=NO # if NO, use historical files set in main.sh
 
 # parameters for hybrid gain
 if [ $hybgain == "true" ]; then
