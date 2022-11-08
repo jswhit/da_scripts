@@ -266,7 +266,7 @@ else
    echo "model parameters for control resolution C$RES_CTL not set"
    exit 1
 fi
-export FHCYC=0 # run global_cycle instead of gcycle inside model
+export FHCYC=6 # if > 0, run gcycle inside of model, instead of global_cycle
 
 # analysis is done at ensemble resolution
 export LONA=$LONB
@@ -374,6 +374,9 @@ export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
 
 if [ "$machine" == 'hera' ]; then
+   export FIXDIR=/scratch1/NCEPDEV/nems/emc.nemspara/RT/NEMSfv3gfs/input-data-20220414
+   #export FIXDIR_gcyc=$FIXDIR
+   export FIXDIR_gcyc=/scratch1/NCEPDEV/global/glopara/fix_NEW # for GFSv16
    export python=/contrib/anaconda/2.3.0/bin/python
    export fv3gfspath=/scratch1/NCEPDEV/global/glopara
    export FIXFV3=${fv3gfspath}/fix_NEW/fix_fv3_gmted2010
@@ -387,6 +390,9 @@ if [ "$machine" == 'hera' ]; then
    export gsiexec=${execdir}/global_gsi
    export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
 elif [ "$machine" == 'orion' ]; then
+   export FIXDIR=/work/noaa/nems/emc.nemspara/RT/NEMSfv3gfs/input-data-20220414
+   #export FIXDIR_gcyc=$FIXDIR
+   export FIXDIR_gcyc=/work/noaa/global/glopara/fix_NEW # for GFSv16
    export python=`which python`
    export fv3gfspath=/work/noaa/global/glopara
    export FIXFV3=$fv3gfspath/fix_NEW/fix_fv3_gmted2010

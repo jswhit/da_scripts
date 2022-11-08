@@ -94,13 +94,22 @@ else
   export nanals2=-1
   echo "no longer forecast extension"
 fi
-# only run global cycle at synoptic times.
-if [ $hr = "00" ] || [ $hr = "06" ] || [ $hr = "12" ] || [ $hr = "18" ]; then
- unset skip_global_cycle
- echo "global_cycle will be run"
+if [ $FHCYC -gt 0 ]; then
+   if [ $hr = "00" ] || [ $hr = "06" ] || [ $hr = "12" ] || [ $hr = "18" ]; then
+    echo "gcycle will be run with FHCYC=$FHCYC"
+   else
+    export FHCYC=0
+    export skip_global_cycle=1
+    echo "don't run gcycle"
+   fi
 else
- export skip_global_cycle=1
- echo "don't run global_cycle"
+   if [ $hr = "00" ] || [ $hr = "06" ] || [ $hr = "12" ] || [ $hr = "18" ]; then
+    unset skip_global_cycle
+    echo "global_cycle will be run"
+   else
+    export skip_global_cycle=1
+    echo "don't run global_cycle (or gcycle)"
+   fi
 fi
 
 export PREINP="${RUN}.t${hr}z."

@@ -118,7 +118,7 @@
   print_diff_pgr = T
   fhzero         = 3
   ldiag3d        = F
-  fhcyc          = 0
+  fhcyc          = FHCYC
   use_ufo        = T
   pre_rad        = F
   imp_physics    = 11
@@ -260,6 +260,46 @@
 /
 
 &namsfc
+  FNGLAC="FIXDIR/fix_am/global_glacier.2x2.grb",
+  FNMXIC="FIXDIR/fix_am/global_maxice.2x2.grb",
+  FNTSFC="FIXDIR/fix_am/RTGSST.1982.2012.monthly.clim.grb",
+  FNSNOC="FIXDIR/fix_am/global_snoclim.1.875.grb",
+  FNZORC="igbp",
+  FNALBC="FIXDIR/fix_am/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb",
+  FNALBC2="FIXDIR/fix_am/global_albedo4.1x1.grb",
+  FNAISC="FIXDIR/fix_am/CFSR.SEAICE.1982.2012.monthly.clim.grb",
+  FNTG3C="FIXDIR/fix_am/global_tg3clim.2.6x1.5.grb",
+  FNVEGC="FIXDIR/fix_am/global_vegfrac.0.144.decpercent.grb",
+  FNVETC="FIXDIR/fix_am/global_vegtype.igbp.t1534.3072.1536.rg.grb",
+  FNSOTC="FIXDIR/fix_am/global_soiltype.statsgo.t1534.3072.1536.rg.grb",
+  FNSMCC="FIXDIR/fix_am/global_soilmgldas.statsgo.t1534.3072.1536.grb",
+  FNMSKH="FIXDIR/fix_am/global_slmask.t1534.3072.1536.grb",
+  FNTSFA   = "SSTFILE",
+  FNACNA   = "ICEFILE",
+  FNSNOA   = "SNOFILE",
+  FNVMNC="FIXDIR/fix_am/global_shdmin.0.144x0.144.grb",
+  FNVMXC="FIXDIR/fix_am/global_shdmax.0.144x0.144.grb",
+  FNSLPC="FIXDIR/fix_am/global_slope.1x1.grb",
+  FNABSC="FIXDIR/fix_am/global_mxsnoalb.uariz.t1534.3072.1536.rg.grb",
+  LDEBUG   =.false.,
+  FSMCL(2) = 99999
+  FSMCL(3) = 99999
+  FSMCL(4) = 99999
+  LANDICE = .false.
+  FTSFS = 99999
+  FAISL = 99999
+  FAISS = 99999
+  FSNOL = FSNOL_PARM
+  FSNOS = 99999
+  FSICL = 99999
+  FSICS = 99999
+  FTSFL = 99999
+  FVETL = 99999
+  FSOTL = 99999
+  FvmnL = 99999
+  FvmxL = 99999
+  FSLPL = 99999
+  FABSL = 99999
 /
 
 &fv_grid_nml

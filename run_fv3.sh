@@ -196,6 +196,7 @@ fnsnoa=${obs_datapath2}/${RUN}.${year}${mon}${day}/${hour}/${RUN}.t${hour}z.snog
 fnsnog=${obs_datapath2}/${RUN}.${yearprev}${monprev}${dayprev}/${hourprev}/${RUN}.t${hourprev}z.snogrb_t1534.3072.1536
 
 nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
+#nrecs_snow=0 # force no snow update (do this if NOAH-MP used)
 if [ $nrecs_snow -eq 0 ]; then
    # no snow depth in file, use model
    fnsnoa=' ' # no input file
@@ -226,6 +227,10 @@ if [ $cold_start == 'false' ] && [ $nanals2 -gt 0 ] && [ $nmem -le $nanals2 ]; t
 else
    FHMAX_FCST=$FHMAX
    longer_fcst="NO"
+fi
+
+if [ $FHCYC -gt 0 ]; then
+  skip_global_cycle=1
 fi
 
 if [ "$cold_start" == "false" ] && [ -z $skip_global_cycle ]; then
@@ -367,6 +372,12 @@ sed -i -e "s/IAU_INC_FILES/${iau_inc_files}/g" input.nml
 sed -i -e "s/IAU_FHRS/${iau_fhrs}/g" input.nml
 sed -i -e "s/HYDROSTATIC/${hydrostatic}/g" input.nml
 sed -i -e "s/LAUNCH_LEVEL/${launch_level}/g" input.nml
+sed -i -e "s!FIXDIR!${FIXDIR_gcyc}!g" input.nml
+sed -i -e "s!SSTFILE!${fntsfa}!g" input.nml
+sed -i -e "s!ICEFILE!${fnacna}!g" input.nml
+sed -i -e "s!SNOFILE!${fnsnoa}!g" input.nml
+sed -i -e "s/FSNOL_PARM/${FSNOL}/g" input.nml
+sed -i -e "s/FHCYC/${FHCYC}/g" input.nml
 cat input.nml
 ls -l INPUT
 
