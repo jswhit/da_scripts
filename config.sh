@@ -429,18 +429,17 @@ fi
 export ANAVINFO=${fixgsi}/global_anavinfo.l${LEVS}.txt
 export ANAVINFO_ENKF=${ANAVINFO}
 export HYBENSINFO=${fixgsi}/global_hybens_info.l${LEVS}.txt # only used if readin_beta or readin_localization=T
+#export HYBENSMOOTHINFO=${fixgsi}/global_hybens_smoothinfo.l${LEVS}.txt
 # comment out next line to disable smoothing of ensemble perturbations
 # in stratosphere/mesosphere
-#export HYBENSMOOTHINFO=${fixgsi}/global_hybens_smoothinfo.l${LEVS}.txt
-export OZINFO=${fixgsi}/global_ozinfo.txt
-export CONVINFO=${enkfscripts}/global_convinfo.txt
-export SATINFO=${fixgsi}/global_satinfo.txt
+export OZINFO=${fixgsi}/gfsv16_historical/global_ozinfo.txt.2020011806
+export CONVINFO=${enkfscripts}/global_convinfo.txt # modified twindow (probably not needed)
+export SATINFO=${fixgsi}gfsv16_historical/global_satinfo.txt.2020022012
 export NLAT=$((${LATA}+2))
 # default is to use berror file in gsi fix dir.
 #export BERROR=${basedir}/staticB/global_berror_enkf.l${LEVS}y${NLAT}.f77
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_janjulysmooth0p5
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_annmeansmooth0p5
-export REALTIME=NO # if NO, use historical files set in main.sh
 
 # parameters for hybrid gain
 if [ $hybgain == "true" ]; then

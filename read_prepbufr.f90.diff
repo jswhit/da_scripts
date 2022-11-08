@@ -1,17 +1,26 @@
 diff --git a/src/gsi/read_prepbufr.f90 b/src/gsi/read_prepbufr.f90
-index 9041d97..80ea88c 100644
+index d2cb5039..369b4862 100644
 --- a/src/gsi/read_prepbufr.f90
 +++ b/src/gsi/read_prepbufr.f90
-@@ -1074,7 +1074,7 @@ subroutine read_prepbufr(nread,ndata,nodata,infile,obstype,lunout,twindin,sis,&
+@@ -1079,8 +1079,16 @@ subroutine read_prepbufr(nread,ndata,nodata,infile,obstype,lunout,twindin,sis,&
                zeps=1.0e-8_r_kind
                if (t4dv<zero  .and.t4dv>      -zeps) t4dv=zero
                if (t4dv>winlen.and.t4dv<winlen+zeps) t4dv=winlen
 -              t4dv=t4dv + time_correction
 +              !t4dv=t4dv + time_correction
                time=timeobs + time_correction
++! timeobs: obs time in prepbufr file (relative to bufr date)
++! time_correction:  bufr_date - anal date
++! toff: time offset from beginning of window
++! time:  obs time + time_correction (ob time relative to analysis date, if
++! different than bufr date)
++! t4dv: time relative  to beginning of window.
++! twindin: time window half width from namelist
++! ctwindin: time window half width from convinfo (per ob type)
             end if
             if(use_prepb_satwnd .and. (kx >= 240 .and. kx <= 260)) iobsub = hdr(7)
-@@ -1084,12 +1084,13 @@ subroutine read_prepbufr(nread,ndata,nodata,infile,obstype,lunout,twindin,sis,&
+ 
+@@ -1089,12 +1097,13 @@ subroutine read_prepbufr(nread,ndata,nodata,infile,obstype,lunout,twindin,sis,&
             driftl=kx==120.or.kx==220.or.kx==221
  
             if (.not. (aircraft_t_bc .and. acft_profl_file)) then
@@ -31,7 +40,7 @@ index 9041d97..80ea88c 100644
  
                timex=time
             end if
-@@ -1811,13 +1812,14 @@ subroutine read_prepbufr(nread,ndata,nodata,infile,obstype,lunout,twindin,sis,&
+@@ -1822,13 +1831,14 @@ subroutine read_prepbufr(nread,ndata,nodata,infile,obstype,lunout,twindin,sis,&
                   zeps=1.0e-8_r_kind
                   if (t4dv<zero  .and.t4dv>      -zeps) t4dv=zero
                   if (t4dv>winlen.and.t4dv<winlen+zeps) t4dv=winlen
@@ -52,7 +61,7 @@ index 9041d97..80ea88c 100644
                end if
  
  !             If needed, extract drift information.   
-@@ -1849,11 +1851,12 @@ subroutine read_prepbufr(nread,ndata,nodata,infile,obstype,lunout,twindin,sis,&
+@@ -1860,11 +1870,12 @@ subroutine read_prepbufr(nread,ndata,nodata,infile,obstype,lunout,twindin,sis,&
                         if (t4dv<zero .or. t4dv>winlen) CYCLE LOOP_K_LEVS
                      end if
                   else
