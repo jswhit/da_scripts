@@ -433,8 +433,8 @@ export HYBENSINFO=${fixgsi}/global_hybens_info.l${LEVS}.txt # only used if readi
 # comment out next line to disable smoothing of ensemble perturbations
 # in stratosphere/mesosphere
 export OZINFO=${fixgsi}/gfsv16_historical/global_ozinfo.txt.2020011806
-export CONVINFO=${enkfscripts}/global_convinfo.txt # modified twindow (probably not needed)
-export SATINFO=${fixgsi}gfsv16_historical/global_satinfo.txt.2020022012
+export CONVINFO=${enkfscripts}/global_convinfo.txt # modified twindow (probably not needed), modify gross err check?
+export SATINFO=${fixgsi}/gfsv16_historical/global_satinfo.txt.2020022012
 export NLAT=$((${LATA}+2))
 # default is to use berror file in gsi fix dir.
 #export BERROR=${basedir}/staticB/global_berror_enkf.l${LEVS}y${NLAT}.f77
