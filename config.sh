@@ -223,9 +223,9 @@ elif [ $RES -eq 128 ]; then
    export dt_atmos=720
    export cdmbgwd="0.19,1.6,1.0,1.0"  
 elif [ $RES -eq 96 ]; then
-   export JCAP=188 
+   export JCAP=188
    export LONB=384   
-   export LATB=190  
+   export LATB=192
    export dt_atmos=900
    export cdmbgwd="0.14,1.8,1.0,1.0"  # mountain blocking, ogwd, cgwd, cgwd src scaling
 elif [ $RES -eq 48 ]; then
@@ -378,7 +378,8 @@ if [ "$machine" == 'hera' ]; then
    export fv3gfspath=/scratch1/NCEPDEV/global/glopara
    export FIXFV3=${fv3gfspath}/fix_NEW/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix_NEW/fix_am
-   export gsipath=${basedir}/gsi/GSI-github-jswhit-master
+   export FIXgsm=$FIXGLOBAL # for global_cycle
+   export gsipath=/scratch2/BMC/gsienkf/Jeffrey.S.Whitaker/gsi/GSI-github-jswhit-master
    export fixgsi=${gsipath}/fix
    export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0
    export execdir=${enkfscripts}/exec_${machine}
