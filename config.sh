@@ -64,7 +64,7 @@ export controlanal="false" # hybrid-cov high-res control analysis as in ops
 # (hybgain will be set to false if controlanal=true)
 
 # override values from above for debugging.
-export cleanup_ensmean='false'
+#export cleanup_ensmean='false'
 #export cleanup_ensmean_enkf='false'
 #export recenter_fcst="false"
 #export cleanup_controlanl='false'
