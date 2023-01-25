@@ -15,9 +15,9 @@ echo "output file $3"
 # namelist /chgres_setup/ i_output, j_output, input_file, output_file, &
 #                      terrain_file, cld_amt, ref_file
 
-/bin/rm -f chgres_nc_gauss.nml
+/bin/rm -f chgres.nml
 /bin/rm -f $3
-cat > chgres_nc_gauss.nml << EOF
+cat > chgres.nml << EOF
 &chgres_setup
   i_output=$LONB
   j_output=$LATB
@@ -27,20 +27,20 @@ cat > chgres_nc_gauss.nml << EOF
   ref_file="atmanl_ensmean"
 /
 EOF
-cat chgres_nc_gauss.nml
+cat chgres.nml
 
 export OMP_NUM_THREADS=$corespernode
 export OMP_STACKSIZE=256M
 #$CHGRESEXEC
-export PGM="$CHGRESEXEC chgres_nc_gauss.nml"
+export PGM="$CHGRESEXEC chgres.nml"
 export nprocs=1
 export mpitaskspernode=1
 ${enkfscripts}/runmpi
-ls -l
 
 if [ $? -ne 0 ]; then
   exit 1
 fi
+ls -l
 
 if [ ! -s "${3}" ]; then
    echo "output file ${3} not created"

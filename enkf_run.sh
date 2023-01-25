@@ -4,6 +4,7 @@ export nprocs=`expr $cores \/ $enkf_threads`
 export mpitaskspernode=`expr $corespernode \/ $enkf_threads`
 export OMP_NUM_THREADS=$enkf_threads
 export OMP_STACKSIZE=512M
+export MKL_NUM_THREADS=1
 source $MODULESHOME/init/sh
 module list
 
@@ -16,22 +17,13 @@ for nfhr in $iaufhrs2; do
   filemissing='no'
   while [ $nanal -le $nanals ]; do
      charnanal="mem"`printf %03i $nanal`
-     analfile="${datapath2}/${analfileprefix}_${analdate}_${charfhr}_${charnanal}"
+     analfile="${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}"
      if [ ! -s $analfile ]; then
         filemissing='yes'
      fi
      nanal=$((nanal+1))
   done
 done
-
-if [ $lupd_satbiasc == ".true." ]; then
-   satbiasc=".true."
-else
-   satbiasc=".false."
-fi
-if [ $satbiasc == ".true." ] &&  [ ! -s $ABIAS ]; then
-  filemissing='yes'
-fi
 
 
 if [ $filemissing == 'yes' ]; then
@@ -43,25 +35,24 @@ cd ${datapath2}
 
 cat <<EOF > enkf.nml
  &nam_enkf
-  datestring="$analdate",datapath="$datapath2",
+  datestring="$analdate",datapath="$datapath2",univaroz=.false.,numiter=0,
   analpertwtnh=$analpertwtnh,analpertwtsh=$analpertwtsh,analpertwttr=$analpertwttr,
   analpertwtnh_rtpp=$analpertwtnh_rtpp,analpertwtsh_rtpp=$analpertwtsh_rtpp,analpertwttr_rtpp=$analpertwttr_rtpp,
-  lupd_satbiasc=$satbiasc,zhuberleft=$zhuberleft,zhuberright=$zhuberright,huber=$huber,varqc=$varqc,
   covinflatemax=$covinflatemax,covinflatemin=$covinflatemin,pseudo_rh=$pseudo_rh,
   corrlengthnh=$corrlengthnh,corrlengthsh=$corrlengthsh,corrlengthtr=$corrlengthtr,
-  obtimelnh=$obtimelnh,obtimelsh=$obtimelsh,obtimeltr=$obtimeltr,iassim_order=$iassim_order,
   lnsigcutoffnh=$lnsigcutoffnh,lnsigcutoffsh=$lnsigcutoffsh,lnsigcutofftr=$lnsigcutofftr,
   lnsigcutoffsatnh=$lnsigcutoffsatnh,lnsigcutoffsatsh=$lnsigcutoffsatsh,lnsigcutoffsattr=$lnsigcutoffsattr,
   lnsigcutoffpsnh=$lnsigcutoffpsnh,lnsigcutoffpssh=$lnsigcutoffpssh,lnsigcutoffpstr=$lnsigcutoffpstr,
   nlons=$LONA,nlats=$LATA,smoothparm=$SMOOTHINF,letkf_bruteforce_search=${letkf_bruteforce_search},
-  readin_localization=$readin_localization,saterrfact=$saterrfact,numiter=$numiter,
-  sprd_tol=$sprd_tol,paoverpb_thresh=$paoverpb_thresh,letkf_flag=$letkf_flag,denkf=$denkf,
+  readin_localization=.false.,saterrfact=$saterrfact,
+  paoverpb_thresh=$paoverpb_thresh,letkf_flag=$letkf_flag,denkf=$denkf,
   getkf_inflation=$getkf_inflation,letkf_novlocal=$letkf_novlocal,modelspace_vloc=$modelspace_vloc,save_inflation=.false.,
   reducedgrid=${reducedgrid},nlevs=$LEVS,nanals=$nanals,deterministic=$deterministic,imp_physics=$imp_physics,
-  npefiles=$npefiles,lobsdiag_forenkf=.true.,write_spread_diag=.false.,netcdf_diag=.true.,
-  sortinc=$sortinc,univaroz=$univaroz,nhr_anal=$iaufhrs,nhr_state=$enkfstatefhrs,getkf=$getkf,
-  use_correlated_oberrs=${use_correlated_oberrs},use_gfs_ncio=.true.,nccompress=T,paranc=F,write_fv3_incr=${write_fv3_increment},write_ensmean=${write_ensmean},
+  lobsdiag_forenkf=.true.,write_spread_diag=.false.,netcdf_diag=.true.,
+  sortinc=$sortinc,nhr_anal=$iaufhrs,nhr_state=$enkfstatefhrs,getkf=$getkf,
+  use_correlated_oberrs=${use_correlated_oberrs},use_gfs_ncio=.true.,nccompress=T,paranc=F,write_fv3_incr=${write_fv3_increment},
   adp_anglebc=.true.,angord=4,newpc4pred=.true.,use_edges=.false.,emiss_bc=.true.,biasvar=-500,nobsl_max=$nobsl_max,use_qsatensmean=.true.,
+  ${ENKFVARS}
   ${WRITE_INCR_ZERO}
  /
  &satobs_enkf
@@ -148,8 +139,10 @@ cat <<EOF > enkf.nml
   sattypes_rad(81)= 'saphir_meghat', dsis(81)= 'saphir_meghat',
   sattypes_rad(82)= 'amsua_metop-c', dsis(82)= 'amsua_metop-c',
   sattypes_rad(83)= 'mhs_metop-c',   dsis(83)= 'mhs_metop-c',
-  sattypes_rad(84)= 'ahi_himawari8', dsis(84)= 'ahi_himawari8',
-  sattypes_rad(85)= 'abi_g16',       dsis(85)= 'abi_g16',
+  sattypes_rad(84)= 'iasi_metop-c',  dsis(84)= 'iasi_metop-c',
+  sattypes_rad(85)= 'ahi_himawari8', dsis(85)= 'ahi_himawari8',
+  sattypes_rad(86)= 'abi_g16',       dsis(86)= 'abi_g16',
+  sattypes_rad(87)= 'abi_g17',       dsis(87)= 'abi_g17',
  /
  &END
  &ozobs_enkf
@@ -171,7 +164,7 @@ EOF
 
 cat enkf.nml
 
-cp ${enkfscripts}/vlocal_eig.dat ${datapath2}
+cp ${enkfscripts}/vlocal_eig_L${LEVS}.dat ${datapath2}/vlocal_eig.dat
 
 /bin/rm -f ${datapath2}/enkf.log
 /bin/mv -f ${current_logdir}/ensda.out ${current_logdir}/ensda.out.save
@@ -188,9 +181,6 @@ if [ ! -s ${datapath2}/enkf.log ]; then
    echo "no enkf log file found"
    exit 1
 fi
-if [ $satbiasc == '.true.' ]; then
-  /bin/cp -f ${datapath2}/satbias_out $ABIAS
-fi
 
 else
 echo "enkf update already done..."
@@ -201,15 +191,12 @@ nanal=1
 filemissing='no'
 while [ $nanal -le $nanals ]; do
    charnanal="mem"`printf %03i $nanal`
-   analfile=${datapath2}/${analfileprefix}_${analdate}_${charfhr}_${charnanal}
+   analfile=${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}
    if [ ! -s $analfile ]; then
      filemissing='yes'
    fi
    nanal=$((nanal+1))
 done
-if [ $satbiasc == ".true." ] &&  [ ! -s $ABIAS ]; then
-  filemissing='yes'
-fi
 
 if [ $filemissing == 'yes' ]; then
     echo "there are output files missing!"

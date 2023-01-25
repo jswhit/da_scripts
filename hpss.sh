@@ -97,7 +97,7 @@ if  [ $save_hpss_subset == "true" ]; then
    #fi
    #cd ..
    # exclude long forecast directory
-   htar -cvf ${hsidir}/${analdate}_subset.tar ${analdate}/gdas* ${analdate}/*ensmean* ${analdate}/*control* ${analdate}/logs
+   htar -cvf ${hsidir}/${analdate}_subset.tar ${analdate}/${RUN}* ${analdate}/*ensmean* ${analdate}/*control* ${analdate}/logs
 fi
 hsi ls -l ${hsidir}/${analdate}_subset.tar
 exitstat=$?
@@ -108,11 +108,11 @@ else
    # remove files to save space
    cd ${analdate}
    /bin/rm -f diag*cris* diag*airs* diag*iasi*
-   /bin/rm -f *fhr03* *fhr09* *chgres
-   /bin/rm -rf control  ensmean
-   if [ $hr != '00' ]; then
-       /bin/rm -rf control2
-   fi
+   /bin/rm -f *chgres
+   /bin/rm -rf ensmean
+   #if [ $hr != '00' ]; then
+   #    /bin/rm -rf control
+   #fi
 fi
 
 exit $exitstat

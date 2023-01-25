@@ -1,11 +1,7 @@
 # run high-res control first guess.
 # first, clean up old first guesses.
 
-if [ $replay_controlfcst == 'true' ]; then
-   export charnanal="control2"
-else
-   export charnanal="control"
-fi
+export charnanal="control"
 echo "charnanal = $charnanal"
 export DATOUT="${datapath}/${analdatep1}"
 echo "DATOUT = $DATOUT"
@@ -33,34 +29,18 @@ export layout="$layout_ctl"
 echo "layout = $layout"
 export dt_atmos=$dt_atmos_ctl
 echo "dt_atmos = $dt_atmos"
-export fv_sg_adj=$fv_sg_adj_ctl
-echo "fv_sg_adj = $fv_sg_adj"
 export cdmbgwd="$cdmbgwd_ctl"
 echo "cdmbgwd = $cdmbgwd"
-if [ ! -z $psautco_ctl ]; then
-export psautco="$psautco_ctl"
-echo "psautco = $psautco"
-fi
-if [ ! -z $prautco_ctl ]; then
-export prautco="$psautco_ctl"
-echo "prautco = $psautco"
-fi
-if [ ! -z $k_split_ctl ]; then
-export k_split="${k_split_ctl}"
-fi
-if [ ! -z $n_split_ctl ]; then
-export n_split="${n_split_ctl}"
-fi
 export fg_proc=$nprocs
 echo "fg_proc = $fg_proc"
 
 # turn off stochastic physics
 export SKEB=0
-export DO_SKEB=.false.
+export DO_SKEB=F
 export SPPT=0
-export DO_SPPT=.false.
+export DO_SPPT=F
 export SHUM=0
-export DO_SHUM=.false.
+export DO_SHUM=F
 echo "SKEB SPPT SHUM = $SKEB $SPPT $SHUM"
 
 if [ $cleanup_fg == 'true' ]; then
@@ -89,13 +69,8 @@ for outfile in $outfiles; do
 done
 echo "${analdate} compute first guesses `date`"
 while [ $alldone == 'no' ] && [ $niter -le $nitermax ]; do
-    if [ $niter -eq 1 ]; then
-       sh ${enkfscripts}/${rungfs}
-       exitstat=$?
-    else
-       sh ${enkfscripts}/${rungfs}
-       exitstat=$?
-    fi
+    sh ${enkfscripts}/${rungfs}
+    exitstat=$?
     if [ $exitstat -eq 0 ]; then
        alldone='yes'
        for outfile in $outfiles; do
@@ -113,14 +88,6 @@ while [ $alldone == 'no' ] && [ $niter -le $nitermax ]; do
        export niter=$niter
     fi
 done
-
-# interpolate to 1x1 grid
-cd ${enkfscripts}
-echo "interpolate pressure level history files from ${charnanal} forecast to 1x1 deg grid `date`"
-if [ -s ${datapathp1}/${charnanal}/fv3_historyp.tile1.nc ]; then
-  $python ncinterp.py ${datapathp1}/${charnanal} ${datapath2}/fv3${charnanal}_historyp_${analdate}_latlon.nc $RES_CTL $analdate
-  echo "all done `date`"
-fi
 
 if [ $alldone == 'no' ]; then
     echo "Tried ${nitermax} times to run high-res control first-guess and failed: ${analdate}"

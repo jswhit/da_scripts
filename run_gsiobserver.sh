@@ -1,13 +1,18 @@
 #!/bin/sh
 # do hybrid observer.
 
-if [ "$cold_start_bias" == "true" ]; then
-  export NOSAT=YES
-fi
-
 if [ -z $charnanal2 ]; then
   export charnanal2=$charnanal
 fi
+
+if [ $charnanal == "control" ]; then
+   # run observer on full res control forecast grid
+   export LONA=$LONB_CTL
+   export LATA=$LATB_CTL
+   export JCAP=$JCAP_CTL
+fi      
+##export CLEAN="NO"
+export NLAT=$((${LATA}+2))
 
 export CO2DIR=$fixgsi
 
