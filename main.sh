@@ -50,33 +50,36 @@ if [ "$REALTIME" == "NO" ]; then
 
 #   Set CONVINFO
 if [[  "$analdate" -ge 2021052012 ]]; then
-    export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2021052012
+    CONVINFO2=$fixgsi/gfsv16_historical/global_convinfo.txt.2021052012
 elif [[  "$analdate" -ge 2021032212 ]]; then
-    export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2021032212
+    CONVINFO2=$fixgsi/gfsv16_historical/global_convinfo.txt.2021032212
 elif [[  "$analdate" -ge 2020091612 ]]; then
-    export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2020091612
+    CONVINFO2=$fixgsi/gfsv16_historical/global_convinfo.txt.2020091612
 elif [[  "$analdate" -ge 2020052612 ]]; then
-    export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2020052612
+    CONVINFO2=$fixgsi/gfsv16_historical/global_convinfo.txt.2020052612
 elif [[  "$analdate" -ge 2020040718 ]]; then
-    export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2020040718
+    CONVINFO2=$fixgsi/gfsv16_historical/global_convinfo.txt.2020040718
 elif [[  "$analdate" -ge 2019110706 ]]; then
-    export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2019110706
+    CONVINFO2=$fixgsi/gfsv16_historical/global_convinfo.txt.2019110706
 elif [[  "$analdate" -ge 2019021900 ]]; then
-    export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2019021900
+    CONVINFO2=$fixgsi/gfsv16_historical/global_convinfo.txt.2019021900
 elif [[ "$analdate" -ge "2018022818" ]]; then
-    export CONVINFO=$fixgsi/fv3_historical/global_convinfo.txt.2018022818
+    CONVINFO2=$fixgsi/fv3_historical/global_convinfo.txt.2018022818
 elif [[ "$analdate" -ge "2018010512" ]]; then
-    export CONVINFO=$fixgsi/fv3_historical/global_convinfo.txt.2018010512
+    CONVINFO2=$fixgsi/fv3_historical/global_convinfo.txt.2018010512
 elif [[ "$analdate" -ge "2017071912" ]]; then
-    export CONVINFO=$fixgsi/fv3_historical/global_convinfo.txt.2017071912
+    CONVINFO2=$fixgsi/fv3_historical/global_convinfo.txt.2017071912
 elif [[ "$analdate" -ge "2016031512" ]]; then
-    export CONVINFO=$fixgsi/fv3_historical/global_convinfo.txt.2016031512
+    CONVINFO2=$fixgsi/fv3_historical/global_convinfo.txt.2016031512
 elif [[ "$analdate" -ge "2014041400" ]]; then
-    export CONVINFO=$fixgsi/fv3_historical/global_convinfo.txt.2014041400
+    CONVINFO2=$fixgsi/fv3_historical/global_convinfo.txt.2014041400
 else
     echo "no convinfo found"
     exit 1
 fi
+
+export CONVINFO=${CONVINFO:-$CONVINFO2}
+
 
 #   Set OZINFO
 if [[  "$analdate" -ge 2020011806 ]]; then

@@ -80,14 +80,17 @@ export controlanal="false" # hybrid-cov high-res control analysis as in ops
 source $MODULESHOME/init/sh
 if [ "$machine" == 'hera' ]; then
    export basedir=/scratch2/BMC/gsienkf/${USER}
+   export codedir=/scratch2/BMC/gsienkf/Jeffrey.S.Whitaker/
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    export obs_datapath=/scratch1/NCEPDEV/global/glopara/dump
    module purge
    module use /scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack
-   module load hpc/1.2.0
-   module load hpc-intel/2022.1.2   
-   module load hpc-impi/2022.1.2
+   module load hpc/1.1.0
+   module load hpc-intel/18.0.5.274
+   module load hpc-impi/2018.0.4
+   module load prod_util/1.2.2
+
    module load hdf5/1.10.6
    module load netcdf/4.7.4
    module load pio/2.5.2
@@ -97,6 +100,7 @@ if [ "$machine" == 'hera' ]; then
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'orion' ]; then
    export basedir=/work/noaa/gsienkf/${USER}
+   export codedir=/work/noaa/gsienkf/whitaker/
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    #export obs_datapath=/work/noaa/rstprod/dump
@@ -117,6 +121,7 @@ elif [ "$machine" == 'orion' ]; then
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f2/dev/${USER}
+   export codedir=/lustre/f2/dev/Jeffrey.S.Whitaker
    export datadir=/lustre/f2/scratch/${USER}
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    #export hsidir="/3year/NCEPDEV/GEFSRR/${exptname}"
@@ -387,7 +392,7 @@ elif [ $LEVS -eq 127 ]; then
   export s_ens_v=7.7 # 20 levels
 fi
 # use pre-generated bias files.
-#export biascorrdir=${datadir}/biascor
+#export biascorrdir=${codedir}/biascor
 
 export nanals=80                                                    
 # if nanals2>0, extend nanals2 members out to FHMAX + ANALINC (one extra assim window)
@@ -404,7 +409,7 @@ if [ "$machine" == 'hera' ]; then
    export FIXDIR_gcyc=$FIXDIR
    #export FIXDIR_gcyc=/scratch1/NCEPDEV/global/glopara/fix # for GFSv16
    export python=/contrib/anaconda/2.3.0/bin/python
-   export gsipath=${basedir}/gsi/GSI
+   export gsipath=${codedir}/gsi/GSI
    export fixgsi=${gsipath}/fix
    export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0
    export execdir=${enkfscripts}/exec_${machine}
@@ -417,7 +422,7 @@ elif [ "$machine" == 'orion' ]; then
    #export FIXDIR_gcyc=/work/noaa/global/glopara/fix_NEW # for GFSv16
    export python=`which python`
    export fv3gfspath=/work/noaa/global/glopara
-   export gsipath=${basedir}/GSI
+   export gsipath=${codedir}/GSI
    export fixgsi=${gsipath}/fix
    export fixcrtm=$fv3gfspath/crtm/crtm_v2.3.0
    export execdir=${enkfscripts}/exec_${machine}
@@ -431,7 +436,7 @@ elif [ "$machine" == 'gaea' ]; then
    export fv3gfspath=/lustre/f2/dev/Jeffrey.S.Whitaker/fv3_reanl/fv3gfs/global_shared.v15.0.0
    export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
-   export gsipath=/lustre/f2/dev/Jeffrey.S.Whitaker/GSI-github-jswhit
+   export gsipath=${codedir}/GSI-github-jswhit
    export fixgsi=${gsipath}/fix
    export fixcrtm=/lustre/f2/pdata/ncep_shared/NCEPLIBS/lib/crtm/v2.2.6/fix
    #export fixcrtm=${fixgsi}/crtm_v2.2.3
@@ -461,7 +466,7 @@ export HYBENSINFO=${fixgsi}/global_hybens_info.l${LEVS}.txt # only used if readi
 # in stratosphere/mesosphere
 #export HYBENSMOOTHINFO=${fixgsi}/global_hybens_smoothinfo.l${LEVS}.txt
 export OZINFO=${fixgsi}/global_ozinfo.txt
-export CONVINFO=${fixgsi}/global_convinfo.txt
+#export CONVINFO=${fixgsi}/global_convinfo.txt
 export SATINFO=${fixgsi}/global_satinfo.txt
 export NLAT=$((${LATA}+2))
 # default is to use berror file in gsi fix dir.
