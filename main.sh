@@ -281,34 +281,56 @@ if [ $write_ensmean == ".false." ]; then
    echo "$analdate done computing ensemble mean analyses `date`"
 fi
 
+if [ $analdate == $analdate_end ]; then
+  exit
+fi
+
 # blend enkf mean and 3dvar increments, recenter ensemble
 if [ $recenter_anal == "true" ]; then
    if [ $hybgain == "true" ]; then 
        if [ $alpha -gt 0 ]; then
-       # hybrid gain
-       echo "$analdate blend enkf and 3dvar increments `date`"
-       sh ${enkfscripts}/blendinc.sh > ${current_logdir}/blendinc.out 2>&1
-       blendinc_done=`cat ${current_logdir}/blendinc.log`
-       if [ $blendinc_done == 'yes' ]; then
-         echo "$analdate increment blending/recentering completed successfully `date`"
-       else
-         echo "$analdate increment blending/recentering did not complete successfully, exiting `date`"
-         exit 1
-       fi
+          # hybrid gain
+          echo "$analdate blend enkf and 3dvar increments `date`"
+          sh ${enkfscripts}/blendinc.sh > ${current_logdir}/blendinc.out 2>&1
+          blendinc_done=`cat ${current_logdir}/blendinc.log`
+          if [ $blendinc_done == 'yes' ]; then
+            echo "$analdate increment blending/recentering completed successfully `date`"
+          else
+            echo "$analdate increment blending/recentering did not complete successfully, exiting `date`"
+            exit 1
+          fi
        fi
    else
-      # hybrid covariance
-      export fileprefix="sanl"
-      export charnanal="control"
-      echo "$analdate recenter enkf analysis ensemble around control analysis `date`"
-      sh ${enkfscripts}/recenter_ens.sh > ${current_logdir}/recenter_ens_anal.out 2>&1
-      recenter_done=`cat ${current_logdir}/recenter.log`
-      if [ $recenter_done == 'yes' ]; then
-        echo "$analdate recentering enkf analysis completed successfully `date`"
-      else
-        echo "$analdate recentering enkf analysis did not complete successfully, exiting `date`"
-        exit 1
-      fi
+       # hybrid covariance, recenter
+       export fileprefix="sanl"
+       export charnanal="control"
+       echo "$analdate recenter enkf analysis ensemble around control analysis `date`"
+       sh ${enkfscripts}/recenter_ens.sh > ${current_logdir}/recenter_ens_anal.out 2>&1
+       recenter_done=`cat ${current_logdir}/recenter.log`
+       if [ $recenter_done == 'yes' ]; then
+         echo "$analdate recentering enkf analysis completed successfully `date`"
+       else
+         echo "$analdate recentering enkf analysis did not complete successfully, exiting `date`"
+         exit 1
+       fi
+
+       # use increment blending util with alpha=1, beta=0 instead of recentering
+       #echo "$analdate blend enkf and 3dvar increments `date`"
+       ## for hybrd cov could use alpha=1, beta=0 here 
+       #alpha_save=$alpha
+       #beta_save=$beta
+       #export alpha=1000
+       #export beta=0
+       #sh ${enkfscripts}/blendinc.sh > ${current_logdir}/blendinc.out 2>&1
+       #blendinc_done=`cat ${current_logdir}/blendinc.log`
+       #if [ $blendinc_done == 'yes' ]; then
+       #  echo "$analdate increment blending/recentering completed successfully `date`"
+       #else
+       #  echo "$analdate increment blending/recentering did not complete successfully, exiting `date`"
+       #  exit 1
+       #fi
+       #export alpha=$alpha_save
+       #export beta=$beta_save
    fi
 fi
 
