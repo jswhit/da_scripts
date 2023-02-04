@@ -181,6 +181,16 @@ else
    FHCYC=${FHCYC}
 fi
 
+# halve time step if niter>1 and niter==nitermax
+if [[ $niter -gt 1 ]] && [[ $niter -eq $nitermax ]]; then
+    dt_atmos=`python -c "print(${dt_atmos}/2)"`
+    stochini=F
+    echo "dt_atmos changed to $dt_atmos..."
+    #DO_SKEB=F
+    #DO_SPPT=F
+    #DO_SHUM=F
+fi
+
 snoid='SNOD'
 
 # Turn off snow analysis if it has already been used.
