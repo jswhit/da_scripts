@@ -29,7 +29,12 @@ export hrp1=`echo $analdatep1 | cut -c9-10`
 export hrm1=`echo $analdatem1 | cut -c9-10`
 # next analysis time.
 export analdatep1=`${incdate} $analdate 1`
-export obdate=`python findobdate.py $analdate`
+export sixhourlydumps=${sixhourlydumps:-"YES"}
+if [ $sixhourlydumps == "YES" ]; then
+   export obdate=`python findobdate.py $analdate`
+else
+   export obdate=$analdate
+fi
 
 # convinfo, ozinfo, satinfo from env vars CONVINFO, OZINFO, SATINFO
 
