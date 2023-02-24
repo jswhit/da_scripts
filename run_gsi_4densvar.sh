@@ -75,7 +75,7 @@ echo "fdatei=$fdatei fhr=$fhr fdatev=$fdatev"
 gdate0=`echo $gdate | cut -c1-8`
 obs_datapath=${obs_datapath:-/scratch1/NCEPDEV/global/glopara/dump}
 datobs=$obs_datapath/${RUN}.${iy}${im}${id}/${ih}
-datobsx=$obs_datapath/${RUN}x.${iy}${im}${id}/${ih}
+#datobs=$obs_datapath/${RUN}hrlyo.${iy}${im}${id}/${ih}
 prefix_obs=${RUN}.t${ih}z
 prefix_tbc=${RUN}.t${hhg}z
 
@@ -165,7 +165,7 @@ if [[ "$HXONLY" = "YES" ]]; then
 fi
 if [[ "$HXONLY" != "YES" ]]; then
    if [[ $beta_s0 > 0.999 ]]; then # 3dvar or hybrid gain
-      STRONGOPTS="tlnmc_option=1,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5"
+      STRONGOPTS="tlnmc_option=1,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
       SETUP="$SETUP,miter=1,niter(1)=150,niter(2)=0"
    else # envar
       # tlnmc on full increment, 4denvar
@@ -174,7 +174,7 @@ if [[ "$HXONLY" != "YES" ]]; then
       # tlnmc on full increment, 3denvar
       #STRONGOPTS="tlnmc_option=3,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
       # balance constraint on 3dvar part of envar increment
-      STRONGOPTS="tlnmc_option=4,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
+      STRONGOPTS="tlnmc_option=4,nstrong=1,nvmodes_keep=48,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
       # no strong bal constraint
       if [ $NOTLNMC == "YES" ]; then
          STRONGOPTS="tlnmc_option=0,nstrong=0,nvmodes_keep=0,baldiag_full=.false.,baldiag_inc=.false.,"
@@ -692,14 +692,14 @@ fi
 if [[ -s $datobs/${prefix_obs}.sevcsr.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.sevcsr.${suffix}      ./seviribufr
 fi
-if [[ -s $datobsx/${prefix_obs}.ahicsr.${suffix} ]]; then
-$nln $datobsx/${prefix_obs}.ahicsr.${suffix}      ./ahibufr
+if [[ -s $datobs/${prefix_obs}.ahicsr.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.ahicsr.${suffix}      ./ahibufr
 fi
-if [[ -s $datobsx/${prefix_obs}.gsrcsr.${suffix} ]]; then
-$nln $datobsx/${prefix_obs}.gsrcsr.${suffix}      ./abibufr
+if [[ -s $datobs/${prefix_obs}.gsrcsr.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.gsrcsr.${suffix}      ./abibufr
 fi
-if [[ -s $datobsx/${prefix_obs}.gmi1cr.${suffix} ]]; then
-$nln $datobsx/${prefix_obs}.gmi1cr.${suffix}      ./gmibufr
+if [[ -s $datobs/${prefix_obs}.gmi1cr.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.gmi1cr.${suffix}      ./gmibufr
 fi
 if [[ -s $datobs/${prefix_obs}.cris.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.cris.${suffix}      ./crisbufr
