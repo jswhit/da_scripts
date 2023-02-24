@@ -74,8 +74,12 @@ fdatev=`${incdate} $fdatei $fhr`
 echo "fdatei=$fdatei fhr=$fhr fdatev=$fdatev"
 gdate0=`echo $gdate | cut -c1-8`
 obs_datapath=${obs_datapath:-/scratch1/NCEPDEV/global/glopara/dump}
-datobs=$obs_datapath/${RUN}.${iy}${im}${id}/${ih}
-#datobs=$obs_datapath/${RUN}hrlyo.${iy}${im}${id}/${ih}
+if [ $sixhourlydumps = "YES" ]; then
+   datobs=$obs_datapath/${RUN}.${iy}${im}${id}/${ih}
+else
+   # 6hrly dumps filtered into hourly files by ob time.
+   datobs=$obs_datapath/${RUN}hrlyo.${iy}${im}${id}/${ih}
+fi
 prefix_obs=${RUN}.t${ih}z
 prefix_tbc=${RUN}.t${hhg}z
 

@@ -11,7 +11,7 @@ export RES_CTL=384
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
-export hybgain="false" # hybrid gain approach, if false use hybrid covariance
+export hybgain="false" # hybrid gain gpproach, if false use hybrid covariance
 export alpha=200 # percentage of 3dvar increment (beta_2*1000) 
 export beta=1000 # percentage of enkf increment (*10)
 # if replay_controlfcst='true', weight given to ens mean vs control 
@@ -26,7 +26,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybcov_hourly2iau"
+export exptname="C${RES}_hybcov_hourly"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 
@@ -64,10 +64,8 @@ export recenter_fcst="false"
 #export cleanup_controlanl='false'
 #export cleanup_anal='false'
 #export recenter_anal="false"
-##export cleanup_fg='false'
+#export cleanup_fg='false'
 #export resubmit='false'
-#export do_cleanup='false'
-#export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
 
 source $MODULESHOME/init/sh
 if [ "$machine" == 'hera' ]; then
@@ -76,6 +74,7 @@ if [ "$machine" == 'hera' ]; then
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    export obs_datapath2=/scratch1/NCEPDEV/global/glopara/dump # for sst,snow,ice grib
    export obs_datapath=$obs_datapath2
+   #export obs_datapath=/scratch2/BMC/gsienkf/whitaker/hrlyda_bufr # sixhourlydumps=NO
    module purge
    module use /scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack
    module load hpc/1.1.0
@@ -125,6 +124,7 @@ else
 fi
 export datapath="${datadir}/${exptname}"
 export logdir="${datadir}/logs/${exptname}"
+export sixhourlydumps="YES" # use 6-hourly gdas dumps
 
 export NOSAT="NO" # if yes, no radiances assimilated
 export NOCONV="NO"
@@ -281,7 +281,8 @@ export nhr_anal=$ANALINC # background forecast hour at analysis time
 export FHMAX_LONGER=9
 FHMAXP1=`expr $FHMAX + 1`
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
-export iau_delthrs=1 # 1 for IAU on, -1 for IAU off
+export iau_delthrs=-1 # 1 for IAU on, -1 for IAU off
+#export iau_delthrs=1 # 1 for IAU on, -1 for IAU off
 export iau_fhrs=0.5
 
 # other model variables set in ${rungfs}
@@ -318,15 +319,20 @@ if [[ $write_ensmean == ".true." ]]; then
 fi
 export letkf_flag=.true.
 export letkf_bruteforce_search=.false.
-export denkf=.true.
+export denkf=.false.
 export getkf=.true.
 export getkf_inflation=.false.
 export modelspace_vloc=.true.
 export letkf_novlocal=.true.
-export nobsl_max=10000
-export corrlengthnh=1250
-export corrlengthtr=1250
-export corrlengthsh=1250
+export obs_selection='nearest'
+#export nobsl_max=10000
+export nobsl_max=-1
+#export corrlengthnh=1250 
+#export corrlengthtr=1250 
+#export corrlengthsh=1250 
+export corrlengthnh=750 
+export corrlengthtr=750 
+export corrlengthsh=750 
 export mincorrlength_fact=1.0
 # neg value means loc dist is distance to find nobsl_max obs,
 # bounded by abs(corrlength) and abs(corrlength)/10
@@ -363,7 +369,7 @@ elif [ $LEVS -eq 127 ]; then
   export s_ens_v=7.7 # 20 levels
 fi
 # use pre-generated bias files.
-#export biascorrdir=${datadir}/biascor
+#export biascorrdir=${datadir}/C192_envar_hourly
 
 export nanals=80                                                    
 export nanals2=-1 # longer extension. Set to -1 to disable 
