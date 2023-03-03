@@ -362,6 +362,7 @@ export beta_e0=`python -c "from __future__ import print_function; print($beta / 
 export readin_beta=.false.
 export readin_localization=.false.
 export s_ens_h=343.     # 1250 km horiz localization in GSI
+#export s_ens_h=`python -c "import numpy as np; print(int(np.ceil(${corrlengthnh}*0.388/np.sqrt(2))))"`
 #export s_ens_v=-0.58    # 1.5 scale heights in GSI
 if [ $LEVS -eq 64 ]; then
   export s_ens_v=5.4 # 14 levels
@@ -403,7 +404,7 @@ elif [ "$machine" == 'orion' ]; then
    export fv3gfspath=/work/noaa/global/glopara
    export FIXFV3=$fv3gfspath/fix_NEW/fix_fv3_gmted2010
    export FIXGLOBAL=$fv3gfspath/fix_NEW/fix_am
-   export gsipath=/work/noaa/gsienkf/whitaker/GSI-enkf64bit
+   export gsipath=/work/noaa/gsienkf/whitaker/GSI
    export fixgsi=${gsipath}/fix
    export fixcrtm=$fv3gfspath/crtm/crtm_v2.3.0
    export execdir=${enkfscripts}/exec_${machine}
