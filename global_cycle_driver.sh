@@ -18,8 +18,8 @@ pwd=$(pwd)
 export NWPROD=${NWPROD:-$pwd}
 export DMPDIR=${DMPDIR:-$NWPROD}
 export BASE_GSM=${BASE_GSM:-$NWPROD/global_shared}
-export FIXgsm=${FIXgsm:-$BASE_GSM/fix/fix_am}
-export FIXfv3=${FIXfv3:-$BASE_GSM/fix/fix_fv3_gmted2010}
+export FIXgsm=${FIXGLOBAL:-$BASE_GSM/fix/fix_am}
+export FIXfv3=${FIXFV3:-$BASE_GSM/fix/fix_fv3_gmted2010}
 
 ntiles=${ntiles:-6}
 DONST=${DONST:-"NO"}
