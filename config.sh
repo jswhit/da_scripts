@@ -4,8 +4,8 @@ echo "running on $machine using $NODES nodes and $cores CORES"
 
 export ndates_job=1 # number of DA cycles to run in one job submission
 # resolution of control and ensmemble.
-export RES=96  
-export RES_CTL=192
+export RES=192 
+export RES_CTL=384
 export OCNRES=mx100
 export ORES3=`echo $OCNRES | cut -c3-5`
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
@@ -26,11 +26,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-<<<<<<< HEAD
-export exptname="C${RES}_hybcov_6hourly_iau_p8"
-=======
-export exptname="C${RES}_hybcov_test"
->>>>>>> 90b96eecd57d44ccda861e8ca3461ddf13ae68a6
+export exptname="C${RES}_hybcov_p8"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 export enkfonly='false' # pure EnKF
@@ -87,17 +83,6 @@ if [ "$machine" == 'hera' ]; then
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    export obs_datapath=/scratch1/NCEPDEV/global/glopara/dump
-   #module purge
-   #module use /scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack
-   #module load hpc/1.1.0
-   #module load hpc-intel/18.0.5.274
-   #module load hpc-impi/2018.0.4
-   #module load hdf5/1.10.6
-   #module load netcdf/4.7.4
-   #module load pio/2.5.2
-   #module load esmf/8_2_0_beta_snapshot_14
-   #module load fms/2021.03
-   #module load wgrib
    module purge
    module use /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
    module load miniconda3
@@ -105,19 +90,11 @@ if [ "$machine" == 'hera' ]; then
    module load impi/2022.1.2
    module use /scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack
    module load hpc/1.2.0
-<<<<<<< HEAD
    module load hpc-intel/2022.1.2
    module load hpc-impi/2022.1.2
    module load hdf5/1.10.6
    module load netcdf/4.7.4
    module load pio/2.5.7
-=======
-   module load hpc-intel/2022.1.2   
-   module load hpc-impi/2022.1.2
-   module load hdf5/1.10.6
-   module load netcdf/4.7.4
-   module load pio/2.5.2
->>>>>>> 90b96eecd57d44ccda861e8ca3461ddf13ae68a6
    module load esmf/8.3.0b09
    module load fms/2022.04
    module load wgrib
