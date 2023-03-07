@@ -4,15 +4,15 @@ echo "running on $machine using $NODES nodes and $cores CORES"
 
 export ndates_job=1 # number of DA cycles to run in one job submission
 # resolution of control and ensmemble.
-export RES=192 
-export RES_CTL=384
-export OCNRES=mx050
+export RES=96  
+export RES_CTL=192
+export OCNRES=mx100
 export ORES3=`echo $OCNRES | cut -c3-5`
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
 export hybgain="false" # hybrid gain approach, if false use hybrid covariance
-export alpha=250 # percentage of 3dvar increment (beta_2*1000) 
+export alpha=200 # percentage of 3dvar increment (beta_2*1000) 
 export beta=1000 # percentage of enkf increment (*10)
 # if replay_controlfcst='true', weight given to ens mean vs control 
 # forecast in recentered backgrond ensemble (x100).  if recenter_control_wgt=0, then
@@ -26,7 +26,11 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
+<<<<<<< HEAD
 export exptname="C${RES}_hybcov_6hourly_iau_p8"
+=======
+export exptname="C${RES}_hybcov_test"
+>>>>>>> 90b96eecd57d44ccda861e8ca3461ddf13ae68a6
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 export enkfonly='false' # pure EnKF
@@ -64,7 +68,7 @@ export controlanal="false" # hybrid-cov high-res control analysis as in ops
 # (hybgain will be set to false if controlanal=true)
 
 # override values from above for debugging.
-export cleanup_ensmean='false'
+#export cleanup_ensmean='false'
 #export cleanup_ensmean_enkf='false'
 #export recenter_fcst="false"
 #export cleanup_controlanl='false'
@@ -101,11 +105,19 @@ if [ "$machine" == 'hera' ]; then
    module load impi/2022.1.2
    module use /scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack
    module load hpc/1.2.0
+<<<<<<< HEAD
    module load hpc-intel/2022.1.2
    module load hpc-impi/2022.1.2
    module load hdf5/1.10.6
    module load netcdf/4.7.4
    module load pio/2.5.7
+=======
+   module load hpc-intel/2022.1.2   
+   module load hpc-impi/2022.1.2
+   module load hdf5/1.10.6
+   module load netcdf/4.7.4
+   module load pio/2.5.2
+>>>>>>> 90b96eecd57d44ccda861e8ca3461ddf13ae68a6
    module load esmf/8.3.0b09
    module load fms/2022.04
    module load wgrib
@@ -265,8 +277,8 @@ elif [ $RES -eq 128 ]; then
 elif [ $RES -eq 96 ]; then
    export JCAP=188 
    export LONB=384   
-   export LATB=190  
-   export dt_atmos=900
+   export LATB=192  
+   export dt_atmos=600
    export cdmbgwd="0.14,1.8,1.0,1.0"  # mountain blocking, ogwd, cgwd, cgwd src scaling
 elif [ $RES -eq 48 ]; then
    export JCAP=94
