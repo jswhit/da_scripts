@@ -26,7 +26,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybcov_p8"
+export exptname="C${RES}_hybcov_6hourly_iau_p8"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 export enkfonly='false' # pure EnKF
@@ -83,16 +83,31 @@ if [ "$machine" == 'hera' ]; then
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    export obs_datapath=/scratch1/NCEPDEV/global/glopara/dump
+   #module purge
+   #module use /scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack
+   #module load hpc/1.1.0
+   #module load hpc-intel/18.0.5.274
+   #module load hpc-impi/2018.0.4
+   #module load hdf5/1.10.6
+   #module load netcdf/4.7.4
+   #module load pio/2.5.2
+   #module load esmf/8_2_0_beta_snapshot_14
+   #module load fms/2021.03
+   #module load wgrib
    module purge
+   module use /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
+   module load miniconda3
+   module load intel/2022.1.2
+   module load impi/2022.1.2
    module use /scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack
-   module load hpc/1.1.0
-   module load hpc-intel/18.0.5.274
-   module load hpc-impi/2018.0.4
+   module load hpc/1.2.0
+   module load hpc-intel/2022.1.2
+   module load hpc-impi/2022.1.2
    module load hdf5/1.10.6
    module load netcdf/4.7.4
-   module load pio/2.5.2
-   module load esmf/8_2_0_beta_snapshot_14
-   module load fms/2021.03
+   module load pio/2.5.7
+   module load esmf/8.3.0b09
+   module load fms/2022.04
    module load wgrib
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'orion' ]; then
@@ -131,7 +146,7 @@ export logdir="${datadir}/logs/${exptname}"
 export NOSAT="NO" # if yes, no radiances assimilated
 export NOCONV="NO"
 export NOTLNMC="NO" # no TLNMC in GSI in GSI EnVar
-export NOOUTERLOOP="NO" # no outer loop in GSI EnVar
+export NOOUTERLOOP="YES" # no outer loop in GSI EnVar
 # model NSST parameters contained within nstf_name in FV3 namelist
 # (comment out to get default - no NSST)
 # nstf_name(1) : NST_MODEL (NSST Model) : 0 = OFF, 1 = ON but uncoupled, 2 = ON and coupled
@@ -311,11 +326,11 @@ FHMAXP1=`expr $FHMAX + 1`
 # so GSI observer can be run.
 export FHMAX_LONGER=12
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
-export iaufhrs="3,6,9"
-export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
+#export iaufhrs="3,6,9"
+#export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 # IAU off
-#export iaufhrs="6"
-#export iau_delthrs=-1
+export iaufhrs="6"
+export iau_delthrs=-1
 
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
