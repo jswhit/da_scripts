@@ -26,7 +26,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybcov_hourly"
+export exptname="C${RES}_hybcov_hourly750"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 
@@ -361,8 +361,8 @@ export beta_s0=`python -c "from __future__ import print_function; print($alpha /
 export beta_e0=`python -c "from __future__ import print_function; print($beta / 1000.)"` # weight given to ensemble B in hyb cov
 export readin_beta=.false.
 export readin_localization=.false.
-export s_ens_h=343.     # 1250 km horiz localization in GSI
-#export s_ens_h=`python -c "import numpy as np; print(int(np.ceil(${corrlengthnh}*0.388/np.sqrt(2))))"`
+#export s_ens_h=343.     # 1250 km horiz localization in GSI
+export s_ens_h=`python -c "import numpy as np; print(int(np.ceil(${corrlengthnh}*0.388/np.sqrt(2))))"`
 #export s_ens_v=-0.58    # 1.5 scale heights in GSI
 if [ $LEVS -eq 64 ]; then
   export s_ens_v=5.4 # 14 levels
