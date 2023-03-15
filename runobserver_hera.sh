@@ -1,7 +1,7 @@
 #!/bin/sh
 #SBATCH -q batch  
-#SBATCH -t 01:30:00
-#SBATCH -A isp-1
+#SBATCH -t 08:00:00
+#SBATCH -A da-cpu
 #SBATCH -N 10    
 #SBATCH -J observer
 #SBATCH -e observer.err
@@ -18,7 +18,7 @@ export RUN='gdas'
 export RES='192'
 export basedir=/scratch2/BMC/gsienkf/whitaker
 export datadir=$basedir
-export exptname="C${RES}_hybcov_hourly2iau"
+export exptname="C${RES}_hybcov_hourly750"
 export obs_datapath=/scratch1/NCEPDEV/global/glopara/dump
 source $MODULESHOME/init/sh
 module purge
@@ -158,9 +158,9 @@ export lobsdiag_forenkf='.false.'
 export skipcat="false"
 
 export cleanup_observer="true"
-export analdate=2021083100
+export analdate=2021090100
 export nitermax=1
-while [ $analdate -le 2021090200 ]; do
+while [ $analdate -le 2021090800 ]; do
    export yr=`echo $analdate | cut -c1-4`
    export mon=`echo $analdate | cut -c5-6`
    export day=`echo $analdate | cut -c7-8`
