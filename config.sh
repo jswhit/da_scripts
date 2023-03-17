@@ -61,9 +61,9 @@ export controlanal="false" # hybrid-cov high-res control analysis as in ops
 # (hybgain will be set to false if controlanal=true)
 
 # override values from above for debugging.
-#export cleanup_ensmean='false'
+export cleanup_ensmean='false'
 #export recenter_fcst="false"
-#export cleanup_controlanl='false'
+export cleanup_controlanl='false'
 #export cleanup_observer='false'
 #export cleanup_anal='false'
 #export recenter_anal="false"
@@ -141,7 +141,7 @@ export logdir="${datadir}/logs/${exptname}"
 export NOSAT="NO" # if yes, no radiances assimilated
 export NOCONV="NO"
 export NOTLNMC="NO" # no TLNMC in GSI in GSI EnVar
-export NOOUTERLOOP="YES" # no outer loop in GSI EnVar
+export NOOUTERLOOP="NO" # no outer loop in GSI EnVar
 # model NSST parameters contained within nstf_name in FV3 namelist
 # (comment out to get default - no NSST)
 # nstf_name(1) : NST_MODEL (NSST Model) : 0 = OFF, 1 = ON but uncoupled, 2 = ON and coupled
