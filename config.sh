@@ -9,7 +9,7 @@ export RES_CTL=384
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
 # (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
-export hybgain="true" # hybrid gain approach, if false use hybrid covariance
+export hybgain="false" # hybrid gain approach, if false use hybrid covariance
 export alpha=200 # percentage of 3dvar increment (beta_2*1000) 
 export beta=1000 # percentage of enkf increment (*10)
 # if replay_controlfcst='true', weight given to ens mean vs control 
@@ -24,7 +24,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybgain"
+export exptname="C${RES}_hybcov_6hourly"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 export enkfonly='false' # pure EnKF
@@ -113,9 +113,24 @@ elif [ "$machine" == 'orion' ]; then
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f2/dev/${USER}
    export datadir=/lustre/f2/scratch/${USER}
-   export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
+   export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/gaea/${exptname}"
    #export hsidir="/3year/NCEPDEV/GEFSRR/${exptname}"
    export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/dumps
+   source /lustre/f2/dev/role.epic/contrib/Lmod_init.sh
+   module load PrgEnv-intel
+   module load intel/2021.3.0
+   module load cray-mpich/7.7.11
+   module use -a /lustre/f2/dev/role.epic/contrib/modulefiles
+   module load miniconda3
+   module load cmake
+   module use -a /lustre/f2/dev/role.epic/contrib/hpc-stack/intel-2021.3.0_noarch/modulefiles/stack
+   module load hpc/1.2.0
+   module load hpc-intel/2021.3.0
+   module load hpc-cray-mpich/7.7.11
+   module load wgrib
+   module load netcdf
+   export HDF5_DISABLE_VERSION_CHECK=1
+   export WGRIB=`which wgrib`
 else
    echo "machine must be 'hera', 'orion' or 'gaea' got $machine"
    exit 1
@@ -126,7 +141,7 @@ export logdir="${datadir}/logs/${exptname}"
 export NOSAT="NO" # if yes, no radiances assimilated
 export NOCONV="NO"
 export NOTLNMC="NO" # no TLNMC in GSI in GSI EnVar
-export NOOUTERLOOP="NO" # no outer loop in GSI EnVar
+export NOOUTERLOOP="YES" # no outer loop in GSI EnVar
 # model NSST parameters contained within nstf_name in FV3 namelist
 # (comment out to get default - no NSST)
 # nstf_name(1) : NST_MODEL (NSST Model) : 0 = OFF, 1 = ON but uncoupled, 2 = ON and coupled
@@ -285,11 +300,11 @@ FHMAXP1=`expr $FHMAX + 1`
 # so GSI observer can be run.
 export FHMAX_LONGER=12
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
-export iaufhrs="3,6,9"
-export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
+#export iaufhrs="3,6,9"
+#export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 # IAU off
-#export iaufhrs="6"
-#export iau_delthrs=-1
+export iaufhrs="6"
+export iau_delthrs=-1
 
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
@@ -365,9 +380,9 @@ fi
 
 export nanals=80                                                    
 # if nanals2>0, extend nanals2 members out to FHMAX + ANALINC (one extra assim window)
-#export nanals2=-1 # longer extension. Set to -1 to disable 
+export nanals2=-1 # longer extension. Set to -1 to disable 
 #export nanals2=$NODES
-export nanals2=$nanals
+#export nanals2=$nanals
 export nitermax=1 # number of retries
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
@@ -398,16 +413,12 @@ elif [ "$machine" == 'orion' ]; then
    export gsiexec=${execdir}/global_gsi
    export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
 elif [ "$machine" == 'gaea' ]; then
-   export python=/ncrc/sw/gaea/PythonEnv-noaa/1.4.0/.spack/opt/spack/linux-sles12-x86_64/gcc-4.8/python-2.7.14-zyx34h36bfp2c6ftp5bhdsdduqjxbvp6/bin/python
-   #export PYTHONPATH=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/lib/python2.7/site-packages
-   #export fv3gfspath=/lustre/f1/pdata/ncep_shared/fv3/fix-fv3gfs/
-   export fv3gfspath=/lustre/f2/dev/Jeffrey.S.Whitaker/fv3_reanl/fv3gfs/global_shared.v15.0.0
-   export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
-   export FIXGLOBAL=${fv3gfspath}/fix/fix_am
-   export gsipath=/lustre/f2/dev/Jeffrey.S.Whitaker/GSI-github-jswhit
+   export fv3gfspath=/lustre/f2/dev/Jeffrey.S.Whitaker/fix_NEW
+   export FIXFV3=${fv3gfspath}/fix_fv3_gmted2010
+   export FIXGLOBAL=${fv3gfspath}/fix_am
+   export gsipath=/lustre/f2/dev/Jeffrey.S.Whitaker/GSI
    export fixgsi=${gsipath}/fix
-   export fixcrtm=/lustre/f2/pdata/ncep_shared/NCEPLIBS/lib/crtm/v2.2.6/fix
-   #export fixcrtm=${fixgsi}/crtm_v2.2.3
+   export fixcrtm=/lustre/f2/dev/Jeffrey.S.Whitaker/fix_crtm/2.3.0/crtm_v2.3.0
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export gsiexec=${execdir}/global_gsi
@@ -425,16 +436,20 @@ else
 fi
 
 
-export ANAVINFO=${fixgsi}/global_anavinfo.l${LEVS}.txt
+#export ANAVINFO=${fixgsi}/global_anavinfo.l${LEVS}.txt
+export ANAVINFO=${enkfscripts}/global_anavinfo.l${LEVS}.txt
 export ANAVINFO_ENKF=${ANAVINFO}
 export HYBENSINFO=${fixgsi}/global_hybens_info.l${LEVS}.txt # only used if readin_beta or readin_localization=T
 #export HYBENSINFO=${enkfscripts}/global_hybens_info.l${LEVS}.txt # only used if readin_beta or readin_localization=T
 # comment out next line to disable smoothing of ensemble perturbations
 # in stratosphere/mesosphere
 #export HYBENSMOOTHINFO=${fixgsi}/global_hybens_smoothinfo.l${LEVS}.txt
-export OZINFO=${fixgsi}/global_ozinfo.txt
-export CONVINFO=${fixgsi}/global_convinfo.txt
-export SATINFO=${fixgsi}/global_satinfo.txt
+#export OZINFO=${fixgsi}/global_ozinfo.txt
+#export CONVINFO=${fixgsi}/global_convinfo.txt
+#export SATINFO=${fixgsi}/global_satinfo.txt
+export OZINFO=${fixgsi}/gfsv16_historical/global_ozinfo.txt.2020011806
+export CONVINFO=${enkfscripts}/global_convinfo.txt # modified twindow (probably not needed), modify gross err check?
+export SATINFO=${fixgsi}/gfsv16_historical/global_satinfo.txt.2020022012
 export NLAT=$((${LATA}+2))
 # default is to use berror file in gsi fix dir.
 #export BERROR=${basedir}/staticB/global_berror_enkf.l${LEVS}y${NLAT}.f77
