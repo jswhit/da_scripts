@@ -5,8 +5,6 @@ export mpitaskspernode=`expr $corespernode \/ $enkf_threads`
 export OMP_NUM_THREADS=$enkf_threads
 export OMP_STACKSIZE=512M
 export MKL_NUM_THREADS=1
-source $MODULESHOME/init/sh
-module list
 
 nfhr=$nhr_anal
 charfhr="fhr"`printf %02i $nfhr`

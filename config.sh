@@ -26,7 +26,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybcov_hourly750"
+export exptname="C${RES}_hybcov_hourly750tlnmc3"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 
@@ -115,9 +115,30 @@ elif [ "$machine" == 'orion' ]; then
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f2/dev/${USER}
    export datadir=/lustre/f2/scratch/${USER}
-   export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   #export hsidir="/3year/NCEPDEV/GEFSRR/${exptname}"
+   export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/gaea/${exptname}"
    export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/dumps
+   source /lustre/f2/dev/role.epic/contrib/Lmod_init.sh
+   module unload cray-libsci
+   module purge
+   export MODULESHOME=/opt/cray/pe/modules/default
+   export _LMFILES_=""
+   export LOADEDMODULES=""
+   module load PrgEnv-intel
+   module use -a /lustre/f2/dev/role.epic/contrib/modulefiles
+   module load miniconda3
+   module use -a /lustre/f2/dev/role.epic/contrib/hpc-stack/intel-2021.3.0_noarch/modulefiles/stack
+   module load hpc/1.2.0
+   module load hpc-intel/2021.3.0
+   module load hpc-cray-mpich/7.7.11
+   module load hpc-miniconda3
+   module load wgrib
+   module load netcdf
+   module list
+   which python
+   export MKLROOT=/opt/intel/oneapi/mkl/2022.0.2
+   export LD_LIBRARY_PATH="${MKLROOT}/lib/intel64:${LD_LIBRARY_PATH}"
+   export HDF5_DISABLE_VERSION_CHECK=1
+   export WGRIB=`which wgrib`
 else
    echo "machine must be 'hera', 'orion' or 'gaea' got $machine"
    exit 1
@@ -375,7 +396,7 @@ fi
 export nanals=80                                                    
 export nanals2=-1 # longer extension. Set to -1 to disable 
 #export nanals2=$nanals
-export nitermax=2 # number of retries
+export nitermax=1 # number of retries
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
@@ -412,16 +433,12 @@ elif [ "$machine" == 'orion' ]; then
    export gsiexec=${execdir}/global_gsi
    export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
 elif [ "$machine" == 'gaea' ]; then
-   export python=/ncrc/sw/gaea/PythonEnv-noaa/1.4.0/.spack/opt/spack/linux-sles12-x86_64/gcc-4.8/python-2.7.14-zyx34h36bfp2c6ftp5bhdsdduqjxbvp6/bin/python
-   #export PYTHONPATH=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/lib/python2.7/site-packages
-   #export fv3gfspath=/lustre/f1/pdata/ncep_shared/fv3/fix-fv3gfs/
-   export fv3gfspath=/lustre/f2/dev/Jeffrey.S.Whitaker/fv3_reanl/fv3gfs/global_shared.v15.0.0
-   export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
-   export FIXGLOBAL=${fv3gfspath}/fix/fix_am
-   export gsipath=/lustre/f2/dev/Jeffrey.S.Whitaker/GSI-github-jswhit
+   export fv3gfspath=/lustre/f2/dev/Jeffrey.S.Whitaker/fix_NEW
+   export FIXFV3=${fv3gfspath}/fix_fv3_gmted2010
+   export FIXGLOBAL=${fv3gfspath}/fix_am
+   export gsipath=/lustre/f2/dev/Jeffrey.S.Whitaker/GSI
    export fixgsi=${gsipath}/fix
-   export fixcrtm=/lustre/f2/pdata/ncep_shared/NCEPLIBS/lib/crtm/v2.2.6/fix
-   #export fixcrtm=${fixgsi}/crtm_v2.2.3
+   export fixcrtm=/lustre/f2/dev/Jeffrey.S.Whitaker/fix_crtm/2.3.0/crtm_v2.3.0
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export gsiexec=${execdir}/global_gsi
@@ -439,7 +456,8 @@ else
 fi
 
 
-export ANAVINFO=${fixgsi}/global_anavinfo.l${LEVS}.txt
+#export ANAVINFO=${fixgsi}/global_anavinfo.l${LEVS}.txt
+export ANAVINFO=${enkfscripts}/global_anavinfo.l${LEVS}.txt
 export ANAVINFO_ENKF=${ANAVINFO}
 export HYBENSINFO=${fixgsi}/global_hybens_info.l${LEVS}.txt # only used if readin_beta or readin_localization=T
 #export HYBENSMOOTHINFO=${fixgsi}/global_hybens_smoothinfo.l${LEVS}.txt

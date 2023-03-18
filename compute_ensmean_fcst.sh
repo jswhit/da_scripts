@@ -10,14 +10,6 @@ export OMP_NUM_THREADS=`expr $corespernode \/ $mpitaskspernode`
 echo "mpitaskspernode = $mpitaskspernode threads = $OMP_NUM_THREADS"
 export nprocs=$nanals
 
-source $MODULESHOME/init/sh
-if [ $machine == 'gaea' ]; then
-   nces=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/bin/nces
-else
-   module load nco
-   nces=`which nces`
-fi
-module list
 export OMP_STACKSIZE=1024M
 
 cd ${datapath2}
