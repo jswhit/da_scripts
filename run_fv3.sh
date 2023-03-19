@@ -460,16 +460,16 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
    mkdir -p ${datapathp1}/${charnanal}/INPUT
    cd RESTART
    ls -l
-   #if [ $nhr_anal -eq $FHMAX_FCST ] || [ $cold_start == "true" ]; then
-   #   /bin/mv -f fv_core.res.nc atm_stoch.res.nc ${datapathp1}/${charnanal}/INPUT
-   #   tiles="tile1 tile2 tile3 tile4 tile5 tile6"
-   #   for tile in $tiles; do
-   #      files="ca_data.res.${tile}.nc fv_core.res.${tile}.nc fv_tracer.res.${tile}.nc fv_srf_wnd.res.${tile}.nc sfc_data.${tile}.nc phy_data.${tile}.nc"
-   #      for file in $files; do
-   #          /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT
-   #      done
-   #   done
-   #else
+   if [ $nhr_anal -eq $FHMAX_FCST ]; then
+      /bin/mv -f fv_core.res.nc atm_stoch.res.nc ${datapathp1}/${charnanal}/INPUT
+      tiles="tile1 tile2 tile3 tile4 tile5 tile6"
+      for tile in $tiles; do
+         files="ca_data.res.${tile}.nc fv_core.res.${tile}.nc fv_tracer.res.${tile}.nc fv_srf_wnd.res.${tile}.nc sfc_data.${tile}.nc phy_data.${tile}.nc"
+         for file in $files; do
+             /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT
+         done
+      done
+   else
       datestring="${yrnext}${monnext}${daynext}.${hrnext}0000."
       for file in ${datestring}*nc; do
          file2=`echo $file | cut -f3-10 -d"."`
@@ -479,7 +479,7 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
            exit 1
          fi
       done
-   #fi
+   fi
    if [ -s  ${datapathp1}/${charnanal}/INPUT/ca_data.tile1.nc ]; then
       touch ${datapathp1}/${charnanal}/INPUT/ca_data.nc
    fi
