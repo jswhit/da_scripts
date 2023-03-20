@@ -53,7 +53,6 @@ else
    export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
    export save_hpss="true"
 fi
-export ensmean_restart='false'
 export recenter_anal="true"
 export recenter_fcst="false"
 export controlanal="false" # hybrid-cov high-res control analysis as in ops
@@ -114,21 +113,27 @@ elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f2/dev/${USER}
    export datadir=/lustre/f2/scratch/${USER}
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/gaea/${exptname}"
-   #export hsidir="/3year/NCEPDEV/GEFSRR/${exptname}"
    export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/dumps
    source /lustre/f2/dev/role.epic/contrib/Lmod_init.sh
+   module unload cray-libsci
+   module purge
+   export MODULESHOME=/opt/cray/pe/modules/default
+   export _LMFILES_=""
+   export LOADEDMODULES=""
    module load PrgEnv-intel
-   module load intel/2021.3.0
-   module load cray-mpich/7.7.11
    module use -a /lustre/f2/dev/role.epic/contrib/modulefiles
    module load miniconda3
-   module load cmake
    module use -a /lustre/f2/dev/role.epic/contrib/hpc-stack/intel-2021.3.0_noarch/modulefiles/stack
    module load hpc/1.2.0
    module load hpc-intel/2021.3.0
    module load hpc-cray-mpich/7.7.11
+   module load hpc-miniconda3
    module load wgrib
    module load netcdf
+   module list
+   which python
+   export MKLROOT=/opt/intel/oneapi/mkl/2022.0.2
+   export LD_LIBRARY_PATH="${MKLROOT}/lib/intel64:${LD_LIBRARY_PATH}"
    export HDF5_DISABLE_VERSION_CHECK=1
    export WGRIB=`which wgrib`
 else
@@ -216,7 +221,7 @@ export SKEB=0.3
 #export SHUM=0
 #export DO_SHUM=F
 
-export imp_physics=11 # used by GSI, not model
+export imp_physics=11 # used by GSI, not model (GFDL MP)
 
 # resolution dependent model parameters
 if [ $RES -eq 384 ]; then
@@ -282,7 +287,7 @@ else
    echo "model parameters for control resolution C$RES_CTL not set"
    exit 1
 fi
-export FHCYC=0 # run global_cycle instead of gcycle inside model
+export FHCYC=6 # run global_cycle instead of gcycle inside model
 
 # analysis is done at ensemble resolution
 export LONA=$LONB
@@ -300,6 +305,7 @@ FHMAXP1=`expr $FHMAX + 1`
 # so GSI observer can be run.
 export FHMAX_LONGER=12
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
+# IAU on
 #export iaufhrs="3,6,9"
 #export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 # IAU off
@@ -340,7 +346,7 @@ if [[ $write_ensmean == ".true." ]]; then
 fi
 export letkf_flag=.true.
 export letkf_bruteforce_search=.false.
-export denkf=.true.
+export denkf=.false.
 export getkf=.true.
 export getkf_inflation=.false.
 export modelspace_vloc=.true.
@@ -369,6 +375,7 @@ export beta_s0=`python -c "from __future__ import print_function; print($alpha /
 # beta_e0 parameter (ensemble weight) in my GSI branch (not in GSI/develop)
 export beta_e0=`python -c "from __future__ import print_function; print($beta / 1000.)"` # weight given to ensemble B in hyb cov
 export s_ens_h=343.     # 1250 km horiz localization in GSI
+#export s_ens_h=`python -c "import numpy as np; print(int(np.ceil(${corrlengthnh}*0.388/np.sqrt(2))))"`
 #export s_ens_v=-0.58    # 1.5 scale heights in GSI
 if [ $LEVS -eq 64 ]; then
   export s_ens_v=5.4 # 14 levels
@@ -380,10 +387,10 @@ fi
 
 export nanals=80                                                    
 # if nanals2>0, extend nanals2 members out to FHMAX + ANALINC (one extra assim window)
-export nanals2=-1 # longer extension. Set to -1 to disable 
+#export nanals2=-1 # longer extension. Set to -1 to disable 
 #export nanals2=$NODES
-#export nanals2=$nanals
-export nitermax=1 # number of retries
+export nanals2=$nanals
+export nitermax=2 # number of retries
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
@@ -414,6 +421,8 @@ elif [ "$machine" == 'orion' ]; then
    export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
 elif [ "$machine" == 'gaea' ]; then
    export fv3gfspath=/lustre/f2/dev/Jeffrey.S.Whitaker/fix_NEW
+   export FIXDIR=/lustre/f2/pdata/ncep_shared/emc.nemspara/RT/NEMSfv3gfs/input-data-20220414
+   export FIXDIR_gcyc=${fv3gfspath}
    export FIXFV3=${fv3gfspath}/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix_am
    export gsipath=/lustre/f2/dev/Jeffrey.S.Whitaker/GSI

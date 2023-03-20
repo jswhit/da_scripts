@@ -6,7 +6,7 @@
 ##SBATCH -t 00:30:00
 #SBATCH -A nggps_psd
 ##SBATCH -A cpo_ngrr_e
-#SBATCH -N 40    
+#SBATCH -N 80    
 #SBATCH -J C192_hybcov_6hourly
 #SBATCH -e C192_hybcov_6hourly.err
 #SBATCH -o C192_hybcov_6hourly.out
@@ -57,7 +57,7 @@ export fg_proc=`expr 2 \* $corespernode`
 export fg_threads=1
 export write_groups=1
 if [ $corespernode -eq 36 ]; then
-export enkf_threads=18
+export enkf_threads=36
 export gsi_control_threads=9
 export write_groups=1
 #export write_tasks=12 
