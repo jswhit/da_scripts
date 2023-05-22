@@ -1,12 +1,6 @@
 #!/bin/sh
 echo "Time starting at `date` "
 
-#if [ $machine == "hera" ]; then
-#   source $MODULESHOME/init/sh
-#   module switch intel intel/19.0.4.243
-#   module switch impi impi/2019.0.5 
-#fi
-
 VERBOSE=${VERBOSE:-"YES"}
 if [[ "$VERBOSE" = "YES" ]]; then
    set -x
@@ -176,10 +170,10 @@ if [[ "$HXONLY" != "YES" ]]; then
       SETUP="$SETUP,miter=1,niter(1)=150,niter(2)=0"
    else # envar
       # tlnmc on full increment, 4denvar
-      #STRONGOPTS="tlnmc_option=3,nstrong=1,nvmodes_keep=48,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
+      STRONGOPTS="tlnmc_option=3,nstrong=1,nvmodes_keep=48,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
       #STRONGOPTS="tlnmc_option=3,nstrong=1,nvmodes_keep=48,period_max=1.,period_width=0.5,baldiag_full=.true.,baldiag_inc=.true.,"
       # tlnmc on full increment, 3denvar
-      STRONGOPTS="tlnmc_option=2,nstrong=1,nvmodes_keep=48,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
+      #STRONGOPTS="tlnmc_option=2,nstrong=1,nvmodes_keep=48,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
       # balance constraint on 3dvar part of envar increment
       #STRONGOPTS="tlnmc_option=4,nstrong=1,nvmodes_keep=48,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
       # no strong bal constraint

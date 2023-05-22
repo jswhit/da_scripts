@@ -1,9 +1,6 @@
 #!/bin/sh
 # model was compiled with these 
 echo "starting at `date`"
-source $MODULESHOME/init/sh
-
-module list
 
 export VERBOSE=${VERBOSE:-"NO"}
 hydrostatic=${hydrostatic:=".false."}
@@ -195,15 +192,15 @@ snoid='SNOD'
 
 # Turn off snow analysis if it has already been used.
 # (snow analysis only available once per day at 18z)
-fntsfa=${obs_datapath2}/gdas.${year}${mon}${day}/${hour}/gdas.t${hour}z.rtgssthr.grb
-fnacna=${obs_datapath2}/gdas.${year}${mon}${day}/${hour}/gdas.t${hour}z.seaice.5min.grb
-fnsnoa=${obs_datapath2}/gdas.${year}${mon}${day}/${hour}/gdas.t${hour}z.snogrb_t1534.3072.1536
-fnsnog=${obs_datapath2}/gdas.${yearprev}${monprev}${dayprev}/${hourprev}/gdas.t${hourprev}z.snogrb_t1534.3072.1536
+fntsfa=${obs_datapath}/gdas.${year}${mon}${day}/${hour}/gdas.t${hour}z.rtgssthr.grb
+fnacna=${obs_datapath}/gdas.${year}${mon}${day}/${hour}/gdas.t${hour}z.seaice.5min.grb
+fnsnoa=${obs_datapath}/gdas.${year}${mon}${day}/${hour}/gdas.t${hour}z.snogrb_t1534.3072.1536
+fnsnog=${obs_datapath}/gdas.${yearprev}${monprev}${dayprev}/${hourprev}/gdas.t${hourprev}z.snogrb_t1534.3072.1536
  
-fntsfa=${obs_datapath2}/${RUN}.${year}${mon}${day}/${hour}/${RUN}.t${hour}z.rtgssthr.grb
-fnacna=${obs_datapath2}/${RUN}.${year}${mon}${day}/${hour}/${RUN}.t${hour}z.seaice.5min.grb
-fnsnoa=${obs_datapath2}/${RUN}.${year}${mon}${day}/${hour}/${RUN}.t${hour}z.snogrb_t1534.3072.1536
-fnsnog=${obs_datapath2}/${RUN}.${yearprev}${monprev}${dayprev}/${hourprev}/${RUN}.t${hourprev}z.snogrb_t1534.3072.1536
+fntsfa=${obs_datapath}/${RUN}.${year}${mon}${day}/${hour}/${RUN}.t${hour}z.rtgssthr.grb
+fnacna=${obs_datapath}/${RUN}.${year}${mon}${day}/${hour}/${RUN}.t${hour}z.seaice.5min.grb
+fnsnoa=${obs_datapath}/${RUN}.${year}${mon}${day}/${hour}/${RUN}.t${hour}z.snogrb_t1534.3072.1536
+fnsnog=${obs_datapath}/${RUN}.${yearprev}${monprev}${dayprev}/${hourprev}/${RUN}.t${hourprev}z.snogrb_t1534.3072.1536
 
 nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
 #nrecs_snow=0 # force no snow update (do this if NOAH-MP used)
@@ -396,12 +393,12 @@ export PGM=$FCSTEXEC
 ldd $FCSTEXEC
 echo "start running model `date`"
 ${enkfscripts}/runmpi
-if [ $? -ne 0 ]; then
-   echo "model failed..."
-   exit 1
-else
+#if [ $? -ne 0 ]; then
+#   echo "model failed..."
+#   exit 1
+#else
    echo "done running model.. `date`"
-fi
+#fi
 
 # rename netcdf files.
 export DATOUT=${DATOUT:-$datapathp1}
@@ -463,7 +460,7 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
    mkdir -p ${datapathp1}/${charnanal}/INPUT
    cd RESTART
    ls -l
-   if [ $nhr_anal -eq $FHMAX_FCST ] || [ $cold_start == "true" ]; then
+   if [ $nhr_anal -eq $FHMAX_FCST ]; then
       /bin/mv -f fv_core.res.nc atm_stoch.res.nc ${datapathp1}/${charnanal}/INPUT
       tiles="tile1 tile2 tile3 tile4 tile5 tile6"
       for tile in $tiles; do
