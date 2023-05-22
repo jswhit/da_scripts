@@ -122,6 +122,9 @@ JCAP_ENS=${JCAP_ENS:-$JCAP}
 LATA_ENS=${LATA_ENS:-$LATA}
 LONA_ENS=${LONA_ENS:-$LONA}
 export NLAT_ENS=$((${LATA_ENS}+2))
+export time_window_max=${time_window_max:-0.5}
+export min_offset=${min_offset:-30}
+export nhr_assimilation=${nhr_assimilation:-1}
 
 
 SATANGO=${SATANGO:-$savdir/${RUN}.t${hha}z.satang}
@@ -151,13 +154,13 @@ if [ $ANALINC -eq 6 ]; then
    nhr_obsbin=$FHOUT
    time_window_max=3
 elif [ $ANALINC -eq 1 ]; then
-   min_offset=30
+   #min_offset=30
    l4densvar=.false.
    thin4d=.false.
    lwrite4danl=.false.
    nhr_obsbin=1
-   time_window_max=0.5
-   nhr_assimilation=1
+   #time_window_max=0.5
+   #nhr_assimilation=1
 else
    echo "ANALINC must be 1 or 6"
 fi
@@ -782,8 +785,10 @@ fi
 elif [ $ANALINC -eq 1 ]; then
 SIGG06=${SIGG01:-$datges/${ATMPREFIX}_${adate}_fhr01_${charnanal}}
 $nln $SIGG06               ./sigf01
+$nln ./sigf01 ./sigf02
 SFCG06=${SIGG01:-$datges/${SFCPREFIX}_${adate}_fhr01_${charnanal}}
 $nln $SFCG06               ./sfcf01
+$nln ./sfcf01 ./sfcf02
 else
 echo "ANALINC must be 6 or 1"
 fi
