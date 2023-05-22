@@ -26,7 +26,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybcov_hourly750tlnmc3"
+export exptname="C${RES}_hybcov_hourly750tlnmc2"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 
@@ -118,20 +118,19 @@ elif [ "$machine" == 'gaea' ]; then
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/gaea/${exptname}"
    export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/dumps
    source /lustre/f2/dev/role.epic/contrib/Lmod_init.sh
-   module unload cray-libsci
    module purge
+   module unload cray-libsci
    export MODULESHOME=/opt/cray/pe/modules/default
    export _LMFILES_=""
    export LOADEDMODULES=""
    module load PrgEnv-intel
+   module load intel/2022.0.2
    module use -a /lustre/f2/dev/role.epic/contrib/modulefiles
-   module load miniconda3
-   module use -a /lustre/f2/dev/role.epic/contrib/hpc-stack/intel-2021.3.0_noarch/modulefiles/stack
+   module use -a /lustre/f2/dev/role.epic/contrib/hpc-stack/intel-2022.0.2/modulefiles/stack
    module load hpc/1.2.0
-   module load hpc-intel/2021.3.0
+   module load hpc-intel/2022.0.2
    module load hpc-cray-mpich/7.7.11
-   module load hpc-miniconda3
-   module load wgrib
+   module load grib_util
    module load netcdf
    module list
    which python
