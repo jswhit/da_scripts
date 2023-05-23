@@ -133,6 +133,7 @@ elif [ "$machine" == 'gaea' ]; then
    module load grib_util
    module load netcdf
    module list
+   export PATH="/lustre/f2/dev/Jeffrey.S.Whitaker/conda/bin:${PATH}"
    which python
    export MKLROOT=/opt/intel/oneapi/mkl/2022.0.2
    export LD_LIBRARY_PATH="${MKLROOT}/lib/intel64:${LD_LIBRARY_PATH}"
