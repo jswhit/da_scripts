@@ -344,7 +344,6 @@ export getkf=.true.
 export getkf_inflation=.false.
 export modelspace_vloc=.true.
 export letkf_novlocal=.true.
-export obs_selection='nearest'
 #export nobsl_max=10000
 export nobsl_max=-1
 #export corrlengthnh=1250 

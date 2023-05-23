@@ -533,8 +533,8 @@ GSATANG=${GSATANG:-$datgesm1/${prefix_tbc}.satang}
 # CRTM Spectral and Transmittance coefficients
 mkdir -p crtm_coeffs
 for file in $(awk '{if($1!~"!"){print $1}}' satinfo | sort | uniq); do
-   $nln $fixcrtm/${file}.SpcCoeff.bin ./crtm_coeffs/
-   $nln $fixcrtm/${file}.TauCoeff.bin ./crtm_coeffs/
+   $nln $fixcrtm/${file}.SpcCoeff.bin ./crtm_coeffs/${file}.SpcCoeff.bin
+   $nln $fixcrtm/${file}.TauCoeff.bin ./crtm_coeffs/${file}.TauCoeff.bi
 done
 ${NLN} ${RTMFIX}/amsua_metop-a_v2.SpcCoeff.bin ./crtm_coeffs/amsua_metop-a_v2.SpcCoeff.bin
 
