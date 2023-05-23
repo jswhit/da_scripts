@@ -147,6 +147,7 @@ if [ $ANALINC -eq 6 ]; then
    thin4d=.true.
    nhr_obsbin=$FHOUT
    time_window_max=3
+   nhr_assimilation=6
 elif [ $ANALINC -eq 1 ]; then
    #min_offset=30
    l4densvar=.false.
@@ -534,7 +535,7 @@ GSATANG=${GSATANG:-$datgesm1/${prefix_tbc}.satang}
 mkdir -p crtm_coeffs
 for file in $(awk '{if($1!~"!"){print $1}}' satinfo | sort | uniq); do
    $nln $fixcrtm/${file}.SpcCoeff.bin ./crtm_coeffs/${file}.SpcCoeff.bin
-   $nln $fixcrtm/${file}.TauCoeff.bin ./crtm_coeffs/${file}.TauCoeff.bi
+   $nln $fixcrtm/${file}.TauCoeff.bin ./crtm_coeffs/${file}.TauCoeff.bin
 done
 ${NLN} ${RTMFIX}/amsua_metop-a_v2.SpcCoeff.bin ./crtm_coeffs/amsua_metop-a_v2.SpcCoeff.bin
 
