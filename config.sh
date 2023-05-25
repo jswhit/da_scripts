@@ -24,7 +24,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybcov_6hourly"
+export exptname="C${RES}_hybcov_6hourly_iau"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 export enkfonly='false' # pure EnKF
@@ -60,7 +60,7 @@ export controlanal="false" # hybrid-cov high-res control analysis as in ops
 # (hybgain will be set to false if controlanal=true)
 
 # override values from above for debugging.
-#export cleanup_ensmean='false'
+export cleanup_ensmean='false'
 #export recenter_fcst="false"
 #export cleanup_controlanl='false'
 #export cleanup_observer='false'
@@ -72,8 +72,8 @@ export controlanal="false" # hybrid-cov high-res control analysis as in ops
 #export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
 #export save_hpss="false"
 
-source $MODULESHOME/init/sh
 if [ "$machine" == 'hera' ]; then
+   source $MODULESHOME/init/sh
    export basedir=/scratch2/BMC/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
@@ -91,22 +91,20 @@ if [ "$machine" == 'hera' ]; then
    module load wgrib
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'orion' ]; then
+   source $MODULESHOME/init/sh
    export basedir=/work2/noaa/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    export obs_datapath=/work/noaa/rstprod/dump
    ulimit -s unlimited
    source $MODULESHOME/init/sh
-   module use /apps/contrib/NCEP/libs/hpc-stack/modulefiles/stack
-   module load hpc/1.1.0
-   module load hpc-intel/2018.4
-   module unload mkl/2020.2
-   module load mkl/2018.4
-   module load hpc-impi/2018.4
-   module load python/3.7.5
-   module load hdf5/1.10.6-parallel
+   module use /work/noaa/epic-ps/role-epic-ps/hpc-stack/libs/intel-2022.1.2/modulefiles/stack
+   module load hpc/1.2.0
+   module load hpc-intel/2022.1.2
+   module load hpc-impi/2022.1.2
+   module load hdf5/1.10.6
    module load wgrib/1.8.0b
-   export PYTHONPATH=/home/jwhitake/.local/lib/python3.7/site-packages
+   export PATH="/work/noaa/gsienkf/whitaker/miniconda3/bin:$PATH"
    export HDF5_DISABLE_VERSION_CHECK=1
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'gaea' ]; then
@@ -115,20 +113,19 @@ elif [ "$machine" == 'gaea' ]; then
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/gaea/${exptname}"
    export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/dumps
    source /lustre/f2/dev/role.epic/contrib/Lmod_init.sh
-   module unload cray-libsci
    module purge
+   module unload cray-libsci
    export MODULESHOME=/opt/cray/pe/modules/default
    export _LMFILES_=""
    export LOADEDMODULES=""
    module load PrgEnv-intel
+   module load intel/2022.0.2
    module use -a /lustre/f2/dev/role.epic/contrib/modulefiles
-   module load miniconda3
-   module use -a /lustre/f2/dev/role.epic/contrib/hpc-stack/intel-2021.3.0_noarch/modulefiles/stack
+   module use -a /lustre/f2/dev/role.epic/contrib/hpc-stack/intel-2022.0.2/modulefiles/stack
    module load hpc/1.2.0
-   module load hpc-intel/2021.3.0
+   module load hpc-intel/2022.0.2
    module load hpc-cray-mpich/7.7.11
-   module load hpc-miniconda3
-   module load wgrib
+   module load grib_util
    module load netcdf
    module list
    which python
@@ -303,14 +300,14 @@ FHMAXP1=`expr $FHMAX + 1`
 # if FHMAX_LONGER divisible by 6, only the last output time saved.
 # if not divisible by 6, all times in 6-h window at the end of forecast saved
 # so GSI observer can be run.
-export FHMAX_LONGER=12
+export FHMAX_LONGER=24
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
 # IAU on
-#export iaufhrs="3,6,9"
-#export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
+export iaufhrs="3,6,9"
+export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 # IAU off
-export iaufhrs="6"
-export iau_delthrs=-1
+#export iaufhrs="6"
+#export iau_delthrs=-1
 
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
@@ -412,7 +409,7 @@ elif [ "$machine" == 'orion' ]; then
    export fv3gfspath=/work/noaa/global/glopara
    export FIXFV3=$fv3gfspath/fix_NEW/fix_fv3_gmted2010
    export FIXGLOBAL=$fv3gfspath/fix_NEW/fix_am
-   export gsipath=/work/noaa/gsienkf/whitaker/GSI-enkf64bit
+   export gsipath=/work/noaa/gsienkf/whitaker/GSI
    export fixgsi=${gsipath}/fix
    export fixcrtm=$fv3gfspath/crtm/crtm_v2.3.0
    export execdir=${enkfscripts}/exec_${machine}
@@ -487,11 +484,11 @@ else
    if [ $hybgain == "false" ]; then
       # use static B weights and localization scales for GSI from files.
       # (beta_s0, beta_e0 ignored)
-      export readin_localization=".true."
-      export readin_beta=".true."
+      #export readin_localization=".true."
+      #export readin_beta=".true."
       # use constant values (beta_s0,beta_e0 parameters)
-      #export readin_beta=.false.
-      #export readin_localization=.false.
+      export readin_beta=.false.
+      export readin_localization=.false.
       # these only used for hybrid covariance (hyb 4denvar) in GSI
       export beta_s0=`python -c "from __future__ import print_function; print($alpha / 1000.)"` # weight given to static B in hyb cov
       # beta_e0 parameter (ensemble weight) in my GSI branch (not in GSI/develop)

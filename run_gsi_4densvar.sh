@@ -68,8 +68,7 @@ fdatev=`${incdate} $fdatei $fhr`
 echo "fdatei=$fdatei fhr=$fhr fdatev=$fdatev"
 gdate0=`echo $gdate | cut -c1-8`
 obs_datapath=${obs_datapath:-/scratch1/NCEPDEV/global/glopara/dump}
-datobs=$obs_datapath/${RUN}.${iy}${im}${id}/${ih}
-datobsx=$obs_datapath/${RUN}x.${iy}${im}${id}/${ih}
+datobs=$obs_datapath/${RUN}.${iy}${im}${id}/${ih}/atmos
 
 # Set runtime and save directories
 tmpdir=${tmpdir:-$datges/gsitmp$$}
@@ -510,8 +509,8 @@ GSATANG=${GSATANG:-$datgesm1/${prefix_tbc}.satang}
 # CRTM Spectral and Transmittance coefficients
 mkdir -p crtm_coeffs
 for file in $(awk '{if($1!~"!"){print $1}}' satinfo | sort | uniq); do
-   $nln $fixcrtm/${file}.SpcCoeff.bin ./crtm_coeffs/
-   $nln $fixcrtm/${file}.TauCoeff.bin ./crtm_coeffs/
+   $nln $fixcrtm/${file}.SpcCoeff.bin ./crtm_coeffs/${file}.SpcCoeff.bin
+   $nln $fixcrtm/${file}.TauCoeff.bin ./crtm_coeffs/${file}.TauCoeff.bin
 done
 
 $nln $fixcrtm/Nalli.IRwater.EmisCoeff.bin   ./crtm_coeffs/Nalli.IRwater.EmisCoeff.bin
@@ -671,14 +670,14 @@ fi
 if [[ -s $datobs/${prefix_obs}.sevcsr.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.sevcsr.${suffix}      ./seviribufr
 fi
-if [[ -s $datobsx/${prefix_obs}.ahicsr.${suffix} ]]; then
-$nln $datobsx/${prefix_obs}.ahicsr.${suffix}      ./ahibufr
+if [[ -s $datobs/${prefix_obs}.ahicsr.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.ahicsr.${suffix}      ./ahibufr
 fi
-if [[ -s $datobsx/${prefix_obs}.gsrcsr.${suffix} ]]; then
-$nln $datobsx/${prefix_obs}.gsrcsr.${suffix}      ./abibufr
+if [[ -s $datobs/${prefix_obs}.gsrcsr.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.gsrcsr.${suffix}      ./abibufr
 fi
-if [[ -s $datobsx/${prefix_obs}.gm1cr.${suffix} ]]; then
-$nln $datobsx/${prefix_obs}.gm1cr.${suffix}      ./gmibufr
+if [[ -s $datobs/${prefix_obs}.gm1cr.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.gm1cr.${suffix}      ./gmibufr
 fi
 if [[ -s $datobs/${prefix_obs}.cris.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.cris.${suffix}      ./crisbufr
