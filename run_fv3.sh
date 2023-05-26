@@ -240,12 +240,10 @@ snoid='SNOD'
 
 # Turn off snow analysis if it has already been used.
 # (snow analysis only available once per day at 18z)
-fntsfa=${obs_datapath}/${RUN}.${yeara}${mona}${daya}/${houra}/${RUN}.t${houra}z.rtgssthr.grb
-#fntsfa=/scratch2/BMC/gsienkf/Philip.Pegion/obs/ostia/grb_files/${RUN}.${yeara}${mona}${daya}/${houra}/${RUN}.t${houra}z.ostia_sst.grb
-fnacna=${obs_datapath}/${RUN}.${yeara}${mona}${daya}/${houra}/${RUN}.t${houra}z.seaice.5min.grb
-#fnacna=/scratch2/BMC/gsienkf/Philip.Pegion/obs/ostia/grb_files/${RUN}.${yeara}${mona}${daya}/${houra}/${RUN}.t${houra}z.ostia_ice_fraction.grb
-fnsnoa=${obs_datapath}/${RUN}.${yeara}${mona}${daya}/${houra}/${RUN}.t${houra}z.snogrb_t1534.3072.1536
-fnsnog=${obs_datapath}/${RUN}.${yearprev}${monprev}${dayprev}/${hourprev}/${RUN}.t${hourprev}z.snogrb_t1534.3072.1536
+fntsfa=${obs_datapath}/${RUN}.${yeara}${mona}${daya}/${houra}/atmos/${RUN}.t${houra}z.rtgssthr.grb
+fnacna=${obs_datapath}/${RUN}.${yeara}${mona}${daya}/${houra}/atmos/${RUN}.t${houra}z.seaice.5min.grb
+fnsnoa=${obs_datapath}/${RUN}.${yeara}${mona}${daya}/${houra}/atmos/${RUN}.t${houra}z.snogrb_t1534.3072.1536
+fnsnog=${obs_datapath}/${RUN}.${yearprev}${monprev}${dayprev}/${hourprev}/atmos/${RUN}.t${hourprev}z.snogrb_t1534.3072.1536
 nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
 #nrecs_snow=0 # force no snow update (do this if NOAH-MP used)
 if [ $nrecs_snow -eq 0 ]; then

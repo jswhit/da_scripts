@@ -60,7 +60,7 @@ export controlanal="false" # hybrid-cov high-res control analysis as in ops
 # (hybgain will be set to false if controlanal=true)
 
 # override values from above for debugging.
-export cleanup_ensmean='false'
+#export cleanup_ensmean='false'
 #export recenter_fcst="false"
 #export cleanup_controlanl='false'
 #export cleanup_observer='false'
@@ -406,12 +406,14 @@ if [ "$machine" == 'hera' ]; then
    export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
 elif [ "$machine" == 'orion' ]; then
    export python=`which python`
-   export fv3gfspath=/work/noaa/global/glopara
-   export FIXFV3=$fv3gfspath/fix_NEW/fix_fv3_gmted2010
-   export FIXGLOBAL=$fv3gfspath/fix_NEW/fix_am
+   export fv3gfspath=/work/noaa/global/glopara/fix_NEW
+   export FIXDIR=/work/noaa/nems/emc.nemspara/RT/NEMSfv3gfs/input-data-20220414
+   export FIXDIR_gcyc=${fv3gfspath}
+   export FIXFV3=${fv3gfspath}/fix_fv3_gmted2010
+   export FIXGLOBAL=${fv3gfspath}/fix_am
    export gsipath=/work/noaa/gsienkf/whitaker/GSI
    export fixgsi=${gsipath}/fix
-   export fixcrtm=$fv3gfspath/crtm/crtm_v2.3.0
+   export fixcrtm=/work/noaa/global/glopara/crtm/crtm_v2.3.0
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export gsiexec=${execdir}/global_gsi
