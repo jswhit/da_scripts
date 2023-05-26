@@ -493,11 +493,11 @@ fi
 
 echo "export analdate=${analdate}" > $startupenv
 echo "export analdate_end=${analdate_end}" >> $startupenv
-if [ $fg_only == "true" ]; then
+#if [ $fg_only == "true" ]; then
    echo "export fg_only=false" > $datapath/fg_only.sh
-else
-   echo "export fg_only=true" > $datapath/fg_only.sh
-fi
+#else
+#   echo "export fg_only=true" > $datapath/fg_only.sh
+#fi
 echo "export cold_start=false" >> $datapath/fg_only.sh
 
 cd $homedir
@@ -516,11 +516,11 @@ if [ $analdate -le $analdate_end ]  && [ $resubmit == 'true' ]; then
    if [ $resubmit == 'true' ]; then
       echo "resubmit script"
       echo "machine = $machine"
-      if [ $fg_only == "true" ]; then
+      #if [ $fg_only == "true" ]; then
          cat ${machine}_preamble config.sh > job.sh
-      else
-         cat ${machine}_preamble2 config.sh > job.sh
-      fi
+      #else
+      #   cat ${machine}_preamble2 config.sh > job.sh
+      #fi
       sbatch --export=ALL job.sh
    fi
 fi
