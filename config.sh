@@ -26,7 +26,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybcov_hourly750tlnmc2"
+export exptname="C${RES}_hybcov_hourly"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 
@@ -58,10 +58,10 @@ export recenter_anal="true"
 export recenter_fcst="false"
 
 # override values from above for debugging.
-#export cleanup_ensmean='false'
+export cleanup_ensmean='false'
 #export recenter_fcst="false"
 #export cleanup_observer='false'
-#export cleanup_controlanl='false'
+export cleanup_controlanl='false'
 #export cleanup_anal='false'
 #export recenter_anal="false"
 #export cleanup_fg='false'
@@ -88,28 +88,20 @@ if [ "$machine" == 'hera' ]; then
    module load wgrib
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'orion' ]; then
+   source $MODULESHOME/init/sh
    export basedir=/work2/noaa/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   #export obs_datapath2=/work/noaa/sfc-perts/gbates/hrlyda_dumps/6hrly
-   #export obs_datapath=/work/noaa/sfc-perts/gbates/hrlyda_dumps/6hrly
    export obs_datapath=/work/noaa/rstprod/dump
-   export obs_datapath2=/work/noaa/rstprod/dump
-   #export obs_datapath2=/work/noaa/global/glopara/dump
-   #export obs_datapath=/work/noaa/global/glopara/dump
    ulimit -s unlimited
    source $MODULESHOME/init/sh
-   module purge
-   module use /apps/contrib/NCEP/libs/hpc-stack/modulefiles/stack
-   module load hpc/1.1.0
-   module load hpc-intel/2018.4
-   module unload mkl/2020.2
-   module load mkl/2018.4
-   module load hpc-impi/2018.4
-   module load python/3.7.5
-   module load hdf5/1.10.6-parallel
+   module use /work/noaa/epic-ps/role-epic-ps/hpc-stack/libs/intel-2022.1.2/modulefiles/stack
+   module load hpc/1.2.0
+   module load hpc-intel/2022.1.2
+   module load hpc-impi/2022.1.2
+   module load hdf5/1.10.6
    module load wgrib/1.8.0b
-   export PYTHONPATH=/home/jwhitake/.local/lib/python3.7/site-packages
+   export PATH="/work/noaa/gsienkf/whitaker/miniconda3/bin:$PATH"
    export HDF5_DISABLE_VERSION_CHECK=1
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'gaea' ]; then
@@ -299,7 +291,7 @@ export FHMIN=1
 export FHMAX=1
 export FHOUT=1
 export nhr_anal=$ANALINC # background forecast hour at analysis time
-export FHMAX_LONGER=9
+export FHMAX_LONGER=24
 FHMAXP1=`expr $FHMAX + 1`
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
 export iau_delthrs=-1 # 1 for IAU on, -1 for IAU off
@@ -417,16 +409,15 @@ if [ "$machine" == 'hera' ]; then
    export gsiexec=${execdir}/global_gsi
    export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
 elif [ "$machine" == 'orion' ]; then
-   export FIXDIR=/work/noaa/nems/emc.nemspara/RT/NEMSfv3gfs/input-data-20220414
-   #export FIXDIR_gcyc=$FIXDIR
-   export FIXDIR_gcyc=/work/noaa/global/glopara/fix_NEW # for GFSv16
    export python=`which python`
-   export fv3gfspath=/work/noaa/global/glopara
-   export FIXFV3=$fv3gfspath/fix_NEW/fix_fv3_gmted2010
-   export FIXGLOBAL=$fv3gfspath/fix_NEW/fix_am
+   export fv3gfspath=/work/noaa/global/glopara/fix_NEW
+   export FIXDIR=/work/noaa/nems/emc.nemspara/RT/NEMSfv3gfs/input-data-20220414
+   export FIXDIR_gcyc=${fv3gfspath}
+   export FIXFV3=${fv3gfspath}/fix_fv3_gmted2010
+   export FIXGLOBAL=${fv3gfspath}/fix_am
    export gsipath=/work/noaa/gsienkf/whitaker/GSI
    export fixgsi=${gsipath}/fix
-   export fixcrtm=$fv3gfspath/crtm/crtm_v2.3.0
+   export fixcrtm=/work/noaa/global/glopara/crtm/crtm_v2.3.0
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export gsiexec=${execdir}/global_gsi

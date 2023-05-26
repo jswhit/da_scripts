@@ -1,13 +1,13 @@
 #!/bin/sh
-#SBATCH -q urgent
-#SBATCH -t 06:00:00
+##SBATCH -q urgent
+#SBATCH -t 02:00:00
 #SBATCH -A gsienkf
-#SBATCH -N 80  
+#SBATCH -N 20  
 #SBATCH --ntasks-per-node=40
 #SBATCH -p orion
-#SBATCH -J C384_hybgain_hourly
-#SBATCH -e C384_hybgain_hourly.err
-#SBATCH -o C384_hybgain_hourly.out
+#SBATCH -J C192_hybcov_hourly
+#SBATCH -e C192_hybcov_hourly.err
+#SBATCH -o C192_hybcov_hourly.out
 
 export NODES=$SLURM_NNODES
 export corespernode=$SLURM_CPUS_ON_NODE
@@ -35,26 +35,12 @@ elif [ $NODES -eq 40 ]; then
   #export write_tasks_ctl=8
   #export layout_ctl="8, 6"
 elif [ $NODES -eq 80 ]; then
-  # 80 nodes, 4 threads
+  # 80 nodes, 8 threads
   export control_threads=8 
   export control_proc=3200 
   export write_groups_ctl=4
   export write_tasks_ctl=4
   export layout_ctl="8, 8"
-elif [ $NODES -eq 160 ]; then
-  # 160 nodes, 8 threads
-  export control_threads=8 
-  export control_proc=6400 
-  export write_groups_ctl=4
-  export write_tasks_ctl=8
-  export layout_ctl="8, 16"
-elif [ $NODES -eq 320 ]; then
-  # 160 nodes, 8 threads
-  export control_threads=8 
-  export control_proc=12800 
-  export write_groups_ctl=4
-  export write_tasks_ctl=16
-  export layout_ctl="16, 16"
 else
   echo "processor layout for $NODES nodes not set"
   exit 1
@@ -62,19 +48,19 @@ fi
 
 # for ensemble forecast and GSI
 # for C192
-#export fg_proc=$corespernode
-#export fg_threads=1 
-#export enkf_threads=10
-#export gsi_control_threads=4
-#export write_groups=4
-#export write_tasks=1 
-#export layout="3, 2"
+export fg_proc=$corespernode
+export fg_threads=1 
+export enkf_threads=10
+export gsi_control_threads=4
+export write_groups=4
+export write_tasks=1 
+export layout="3, 2"
 
 # for C384
-export fg_proc=`expr 2 \* $corespernode`
-export fg_threads=1 
-export enkf_threads=40
-export gsi_control_threads=20
-export write_groups=2
-export write_tasks=4 
-export layout="3, 4"
+#export fg_proc=`expr 4 \* $corespernode`
+#export fg_threads=1 
+#export enkf_threads=40
+#export gsi_control_threads=20
+#export write_groups=4
+#export write_tasks=4 
+#export layout="6, 4"

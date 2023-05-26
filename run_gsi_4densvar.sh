@@ -69,7 +69,7 @@ echo "fdatei=$fdatei fhr=$fhr fdatev=$fdatev"
 gdate0=`echo $gdate | cut -c1-8`
 obs_datapath=${obs_datapath:-/scratch1/NCEPDEV/global/glopara/dump}
 if [ $sixhourlydumps = "YES" ]; then
-   datobs=$obs_datapath/${RUN}.${iy}${im}${id}/${ih}
+   datobs=$obs_datapath/${RUN}.${iy}${im}${id}/${ih}/atmos
 else
    # 6hrly dumps filtered into hourly files by ob time.
    datobs=$obs_datapath/${RUN}hrlyo.${iy}${im}${id}/${ih}
@@ -171,10 +171,10 @@ if [[ "$HXONLY" != "YES" ]]; then
       SETUP="$SETUP,miter=1,niter(1)=150,niter(2)=0"
    else # envar
       # tlnmc on full increment, 4denvar
-      STRONGOPTS="tlnmc_option=3,nstrong=1,nvmodes_keep=48,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
+      #STRONGOPTS="tlnmc_option=3,nstrong=1,nvmodes_keep=48,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
       #STRONGOPTS="tlnmc_option=3,nstrong=1,nvmodes_keep=48,period_max=1.,period_width=0.5,baldiag_full=.true.,baldiag_inc=.true.,"
       # tlnmc on full increment, 3denvar
-      #STRONGOPTS="tlnmc_option=2,nstrong=1,nvmodes_keep=48,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
+      STRONGOPTS="tlnmc_option=2,nstrong=1,nvmodes_keep=48,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
       # balance constraint on 3dvar part of envar increment
       #STRONGOPTS="tlnmc_option=4,nstrong=1,nvmodes_keep=48,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
       # no strong bal constraint
