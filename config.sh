@@ -58,10 +58,10 @@ export recenter_anal="true"
 export recenter_fcst="false"
 
 # override values from above for debugging.
-export cleanup_ensmean='false'
+#export cleanup_ensmean='false'
 #export recenter_fcst="false"
 #export cleanup_observer='false'
-export cleanup_controlanl='false'
+#export cleanup_controlanl='false'
 #export cleanup_anal='false'
 #export recenter_anal="false"
 #export cleanup_fg='false'
