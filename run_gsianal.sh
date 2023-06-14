@@ -17,7 +17,9 @@ echo "ANALINC must be 1 or 6"
 exit
 fi
 export BIASO=${datapath2}/${PREINP}abias 
+export BIASOAIR=${datapath2}/${PREINP}abias_air
 export BIASO_PC=${datapath2}/${PREINP}abias_pc 
+export BIASO_INT=${datapath2}/${PREINP}abias_int
 export SATANGO=${datapath2}/${PREINP}satang
 export DTFANL=${datapath2}/${PREINP}dtfanl.nc
 
@@ -47,10 +49,17 @@ export mpitaskspernode=`expr $corespernode \/ $OMP_NUM_THREADS`
 echo "running with $OMP_NUM_THREADS threads ..."
 
 if [ -z $biascorrdir ]; then # cycled bias correction files
-    export GBIAS=${datapathm1}/${PREINPm1}abias
-    export GBIAS_PC=${datapathm1}/${PREINPm1}abias_pc
-    export GBIASAIR=${datapathm1}/${PREINPm1}abias_air
-    export ABIAS=${datapath2}/${PREINP}abias
+    if [ $nliteration -eq 1 ]; then
+       export GBIAS=${datapathm1}/${PREINPm1}abias
+       export GBIAS_PC=${datapathm1}/${PREINPm1}abias_pc
+       export GBIASAIR=${datapathm1}/${PREINPm1}abias_air
+       export ABIAS=${datapath2}/${PREINP}abias
+    else
+       export GBIAS=${datapath2}/${PREINP}abias
+       export GBIAS_PC=${datapath2}/${PREINP}abias_pc
+       export GBIASAIR=${datapath2}/${PREINP}abias_air
+       export ABIAS=${datapath2}/${PREINP}abias
+    fi
 else # externally specified bias correction files.
     hhbias=`echo $obdate | cut -c9-10`
     export GBIAS=${biascorrdir}/${obdate}/${RUN}.t${hhbias}z.abias

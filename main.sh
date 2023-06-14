@@ -89,13 +89,9 @@ mkdir -p ${current_logdir}
 # but only at 03,09,15,21 UTC (for comparison with 6-h cycled system)
 if [ $hr = "03" ] || [ $hr = "09" ] || [ $hr = "15" ] || [ $hr = "21" ]; then
   if [ $cold_start == "true" ]; then
-     export nanals2=-1
-     echo "no longer forecast extension"
+    export nanals2=-1
+    echo "no longer forecast extension"
   else
-     # only run out to FHMAX_LONGER at 03 and 15, just run to 9-h at 09 and 21.
-     if [ $hr = "09" ] || [ $hr = "21" ]; then
-        export FHMAX_LONGER=9 
-     fi
      export nanals2=80
      echo "will run $nanals2 members out to hour $FHMAX_LONGER"
   fi
@@ -120,21 +116,30 @@ else
     echo "don't run global_cycle (or gcycle)"
    fi
 fi
-if [ $hr = "04" ] || [ $hr = "10" ] || [ $hr = "16" ] || [ $hr = "22" ]; then
-   export time_window_max=1.0
-   export min_offset=60
-   export nhr_assimilation=2
-   export CONVINFO=${enkfscripts}/global_convinfo.txt2
-else
+#if [ $hr = "04" ] || [ $hr = "10" ] || [ $hr = "16" ] || [ $hr = "22" ]; then
+#   export time_window_max=1.0
+#   export min_offset=60
+#   export nhr_assimilation=2
+#   export CONVINFO=${enkfscripts}/global_convinfo.txt2
+#else
    export time_window_max=0.5
    export min_offset=30
    export nhr_assimilation=1
    export CONVINFO=${enkfscripts}/global_convinfo.txt
-fi
+#fi
 
 export PREINP="${RUN}.t${hr}z."
 export PREINP1="${RUN}.t${hrp1}z."
 export PREINPm1="${RUN}.t${hrm1}z."
+
+# loop over outer iterations
+export nliteration=1
+if [ $cold_start == 'true' ]; then
+   export nliterations=1
+fi
+while [ $nliteration -le $nliterations ]; do
+
+echo "nonlinear iteration $nliteration out of $nliterations"
 
 if [ $fg_only ==  'false' ]; then
 
@@ -165,7 +170,8 @@ errexit=0
 if [ $replay_controlfcst == 'true' ]; then
    charnanal='control'
    echo "$analdate change resolution of control forecast to ens resolution `date`"
-   fh=$FHMIN
+   #fh=$FHMIN
+   fh=0
    while [ $fh -le $FHMAX ]; do
      fhr=`printf %02i $fh`
      # run concurrently, wait
@@ -215,7 +221,8 @@ export lobsdiag_forenkf='.true.'
 export skipcat="false"
 # run Var analysis
 # symlink ens mean backgrounds to "control"
-fh=$FHMIN
+#fh=$FHMIN
+fh=0
 while [ $fh -le $FHMAX ]; do
   fhr=`printf %02i $fh`
   /bin/ln -fs ${datapath2}/sfg_${analdate}_fhr${fhr}_ensmean ${datapath2}/sfg_${analdate}_fhr${fhr}_control
@@ -228,7 +235,7 @@ else
   type="hybrid 4DEnVar"
 fi
 echo "$analdate run $type `date`"
-sh ${enkfscripts}/run_gsianal.sh > ${current_logdir}/run_gsianal.out 2>&1
+sh ${enkfscripts}/run_gsianal.sh > ${current_logdir}/run_gsianal_${nliteration}.out 2>&1
 # once gsi has completed, check log files.
 gsi_done=`cat ${current_logdir}/run_gsi_anal.log`
 if [ $gsi_done == 'yes' ]; then
@@ -284,7 +291,7 @@ fi
 
 # run enkf analysis.
 echo "$analdate run enkf `date`"
-sh ${enkfscripts}/runenkf.sh > ${current_logdir}/run_enkf.out 2>&1
+sh ${enkfscripts}/runenkf.sh > ${current_logdir}/run_enkf_${nliteration}.out 2>&1
 # once enkf has completed, check log files.
 enkf_done=`cat ${current_logdir}/run_enkf.log`
 if [ $enkf_done == 'yes' ]; then
@@ -301,57 +308,75 @@ if [ $write_ensmean == ".false." ]; then
    echo "$analdate done computing ensemble mean analyses `date`"
 fi
 
-if [ $analdate == $analdate_end ]; then
-  exit
+if [ $nliteration -eq 1 ] && [ $nliterations -gt 1 ]; then
+  # save diag files for 1st iteration
+  mkdir ${datapath2}/diagfiles_1
+  mkdir ${datapath2}/sfgfiles_1
+  pushd ${datapath2}
+  /bin/mv -f ${datapath2}/diag*nc4 diagfiles_1
+  /bin/cp -f ${datapath2}/sfg*ensmean sfgfiles_1
+  popd
 fi
 
 # blend enkf mean and 3dvar increments, recenter ensemble
-if [ $recenter_anal == "true" ]; then
-   if [ $hybgain == "true" ]; then 
-       if [ $alpha -gt 0 ]; then
-          # hybrid gain
-          echo "$analdate blend enkf and 3dvar increments `date`"
-          sh ${enkfscripts}/blendinc.sh > ${current_logdir}/blendinc.out 2>&1
-          blendinc_done=`cat ${current_logdir}/blendinc.log`
-          if [ $blendinc_done == 'yes' ]; then
-            echo "$analdate increment blending/recentering completed successfully `date`"
-          else
-            echo "$analdate increment blending/recentering did not complete successfully, exiting `date`"
-            exit 1
-          fi
-       fi
-   else
-       # hybrid covariance, recenter
-       export fileprefix="sanl"
-       export charnanal="control"
-       echo "$analdate recenter enkf analysis ensemble around control analysis `date`"
-       sh ${enkfscripts}/recenter_ens.sh > ${current_logdir}/recenter_ens_anal.out 2>&1
-       recenter_done=`cat ${current_logdir}/recenter.log`
-       if [ $recenter_done == 'yes' ]; then
-         echo "$analdate recentering enkf analysis completed successfully `date`"
-       else
-         echo "$analdate recentering enkf analysis did not complete successfully, exiting `date`"
-         exit 1
-       fi
+#if [ $recenter_anal == "true" ]; then
+#   if [ $hybgain == "true" ]; then 
+#       if [ $alpha -gt 0 ]; then
+#          # hybrid gain
+#          echo "$analdate blend enkf and 3dvar increments `date`"
+#          sh ${enkfscripts}/blendinc.sh > ${current_logdir}/blendinc.out 2>&1
+#          blendinc_done=`cat ${current_logdir}/blendinc.log`
+#          if [ $blendinc_done == 'yes' ]; then
+#            echo "$analdate increment blending/recentering completed successfully `date`"
+#          else
+#            echo "$analdate increment blending/recentering did not complete successfully, exiting `date`"
+#            exit 1
+#          fi
+#       fi
+#   else
+#       # hybrid covariance, recenter
+#       export fileprefix="sanl"
+#       export charnanal="control"
+#       echo "$analdate recenter enkf analysis ensemble around control analysis `date`"
+#       sh ${enkfscripts}/recenter_ens.sh > ${current_logdir}/recenter_ens_anal.out 2>&1
+#       recenter_done=`cat ${current_logdir}/recenter.log`
+#       if [ $recenter_done == 'yes' ]; then
+#         echo "$analdate recentering enkf analysis completed successfully `date`"
+#       else
+#         echo "$analdate recentering enkf analysis did not complete successfully, exiting `date`"
+#         exit 1
+#       fi
+#
+#       # use increment blending util with alpha=1, beta=0 instead of recentering
+#       #echo "$analdate blend enkf and 3dvar increments `date`"
+#       ## for hybrd cov could use alpha=1, beta=0 here 
+#       #alpha_save=$alpha
+#       #beta_save=$beta
+#       #export alpha=1000
+#       #export beta=0
+#       #sh ${enkfscripts}/blendinc.sh > ${current_logdir}/blendinc.out 2>&1
+#       #blendinc_done=`cat ${current_logdir}/blendinc.log`
+#       #if [ $blendinc_done == 'yes' ]; then
+#       #  echo "$analdate increment blending/recentering completed successfully `date`"
+#       #else
+#       #  echo "$analdate increment blending/recentering did not complete successfully, exiting `date`"
+#       #  exit 1
+#       #fi
+#       #export alpha=$alpha_save
+#       #export beta=$beta_save
+#   fi
+#fi
 
-       # use increment blending util with alpha=1, beta=0 instead of recentering
-       #echo "$analdate blend enkf and 3dvar increments `date`"
-       ## for hybrd cov could use alpha=1, beta=0 here 
-       #alpha_save=$alpha
-       #beta_save=$beta
-       #export alpha=1000
-       #export beta=0
-       #sh ${enkfscripts}/blendinc.sh > ${current_logdir}/blendinc.out 2>&1
-       #blendinc_done=`cat ${current_logdir}/blendinc.log`
-       #if [ $blendinc_done == 'yes' ]; then
-       #  echo "$analdate increment blending/recentering completed successfully `date`"
-       #else
-       #  echo "$analdate increment blending/recentering did not complete successfully, exiting `date`"
-       #  exit 1
-       #fi
-       #export alpha=$alpha_save
-       #export beta=$beta_save
-   fi
+# compute anal ens mean, blend enkf mean and 3dvar increments, recenter ensemble, taper perts near model top
+export fileprefix="sanl"
+echo "$analdate recenter or blend increments, and taper enkf analysis ens perts near top of model `date`"
+sh ${enkfscripts}/taper_ens.sh > ${current_logdir}/taper_ensperts_anal.out 2>&1
+taper_done=`cat ${current_logdir}/taper.log`
+if [ $taper_done == 'yes' ]; then
+  echo "$analdate recentering, increment blending and tapering enkf analysis ens perts completed successfully `date`"
+else
+  echo "$analdate recentering, increment blending and tapering enkf analysis ens perts did not complete successfully, exiting `date`"
+  exit 1
 fi
 
 # for passive (replay) cycling of control forecast, optionally run GSI observer
@@ -446,9 +471,9 @@ if [ $replay_controlfcst == 'true' ]; then
     fi
 fi
 
-if [ $fg_only == "true" ]; then
+#if [ $fg_only == "true" ]; then
    echo "$analdate run enkf ens first guess `date`"
-   sh ${enkfscripts}/run_fg_ens.sh > ${current_logdir}/run_fg_ens.out  2>&1
+   sh ${enkfscripts}/run_fg_ens.sh > ${current_logdir}/run_fg_ens_${nliteration}.out  2>&1
    ens_done=`cat ${current_logdir}/run_fg_ens.log`
    if [ $ens_done == 'yes' ]; then
      echo "$analdate enkf first-guess completed successfully `date`"
@@ -456,7 +481,11 @@ if [ $fg_only == "true" ]; then
      echo "$analdate enkf first-guess did not complete successfully, exiting `date`"
      exit 1
    fi
-fi
+#fi
+
+export nliteration=$((nliteration+1))
+
+done # next iteration
 
 if [ $cold_start == 'false' ]; then
 
@@ -491,9 +520,9 @@ fi # skip to here if cold_start = true
 echo "$analdate all done"
 
 # next analdate: increment by $ANALINC
-if [ $fg_only == 'true' ]; then
+#if [ $fg_only == 'true' ]; then
    export analdate=`${incdate} $analdate $ANALINC`
-fi
+#fi
 
 echo "export analdate=${analdate}" > $startupenv
 echo "export analdate_end=${analdate_end}" >> $startupenv
@@ -520,11 +549,11 @@ if [ $analdate -le $analdate_end ]  && [ $resubmit == 'true' ]; then
    if [ $resubmit == 'true' ]; then
       echo "resubmit script"
       echo "machine = $machine"
-      #if [ $fg_only == "true" ]; then
+#      if [ $fg_only == "true" ]; then
          cat ${machine}_preamble config.sh > job.sh
-      #else
-      #   cat ${machine}_preamble2 config.sh > job.sh
-      #fi
+#      else
+#         cat ${machine}_preamble2 config.sh > job.sh
+#      fi
       sbatch --export=ALL job.sh
    fi
 fi

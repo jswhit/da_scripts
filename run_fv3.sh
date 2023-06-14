@@ -11,6 +11,13 @@ fi
 
 ulimit -s unlimited
 
+# only copy restarts for last outer iteration
+if [ $nliteration -ne $nliterations ]; then
+    dont_copy_restart=1
+else
+    unset dont_copy_restart
+fi
+
 niter=${niter:-1}
 if [ "$charnanal" != "control" ] && [ "$charnanal" != "ensmean" ]; then
    nmem=`echo $charnanal | cut -f3 -d"m"`
@@ -29,6 +36,22 @@ export year=`echo $analdate |cut -c 1-4`
 export mon=`echo $analdate |cut -c 5-6`
 export day=`echo $analdate |cut -c 7-8`
 export hour=`echo $analdate |cut -c 9-10`
+analdatem6=`$incdate $analdate -6`
+export yearprev=`echo $analdatem6 |cut -c 1-4`
+export monprev=`echo $analdatem6 |cut -c 5-6`
+export dayprev=`echo $analdatem6 |cut -c 7-8`
+export hourprev=`echo $analdatem6 |cut -c 9-10`
+if [ $nliteration -lt $nliterations ]; then
+  export year_start=`echo $analdatem1 |cut -c 1-4`
+  export mon_start=`echo $analdatem1 |cut -c 5-6`
+  export day_start=`echo $analdatem1 |cut -c 7-8`
+  export hour_start=`echo $analdatem1 |cut -c 9-10`
+else
+  export year_start=$year
+  export mon_start=$mon
+  export day_start=$day
+  export hour_start=$hour
+fi
 # time for restart to initialize next background forecast
 export yrnext=`echo $analdatep1 |cut -c 1-4`
 export monnext=`echo $analdatep1 |cut -c 5-6`
@@ -53,7 +76,19 @@ sed -i -e "s/FHOUT/${FHOUT}/g" diag_table
 /bin/cp -f $enkfscripts/data_table . 
 /bin/rm -rf RESTART
 mkdir -p RESTART
-mkdir -p INPUT
+
+if [ $nliteration -eq $nliterations ]; then
+   restart_dir="INPUT_current"
+   if [ $cold_start == "true" ]; then
+     restart_dir="INPUT"
+   fi
+else
+   restart_dir="INPUT_prev"
+fi
+if [ $cold_start == "false" ]; then
+   /bin/rm -rf INPUT
+   /bin/ln -fs $restart_dir INPUT
+fi
 
 # make symlinks for fixed files and initial conditions.
 cd INPUT
@@ -96,7 +131,7 @@ done
 
 # create netcdf increment files.
 if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
-   cd INPUT
+   cd $restart_dir
    fh=$nhr_anal
    export increment_file="fv3_increment${fh}.nc"
    if [ $charnanal == "control" ] && [ "$replay_controlfcst" == 'true' ]; then
@@ -128,7 +163,8 @@ if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
    cd ..
 else
    if [ $cold_start == "false" ] ; then
-      cd INPUT
+      cd $restart_dir
+      fh=$nhr_anal # update 1-h forecast at last step
       export increment_file="fv3_increment${fh}.nc"
       /bin/mv -f ${datapath2}/incr_${analdate}_fhr0${nhr_anal}_${charnanal} ${increment_file}
       cd ..
@@ -168,7 +204,7 @@ else
    externalic=F
    mountain=T
    # warm start from restart file with lat/lon increments ingested by the model
-   if [ -s INPUT/atm_stoch.res.nc ]; then
+   if [ -s $restart_dir/atm_stoch.res.nc ]; then
      echo "atm_stoch.res.nc available, setting stochini=T"
      stochini=T # restart random patterns from existing file
    else
@@ -192,11 +228,15 @@ snoid='SNOD'
 
 # Turn off snow analysis if it has already been used.
 # (snow analysis only available once per day at 18z)
+fntsfa=${obs_datapath}/gdas.${year}${mon}${day}/${hour}/gdas.t${hour}z.rtgssthr.grb
+fnacna=${obs_datapath}/gdas.${year}${mon}${day}/${hour}/gdas.t${hour}z.seaice.5min.grb
+fnsnoa=${obs_datapath}/gdas.${year}${mon}${day}/${hour}/gdas.t${hour}z.snogrb_t1534.3072.1536
+fnsnog=${obs_datapath}/gdas.${yearprev}${monprev}${dayprev}/${hourprev}/gdas.t${hourprev}z.snogrb_t1534.3072.1536
  
-fntsfa=${obs_datapath}/${RUN}.${year}${mon}${day}/${hour}/atmos/${RUN}.t${hour}z.rtgssthr.grb
-fnacna=${obs_datapath}/${RUN}.${year}${mon}${day}/${hour}/atmos/${RUN}.t${hour}z.seaice.5min.grb
-fnsnoa=${obs_datapath}/${RUN}.${year}${mon}${day}/${hour}/atmos/${RUN}.t${hour}z.snogrb_t1534.3072.1536
-fnsnog=${obs_datapath}/${RUN}.${yearprev}${monprev}${dayprev}/${hourprev}/atmos/${RUN}.t${hourprev}z.snogrb_t1534.3072.1536
+fntsfa=${obs_datapath}/${RUN}.${year}${mon}${day}/${hour}/${RUN}.t${hour}z.rtgssthr.grb
+fnacna=${obs_datapath}/${RUN}.${year}${mon}${day}/${hour}/${RUN}.t${hour}z.seaice.5min.grb
+fnsnoa=${obs_datapath}/${RUN}.${year}${mon}${day}/${hour}/${RUN}.t${hour}z.snogrb_t1534.3072.1536
+fnsnog=${obs_datapath}/${RUN}.${yearprev}${monprev}${dayprev}/${hourprev}/${RUN}.t${hourprev}z.snogrb_t1534.3072.1536
 
 nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
 #nrecs_snow=0 # force no snow update (do this if NOAH-MP used)
@@ -225,8 +265,13 @@ ls -l
 #FHRESTART="$ANALINC -1"
 FHRESTART=$ANALINC
 if [ $cold_start == 'false' ] && [ $nanals2 -gt 0 ] && [ $nmem -le $nanals2 ]; then
-   FHMAX_FCST=$FHMAX_LONGER
-   longer_fcst="YES"
+   if [ $nliteration -eq $nliterations ]; then
+      FHMAX_FCST=$FHMAX_LONGER
+      longer_fcst="YES"
+   else
+      FHMAX_FCST=$FHMAX
+      longer_fcst="NO"
+   fi
 else
    FHMAX_FCST=$FHMAX
    longer_fcst="NO"
@@ -298,10 +343,10 @@ cat > model_configure <<EOF
 print_esmf:              .true.
 total_member:            1
 PE_MEMBER01:             ${nprocs}
-start_year:              ${year}
-start_month:             ${mon}
-start_day:               ${day}
-start_hour:              ${hour}
+start_year:              ${year_start}
+start_month:             ${mon_start}
+start_day:               ${day_start}
+start_hour:              ${hour_start}
 start_minute:            0
 start_second:            0
 nhours_fcst:             ${FHMAX_FCST}
@@ -382,7 +427,7 @@ sed -i -e "s!SNOFILE!${fnsnoa}!g" input.nml
 sed -i -e "s/FSNOL_PARM/${FSNOL}/g" input.nml
 sed -i -e "s/FHCYC/${FHCYC}/g" input.nml
 cat input.nml
-ls -l INPUT
+ls -l $restart_dir
 
 # run model
 export PGM=$FCSTEXEC
@@ -407,7 +452,11 @@ while [ $fh -le $FHMAX ]; do
   if [ $longer_fcst = "YES" ] && [ $fh -eq $FHMAX ]; then
      /bin/cp -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
   else
-     /bin/mv -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
+     if [ $nliteration -eq $nliterations ]; then
+        /bin/mv -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
+     else
+        /bin/mv -f dyn${charfhr2}.nc ${datapath2}/sfg_${analdate}_${charfhr}_${charnanal}
+     fi
   fi
   if [ $? -ne 0 ]; then
      echo "netcdffile missing..."
@@ -416,7 +465,11 @@ while [ $fh -le $FHMAX ]; do
   if [ $longer_fcst = "YES" ] && [ $fh -eq $FHMAX ]; then
      /bin/cp -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
   else
-     /bin/mv -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
+     if [ $nliteration -eq $nliterations ]; then
+        /bin/mv -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
+     else
+        /bin/mv -f phy${charfhr2}.nc ${datapath2}/bfg_${analdate}_${charfhr}_${charnanal}
+     fi
   fi
   if [ $? -ne 0 ]; then
      echo "netcdf file missing..."
@@ -449,47 +502,54 @@ fi
 /bin/rm -f phy*nc dyn*nc
 
 ls -l *tile*nc
+# copy restarts from previous cycle to use for nonlinear iterations for next cycle
+if [ $nliteration -eq 1 ]; then
+   mkdir -p ${datapathp1}/${charnanal}/INPUT_prev
+   /bin/cp -R INPUT/* ${datapathp1}/${charnanal}/INPUT_prev
+fi
 if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
    ls -l RESTART
    # copy restart file to INPUT directory for next analysis time.
-   /bin/rm -rf ${datapathp1}/${charnanal}/RESTART ${datapathp1}/${charnanal}/INPUT
-   mkdir -p ${datapathp1}/${charnanal}/INPUT
+   /bin/rm -rf ${datapathp1}/${charnanal}/RESTART ${datapathp1}/${charnanal}/INPUT_current
+   mkdir -p ${datapathp1}/${charnanal}/INPUT_current
    cd RESTART
    ls -l
-   #if [ $nhr_anal -eq $FHMAX_FCST ]; then
-   #   /bin/mv -f fv_core.res.nc atm_stoch.res.nc ${datapathp1}/${charnanal}/INPUT
-   #   tiles="tile1 tile2 tile3 tile4 tile5 tile6"
-   #   for tile in $tiles; do
-   #      files="ca_data.res.${tile}.nc fv_core.res.${tile}.nc fv_tracer.res.${tile}.nc fv_srf_wnd.res.${tile}.nc sfc_data.${tile}.nc phy_data.${tile}.nc"
-   #      for file in $files; do
-   #          /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT
-   #      done
-   #   done
-   #else
+   if [ $nhr_anal -eq $FHMAX_FCST ]; then
+      /bin/mv -f fv_core.res.nc atm_stoch.res.nc ${datapathp1}/${charnanal}/INPUT_current
+      tiles="tile1 tile2 tile3 tile4 tile5 tile6"
+      for tile in $tiles; do
+         files="ca_data.res.${tile}.nc fv_core.res.${tile}.nc fv_tracer.res.${tile}.nc fv_srf_wnd.res.${tile}.nc sfc_data.${tile}.nc phy_data.${tile}.nc"
+         for file in $files; do
+             /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT_current
+         done
+      done
+   else
       datestring="${yrnext}${monnext}${daynext}.${hrnext}0000."
       for file in ${datestring}*nc; do
          file2=`echo $file | cut -f3-10 -d"."`
-         /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT/$file2
+         /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT_current/$file2
          if [ $? -ne 0 ]; then
            echo "restart file missing..."
            exit 1
          fi
       done
-   #fi
-   if [ -s  ${datapathp1}/${charnanal}/INPUT/ca_data.tile1.nc ]; then
-      touch ${datapathp1}/${charnanal}/INPUT/ca_data.nc
+   fi
+   if [ -s  ${datapathp1}/${charnanal}/INPUT_current/ca_data.tile1.nc ]; then
+      touch ${datapathp1}/${charnanal}/INPUT_current/ca_data.nc
    fi
    cd ..
 fi
 
 ls -l ${DATOUT}
-ls -l ${datapathp1}/${charnanal}/INPUT
+ls -l ${datapathp1}/${charnanal}/INPUT_current
 
 # remove symlinks from INPUT directory
+if [ $nliteration -eq $nliterations ]; then
 cd INPUT
 find -type l -delete
 cd ..
 /bin/rm -rf RESTART # don't need RESTART dir anymore.
+fi
 
 echo "all done at `date`"
 

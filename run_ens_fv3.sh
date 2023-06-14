@@ -24,6 +24,7 @@ while [ $nanal -le $nanals ]; do
  export charnanal="mem`printf %03i $nanal`"
 
 # check to see if output files already created.
+ if [ $nliteration -eq $nliterations ]; then
  fhr=$FHMIN
  outfiles=""
  while [ $fhr -le $FHMAX ]; do
@@ -44,13 +45,16 @@ while [ $nanal -le $nanals ]; do
      echo "${outfile} is OK"
    fi
  done
+ else
+ filemissing="yes"
+ fi
 
  node=$nhost
  node_end=$node
  node_end=$((node_end+${countproc}-1))
  if [ $filemissing == 'yes' ]; then
    echo "nanal = ${nanal}, nhost = ${nhost}, node = ${node}, node_end = ${node_end}"
-   sh ${enkfscripts}/${rungfs} > ${current_logdir}/run_fg_${charnanal}.iter${niter}.out 2>&1 &
+   sh ${enkfscripts}/${rungfs} > ${current_logdir}/run_fg${nliteration}_${charnanal}.iter${niter}.out 2>&1 &
    nhost=$((nhost+countproc))
  else
    echo "skipping nanal = ${nanal}, output files already created"
@@ -78,14 +82,22 @@ anyfilemissing='no'
 while [ $nanal -le $nanals ]; do
     export charnanal="mem`printf %03i $nanal`"
     fhr=$FHMIN
-    outfiles="${datapath}/${analdatep1}/${charnanal}/INPUT/sfc_data.tile6.nc"
+    if [ $nliteration -lt $nliterations ]; then 
+       outfiles="${datapath2}/${charnanal}/INPUT_current/sfc_data.tile6.nc"
+    else
+       outfiles="${datapath}/${analdatep1}/${charnanal}/INPUT_current/sfc_data.tile6.nc"
+    fi
     while [ $fhr -le $FHMAX ]; do
        charhr="fhr`printf %02i $fhr`"
        #if [ $cold_start == "true" ]; then
        #   fhx=`expr $fhr - 5`
        #   charhr="fhr"`printf %02i $fhx`
        #fi
-       outfiles="${outfiles} ${datapath}/${analdatep1}/sfg_${analdatep1}_${charhr}_${charnanal} ${datapath}/${analdatep1}/bfg_${analdatep1}_${charhr}_${charnanal}"
+       if [ $nliteration -lt $nliterations ]; then
+          outfiles="${outfiles} ${datapath2}/sfg_${analdate}_${charhr}_${charnanal} ${datapath2}/bfg_${analdate}_${charhr}_${charnanal}"
+       else
+          outfiles="${outfiles} ${datapath}/${analdatep1}/sfg_${analdatep1}_${charhr}_${charnanal} ${datapath}/${analdatep1}/bfg_${analdatep1}_${charhr}_${charnanal}"
+       fi
        fhr=$((fhr+FHOUT))
     done
     filemissing='no'

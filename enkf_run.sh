@@ -40,7 +40,7 @@ cat <<EOF > enkf.nml
   lnsigcutoffpsnh=$lnsigcutoffpsnh,lnsigcutoffpssh=$lnsigcutoffpssh,lnsigcutoffpstr=$lnsigcutoffpstr,
   nlons=$LONA,nlats=$LATA,smoothparm=$SMOOTHINF,letkf_bruteforce_search=${letkf_bruteforce_search},
   readin_localization=$readin_localization,saterrfact=$saterrfact,
-  paoverpb_thresh=$paoverpb_thresh,letkf_flag=$letkf_flag,denkf=$denkf,
+  paoverpb_thresh=$paoverpb_thresh,letkf_flag=$letkf_flag,denkf=$denkf,obs_selection="nearest",
   getkf_inflation=$getkf_inflation,letkf_novlocal=$letkf_novlocal,modelspace_vloc=$modelspace_vloc,save_inflation=.false.,
   reducedgrid=${reducedgrid},nlevs=$LEVS,nanals=$nanals,deterministic=$deterministic,imp_physics=$imp_physics,
   lobsdiag_forenkf=.true.,write_spread_diag=.false.,netcdf_diag=.true.,mincorrlength_fact=$mincorrlength_fact,
@@ -162,7 +162,7 @@ cat enkf.nml
 cp ${enkfscripts}/vlocal_eig_L${LEVS}.dat ${datapath2}/vlocal_eig.dat
 
 /bin/rm -f ${datapath2}/enkf.log
-/bin/mv -f ${current_logdir}/ensda.out ${current_logdir}/ensda.out.save
+/bin/mv -f ${current_logdir}/ensda_${nliteration}.out ${current_logdir}/ensda_${nliteration}.out.save
 export PGM=$enkfbin
 echo "OMP_NUM_THREADS = $OMP_NUM_THREADS"
 
@@ -170,7 +170,7 @@ echo "OMP_NUM_THREADS = $OMP_NUM_THREADS"
 export nprocs=`expr $cores \/ $OMP_NUM_THREADS`
 export mpitaskspernode=`expr $corespernode \/ $OMP_NUM_THREADS`
 echo "running with $OMP_NUM_THREADS threads ..."
-${enkfscripts}/runmpi > ${current_logdir}/ensda.out 2>&1
+${enkfscripts}/runmpi > ${current_logdir}/ensda_${nliteration}.out 2>&1
 
 if [ ! -s ${datapath2}/enkf.log ]; then
    echo "no enkf log file found"
