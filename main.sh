@@ -315,69 +315,70 @@ if [ $nliteration -eq 1 ] && [ $nliterations -gt 1 ]; then
   pushd ${datapath2}
   /bin/mv -f ${datapath2}/diag*nc4 diagfiles_1
   /bin/cp -f ${datapath2}/sfg*ensmean sfgfiles_1
+  /bin/cp -f ${datapath2}/sfg*enssprd sfgfiles_1
   popd
 fi
 
 # blend enkf mean and 3dvar increments, recenter ensemble
-#if [ $recenter_anal == "true" ]; then
-#   if [ $hybgain == "true" ]; then 
-#       if [ $alpha -gt 0 ]; then
-#          # hybrid gain
-#          echo "$analdate blend enkf and 3dvar increments `date`"
-#          sh ${enkfscripts}/blendinc.sh > ${current_logdir}/blendinc.out 2>&1
-#          blendinc_done=`cat ${current_logdir}/blendinc.log`
-#          if [ $blendinc_done == 'yes' ]; then
-#            echo "$analdate increment blending/recentering completed successfully `date`"
-#          else
-#            echo "$analdate increment blending/recentering did not complete successfully, exiting `date`"
-#            exit 1
-#          fi
-#       fi
-#   else
-#       # hybrid covariance, recenter
-#       export fileprefix="sanl"
-#       export charnanal="control"
-#       echo "$analdate recenter enkf analysis ensemble around control analysis `date`"
-#       sh ${enkfscripts}/recenter_ens.sh > ${current_logdir}/recenter_ens_anal.out 2>&1
-#       recenter_done=`cat ${current_logdir}/recenter.log`
-#       if [ $recenter_done == 'yes' ]; then
-#         echo "$analdate recentering enkf analysis completed successfully `date`"
-#       else
-#         echo "$analdate recentering enkf analysis did not complete successfully, exiting `date`"
-#         exit 1
-#       fi
-#
-#       # use increment blending util with alpha=1, beta=0 instead of recentering
-#       #echo "$analdate blend enkf and 3dvar increments `date`"
-#       ## for hybrd cov could use alpha=1, beta=0 here 
-#       #alpha_save=$alpha
-#       #beta_save=$beta
-#       #export alpha=1000
-#       #export beta=0
-#       #sh ${enkfscripts}/blendinc.sh > ${current_logdir}/blendinc.out 2>&1
-#       #blendinc_done=`cat ${current_logdir}/blendinc.log`
-#       #if [ $blendinc_done == 'yes' ]; then
-#       #  echo "$analdate increment blending/recentering completed successfully `date`"
-#       #else
-#       #  echo "$analdate increment blending/recentering did not complete successfully, exiting `date`"
-#       #  exit 1
-#       #fi
-#       #export alpha=$alpha_save
-#       #export beta=$beta_save
-#   fi
-#fi
+if [ $recenter_anal == "true" ]; then
+   if [ $hybgain == "true" ]; then 
+       if [ $alpha -gt 0 ]; then
+          # hybrid gain
+          echo "$analdate blend enkf and 3dvar increments `date`"
+          sh ${enkfscripts}/blendinc.sh > ${current_logdir}/blendinc.out 2>&1
+          blendinc_done=`cat ${current_logdir}/blendinc.log`
+          if [ $blendinc_done == 'yes' ]; then
+            echo "$analdate increment blending/recentering completed successfully `date`"
+          else
+            echo "$analdate increment blending/recentering did not complete successfully, exiting `date`"
+            exit 1
+          fi
+       fi
+   else
+       # hybrid covariance, recenter
+       export fileprefix="sanl"
+       export charnanal="control"
+       echo "$analdate recenter enkf analysis ensemble around control analysis `date`"
+       sh ${enkfscripts}/recenter_ens.sh > ${current_logdir}/recenter_ens_anal.out 2>&1
+       recenter_done=`cat ${current_logdir}/recenter.log`
+       if [ $recenter_done == 'yes' ]; then
+         echo "$analdate recentering enkf analysis completed successfully `date`"
+       else
+         echo "$analdate recentering enkf analysis did not complete successfully, exiting `date`"
+         exit 1
+       fi
+
+       # use increment blending util with alpha=1, beta=0 instead of recentering
+       #echo "$analdate blend enkf and 3dvar increments `date`"
+       ## for hybrd cov could use alpha=1, beta=0 here 
+       #alpha_save=$alpha
+       #beta_save=$beta
+       #export alpha=1000
+       #export beta=0
+       #sh ${enkfscripts}/blendinc.sh > ${current_logdir}/blendinc.out 2>&1
+       #blendinc_done=`cat ${current_logdir}/blendinc.log`
+       #if [ $blendinc_done == 'yes' ]; then
+       #  echo "$analdate increment blending/recentering completed successfully `date`"
+       #else
+       #  echo "$analdate increment blending/recentering did not complete successfully, exiting `date`"
+       #  exit 1
+       #fi
+       #export alpha=$alpha_save
+       #export beta=$beta_save
+   fi
+fi
 
 # compute anal ens mean, blend enkf mean and 3dvar increments, recenter ensemble, taper perts near model top
-export fileprefix="sanl"
-echo "$analdate recenter or blend increments, and taper enkf analysis ens perts near top of model `date`"
-sh ${enkfscripts}/taper_ens.sh > ${current_logdir}/taper_ensperts_anal.out 2>&1
-taper_done=`cat ${current_logdir}/taper.log`
-if [ $taper_done == 'yes' ]; then
-  echo "$analdate recentering, increment blending and tapering enkf analysis ens perts completed successfully `date`"
-else
-  echo "$analdate recentering, increment blending and tapering enkf analysis ens perts did not complete successfully, exiting `date`"
-  exit 1
-fi
+#export fileprefix="sanl"
+#echo "$analdate recenter or blend increments, and taper enkf analysis ens perts near top of model `date`"
+#sh ${enkfscripts}/taper_ens.sh > ${current_logdir}/taper_ensperts_anal.out 2>&1
+#taper_done=`cat ${current_logdir}/taper.log`
+#if [ $taper_done == 'yes' ]; then
+#  echo "$analdate recentering, increment blending and tapering enkf analysis ens perts completed successfully `date`"
+#else
+#  echo "$analdate recentering, increment blending and tapering enkf analysis ens perts did not complete successfully, exiting `date`"
+#  exit 1
+#fi
 
 # for passive (replay) cycling of control forecast, optionally run GSI observer
 # on control forecast background (diag files saved with 'control' suffix)

@@ -8,8 +8,8 @@ recenter_control_wgt=${recenter_control_wgt:-"100"}
 fileprefix=${fileprefix:-"sanl"}
 pushd ${datapath2}
 
-#fh=${FHMIN}
-fh=0
+fh=${FHMIN}
+#fh=0
 while [ $fh -le $FHMAX ]; do
    charfhr="fhr"`printf %02i $fh`
    

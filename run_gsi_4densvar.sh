@@ -848,7 +848,7 @@ fi
 # Save output
 mkdir -p $savdir
 
-cat fort.2* > $savdir/gsistats.${adate}_${charnanal2}
+cat fort.2* > $savdir/gsistats.${adate}_${charnanal2}_${nliteration}
 
 #ls -l
 if [[ "$HXONLY" = "NO" ]]; then
