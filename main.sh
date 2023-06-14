@@ -491,11 +491,11 @@ done # next iteration
 if [ $cold_start == 'false' ]; then
 
 # cleanup
-if [ $fg_only == "true" ]; then
+#if [ $fg_only == "true" ]; then
    if [ $do_cleanup == 'true' ]; then
       sh ${enkfscripts}/clean.sh > ${current_logdir}/clean.out 2>&1
    fi # do_cleanup = true
-fi
+#fi
 
 wait # wait for backgrounded processes to finish
 
