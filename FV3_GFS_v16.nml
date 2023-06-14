@@ -49,8 +49,8 @@
   n_sponge = 42,
   nudge_qv = T,
   nudge_dz = F,
-  tau = 5.0
-  rf_cutoff = 1.e3
+  tau = 0.0
+  rf_cutoff = 10.
   d2_bg_k1 = 0.20
   d2_bg_k2 = 0.0
   d2_bg = 0.
