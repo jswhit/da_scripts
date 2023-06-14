@@ -69,7 +69,7 @@ echo "fdatei=$fdatei fhr=$fhr fdatev=$fdatev"
 gdate0=`echo $gdate | cut -c1-8`
 obs_datapath=${obs_datapath:-/scratch1/NCEPDEV/global/glopara/dump}
 if [ $sixhourlydumps = "YES" ]; then
-   datobs=$obs_datapath/${RUN}.${iy}${im}${id}/${ih}/atmos
+   datobs=$obs_datapath/${RUN}.${iy}${im}${id}/${ih}
 else
    # 6hrly dumps filtered into hourly files by ob time.
    datobs=$obs_datapath/${RUN}hrlyo.${iy}${im}${id}/${ih}
@@ -119,12 +119,14 @@ export NLAT_ENS=$((${LATA_ENS}+2))
 export time_window_max=${time_window_max:-0.5}
 export min_offset=${min_offset:-30}
 export nhr_assimilation=${nhr_assimilation:-1}
+export oberrfact=${oberrfact:-1}
 
 
 SATANGO=${SATANGO:-$savdir/${RUN}.t${hha}z.satang}
 BIASO=${BIASO:-$savdir/${RUN}.t${hha}z.abias}
 BIASOAIR=${BIASOAIR:-$savdir/${RUN}.t${hha}z.abias_air}
 BIASO_PC=${BIASO_PC:-$savdir/${RUN}.t${hha}z.abias_pc}
+BIASO_INT=${BIASO_INT:-$savdir/${RUN}.t${hha}z.abias_int}
 
 lwrite4danl=.false.
 if [[ $beta_s0 > 0.999 ]]; then
@@ -159,7 +161,7 @@ elif [ $ANALINC -eq 1 ]; then
 else
    echo "ANALINC must be 1 or 6"
 fi
-SETUP="verbose=.true.,reduce_diag=.true.,lwrite_peakwt=.true.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=$l4densvar,ens_nstarthr=$FHMIN,iwrtinc=-1,nhr_assimilation=$nhr_assimilation,nhr_obsbin=$nhr_obsbin,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=$lobsdiag_forenkf,lwrite_predterms=.true.,thin4d=$thin4d,lupdqc=$lupdqc,min_offset=$min_offset,offtime_data=.true."
+SETUP="verbose=.true.,reduce_diag=.true.,lwrite_peakwt=.true.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=$l4densvar,ens_nstarthr=$FHMIN,iwrtinc=-1,nhr_assimilation=$nhr_assimilation,nhr_obsbin=$nhr_obsbin,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=$lobsdiag_forenkf,lwrite_predterms=.true.,thin4d=$thin4d,lupdqc=$lupdqc,min_offset=$min_offset,offtime_data=.true.,oberrfact=$oberrfact"
 
 if [[ "$HXONLY" = "YES" ]]; then
    #SETUP="$SETUP,lobserver=.true.,l4dvar=.true." # can't use reduce_diag=T
@@ -172,7 +174,6 @@ if [[ "$HXONLY" != "YES" ]]; then
    else # envar
       # tlnmc on full increment, 4denvar
       #STRONGOPTS="tlnmc_option=3,nstrong=1,nvmodes_keep=48,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
-      #STRONGOPTS="tlnmc_option=3,nstrong=1,nvmodes_keep=48,period_max=1.,period_width=0.5,baldiag_full=.true.,baldiag_inc=.true.,"
       # tlnmc on full increment, 3denvar
       STRONGOPTS="tlnmc_option=2,nstrong=1,nvmodes_keep=48,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
       # balance constraint on 3dvar part of envar increment
@@ -537,7 +538,7 @@ for file in $(awk '{if($1!~"!"){print $1}}' satinfo | sort | uniq); do
    $nln $fixcrtm/${file}.SpcCoeff.bin ./crtm_coeffs/${file}.SpcCoeff.bin
    $nln $fixcrtm/${file}.TauCoeff.bin ./crtm_coeffs/${file}.TauCoeff.bin
 done
-${NLN} ${RTMFIX}/amsua_metop-a_v2.SpcCoeff.bin ./crtm_coeffs/amsua_metop-a_v2.SpcCoeff.bin
+$nln $fixcrtm/amsua_metop-a_v2.SpcCoeff.bin ./crtm_coeffs/amsua_metop-a_v2.SpcCoeff.bin
 
 $nln $fixcrtm/Nalli.IRwater.EmisCoeff.bin   ./crtm_coeffs/Nalli.IRwater.EmisCoeff.bin
 $nln $fixcrtm/NPOESS.IRice.EmisCoeff.bin    ./crtm_coeffs/NPOESS.IRice.EmisCoeff.bin
@@ -780,10 +781,10 @@ fi
 elif [ $ANALINC -eq 1 ]; then
 SIGG06=${SIGG01:-$datges/${ATMPREFIX}_${adate}_fhr01_${charnanal}}
 $nln $SIGG06               ./sigf01
-$nln ./sigf01 ./sigf02
+#$nln ./sigf01 ./sigf02
 SFCG06=${SIGG01:-$datges/${SFCPREFIX}_${adate}_fhr01_${charnanal}}
 $nln $SFCG06               ./sfcf01
-$nln ./sfcf01 ./sfcf02
+#$nln ./sfcf01 ./sfcf02
 else
 echo "ANALINC must be 6 or 1"
 fi
@@ -873,6 +874,7 @@ if [[ "$HXONLY" = "NO" ]]; then
       fi
       $nmv satbias_out $BIASO
       $nmv satbias_pc.out $BIASO_PC
+      $nmv satbias_out.int $BIASO_INT
       if [ -s aircftbias_out ]; then
       $nmv aircftbias_out $BIASOAIR
       fi
