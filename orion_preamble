@@ -2,7 +2,7 @@
 ##SBATCH -q urgent
 #SBATCH -t 02:00:00
 #SBATCH -A gsienkf
-#SBATCH -N 20  
+#SBATCH -N 80  
 #SBATCH --ntasks-per-node=40
 #SBATCH -p orion
 #SBATCH -J C192_hybcov_hourly
@@ -51,7 +51,7 @@ fi
 export fg_proc=$corespernode
 export fg_threads=1 
 export enkf_threads=10
-export gsi_control_threads=4
+export gsi_control_threads=10
 export write_groups=4
 export write_tasks=1 
 export layout="3, 2"
