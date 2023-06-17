@@ -116,17 +116,16 @@ else
     echo "don't run global_cycle (or gcycle)"
    fi
 fi
-#if [ $hr = "04" ] || [ $hr = "10" ] || [ $hr = "16" ] || [ $hr = "22" ]; then
-#   export time_window_max=1.0
-#   export min_offset=60
-#   export nhr_assimilation=2
-#   export CONVINFO=${enkfscripts}/global_convinfo.txt2
-#else
+export nhr_assimilation=2
+if [ $hr = "04" ] || [ $hr = "10" ] || [ $hr = "16" ] || [ $hr = "22" ]; then
+    export time_window_max=1.0
+    export min_offset=60
+    export CONVINFO=${enkfscripts}/global_convinfo.txt2
+else
    export time_window_max=0.5
    export min_offset=30
-   export nhr_assimilation=1
    export CONVINFO=${enkfscripts}/global_convinfo.txt
-#fi
+fi
 
 export PREINP="${RUN}.t${hr}z."
 export PREINP1="${RUN}.t${hrp1}z."

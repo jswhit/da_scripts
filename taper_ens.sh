@@ -11,6 +11,10 @@ if [ $ak_bot -eq 0 ]; then
 fi
 pushd ${datapath2}
 
+analhrs=`echo $enkfstatefhrs | sed 's/,/ /g'`
+
+for nfhr in $analhrs; do
+nfhr=$nhr_anal
 charfhr="fhr"`printf %02i $nhr_anal`
 
 echo "recenter or blend increments, taper ensemble perturbations"
@@ -107,6 +111,8 @@ if [ -s $filename_meanin ]; then
 else
    echo "$filename_meanin missing, skip this time..."
 fi
+
+done # next time
    
 popd
 

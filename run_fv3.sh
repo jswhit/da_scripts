@@ -132,7 +132,11 @@ done
 # create netcdf increment files.
 if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
    cd $restart_dir
-   fh=$nhr_anal
+   if [ $nliteration -eq $nliterations ]; then
+      fh=$ANALINC
+   else
+      fh=0
+   fi
    export increment_file="fv3_increment${fh}.nc"
    if [ $charnanal == "control" ] && [ "$replay_controlfcst" == 'true' ]; then
       export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_ensmean"
@@ -186,7 +190,7 @@ if [ "$cold_start" == "true" ]; then
    iau_inc_files=""
 else
    if [[ $iau_delthrs -eq -1 ]]; then
-      reslatlondynamics="fv3_increment1.nc"
+      reslatlondynamics=$increment_file
       readincrement=T
       iau_offset=-1
       iau_inc_files=""
@@ -198,7 +202,7 @@ else
       reslatlondynamics=""
       readincrement=F
       iau_offset=0
-      iau_inc_files="fv3_increment1.nc"
+      iau_inc_files=$increment_file
    fi
    warm_start=T
    externalic=F
@@ -360,7 +364,7 @@ memuse_verbose:          F
 atmos_nthreads:          ${OMP_NUM_THREADS}
 use_hyper_thread:        F
 ncores_per_node:         ${corespernode}
-restart_interval:        ${FHRESTART}
+restart_interval:        ${FHRESTART} 
 quilting:                .true.
 write_groups:            ${write_groups}
 write_tasks_per_group:   ${write_tasks}
@@ -449,7 +453,7 @@ fh=$FHMIN
 while [ $fh -le $FHMAX ]; do
   charfhr="fhr"`printf %02i $fh`
   charfhr2="f"`printf %03i $fh`
-  if [ $longer_fcst = "YES" ] && [ $fh -eq $FHMAX ]; then
+  if [ $longer_fcst = "YES" ]; then
      /bin/cp -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
   else
      if [ $nliteration -eq $nliterations ]; then
@@ -462,7 +466,7 @@ while [ $fh -le $FHMAX ]; do
      echo "netcdffile missing..."
      exit 1
   fi
-  if [ $longer_fcst = "YES" ] && [ $fh -eq $FHMAX ]; then
+  if [ $longer_fcst = "YES" ]; then
      /bin/cp -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
   else
      if [ $nliteration -eq $nliterations ]; then
@@ -514,16 +518,16 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
    mkdir -p ${datapathp1}/${charnanal}/INPUT_current
    cd RESTART
    ls -l
-   if [ $nhr_anal -eq $FHMAX_FCST ]; then
-      /bin/mv -f fv_core.res.nc atm_stoch.res.nc ${datapathp1}/${charnanal}/INPUT_current
-      tiles="tile1 tile2 tile3 tile4 tile5 tile6"
-      for tile in $tiles; do
-         files="ca_data.res.${tile}.nc fv_core.res.${tile}.nc fv_tracer.res.${tile}.nc fv_srf_wnd.res.${tile}.nc sfc_data.${tile}.nc phy_data.${tile}.nc"
-         for file in $files; do
-             /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT_current
-         done
-      done
-   else
+   #if [ $nhr_anal -eq $FHMAX_FCST ]; then
+   #   /bin/mv -f fv_core.res.nc atm_stoch.res.nc ${datapathp1}/${charnanal}/INPUT_current
+   #   tiles="tile1 tile2 tile3 tile4 tile5 tile6"
+   #   for tile in $tiles; do
+   #      files="ca_data.res.${tile}.nc fv_core.res.${tile}.nc fv_tracer.res.${tile}.nc fv_srf_wnd.res.${tile}.nc sfc_data.${tile}.nc phy_data.${tile}.nc"
+   #      for file in $files; do
+   #          /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT_current
+   #      done
+   #   done
+   #else
       datestring="${yrnext}${monnext}${daynext}.${hrnext}0000."
       for file in ${datestring}*nc; do
          file2=`echo $file | cut -f3-10 -d"."`
@@ -533,7 +537,7 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
            exit 1
          fi
       done
-   fi
+   #fi
    if [ -s  ${datapathp1}/${charnanal}/INPUT_current/ca_data.tile1.nc ]; then
       touch ${datapathp1}/${charnanal}/INPUT_current/ca_data.nc
    fi

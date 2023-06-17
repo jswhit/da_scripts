@@ -6,6 +6,9 @@ export OMP_NUM_THREADS=$enkf_threads
 export OMP_STACKSIZE=512M
 export MKL_NUM_THREADS=1
 
+analhrs=`echo $enkfstatefhrs | sed 's/,/ /g'`
+
+for nfhr in $analhrs; do
 nfhr=$nhr_anal
 charfhr="fhr"`printf %02i $nfhr`
 # check output files.
@@ -18,6 +21,7 @@ while [ $nanal -le $nanals ]; do
       filemissing='yes'
    fi
    nanal=$((nanal+1))
+done
 done
 
 
@@ -44,7 +48,7 @@ cat <<EOF > enkf.nml
   getkf_inflation=$getkf_inflation,letkf_novlocal=$letkf_novlocal,modelspace_vloc=$modelspace_vloc,save_inflation=.false.,
   reducedgrid=${reducedgrid},nlevs=$LEVS,nanals=$nanals,deterministic=$deterministic,imp_physics=$imp_physics,
   lobsdiag_forenkf=.true.,write_spread_diag=.false.,netcdf_diag=.true.,mincorrlength_fact=$mincorrlength_fact,
-  sortinc=$sortinc,nhr_anal=$nhr_anal,nhr_state=$enkfstatefhrs,getkf=$getkf,
+  sortinc=$sortinc,nhr_anal=$enkfstatefhrs,nhr_state=$enkfstatefhrs,getkf=$getkf,fhr_assim=$ANALINC,
   use_correlated_oberrs=${use_correlated_oberrs},use_gfs_ncio=.true.,nccompress=T,paranc=F,write_fv3_incr=${write_fv3_increment},
   adp_anglebc=.true.,angord=4,newpc4pred=.true.,use_edges=.false.,emiss_bc=.true.,biasvar=-500,nobsl_max=$nobsl_max,use_qsatensmean=.true.,
   ${ENKFVARS}

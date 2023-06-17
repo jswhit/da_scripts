@@ -11,7 +11,9 @@ export SIGANL07=${datapath2}/sanl_${analdate}_fhr07_${charnanal}
 export SIGANL08=${datapath2}/sanl_${analdate}_fhr08_${charnanal}
 export SIGANL09=${datapath2}/sanl_${analdate}_fhr09_${charnanal}
 elif [ $ANALINC -eq 1 ]; then
+export SIGANL05=${datapath2}/sanl_${analdate}_fhr00_${charnanal}
 export SIGANL06=${datapath2}/sanl_${analdate}_fhr01_${charnanal}
+export SIGANL07=${datapath2}/sanl_${analdate}_fhr02_${charnanal}
 else
 echo "ANALINC must be 1 or 6"
 exit

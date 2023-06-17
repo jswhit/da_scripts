@@ -26,7 +26,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybcov_hourly750tlnmc2_oberrfact2b"
+export exptname="C${RES}_hybcov_hourly_esmda1"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 
@@ -92,28 +92,20 @@ if [ "$machine" == 'hera' ]; then
    module load wgrib
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'orion' ]; then
+   source $MODULESHOME/init/sh
    export basedir=/work2/noaa/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   #export obs_datapath2=/work/noaa/sfc-perts/gbates/hrlyda_dumps/6hrly
-   #export obs_datapath=/work/noaa/sfc-perts/gbates/hrlyda_dumps/6hrly
    export obs_datapath=/work/noaa/rstprod/dump
-   export obs_datapath2=/work/noaa/rstprod/dump
-   #export obs_datapath2=/work/noaa/global/glopara/dump
-   #export obs_datapath=/work/noaa/global/glopara/dump
    ulimit -s unlimited
    source $MODULESHOME/init/sh
-   module purge
-   module use /apps/contrib/NCEP/libs/hpc-stack/modulefiles/stack
-   module load hpc/1.1.0
-   module load hpc-intel/2018.4
-   module unload mkl/2020.2
-   module load mkl/2018.4
-   module load hpc-impi/2018.4
-   module load python/3.7.5
-   module load hdf5/1.10.6-parallel
+   module use /work/noaa/epic-ps/role-epic-ps/hpc-stack/libs/intel-2022.1.2/modulefiles/stack
+   module load hpc/1.2.0
+   module load hpc-intel/2022.1.2
+   module load hpc-impi/2022.1.2
+   #module load hdf5/1.10.6
    module load wgrib/1.8.0b
-   export PYTHONPATH=/home/jwhitake/.local/lib/python3.7/site-packages
+   export PATH="/work/noaa/gsienkf/whitaker/miniconda3/bin:$PATH"
    export HDF5_DISABLE_VERSION_CHECK=1
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'gaea' ]; then
@@ -211,7 +203,7 @@ export dmesh2=145
 export dmesh3=100
 
 #non-linear ESMDA iterations
-export oberrfact=2 # multiplier for ob error variances
+export oberrfact=1 # multiplier for ob error variances
 export nliterations=$oberrfact
 #export nliterations=1
 
@@ -304,10 +296,9 @@ export LATA=$LATB
 
 export ANALINC=1 # assimilation window length
 
-export FHMIN=1
-export FHMAX=1
+export FHMIN=0
+export FHMAX=2
 export FHOUT=1
-export nhr_anal=$ANALINC # background forecast hour at analysis time
 export FHMAX_LONGER=9
 FHMAXP1=`expr $FHMAX + 1`
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`

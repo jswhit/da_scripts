@@ -152,16 +152,16 @@ if [ $ANALINC -eq 6 ]; then
    nhr_assimilation=6
 elif [ $ANALINC -eq 1 ]; then
    #min_offset=30
-   l4densvar=.false.
+   l4densvar=.true.
    thin4d=.false.
-   lwrite4danl=.false.
+   lwrite4danl=.true.
    nhr_obsbin=1
    #time_window_max=0.5
    #nhr_assimilation=1
 else
    echo "ANALINC must be 1 or 6"
 fi
-SETUP="verbose=.true.,reduce_diag=.true.,lwrite_peakwt=.true.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=$l4densvar,ens_nstarthr=$FHMIN,iwrtinc=-1,nhr_assimilation=$nhr_assimilation,nhr_obsbin=$nhr_obsbin,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=$lobsdiag_forenkf,lwrite_predterms=.true.,thin4d=$thin4d,lupdqc=$lupdqc,min_offset=$min_offset,offtime_data=.true.,oberrfact=$oberrfact"
+SETUP="verbose=.true.,reduce_diag=.true.,lwrite_peakwt=.true.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=$l4densvar,ens_nstarthr=$FHMIN,iwrtinc=-1,nhr_assimilation=$nhr_assimilation,nhr_obsbin=$nhr_obsbin,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=$lobsdiag_forenkf,lwrite_predterms=.true.,thin4d=$thin4d,lupdqc=$lupdqc,min_offset=$min_offset,offtime_data=.true.,oberrfact=$oberrfact,nhr_anal=$enkfstatefhrs,nhr_cycle=$ANALINC,lwrite_sfcanl=.false."
 
 if [[ "$HXONLY" = "YES" ]]; then
    #SETUP="$SETUP,lobserver=.true.,l4dvar=.true." # can't use reduce_diag=T
@@ -173,9 +173,9 @@ if [[ "$HXONLY" != "YES" ]]; then
       SETUP="$SETUP,miter=1,niter(1)=150,niter(2)=0"
    else # envar
       # tlnmc on full increment, 4denvar
-      #STRONGOPTS="tlnmc_option=3,nstrong=1,nvmodes_keep=48,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
+      STRONGOPTS="tlnmc_option=3,nstrong=1,nvmodes_keep=48,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
       # tlnmc on full increment, 3denvar
-      STRONGOPTS="tlnmc_option=2,nstrong=1,nvmodes_keep=48,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
+      #STRONGOPTS="tlnmc_option=2,nstrong=1,nvmodes_keep=48,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
       # balance constraint on 3dvar part of envar increment
       #STRONGOPTS="tlnmc_option=4,nstrong=1,nvmodes_keep=48,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
       # no strong bal constraint
@@ -183,7 +183,7 @@ if [[ "$HXONLY" != "YES" ]]; then
          STRONGOPTS="tlnmc_option=0,nstrong=0,nvmodes_keep=0,baldiag_full=.false.,baldiag_inc=.false.,"
       fi
       if [ $NOOUTERLOOP == "YES" ]; then
-         SETUP="$SETUP,miter=1,niter(1)=150,niter(2)=0"
+         SETUP="$SETUP,miter=1,niter(1)=1,niter(2)=0"
       else
          SETUP="$SETUP,miter=2,niter(1)=100,niter(2)=100"
       fi
@@ -779,12 +779,18 @@ $nln $SIGG08               ./sigf08
 fi
 
 elif [ $ANALINC -eq 1 ]; then
+SIGG05=${SIGG01:-$datges/${ATMPREFIX}_${adate}_fhr00_${charnanal}}
+$nln $SIGG05               ./sigf00
 SIGG06=${SIGG01:-$datges/${ATMPREFIX}_${adate}_fhr01_${charnanal}}
 $nln $SIGG06               ./sigf01
-#$nln ./sigf01 ./sigf02
+SIGG07=${SIGG01:-$datges/${ATMPREFIX}_${adate}_fhr02_${charnanal}}
+$nln $SIGG07               ./sigf02
+SFCG05=${SIGG01:-$datges/${SFCPREFIX}_${adate}_fhr00_${charnanal}}
+$nln $SFCG05               ./sfcf00
 SFCG06=${SIGG01:-$datges/${SFCPREFIX}_${adate}_fhr01_${charnanal}}
 $nln $SFCG06               ./sfcf01
-#$nln ./sfcf01 ./sfcf02
+SFCG07=${SIGG01:-$datges/${SFCPREFIX}_${adate}_fhr02_${charnanal}}
+$nln $SFCG07               ./sfcf02
 else
 echo "ANALINC must be 6 or 1"
 fi
@@ -853,24 +859,12 @@ cat fort.2* > $savdir/gsistats.${adate}_${charnanal2}_${nliteration}
 #ls -l
 if [[ "$HXONLY" = "NO" ]]; then
    if [ -s ./siganl ] && [ -s ./satbias_out ]; then
-      if [ -s ./siga03 ]; then
-         $nmv siga03          $SIGANL03
-      fi
-      if [ -s ./siga04 ]; then
-         $nmv siga04          $SIGANL04
-      fi
-      if [ -s ./siga05 ]; then
-         $nmv siga05          $SIGANL05
+      if [ -s ./siga00 ]; then
+         $nmv siga00          $SIGANL05
       fi
       $nmv siganl             $SIGANL06
-      if [ -s ./siga07 ]; then
-          $nmv siga07         $SIGANL07
-      fi
-      if [ -s ./siga08 ]; then
-         $nmv siga08          $SIGANL08
-      fi
-      if [ -s ./siga09 ]; then
-         $nmv siga09          $SIGANL09
+      if [ -s ./siga02 ]; then
+          $nmv siga02         $SIGANL07
       fi
       $nmv satbias_out $BIASO
       $nmv satbias_pc.out $BIASO_PC
