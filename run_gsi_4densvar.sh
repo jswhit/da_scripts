@@ -183,7 +183,7 @@ if [[ "$HXONLY" != "YES" ]]; then
          STRONGOPTS="tlnmc_option=0,nstrong=0,nvmodes_keep=0,baldiag_full=.false.,baldiag_inc=.false.,"
       fi
       if [ $NOOUTERLOOP == "YES" ]; then
-         SETUP="$SETUP,miter=1,niter(1)=1,niter(2)=0"
+         SETUP="$SETUP,miter=1,niter(1)=150,niter(2)=0"
       else
          SETUP="$SETUP,miter=2,niter(1)=100,niter(2)=100"
       fi
