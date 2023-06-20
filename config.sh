@@ -26,7 +26,7 @@ export beta=1000 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_hybcov_hourly_esmda1"
+export exptname="C${RES}_hybcov_hourly_esmda2"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 
@@ -47,7 +47,7 @@ export replay_run_observer='true' # run observer on replay control forecast
 # YYYYMMDDHH analysis date string to see if
 # full ensemble should be saved to HPSS (returns 0 if 
 # HPSS save should be done)
-if [ $machine == "orion" ]; then
+if [ $machine == "orion" ] || [ $machine == "hercules" ]; then
    export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
    export save_hpss="false"
 else
@@ -64,7 +64,7 @@ export recenter_fcst="false"
 #export cleanup_controlanl='false'
 #export cleanup_anal='false'
 #export recenter_anal="false"
-#export cleanup_fg='false'
+export cleanup_fg='false'
 #export resubmit='false'
 
 source $MODULESHOME/init/sh
@@ -108,6 +108,22 @@ elif [ "$machine" == 'orion' ]; then
    export PATH="/work/noaa/gsienkf/whitaker/miniconda3/bin:$PATH"
    export HDF5_DISABLE_VERSION_CHECK=1
    export WGRIB=`which wgrib`
+elif [ $machine == "hercules" ]; then
+   source $MODULESHOME/init/sh
+   export basedir=/work2/noaa/gsienkf/${USER}
+   export datadir=$basedir
+   export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
+   export obs_datapath=/work/noaa/rstprod/dump
+   ulimit -s unlimited
+   source $MODULESHOME/init/sh
+   module use /work/noaa/epic-ps/role-epic-ps/spack-stack/spack-stack-1.4.0-hercules/envs/unified-env-v2/install/modulefiles/Core
+   module load stack-intel/2021.7.1
+   module load stack-intel-oneapi-mpi/2021.7.1
+   module load grib-util
+   module load parallelio
+   export PATH="/work/noaa/gsienkf/whitaker/miniconda3/bin:$PATH"
+   export HDF5_DISABLE_VERSION_CHECK=1
+   export WGRIB=`which wgrib`
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f2/dev/${USER}
    export datadir=/lustre/f2/scratch/${USER}
@@ -136,7 +152,7 @@ elif [ "$machine" == 'gaea' ]; then
    export HDF5_DISABLE_VERSION_CHECK=1
    export WGRIB=`which wgrib`
 else
-   echo "machine must be 'hera', 'orion' or 'gaea' got $machine"
+   echo "machine must be 'hera', 'orion', 'hercules' or 'gaea' got $machine"
    exit 1
 fi
 export datapath="${datadir}/${exptname}"
@@ -421,7 +437,7 @@ if [ "$machine" == 'hera' ]; then
    export enkfbin=${execdir}/global_enkf
    export gsiexec=${execdir}/global_gsi
    export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
-elif [ "$machine" == 'orion' ]; then
+elif [ "$machine" == 'orion' ] || [ $machine == "hercules" ]; then
    export FIXDIR=/work/noaa/nems/emc.nemspara/RT/NEMSfv3gfs/input-data-20220414
    #export FIXDIR_gcyc=$FIXDIR
    export FIXDIR_gcyc=/work/noaa/global/glopara/fix_NEW # for GFSv16
