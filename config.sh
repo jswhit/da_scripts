@@ -58,13 +58,13 @@ export recenter_anal="true"
 export recenter_fcst="false"
 
 # override values from above for debugging.
-#export cleanup_ensmean='false'
+export cleanup_ensmean='false'
 #export recenter_fcst="false"
 #export cleanup_observer='false'
 #export cleanup_controlanl='false'
 #export cleanup_anal='false'
 #export recenter_anal="false"
-export cleanup_fg='false'
+#export cleanup_fg='false'
 #export resubmit='false'
 
 source $MODULESHOME/init/sh
@@ -117,10 +117,13 @@ elif [ $machine == "hercules" ]; then
    ulimit -s unlimited
    source $MODULESHOME/init/sh
    module use /work/noaa/epic-ps/role-epic-ps/spack-stack/spack-stack-1.4.0-hercules/envs/unified-env-v2/install/modulefiles/Core
+   module use /work/noaa/epic-ps/role-epic-ps/spack-stack/spack-stack-1.4.0-hercules/envs/unified-env-v2/install/modulefiles/intel-oneapi-mpi/2021.7.1/intel/2021.7.1
    module load stack-intel/2021.7.1
    module load stack-intel-oneapi-mpi/2021.7.1
+   module load intel-oneapi-mkl/2022.2.1
    module load grib-util
    module load parallelio
+   module load bufr
    export PATH="/work/noaa/gsienkf/whitaker/miniconda3/bin:$PATH"
    export HDF5_DISABLE_VERSION_CHECK=1
    export WGRIB=`which wgrib`
