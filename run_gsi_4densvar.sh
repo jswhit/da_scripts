@@ -550,7 +550,8 @@ $nln $fixcrtm/NPOESS.VISsnow.EmisCoeff.bin  ./crtm_coeffs/NPOESS.VISsnow.EmisCoe
 $nln $fixcrtm/NPOESS.VISwater.EmisCoeff.bin ./crtm_coeffs/NPOESS.VISwater.EmisCoeff.bin
 $nln $fixcrtm/FASTEM6.MWwater.EmisCoeff.bin ./crtm_coeffs/FASTEM6.MWwater.EmisCoeff.bin
 $nln $fixcrtm/AerosolCoeff.bin              ./crtm_coeffs/AerosolCoeff.bin
-$nln $fixcrtm/CloudCoeff.bin                ./crtm_coeffs/CloudCoeff.bin
+#$nln $fixcrtm/CloudCoeff.bin                ./crtm_coeffs/CloudCoeff.bin
+$nln $fixcrtm/CloudCoeff.GFDLFV3.-109z-1.bin ./crtm_coeffs/CloudCoeff.bin
 
 # link observational data to $tmpdir
 if [[ ! -s $datobs/${prefix_obs}.prepbufr ]]; then
@@ -837,6 +838,7 @@ ls -l
 echo "Time before GSI `date` "
 export PGM=$tmpdir/gsi.x
 export FORT_BUFFERED=TRUE
+ldd $PGM
 ${enkfscripts}/runmpi
 #rc=$?
 #if [[ $rc -ne 0 ]];then

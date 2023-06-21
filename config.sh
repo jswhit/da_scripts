@@ -58,7 +58,7 @@ export recenter_anal="true"
 export recenter_fcst="false"
 
 # override values from above for debugging.
-#export cleanup_ensmean='false'
+export cleanup_ensmean='false'
 #export recenter_fcst="false"
 #export cleanup_observer='false'
 #export cleanup_controlanl='false'
@@ -124,6 +124,14 @@ elif [ $machine == "hercules" ]; then
    module load grib-util
    module load parallelio
    module load bufr
+   module load crtm
+   #module use /work/noaa/epic-ps/role-epic-ps/hpc-stack/libs/intel-2022.1.2_hrcs/modulefiles/stack
+   #module load hpc
+   #module load hpc-intel-oneapi-compilers
+   #module load hpc-intel-oneapi-mpi
+   #module load intel-oneapi-mkl
+   #module load grib-util
+   #export CRTM_FIX=/work/noaa/epic-ps/role-epic-ps/spack-stack/spack-stack-1.4.0-hercules/envs/unified-env-v2/install/intel/2021.7.1/crtm-fix-2.4.0_emc-hfdryur/fix
    export PATH="/work/noaa/gsienkf/whitaker/miniconda3/bin:$PATH"
    export HDF5_DISABLE_VERSION_CHECK=1
    export WGRIB=`which wgrib`
@@ -451,6 +459,9 @@ elif [ "$machine" == 'orion' ] || [ $machine == "hercules" ]; then
    export gsipath=/work/noaa/gsienkf/whitaker/GSI
    export fixgsi=${gsipath}/fix
    export fixcrtm=$fv3gfspath/crtm/crtm_v2.3.0
+   if [ $machine == "hercules" ]; then
+      export fixcrtm=$CRTM_FIX
+   fi
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export gsiexec=${execdir}/global_gsi

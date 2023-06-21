@@ -4,7 +4,7 @@
 #SBATCH -A gsienkf
 #SBATCH -N 80  
 #SBATCH --ntasks-per-node=40
-#SBATCH -p orion
+#SBATCH -p hercules
 #SBATCH -J C192_hybcov_hourly
 #SBATCH -e C192_hybcov_hourly.err
 #SBATCH -o C192_hybcov_hourly.out
