@@ -498,7 +498,7 @@ if [ $cold_start == 'false' ]; then
 
 wait # wait for backgrounded processes to finish
 
-if [ $fg_only == "true" ]; then
+#if [ $fg_only == "true" ]; then
    # only save full ensemble data to hpss if checkdate.py returns 0
    # a subset will be saved if save_hpss_subset="true" and save_hpss="true"
    date_check=`python ${homedir}/checkdate.py ${analdate}`
@@ -510,10 +510,10 @@ if [ $fg_only == "true" ]; then
    cd $homedir
    if [ $save_hpss == 'true' ]; then
       cat ${machine}_preamble_hpss hpss.sh > job_hpss.sh
+      sbatch --export=ALL job_hpss.sh
+      #sbatch --export=machine=${machine},analdate=${analdate},datapath2=${datapath2},hsidir=${hsidir},save_hpss_full=${save_hpss_full},save_hpss_subset=${save_hpss_subset} job_hpss.sh
    fi
-   sbatch --export=ALL job_hpss.sh
-   #sbatch --export=machine=${machine},analdate=${analdate},datapath2=${datapath2},hsidir=${hsidir},save_hpss_full=${save_hpss_full},save_hpss_subset=${save_hpss_subset} job_hpss.sh
-fi
+#fi
 
 fi # skip to here if cold_start = true
 
