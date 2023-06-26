@@ -58,7 +58,7 @@ export recenter_anal="true"
 export recenter_fcst="false"
 
 # override values from above for debugging.
-export cleanup_ensmean='false'
+#export cleanup_ensmean='false'
 #export recenter_fcst="false"
 #export cleanup_observer='false'
 #export cleanup_controlanl='false'
@@ -66,6 +66,7 @@ export cleanup_ensmean='false'
 #export recenter_anal="false"
 #export cleanup_fg='false'
 #export resubmit='false'
+#export do_cleanup='false' # if true, create tar files, delete *mem* files.
 
 source $MODULESHOME/init/sh
 if [ "$machine" == 'hera' ]; then
@@ -105,6 +106,16 @@ elif [ "$machine" == 'orion' ]; then
    module load hpc-impi/2022.1.2
    #module load hdf5/1.10.6
    module load wgrib/1.8.0b
+   module load nco
+   #module use /work/noaa/epic-ps/role-epic-ps/spack-stack/spack-stack-1.4.0/envs/unified-env-v2/install/modulefiles/Core
+   #module use /work/noaa/epic-ps/role-epic-ps/spack-stack/spack-stack-1.4.0/envs/unified-env-v2/install/modulefiles/intel-oneapi-mpi/2021.5.1/intel/2022.0.2
+   #module load stack-intel/2022.0.2
+   #module load stack-intel-oneapi-mpi/2021.5.1
+   #module load mkl/2020.2
+   #module load grib-util
+   #module load parallelio
+   #module load bufr
+   #module load crtm
    export PATH="/work/noaa/gsienkf/whitaker/miniconda3/bin:$PATH"
    export HDF5_DISABLE_VERSION_CHECK=1
    export WGRIB=`which wgrib`
@@ -230,7 +241,7 @@ export dmesh2=145
 export dmesh3=100
 
 #non-linear ESMDA iterations
-export oberrfact=1 # multiplier for ob error variances
+export oberrfact=2 # multiplier for ob error variances
 export nliterations=$oberrfact
 #export nliterations=1
 
@@ -326,7 +337,7 @@ export ANALINC=1 # assimilation window length
 export FHMIN=0
 export FHMAX=2
 export FHOUT=1
-export FHMAX_LONGER=9
+export FHMAX_LONGER=12
 FHMAXP1=`expr $FHMAX + 1`
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
 export iau_delthrs=-1 # 1 for IAU on, -1 for IAU off

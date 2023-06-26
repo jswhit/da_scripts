@@ -11,8 +11,9 @@ fi
 
 ulimit -s unlimited
 
-# only copy restarts for last outer iteration
-if [ $nliteration -ne $nliterations ]; then
+# only copy restarts for last two outer iterations
+nliterationsm1=$((nliterations-1))
+if [ $nliteration -lt $nliterationsm1 ]; then
     dont_copy_restart=1
 else
     unset dont_copy_restart
@@ -77,6 +78,16 @@ sed -i -e "s/FHOUT/${FHOUT}/g" diag_table
 /bin/rm -rf RESTART
 mkdir -p RESTART
 
+# copy restarts from previous cycle to use for nonlinear iterations for next cycle
+if [ $nliteration -eq 1 ] && [ $cold_start == "false" ]; then
+   /bin/rm -rf ${datapathp1}/${charnanal}/INPUT_prev
+   mkdir -p ${datapathp1}/${charnanal}/INPUT_prev
+   /bin/cp -f INPUT_current/*tile*nc ${datapathp1}/${charnanal}/INPUT_prev
+   /bin/cp -f INPUT_current/atm_stoch.res.nc ${datapathp1}/${charnanal}/INPUT_prev
+   /bin/cp -f INPUT_current/fv_core.res.nc ${datapathp1}/${charnanal}/INPUT_prev
+   /bin/cp -f INPUT_current/ca_data.nc ${datapathp1}/${charnanal}/INPUT_prev
+fi
+
 if [ $nliteration -eq $nliterations ]; then
    restart_dir="INPUT_current"
    if [ $cold_start == "true" ]; then
@@ -136,6 +147,13 @@ if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
       fh=$ANALINC
    else
       fh=0
+      if [ $nliteration -eq 1 ]; then
+        #if [ $nliterations -gt 2 ]; then
+           /bin/cp -f "${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}" "${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}.orig"
+        #else
+        #   /bin/ln -fs "${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}" "${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}.orig"
+        #fi
+      fi
    fi
    export increment_file="fv3_increment${fh}.nc"
    if [ $charnanal == "control" ] && [ "$replay_controlfcst" == 'true' ]; then
@@ -143,7 +161,11 @@ if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
       export fgfile="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}.chgres"
    else
       export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_${charnanal}"
-      export fgfile="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}"
+      if [ $fh -eq 0 ]; then
+         export fgfile="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}.orig"
+      else
+         export fgfile="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}"
+      fi
    fi
    echo "create ${increment_file}"
    /bin/rm -f ${increment_file}
@@ -154,16 +176,20 @@ if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
       echo "problem creating ${increment_file}, stopping .."
       exit 1
    fi
-   #if [[ -s "fv3_increment1.nc" ]] && [[ -s "fv3_increment2.nc" ]]; then
-   #   echo "both fv3_increment1.nc and fv3_increment2.nc exist, compute average of two"
-   #   nces -O fv3_increment1.nc fv3_increment2.nc fv3_increment12.nc
-   #   if [ $? -eq 0 ] && [ -s fv3_increment12.nc ]; then
-   #      echo "use average increment (over-write fv3_increment1.nc)" 
-   #      #/bin/mv -f fv3_increment1.nc fv3_increment1.nc.save
-   #      /bin/mv -f fv3_increment12.nc fv3_increment1.nc
-   #      /bin/rm -f fv3_increment2.nc
-   #   fi
-   !fi
+   # save increment file to INPUT_prev directory for next analysis time.
+   if [ $fh -eq $ANALINC ]; then
+      /bin/cp -f ${increment_file} ${datapathp1}/${charnanal}/INPUT_prev
+   fi
+   # add two increments if both exist 
+   if [[ -s "fv3_increment1.nc" ]] && [[ -s "fv3_increment0.nc" ]]; then
+       echo "both fv3_increment0.nc and fv3_increment1.nc exist, sum them"
+       ncbo --op_typ='+' fv3_increment1.nc fv3_increment0.nc fv3_increment01.nc
+       if [ $? -ne 0 -o ! -s fv3_increment01.nc ]; then
+         echo "problem creating fv3_increment01.nc, stopping .."
+         exit 1
+       fi
+       /bin/mv -f fv3_increment01.nc fv3_increment0.nc 
+   fi
    cd ..
 else
    if [ $cold_start == "false" ] ; then
@@ -265,6 +291,11 @@ else
 fi
 
 ls -l 
+
+# clean up existing sfg* files if more than one iteration and not at last iteration
+if [ $nliteration -lt $nliterations ] && [ $nliterations -gt 1 ]; then
+    /bin/rm -f "${datapath2}/sfg_${analdate}_fhr0*_${charnanal}"
+fi
 
 #FHRESTART="$ANALINC -1"
 FHRESTART=$ANALINC
@@ -506,38 +537,36 @@ fi
 /bin/rm -f phy*nc dyn*nc
 
 ls -l *tile*nc
-# copy restarts from previous cycle to use for nonlinear iterations for next cycle
-if [ $nliteration -eq 1 ]; then
-   mkdir -p ${datapathp1}/${charnanal}/INPUT_prev
-   /bin/cp -R INPUT/* ${datapathp1}/${charnanal}/INPUT_prev
-fi
 if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
    ls -l RESTART
+   # at last iteration,
    # copy restart file to INPUT directory for next analysis time.
-   /bin/rm -rf ${datapathp1}/${charnanal}/RESTART ${datapathp1}/${charnanal}/INPUT_current
-   mkdir -p ${datapathp1}/${charnanal}/INPUT_current
+   # otherwise overwrite restarts in current INPUT directory
+   # NOTE: this logic only works for nliterations =1 or 2
+   if [ $nliteration -eq $nliterations ]; then
+      DATOUTr=${datapathp1}/${charnanal}/INPUT_current
+      /bin/rm -rf ${datapathp1}/${charnanal}/RESTART $DATOUTr
+      datestring="${yrnext}${monnext}${daynext}.${hrnext}0000."
+   elif [ $nliteration -eq $nliterationsm1 ]; then
+      DATOUTr=${datapath2}/${charnanal}/INPUT_current
+      datestring="${year}${mon}${day}.${hour}0000."
+   else
+      # TODO: use restart file from previous analysis timm
+      # calculate increment relative to origin sfg*fhr00* file
+      echo "nliterations must be <= 2"
+      exit 1
+   fi
+   mkdir -p $DATOUTr
    cd RESTART
    ls -l
-   #if [ $nhr_anal -eq $FHMAX_FCST ]; then
-   #   /bin/mv -f fv_core.res.nc atm_stoch.res.nc ${datapathp1}/${charnanal}/INPUT_current
-   #   tiles="tile1 tile2 tile3 tile4 tile5 tile6"
-   #   for tile in $tiles; do
-   #      files="ca_data.res.${tile}.nc fv_core.res.${tile}.nc fv_tracer.res.${tile}.nc fv_srf_wnd.res.${tile}.nc sfc_data.${tile}.nc phy_data.${tile}.nc"
-   #      for file in $files; do
-   #          /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT_current
-   #      done
-   #   done
-   #else
-      datestring="${yrnext}${monnext}${daynext}.${hrnext}0000."
-      for file in ${datestring}*nc; do
-         file2=`echo $file | cut -f3-10 -d"."`
-         /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT_current/$file2
-         if [ $? -ne 0 ]; then
-           echo "restart file missing..."
-           exit 1
-         fi
-      done
-   #fi
+   for file in ${datestring}*nc; do
+      file2=`echo $file | cut -f3-10 -d"."`
+      /bin/mv -f $file $DATOUTr/$file2
+      if [ $? -ne 0 ]; then
+        echo "restart file missing..."
+        exit 1
+      fi
+   done
    if [ -s  ${datapathp1}/${charnanal}/INPUT_current/ca_data.tile1.nc ]; then
       touch ${datapathp1}/${charnanal}/INPUT_current/ca_data.nc
    fi
