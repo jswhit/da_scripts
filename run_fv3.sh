@@ -79,7 +79,7 @@ sed -i -e "s/FHOUT/${FHOUT}/g" diag_table
 mkdir -p RESTART
 
 # copy restarts from previous cycle to use for nonlinear iterations for next cycle
-if [ $nliteration -eq 1 ] && [ $cold_start == "false" ]; then
+if [ $nliteration -eq 1 ] && [ $nliterations -gt 1 ] && [ $cold_start == "false" ]; then
    /bin/rm -rf ${datapathp1}/${charnanal}/INPUT_prev
    mkdir -p ${datapathp1}/${charnanal}/INPUT_prev
    /bin/cp -f INPUT_current/*tile*nc ${datapathp1}/${charnanal}/INPUT_prev
@@ -177,7 +177,7 @@ if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
       exit 1
    fi
    # save increment file to INPUT_prev directory for next analysis time.
-   if [ $fh -eq $ANALINC ]; then
+   if [ $fh -eq $ANALINC ] && [ $nliterations -gt 1 ]; then
       /bin/cp -f ${increment_file} ${datapathp1}/${charnanal}/INPUT_prev
    fi
    # add two increments if both exist 
