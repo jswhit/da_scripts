@@ -58,7 +58,7 @@ export recenter_anal="true"
 export recenter_fcst="false"
 
 # override values from above for debugging.
-#export cleanup_ensmean='false'
+export cleanup_ensmean='false'
 #export recenter_fcst="false"
 #export cleanup_observer='false'
 #export cleanup_controlanl='false'
@@ -86,6 +86,8 @@ if [ "$machine" == 'hera' ]; then
    module load hpc-impi/2022.1.2
    module load hdf5/1.12.2
    module load netcdf/4.7.4
+   module load crtm
+   module load nco
    #export LD_LIBRARY_PATH="/scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/intel-2022.1.2/zstd/1.5.0/lib:${LD_LIBRARY_PATH}"
    #module load pio/2.5.2
    #module load esmf/8_2_0_beta_snapshot_14
@@ -241,9 +243,9 @@ export dmesh2=145
 export dmesh3=100
 
 #non-linear ESMDA iterations
-export oberrfact=2 # multiplier for ob error variances
-export nliterations=$oberrfact
-#export nliterations=1
+export oberrfact=1 # multiplier for ob error variances
+#export nliterations=$oberrfact
+export nliterations=1
 
 # stochastic physics parameters.
 export DO_SPPT=T
@@ -341,8 +343,7 @@ export FHMAX_LONGER=12
 FHMAXP1=`expr $FHMAX + 1`
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
 export iau_delthrs=-1 # 1 for IAU on, -1 for IAU off
-#export iau_delthrs=1 # 1 for IAU on, -1 for IAU off
-export iau_fhrs=0.5
+export iau_fhrs=1
 
 # parameters to control tapering of analysis ens perts at top of model
 export ak_bot=500
@@ -454,7 +455,8 @@ if [ "$machine" == 'hera' ]; then
    export gsipath=${basedir}/gsi/GSI
    #export gsipath=/scratch1/NCEPDEV/global/glopara/git/global-workflow/gfsv16b/sorc/gsi.fd
    export fixgsi=${gsipath}/fix
-   export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0
+   #export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0
+   export fixcrtm=$CRTM_FIX
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export gsiexec=${execdir}/global_gsi

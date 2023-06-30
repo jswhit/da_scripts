@@ -1,9 +1,9 @@
 #!/bin/sh
 ##SBATCH -q debug
-#SBATCH -t 02:00:00
+#SBATCH -t 03:00:00
 #SBATCH -A ome      
 ##SBATCH -A isp-1
-#SBATCH -N 80    
+#SBATCH -N 40    
 #SBATCH -J C192_hybcov_hourly
 #SBATCH -e C192_hybcov_hourly.err
 #SBATCH -o C192_hybcov_hourly.out
@@ -51,7 +51,7 @@ fi
 export fg_proc=$corespernode 
 export fg_threads=1
 export enkf_threads=10 
-export gsi_control_threads=20
+export gsi_control_threads=8
 export write_groups=4
 # 40 cores per node 
 export write_tasks=1 

@@ -120,11 +120,9 @@ export nhr_assimilation=2
 if [ $hr = "04" ] || [ $hr = "10" ] || [ $hr = "16" ] || [ $hr = "22" ]; then
     export time_window_max=1.0
     export min_offset=60
-    export CONVINFO=${enkfscripts}/global_convinfo.txt2
 else
    export time_window_max=0.5
    export min_offset=30
-   export CONVINFO=${enkfscripts}/global_convinfo.txt
 fi
 
 export PREINP="${RUN}.t${hr}z."
@@ -137,6 +135,26 @@ if [ $cold_start == 'true' ]; then
    export nliterations=1
 fi
 while [ $nliteration -le $nliterations ]; do
+
+if [ $nliterations -eq 2 ]; then
+   if [ $nliteration -eq 1 ]; then
+     export oberrfact=3
+     export analpertwtnh=0.0
+     export analpertwtsh=0.0
+     export analpertwttr=0.0
+     export analpertwtnh_rtpp=0.5
+     export analpertwtsh_rtpp=0.5
+     export analpertwttr_rtpp=0.5
+   else
+     export oberrfact="1.5"
+     export analpertwtnh=0.9
+     export analpertwtsh=0.9
+     export analpertwttr=0.9
+     export analpertwtnh_rtpp=0.
+     export analpertwtsh_rtpp=0.
+     export analpertwttr_rtpp=0.
+   fi
+fi
 
 echo "nonlinear iteration $nliteration out of $nliterations"
 
