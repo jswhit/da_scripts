@@ -19,6 +19,7 @@ export OMP_STACKSIZE=${OMP_STACKSIZE:-256M}
 
 # Set experiment name and analysis date
 adate=${analdate:-2010081900}
+obdate=${obdate:-$adate}
 adatem1=${analdatem1:-2010081900}
 nens=${nanals:-80}
 
@@ -53,11 +54,10 @@ charnanal2=${charnanal2:-$charnanal}
 # for guess and observation data files
 gdate=`${incdate} $adate -${ANALINC}`
 hha=`echo $adate | cut -c9-10`
-hham1=`echo $analdatem1 | cut -c9-10`
+hho=`echo $obdate | cut -c9-10`
 hhg=`echo $gdate | cut -c9-10`
 RUN=${RUN:-gdas}
-prefix_obs=${RUN}.t${hha}z
-prefix_obsm1=${RUN}.t${hham1}z
+prefix_obs=${RUN}.t${hho}z
 prefix_tbc=${RUN}.t${hhg}z
 suffix=tm00.bufr_d
 
@@ -65,10 +65,11 @@ datges=${datapath2:-/lfs1/projects/fim/whitaker/gfsenkf_test/$adate}
 datgesm1=${datapathm1:-/lfs1/projects/fim/whitaker/gfsenkf_test/$gdate}
 adate0=`echo $adate | cut -c1-8`
 echo "adate = $adate"
-iy=`echo $adate | cut -c1-4`
-im=`echo $adate | cut -c5-6`
-id=`echo $adate | cut -c7-8`
-ih=`echo $adate | cut -c9-10`
+echo "obdate = $obdate"
+iy=`echo $obdate | cut -c1-4`
+im=`echo $obdate | cut -c5-6`
+id=`echo $obdate | cut -c7-8`
+ih=`echo $obdate | cut -c9-10`
 echo "iy,im,id,ih = $iy $im $id $ih"
 date_fhour=`$python ${enkfscripts}/getidate.py ${datges}/${SFCPREFIX}_${adate}_fhr03_${charnanal}`
 fdatei=`echo $date_fhour | cut -f1 -d " "`

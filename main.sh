@@ -93,9 +93,9 @@ if [ $hr = "03" ] || [ $hr = "09" ] || [ $hr = "15" ] || [ $hr = "21" ]; then
      echo "no longer forecast extension"
   else
      # only run out to FHMAX_LONGER at 03 and 15, just run to 9-h at 09 and 21.
-     if [ $hr = "09" ] || [ $hr = "21" ]; then
-        export FHMAX_LONGER=9 
-     fi
+     #if [ $hr = "09" ] || [ $hr = "21" ]; then
+     #   export FHMAX_LONGER=9 
+     #fi
      export nanals2=80
      echo "will run $nanals2 members out to hour $FHMAX_LONGER"
   fi
@@ -301,9 +301,9 @@ if [ $write_ensmean == ".false." ]; then
    echo "$analdate done computing ensemble mean analyses `date`"
 fi
 
-if [ $analdate == $analdate_end ]; then
-  exit
-fi
+#if [ $analdate == $analdate_end ]; then
+#  exit
+#fi
 
 # blend enkf mean and 3dvar increments, recenter ensemble
 if [ $recenter_anal == "true" ]; then
@@ -446,7 +446,7 @@ if [ $replay_controlfcst == 'true' ]; then
     fi
 fi
 
-if [ $fg_only == "true" ]; then
+#if [ $fg_only == "true" ]; then
    echo "$analdate run enkf ens first guess `date`"
    sh ${enkfscripts}/run_fg_ens.sh > ${current_logdir}/run_fg_ens.out  2>&1
    ens_done=`cat ${current_logdir}/run_fg_ens.log`
@@ -456,20 +456,20 @@ if [ $fg_only == "true" ]; then
      echo "$analdate enkf first-guess did not complete successfully, exiting `date`"
      exit 1
    fi
-fi
+#fi
 
 if [ $cold_start == 'false' ]; then
 
 # cleanup
-if [ $fg_only == "true" ]; then
+#if [ $fg_only == "true" ]; then
    if [ $do_cleanup == 'true' ]; then
       sh ${enkfscripts}/clean.sh > ${current_logdir}/clean.out 2>&1
    fi # do_cleanup = true
-fi
+#fi
 
 wait # wait for backgrounded processes to finish
 
-if [ $fg_only == "true" ]; then
+#if [ $fg_only == "true" ]; then
    # only save full ensemble data to hpss if checkdate.py returns 0
    # a subset will be saved if save_hpss_subset="true" and save_hpss="true"
    date_check=`python ${homedir}/checkdate.py ${analdate}`
@@ -484,16 +484,16 @@ if [ $fg_only == "true" ]; then
    fi
    sbatch --export=ALL job_hpss.sh
    #sbatch --export=machine=${machine},analdate=${analdate},datapath2=${datapath2},hsidir=${hsidir},save_hpss_full=${save_hpss_full},save_hpss_subset=${save_hpss_subset} job_hpss.sh
-fi
+#fi
 
 fi # skip to here if cold_start = true
 
 echo "$analdate all done"
 
 # next analdate: increment by $ANALINC
-if [ $fg_only == 'true' ]; then
+#if [ $fg_only == 'true' ]; then
    export analdate=`${incdate} $analdate $ANALINC`
-fi
+#fi
 
 echo "export analdate=${analdate}" > $startupenv
 echo "export analdate_end=${analdate_end}" >> $startupenv
