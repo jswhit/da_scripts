@@ -392,11 +392,13 @@ if [ -s $datapath2/sfg2_${analdate}_fhr06_ensmean ]; then
    export SFCPREFIX='bfg2'
    analdatem1_save=$analdatem1
    datapathm1_save=$datapathm1
+   RUN_save=$RUN
    # use bias correction from analysis 4 hours ago (fcst was initialized 3 hours ago)
    export analdatem1=`${incdate} $analdate -4`
    export hrm1=`echo $analdatem1 | cut -c9-10`
    export datapathm1="${datapath}/${analdatem1}/"
    export PREINPm1="gdas.t${hrm1}z."
+   export RUN=gdas
    echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
    sh ${enkfscripts}/run_gsiobserver.sh > ${current_logdir}/run_gsiobserver2.out 2>&1
    # once observer has completed, check log files.
@@ -427,6 +429,7 @@ if [ -s $datapath2/sfg2_${analdate}_fhr06_ensmean ]; then
    export CONVINFO=$CONVINFO_SAVE
    export analdatem1=$analdatem1_save
    export datapathm1=$datapathm1_save
+   export RUN=$RUN_save
    unset ATMPREFIX
    unset SFCPREFIX
 fi

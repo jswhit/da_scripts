@@ -47,7 +47,7 @@ export replay_run_observer='true' # run observer on replay control forecast
 # YYYYMMDDHH analysis date string to see if
 # full ensemble should be saved to HPSS (returns 0 if 
 # HPSS save should be done)
-if [ $machine == "orion" ]; then
+if [ $machine == "orion" ] || [ $machine == "hercules" ]; then
    export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
    export save_hpss="false"
 else
@@ -104,6 +104,33 @@ elif [ "$machine" == 'orion' ]; then
    export PATH="/work/noaa/gsienkf/whitaker/miniconda3/bin:$PATH"
    export HDF5_DISABLE_VERSION_CHECK=1
    export WGRIB=`which wgrib`
+elif [ $machine == "hercules" ]; then
+   source $MODULESHOME/init/sh
+   export basedir=/work2/noaa/gsienkf/${USER}
+   export datadir=$basedir
+   export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
+   export obs_datapath=/work/noaa/rstprod/dump
+   ulimit -s unlimited
+   source $MODULESHOME/init/sh
+   module use /work/noaa/epic-ps/role-epic-ps/spack-stack/spack-stack-1.4.0-hercules/envs/unified-env-v2/install/modulefiles/Core
+   module use /work/noaa/epic-ps/role-epic-ps/spack-stack/spack-stack-1.4.0-hercules/envs/unified-env-v2/install/modulefiles/intel-oneapi-mpi/2021.7.1/intel/2021.7.1
+   module load stack-intel/2021.7.1
+   module load stack-intel-oneapi-mpi/2021.7.1
+   module load intel-oneapi-mkl/2022.2.1
+   module load grib-util
+   module load parallelio
+   module load bufr
+   module load crtm
+   #module use /work/noaa/epic-ps/role-epic-ps/hpc-stack/libs/intel-2022.1.2_hrcs/modulefiles/stack
+   #module load hpc
+   #module load hpc-intel-oneapi-compilers
+   #module load hpc-intel-oneapi-mpi
+   #module load intel-oneapi-mkl
+   #module load grib-util
+   #export CRTM_FIX=/work/noaa/epic-ps/role-epic-ps/spack-stack/spack-stack-1.4.0-hercules/envs/unified-env-v2/install/intel/2021.7.1/crtm-fix-2.4.0_emc-hfdryur/fix
+   export PATH="/work/noaa/gsienkf/whitaker/miniconda3/bin:$PATH"
+   export HDF5_DISABLE_VERSION_CHECK=1
+   export WGRIB=`which wgrib`
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f2/dev/${USER}
    export datadir=/lustre/f2/scratch/${USER}
@@ -132,7 +159,7 @@ elif [ "$machine" == 'gaea' ]; then
    export HDF5_DISABLE_VERSION_CHECK=1
    export WGRIB=`which wgrib`
 else
-   echo "machine must be 'hera', 'orion' or 'gaea' got $machine"
+   echo "machine must be 'hera', 'orion', 'hercules' or 'gaea' got $machine"
    exit 1
 fi
 export datapath="${datadir}/${exptname}"
@@ -382,7 +409,7 @@ elif [ $LEVS -eq 127 ]; then
   export s_ens_v=7.7 # 20 levels
 fi
 # use pre-generated bias files.
-#export biascorrdir=${datadir}/C192_envar_hourly
+#export biascorrdir=${datadir}/C192_hybcov_hourly
 
 export nanals=80                                                    
 export nanals2=-1 # longer extension. Set to -1 to disable 
@@ -408,16 +435,20 @@ if [ "$machine" == 'hera' ]; then
    export enkfbin=${execdir}/global_enkf
    export gsiexec=${execdir}/global_gsi
    export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
-elif [ "$machine" == 'orion' ]; then
-   export python=`which python`
-   export fv3gfspath=/work/noaa/global/glopara/fix_NEW
+elif [ "$machine" == 'orion' ] || [ $machine == "hercules" ]; then
    export FIXDIR=/work/noaa/nems/emc.nemspara/RT/NEMSfv3gfs/input-data-20220414
-   export FIXDIR_gcyc=${fv3gfspath}
-   export FIXFV3=${fv3gfspath}/fix_fv3_gmted2010
-   export FIXGLOBAL=${fv3gfspath}/fix_am
+   #export FIXDIR_gcyc=$FIXDIR
+   export FIXDIR_gcyc=/work/noaa/global/glopara/fix_NEW # for GFSv16
+   export python=`which python`
+   export fv3gfspath=/work/noaa/global/glopara
+   export FIXFV3=$fv3gfspath/fix_NEW/fix_fv3_gmted2010
+   export FIXGLOBAL=$fv3gfspath/fix_NEW/fix_am
    export gsipath=/work/noaa/gsienkf/whitaker/GSI
    export fixgsi=${gsipath}/fix
-   export fixcrtm=/work/noaa/global/glopara/crtm/crtm_v2.3.0
+   export fixcrtm=$fv3gfspath/crtm/crtm_v2.3.0
+   if [ $machine == "hercules" ]; then
+      export fixcrtm=$CRTM_FIX
+   fi
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export gsiexec=${execdir}/global_gsi

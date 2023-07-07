@@ -550,6 +550,7 @@ $nln $fixcrtm/NPOESS.VISwater.EmisCoeff.bin ./crtm_coeffs/NPOESS.VISwater.EmisCo
 $nln $fixcrtm/FASTEM6.MWwater.EmisCoeff.bin ./crtm_coeffs/FASTEM6.MWwater.EmisCoeff.bin
 $nln $fixcrtm/AerosolCoeff.bin              ./crtm_coeffs/AerosolCoeff.bin
 $nln $fixcrtm/CloudCoeff.bin                ./crtm_coeffs/CloudCoeff.bin
+#$nln $fixcrtm/CloudCoeff.GFDLFV3.-109z-1.bin ./crtm_coeffs/CloudCoeff.bin
 
 # link observational data to $tmpdir
 if [[ ! -s $datobs/${prefix_obs}.prepbufr ]]; then
