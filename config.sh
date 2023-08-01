@@ -112,22 +112,15 @@ elif [ $machine == "hercules" ]; then
    export obs_datapath=/work/noaa/rstprod/dump
    ulimit -s unlimited
    source $MODULESHOME/init/sh
-   module use /work/noaa/epic-ps/role-epic-ps/spack-stack/spack-stack-1.4.0-hercules/envs/unified-env-v2/install/modulefiles/Core
-   module use /work/noaa/epic-ps/role-epic-ps/spack-stack/spack-stack-1.4.0-hercules/envs/unified-env-v2/install/modulefiles/intel-oneapi-mpi/2021.7.1/intel/2021.7.1
-   module load stack-intel/2021.7.1
-   module load stack-intel-oneapi-mpi/2021.7.1
+   module use /work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-dev-20230717/envs/unified-env/install/modulefiles/Core
+   module use /work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-dev-20230717/envs/unified-env/install/modulefiles/intel-oneapi-mpi/2021.9.0/intel/2021.9.0
+   module load stack-intel/2021.9.0
+   module load stack-intel-oneapi-mpi/2021.9.0
    module load intel-oneapi-mkl/2022.2.1
    module load grib-util
-   module load parallelio
-   module load bufr
-   module load crtm
-   #module use /work/noaa/epic-ps/role-epic-ps/hpc-stack/libs/intel-2022.1.2_hrcs/modulefiles/stack
-   #module load hpc
-   #module load hpc-intel-oneapi-compilers
-   #module load hpc-intel-oneapi-mpi
-   #module load intel-oneapi-mkl
-   #module load grib-util
-   #export CRTM_FIX=/work/noaa/epic-ps/role-epic-ps/spack-stack/spack-stack-1.4.0-hercules/envs/unified-env-v2/install/intel/2021.7.1/crtm-fix-2.4.0_emc-hfdryur/fix
+   module load paralleliomodule load parallelio
+   module load bufr/11.7.0
+   module load crtm/2.4.0
    export PATH="/work/noaa/gsienkf/whitaker/miniconda3/bin:$PATH"
    export HDF5_DISABLE_VERSION_CHECK=1
    export WGRIB=`which wgrib`
