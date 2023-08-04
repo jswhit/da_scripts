@@ -46,7 +46,7 @@ export replay_run_observer='false' # run observer on replay control forecast
 # YYYYMMDDHH analysis date string to see if
 # full ensemble should be saved to HPSS (returns 0 if 
 # HPSS save should be done)
-if [ $machine == "orion" ] || [ $machine == 'hercules' ];; then
+if [ $machine == "orion" ] || [ $machine == "hercules" ]; then
    export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
    export save_hpss="false"
 else
@@ -89,6 +89,7 @@ if [ "$machine" == 'hera' ]; then
    module load esmf/8_2_0_beta_snapshot_14
    module load fms/2021.03
    module load wgrib
+   module load ncdiag
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'orion' ]; then
    source $MODULESHOME/init/sh
@@ -104,6 +105,7 @@ elif [ "$machine" == 'orion' ]; then
    module load hpc-impi/2022.1.2
    module load hdf5/1.10.6
    module load wgrib/1.8.0b
+   module load ncdiag
    export PATH="/work/noaa/gsienkf/whitaker/miniconda3/bin:$PATH"
    export HDF5_DISABLE_VERSION_CHECK=1
    export WGRIB=`which wgrib`
@@ -121,9 +123,10 @@ elif [ $machine == "hercules" ]; then
    module load stack-intel-oneapi-mpi/2021.9.0
    module load intel-oneapi-mkl/2022.2.1
    module load grib-util
-   module load paralleliomodule load parallelio
+   module load parallelio
    module load bufr/11.7.0
    module load crtm/2.4.0
+   module load gsi-ncdiag
    export PATH="/work/noaa/gsienkf/whitaker/miniconda3/bin:$PATH"
    export HDF5_DISABLE_VERSION_CHECK=1
    export WGRIB=`which wgrib`
@@ -143,6 +146,9 @@ elif [ "$machine" == 'gaea' ]; then
    module load stack-cray-mpich/8.1.25
    module load stack-python/3.9.12
    module load parallelio
+   module load bufr/11.7.0
+   module load crtm/2.4.0
+   module load gsi-ncdiag
    module load grib-util
    module list
    export PATH="/lustre/f2/dev/Jeffrey.S.Whitaker/conda/bin:${PATH}"
