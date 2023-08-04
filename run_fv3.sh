@@ -160,10 +160,23 @@ if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
          export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_${charnanal}"
          export fgfile="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}"
       fi
+      cat > calc_increment_ncio.nml << EOF
+&setup
+   no_mpinc=.true.
+   no_delzinc=.false.
+   taper_strat=.true.
+   taper_strat_ozone=.false.
+   taper_pbl=.false.
+   ak_bot=10000.,
+   ak_top=5000.
+/
+EOF
+      cat calc_increment_ncio.nml
       echo "create ${increment_file}"
       /bin/rm -f ${increment_file}
       # last three args:  no_mpinc no_delzinc, taper_strat
-      export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file} T $hydrostatic T"
+      #export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file} T $hydrostatic T"
+      export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file}"
       nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
       if [ $? -ne 0 -o ! -s ${increment_file} ]; then
          echo "problem creating ${increment_file}, stopping .."
