@@ -1,11 +1,9 @@
 #!/bin/sh
-#SBATCH -q urgent
+##SBATCH -q urgent
 ##SBATCH -q debug
-#SBATCH --clusters c4
-#SBATCH -t 04:00:00
-##SBATCH -t 00:30:00
+#SBATCH --cluster=c5
+#SBATCH -t 02:00:00
 #SBATCH -A nggps_psd
-##SBATCH -A cpo_ngrr_e
 #SBATCH -N 80    
 #SBATCH -J C192_hybcov_6hourly
 #SBATCH -e C192_hybcov_6hourly.err
@@ -52,11 +50,17 @@ else
 fi
 
 # for ensemble forecast and GSI
-#export fg_proc=$corespernode 
-export fg_proc=`expr 2 \* $corespernode`
+export fg_proc=$corespernode 
+#export fg_proc=`expr 2 \* $corespernode`
 export fg_threads=1
 export write_groups=1
-if [ $corespernode -eq 36 ]; then
+if [ $corespernode -eq 128 ]; then
+export enkf_threads=32
+export gsi_control_threads=32
+export write_groups=1
+export write_tasks=8 
+export layout="4, 5" 
+elif [ $corespernode -eq 36 ]; then
 export enkf_threads=36
 export gsi_control_threads=9
 export write_groups=1

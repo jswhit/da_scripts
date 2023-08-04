@@ -46,7 +46,7 @@ export replay_run_observer='false' # run observer on replay control forecast
 # YYYYMMDDHH analysis date string to see if
 # full ensemble should be saved to HPSS (returns 0 if 
 # HPSS save should be done)
-if [ $machine == "orion" ]; then
+if [ $machine == "orion" ] || [ $machine == 'hercules' ];; then
    export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
    export save_hpss="false"
 else
@@ -107,34 +107,52 @@ elif [ "$machine" == 'orion' ]; then
    export PATH="/work/noaa/gsienkf/whitaker/miniconda3/bin:$PATH"
    export HDF5_DISABLE_VERSION_CHECK=1
    export WGRIB=`which wgrib`
+elif [ $machine == "hercules" ]; then
+   source $MODULESHOME/init/sh
+   export basedir=/work2/noaa/gsienkf/${USER}
+   export datadir=$basedir
+   export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
+   export obs_datapath=/work/noaa/rstprod/dump
+   ulimit -s unlimited
+   source $MODULESHOME/init/sh
+   module use /work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-dev-20230717/envs/unified-env/install/modulefiles/Core
+   module use /work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-dev-20230717/envs/unified-env/install/modulefiles/intel-oneapi-mpi/2021.9.0/intel/2021.9.0
+   module load stack-intel/2021.9.0
+   module load stack-intel-oneapi-mpi/2021.9.0
+   module load intel-oneapi-mkl/2022.2.1
+   module load grib-util
+   module load paralleliomodule load parallelio
+   module load bufr/11.7.0
+   module load crtm/2.4.0
+   export PATH="/work/noaa/gsienkf/whitaker/miniconda3/bin:$PATH"
+   export HDF5_DISABLE_VERSION_CHECK=1
+   export WGRIB=`which wgrib`
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f2/dev/${USER}
    export datadir=/lustre/f2/scratch/${USER}
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/gaea/${exptname}"
    export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/dumps
    source /lustre/f2/dev/role.epic/contrib/Lmod_init.sh
-   module purge
    module unload cray-libsci
-   export MODULESHOME=/opt/cray/pe/modules/default
-   export _LMFILES_=""
-   export LOADEDMODULES=""
-   module load PrgEnv-intel
-   module load intel/2022.0.2
-   module use -a /lustre/f2/dev/role.epic/contrib/modulefiles
-   module use -a /lustre/f2/dev/role.epic/contrib/hpc-stack/intel-2022.0.2/modulefiles/stack
-   module load hpc/1.2.0
-   module load hpc-intel/2022.0.2
-   module load hpc-cray-mpich/7.7.11
-   module load grib_util
-   module load netcdf
+   module load PrgEnv-intel/8.3.3
+   module load intel-classic/2023.1.0
+   module load cray-mpich/8.1.25
+   module use /lustre/f2/dev/wpo/role.epic/contrib/spack-stack/c5/spack-stack-dev-20230717/envs/unified-env/install/modulefiles/Core
+   module use /lustre/f2/dev/wpo/role.epic/contrib/spack-stack/c5/modulefiles
+   module load stack-intel/2023.1.0
+   module load stack-cray-mpich/8.1.25
+   module load stack-python/3.9.12
+   module load parallelio
+   module load grib-util
    module list
+   export PATH="/lustre/f2/dev/Jeffrey.S.Whitaker/conda/bin:${PATH}"
    which python
-   export MKLROOT=/opt/intel/oneapi/mkl/2022.0.2
-   export LD_LIBRARY_PATH="${MKLROOT}/lib/intel64:${LD_LIBRARY_PATH}"
+   #export MKLROOT=/opt/intel/oneapi/mkl/2022.0.2
+   #export LD_LIBRARY_PATH="${MKLROOT}/lib/intel64:${LD_LIBRARY_PATH}"
    export HDF5_DISABLE_VERSION_CHECK=1
    export WGRIB=`which wgrib`
 else
-   echo "machine must be 'hera', 'orion' or 'gaea' got $machine"
+   echo "machine must be 'hera', 'orion', 'hercules' or 'gaea' got $machine"
    exit 1
 fi
 export datapath="${datadir}/${exptname}"
@@ -384,10 +402,10 @@ fi
 
 export nanals=80                                                    
 # if nanals2>0, extend nanals2 members out to FHMAX + ANALINC (one extra assim window)
-#export nanals2=-1 # longer extension. Set to -1 to disable 
+export nanals2=-1 # longer extension. Set to -1 to disable 
 #export nanals2=$NODES
-export nanals2=$nanals
-export nitermax=2 # number of retries
+#export nanals2=$nanals
+export nitermax=1 # number of retries
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
@@ -404,7 +422,7 @@ if [ "$machine" == 'hera' ]; then
    export enkfbin=${execdir}/global_enkf
    export gsiexec=${execdir}/global_gsi
    export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
-elif [ "$machine" == 'orion' ]; then
+elif [ "$machine" == 'orion' ] || [ $machine == "hercules" ]; then
    export python=`which python`
    export fv3gfspath=/work/noaa/global/glopara/fix_NEW
    export FIXDIR=/work/noaa/nems/emc.nemspara/RT/NEMSfv3gfs/input-data-20220414
@@ -414,6 +432,9 @@ elif [ "$machine" == 'orion' ]; then
    export gsipath=/work/noaa/gsienkf/whitaker/GSI
    export fixgsi=${gsipath}/fix
    export fixcrtm=/work/noaa/global/glopara/crtm/crtm_v2.3.0
+   if [ $machine == "hercules" ]; then
+      export fixcrtm=$CRTM_FIX
+   fi
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export gsiexec=${execdir}/global_gsi
@@ -426,7 +447,7 @@ elif [ "$machine" == 'gaea' ]; then
    export FIXGLOBAL=${fv3gfspath}/fix_am
    export gsipath=/lustre/f2/dev/Jeffrey.S.Whitaker/GSI
    export fixgsi=${gsipath}/fix
-   export fixcrtm=/lustre/f2/dev/Jeffrey.S.Whitaker/fix_crtm/2.3.0/crtm_v2.3.0
+   export fixcrtm=$CRTM_FIX
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export gsiexec=${execdir}/global_gsi

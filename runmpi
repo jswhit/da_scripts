@@ -12,8 +12,8 @@ mpitaskspernode=`python -c "from __future__ import print_function; import math; 
 # -n: total number of mpi tasks
 # -N: number of nodes to run on
 # --ntasks-per-node:  mpi tasks on each node
-echo "running srun -N $totnodes -n $nprocs -c $count --ntasks-per-node=$mpitaskspernode  --exclusive --cpu-bind=cores --verbose $PGM"
-eval srun -N $totnodes -n $nprocs -c $count --ntasks-per-node=$mpitaskspernode --exclusive --cpu-bind=cores --verbose $PGM
+echo "running srun -N $totnodes -n $nprocs -c $count --ntasks-per-node=$mpitaskspernode  --exclusive --cpu-bind=cores --verbose --export=ALL $PGM"
+eval srun -N $totnodes -n $nprocs -c $count --ntasks-per-node=$mpitaskspernode --exclusive --cpu-bind=cores --verbose --export=ALL $PGM
 rc=$?
 echo "exiting runmpi..."
 exit $rc
