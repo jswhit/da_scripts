@@ -409,6 +409,18 @@ if [ $recenter_anal == "true" ]; then
       fi
    fi
 fi
+if [ $taperensperts == "true" ]; then
+   export fileprefix="sanl"
+   echo "$analdate taper enkf analysis ens perts near top of model `date`"
+   sh ${enkfscripts}/taper_ens.sh > ${current_logdir}/taper_ensperts_anal.out 2>&1
+   taper_done=`cat ${current_logdir}/taper.log`
+   if [ $taper_done == 'yes' ]; then
+     echo "$analdate tapering enkf analysis ens perts completed successfully `date`"
+   else
+     echo "$analdate tapering enkf analysis ens perts did not complete successfully, exiting `date`"
+     exit 1
+   fi
+fi
 fi
 
 # for passive (replay) cycling of control forecast, optionally run GSI observer
