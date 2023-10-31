@@ -118,7 +118,7 @@ elif [ $machine == "hercules" ]; then
    module load stack-intel-oneapi-mpi/2021.9.0
    module load intel-oneapi-mkl/2022.2.1
    module load grib-util
-   module load paralleliomodule load parallelio
+   module load parallelio
    module load bufr/11.7.0
    module load crtm/2.4.0
    export PATH="/work/noaa/gsienkf/whitaker/miniconda3/bin:$PATH"
@@ -345,7 +345,7 @@ export analpertwttr=0.9
 export analpertwtnh_rtpp=0.5
 export analpertwtsh_rtpp=0.5
 export analpertwttr_rtpp=0.5
-export pseudo_rh=.true.
+export pseudo_rh=.false.
 export write_ensmean=.true. # write out ens mean analysis in EnKF
 if [[ $write_ensmean == ".true." ]]; then
    export ENKFVARS="write_ensmean=${write_ensmean},"
@@ -481,6 +481,7 @@ export HYBENSINFO=${fixgsi}/global_hybens_info.l${LEVS}.txt # only used if readi
 # in stratosphere/mesosphere
 export OZINFO=${fixgsi}/gfsv16_historical/global_ozinfo.txt.2020011806
 export CONVINFO=${enkfscripts}/global_convinfo.txt # modified twindow (probably not needed), modify gross err check?
+#export CONVINFO=${enkfscripts}/global_convinfo.txt_nothin # no thinning of AMVs and aircraft
 export SATINFO=${fixgsi}/gfsv16_historical/global_satinfo.txt.2020022012
 export NLAT=$((${LATA}+2))
 # default is to use berror file in gsi fix dir.
