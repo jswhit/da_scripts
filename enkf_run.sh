@@ -46,7 +46,7 @@ cat <<EOF > enkf.nml
   lobsdiag_forenkf=.true.,write_spread_diag=.false.,netcdf_diag=.true.,mincorrlength_fact=$mincorrlength_fact,
   sortinc=$sortinc,nhr_anal=$nhr_anal,nhr_state=$enkfstatefhrs,getkf=$getkf,
   use_correlated_oberrs=${use_correlated_oberrs},use_gfs_ncio=.true.,nccompress=T,paranc=F,write_fv3_incr=${write_fv3_increment},
-  adp_anglebc=.true.,angord=4,newpc4pred=.true.,use_edges=.false.,emiss_bc=.true.,biasvar=-500,nobsl_max=$nobsl_max,use_qsatensmean=.true.,
+  adp_anglebc=.true.,angord=4,newpc4pred=.true.,use_edges=.false.,emiss_bc=.true.,biasvar=-500,nobsl_max=$nobsl_max,
   ${ENKFVARS}
   ${WRITE_INCR_ZERO}
  /
