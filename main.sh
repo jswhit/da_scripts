@@ -124,12 +124,10 @@ if [ $hr = "04" ] || [ $hr = "10" ] || [ $hr = "16" ] || [ $hr = "22" ]; then
    export time_window_max=1.0
    export min_offset=60
    export nhr_assimilation=2
-   export CONVINFO=${enkfscripts}/global_convinfo.txt2
 else
    export time_window_max=0.5
    export min_offset=30
    export nhr_assimilation=1
-   export CONVINFO=${enkfscripts}/global_convinfo.txt
 fi
 
 export PREINP="${RUN}.t${hr}z."
@@ -387,7 +385,7 @@ if [ -s $datapath2/sfg2_${analdate}_fhr06_ensmean ]; then
    export FHMIN=3
    export FHMAX=9
    export ANALINC=6
-   export CONVINFO=${fixgsi}/gfsv16_historical/global_convinfo.txt.2021052012
+   #export CONVINFO=${fixgsi}/gfsv16_historical/global_convinfo.txt.2021052012
    export ATMPREFIX='sfg2'
    export SFCPREFIX='bfg2'
    analdatem1_save=$analdatem1
