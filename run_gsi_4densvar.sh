@@ -966,7 +966,7 @@ for loop in $loops; do
             file=`ls -1 pe*${type}_${loop}*`
             /bin/cp -f $file ${savdir}/diag_${type}_${string}.${adate}_${charnanal2}.nc4
           else
-            export PGM="${execdir}/nc_diag_cat_serial.x -o ${savdir}/diag_${type}_${string}.${adate}_${charnanal2}.nc4  pe*${type}_${loop}*nc4"
+            export PGM="ncdiag_cat_serial.x -o ${savdir}/diag_${type}_${string}.${adate}_${charnanal2}.nc4  pe*${type}_${loop}*nc4"
             ls -l pe*${type}_${loop}*nc4
             nodecount=$((nodecount+1))
             echo "node = $nodecount ${enkfscripts}/runmpi 1> ${current_logdir}/nc_diag_cat_${type}_${string}_${charnanal2}.out"
