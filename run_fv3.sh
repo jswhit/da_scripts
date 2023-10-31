@@ -174,8 +174,6 @@ EOF
       cat calc_increment_ncio.nml
       echo "create ${increment_file}"
       /bin/rm -f ${increment_file}
-      # last three args:  no_mpinc no_delzinc, taper_strat
-      #export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file} T $hydrostatic T"
       export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file}"
       nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
       if [ $? -ne 0 -o ! -s ${increment_file} ]; then
@@ -248,6 +246,16 @@ fi
 #fntsfa=${sstpath}/${yeara}/sst_${charnanal2}.grib
 #fnacna=${sstpath}/${yeara}/icec_${charnanal2}.grib
 #fnsnoa='        ' # no input file, use model snow
+
+# halve time step if niter>1 and niter==nitermax
+if [[ $niter -gt 1 ]] && [[ $niter -eq $nitermax ]]; then
+    dt_atmos=`python -c "print(${dt_atmos}/2)"`
+    stochini=F
+    echo "dt_atmos changed to $dt_atmos..."
+    #DO_SKEB=F
+    #DO_SPPT=F
+    #DO_SHUM=F
+fi
 
 snoid='SNOD'
 
