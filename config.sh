@@ -28,6 +28,7 @@ export exptname="C${RES}_hybcov_6hourly_iau"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 export enkfonly='false' # pure EnKF
+export taperensperts='false'
 
 export fg_gfs="run_ens_fv3.sh"
 export ensda="enkf_run.sh"
@@ -89,7 +90,6 @@ if [ "$machine" == 'hera' ]; then
    module load esmf/8_2_0_beta_snapshot_14
    module load fms/2021.03
    module load wgrib
-   module load ncdiag
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'orion' ]; then
    source $MODULESHOME/init/sh
@@ -105,7 +105,6 @@ elif [ "$machine" == 'orion' ]; then
    module load hpc-impi/2022.1.2
    module load hdf5/1.10.6
    module load wgrib/1.8.0b
-   module load ncdiag
    export PATH="/work/noaa/gsienkf/whitaker/miniconda3/bin:$PATH"
    export HDF5_DISABLE_VERSION_CHECK=1
    export WGRIB=`which wgrib`
@@ -126,7 +125,6 @@ elif [ $machine == "hercules" ]; then
    module load parallelio
    module load bufr/11.7.0
    module load crtm/2.4.0
-   module load gsi-ncdiag
    export PATH="/work/noaa/gsienkf/whitaker/miniconda3/bin:$PATH"
    export HDF5_DISABLE_VERSION_CHECK=1
    export WGRIB=`which wgrib`
@@ -136,25 +134,24 @@ elif [ "$machine" == 'gaea' ]; then
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/gaea/${exptname}"
    export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/dumps
    source /lustre/f2/dev/role.epic/contrib/Lmod_init.sh
+   module purge
    module unload cray-libsci
-   module load PrgEnv-intel/8.3.3
-   module load intel-classic/2023.1.0
-   module load cray-mpich/8.1.25
-   module use /lustre/f2/dev/wpo/role.epic/contrib/spack-stack/c5/spack-stack-dev-20230717/envs/unified-env/install/modulefiles/Core
-   module use /lustre/f2/dev/wpo/role.epic/contrib/spack-stack/c5/modulefiles
-   module load stack-intel/2023.1.0
-   module load stack-cray-mpich/8.1.25
-   module load stack-python/3.9.12
-   module load parallelio
-   module load bufr/11.7.0
-   module load crtm/2.4.0
-   module load gsi-ncdiag
-   module load grib-util
+   export MODULESHOME=/opt/cray/pe/modules/default
+   export _LMFILES_=""
+   export LOADEDMODULES=""
+   module load PrgEnv-intel
+   module load intel/2022.0.2
+   module use -a /lustre/f2/dev/role.epic/contrib/modulefiles
+   module use -a /lustre/f2/dev/role.epic/contrib/hpc-stack/intel-2022.0.2/modulefiles/stack
+   module load hpc/1.2.0
+   module load hpc-intel/2022.0.2
+   module load hpc-cray-mpich/7.7.11
+   module load grib_util
+   module load netcdf
    module list
-   export PATH="/lustre/f2/dev/Jeffrey.S.Whitaker/conda/bin:${PATH}"
    which python
-   #export MKLROOT=/opt/intel/oneapi/mkl/2022.0.2
-   #export LD_LIBRARY_PATH="${MKLROOT}/lib/intel64:${LD_LIBRARY_PATH}"
+   export MKLROOT=/opt/intel/oneapi/mkl/2022.0.2
+   export LD_LIBRARY_PATH="${MKLROOT}/lib/intel64:${LD_LIBRARY_PATH}"
    export HDF5_DISABLE_VERSION_CHECK=1
    export WGRIB=`which wgrib`
 else
@@ -324,7 +321,7 @@ FHMAXP1=`expr $FHMAX + 1`
 # if FHMAX_LONGER divisible by 6, only the last output time saved.
 # if not divisible by 6, all times in 6-h window at the end of forecast saved
 # so GSI observer can be run.
-export FHMAX_LONGER=24
+export FHMAX_LONGER=15
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
 # IAU on
 export iaufhrs="3,6,9"
@@ -332,6 +329,9 @@ export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 # IAU off
 #export iaufhrs="6"
 #export iau_delthrs=-1
+# parameters to control tapering of analysis ens perts at top of model
+export ak_bot=0
+export ak_top=0
 
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
@@ -360,7 +360,7 @@ export analpertwttr=0.85
 export analpertwtnh_rtpp=0.0
 export analpertwtsh_rtpp=0.0
 export analpertwttr_rtpp=0.0
-export pseudo_rh=.true.
+export pseudo_rh=.false.
 export write_ensmean=.true. # write out ens mean analysis in EnKF
 if [[ $write_ensmean == ".true." ]]; then
    export ENKFVARS="write_ensmean=${write_ensmean},"
@@ -395,8 +395,8 @@ export sortinc=.true.
 export beta_s0=`python -c "from __future__ import print_function; print($alpha / 1000.)"` # weight given to static B in hyb cov
 # beta_e0 parameter (ensemble weight) in my GSI branch (not in GSI/develop)
 export beta_e0=`python -c "from __future__ import print_function; print($beta / 1000.)"` # weight given to ensemble B in hyb cov
-export s_ens_h=343.     # 1250 km horiz localization in GSI
-#export s_ens_h=`python -c "import numpy as np; print(int(np.ceil(${corrlengthnh}*0.388/np.sqrt(2))))"`
+#export s_ens_h=343.     # 1250 km horiz localization in GSI
+export s_ens_h=`python -c "import numpy as np; print(int(np.ceil(${corrlengthnh}*0.388/np.sqrt(2))))"`
 #export s_ens_v=-0.58    # 1.5 scale heights in GSI
 if [ $LEVS -eq 64 ]; then
   export s_ens_v=5.4 # 14 levels
@@ -404,7 +404,7 @@ elif [ $LEVS -eq 127 ]; then
   export s_ens_v=7.7 # 20 levels
 fi
 # use pre-generated bias files.
-#export biascorrdir=${datadir}/biascor
+export biascorrdir=${datadir}/C192_hybcov_6hourly_iau
 
 export nanals=80                                                    
 # if nanals2>0, extend nanals2 members out to FHMAX + ANALINC (one extra assim window)
@@ -453,7 +453,7 @@ elif [ "$machine" == 'gaea' ]; then
    export FIXGLOBAL=${fv3gfspath}/fix_am
    export gsipath=/lustre/f2/dev/Jeffrey.S.Whitaker/GSI
    export fixgsi=${gsipath}/fix
-   export fixcrtm=$CRTM_FIX
+   export fixcrtm=/lustre/f2/dev/Jeffrey.S.Whitaker/fix_crtm/2.3.0/crtm_v2.3.0
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export gsiexec=${execdir}/global_gsi
@@ -483,14 +483,15 @@ export HYBENSINFO=${fixgsi}/global_hybens_info.l${LEVS}.txt # only used if readi
 #export CONVINFO=${fixgsi}/global_convinfo.txt
 #export SATINFO=${fixgsi}/global_satinfo.txt
 export OZINFO=${fixgsi}/gfsv16_historical/global_ozinfo.txt.2020011806
-export CONVINFO=${enkfscripts}/global_convinfo.txt # modified twindow (probably not needed), modify gross err check?
+#export CONVINFO=${enkfscripts}/global_convinfo.txt_nothin # modified twindow (probably not needed), modify gross err check?
+export CONVINFO=${fixgsi}/global_convinfo.txt_nothin # modified twindow (probably not needed), modify gross err check?
 export SATINFO=${fixgsi}/gfsv16_historical/global_satinfo.txt.2020022012
 export NLAT=$((${LATA}+2))
 # default is to use berror file in gsi fix dir.
 #export BERROR=${basedir}/staticB/global_berror_enkf.l${LEVS}y${NLAT}.f77
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_janjulysmooth0p5
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_annmeansmooth0p5
-export REALTIME=NO # if NO, use historical files set in main.sh
+export REALTIME=YES # if NO, use historical files set in main.sh
 
 cd $enkfscripts
 echo "run main driver script"
