@@ -134,24 +134,25 @@ elif [ "$machine" == 'gaea' ]; then
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/gaea/${exptname}"
    export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/dumps
    source /lustre/f2/dev/role.epic/contrib/Lmod_init.sh
-   module purge
    module unload cray-libsci
-   export MODULESHOME=/opt/cray/pe/modules/default
-   export _LMFILES_=""
-   export LOADEDMODULES=""
-   module load PrgEnv-intel
-   module load intel/2022.0.2
-   module use -a /lustre/f2/dev/role.epic/contrib/modulefiles
-   module use -a /lustre/f2/dev/role.epic/contrib/hpc-stack/intel-2022.0.2/modulefiles/stack
-   module load hpc/1.2.0
-   module load hpc-intel/2022.0.2
-   module load hpc-cray-mpich/7.7.11
-   module load grib_util
-   module load netcdf
+   module load PrgEnv-intel/8.3.3
+   module load intel-classic/2023.1.0
+   module load cray-mpich/8.1.25
+   module use /lustre/f2/dev/wpo/role.epic/contrib/spack-stack/c5/spack-stack-dev-20230717/envs/unified-env/install/modulefiles/Core
+   module use /lustre/f2/dev/wpo/role.epic/contrib/spack-stack/c5/modulefiles
+   module load stack-intel/2023.1.0
+   module load stack-cray-mpich/8.1.25
+   module load stack-python/3.9.12
+   module load parallelio
+   module load bufr/11.7.0
+   module load crtm/2.4.0
+   module load gsi-ncdiag
+   module load grib-util
    module list
+   export PATH="/lustre/f2/dev/Jeffrey.S.Whitaker/conda/bin:${PATH}"
    which python
-   export MKLROOT=/opt/intel/oneapi/mkl/2022.0.2
-   export LD_LIBRARY_PATH="${MKLROOT}/lib/intel64:${LD_LIBRARY_PATH}"
+   #export MKLROOT=/opt/intel/oneapi/mkl/2022.0.2
+   #export LD_LIBRARY_PATH="${MKLROOT}/lib/intel64:${LD_LIBRARY_PATH}"
    export HDF5_DISABLE_VERSION_CHECK=1
    export WGRIB=`which wgrib`
 else
@@ -453,7 +454,7 @@ elif [ "$machine" == 'gaea' ]; then
    export FIXGLOBAL=${fv3gfspath}/fix_am
    export gsipath=/lustre/f2/dev/Jeffrey.S.Whitaker/GSI
    export fixgsi=${gsipath}/fix
-   export fixcrtm=/lustre/f2/dev/Jeffrey.S.Whitaker/fix_crtm/2.3.0/crtm_v2.3.0
+   export fixcrtm=$CRTM_FIX
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export gsiexec=${execdir}/global_gsi
@@ -484,6 +485,7 @@ export HYBENSINFO=${fixgsi}/global_hybens_info.l${LEVS}.txt # only used if readi
 #export SATINFO=${fixgsi}/global_satinfo.txt
 export OZINFO=${fixgsi}/gfsv16_historical/global_ozinfo.txt.2020011806
 #export CONVINFO=${enkfscripts}/global_convinfo.txt_nothin # modified twindow (probably not needed), modify gross err check?
+export CONVINFO=${enkfscripts}/global_convinfo.txt # modified twindow (probably not needed), modify gross err check?
 export CONVINFO=${fixgsi}/global_convinfo.txt_nothin # modified twindow (probably not needed), modify gross err check?
 export SATINFO=${fixgsi}/gfsv16_historical/global_satinfo.txt.2020022012
 export NLAT=$((${LATA}+2))
