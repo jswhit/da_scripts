@@ -1,47 +1,6 @@
 #!/bin/sh
 # model was compiled with these 
 echo "starting at `date`"
-source $MODULESHOME/init/sh
-
-use_ipd=${use_ipd:-"NO"}
-if [ "$machine" == 'hera' ]; then
-   module purge
-   module use /scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/v1.0.0-beta1/modulefiles/stack
-   module load hpc/1.0.0-beta1
-   module load hpc-intel/18.0.5.274
-   module load hpc-impi/2018.0.4
-   module use -a /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
-   module load netcdf_parallel/4.7.4.release
-   module load esmf/8.1.0bs25_ParallelNetCDF.release
-   module load hdf5_parallel/1.10.6.release
-   module load wgrib
-   export WGRIB=`which wgrib`
-elif [ "$machine" == 'orion' ]; then
-   module purge
-   module use /apps/contrib/NCEP/libs/hpc-stack/modulefiles/stack
-   module load hpc/1.1.0
-   module load hpc-intel/2018.4
-   module unload mkl/2020.2
-   module load mkl/2018.4
-   module load hpc-impi/2018.4
-   module load wgrib
-   export WGRIB=`which wgrib`
-elif [ "$machine" == 'gaea' ]; then
-   module purge
-   module load PrgEnv-intel/6.0.3
-   module rm intel
-   module load intel/18.0.3.222
-   #module load cray-netcdf-hdf5parallel/4.6.1.3
-   #module load cray-hdf5-parallel/1.10.2.0
-   module load cray-netcdf
-   module use -a /lustre/f2/pdata/ncep_shared/NCEPLIBS/lib//modulefiles
-   module load esmflocal/8_0_48b
-   module load nco/4.6.4
-   module load wgrib
-   export WGRIB=`which wgrib`
-   export HDF5_DISABLE_VERSION_CHECK=1
-fi
-module list
 
 export VERBOSE=${VERBOSE:-"NO"}
 hydrostatic=${hydrostatic:=".false."}
@@ -138,9 +97,10 @@ fi
 export DIAG_TABLE=${DIAG_TABLE:-$enkfscripts/diag_table}
 /bin/cp -f $DIAG_TABLE diag_table
 /bin/cp -f $enkfscripts/nems.configure .
+/bin/cp -f $enkfscripts/fd_nems.yaml .
 # insert correct starting time and output interval in diag_table template.
 sed -i -e "s/YYYY MM DD HH/${year} ${mon} ${day} ${hour}/g" diag_table
-sed -i -e "s/FHOUT/${FHOUT}/g" diag_table
+sed -i -e "s/FHOUT/${RESTART_FREQ}/g" diag_table
 /bin/cp -f $enkfscripts/field_table_${SUITE} field_table
 /bin/cp -f $enkfscripts/data_table . 
 /bin/rm -rf RESTART
@@ -200,15 +160,35 @@ if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
          export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_${charnanal}"
          export fgfile="${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal}"
       fi
+   cat > calc_increment_ncio.nml << EOF
+&setup
+   no_mpinc=.true.
+   no_delzinc=.false.
+   taper_strat=.true.
+   taper_strat_ozone=.false.
+   taper_pbl=.false.
+   ak_bot=10000.,
+   ak_top=5000.
+/
+EOF
+      cat calc_increment_ncio.nml
       echo "create ${increment_file}"
       /bin/rm -f ${increment_file}
-      # last three args:  no_mpinc no_delzinc, taper_strat
-      export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file} T $hydrostatic T"
+      export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file}"
       nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
       if [ $? -ne 0 -o ! -s ${increment_file} ]; then
          echo "problem creating ${increment_file}, stopping .."
          exit 1
       fi
+      #echo "create ${increment_file}"
+      #/bin/rm -f ${increment_file}
+      ## last three args:  no_mpinc no_delzinc, taper_strat
+      #export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file} T $hydrostatic T"
+      #nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
+      #if [ $? -ne 0 -o ! -s ${increment_file} ]; then
+      #   echo "problem creating ${increment_file}, stopping .."
+      #   exit 1
+      #fi
    done # do next forecast
    cd ..
 else
@@ -242,26 +222,12 @@ else
    externalic=F
    mountain=T
    # warm start from restart file with lat/lon increments ingested by the model
-   if [ $niter == 1 ] ; then
-     if [ -s stoch_ini ]; then
-       echo "stoch_ini available, setting stochini=T"
-       stochini=T # restart random patterns from existing file
-     else
-       echo "stoch_ini not available, setting stochini=F"
-       stochini=F
-     fi
-   elif [ $niter == 2 ]; then
-      echo "WARNING: iteration ${niter}, setting stochini=F for ${charnanal}" > ${current_logdir}/stochini_fg_ens.log
-      stochini=F
+   if [ -s INPUT/atm_stoch.res.nc ]; then
+      echo "stoch_ini available, setting stochini=T"
+      stochini=T # restart random patterns from existing file
    else
-      # last try, turn stochastic physics off
-      echo "WARNING: iteration ${niter}, seting SPPT=0 for ${charnanal}" > ${current_logdir}/stochini_fg_ens.log
-      SPPT=0
-      SKEB=0
-      SHUM=0
-      # set to large value so no random patterns will be output
-      # and random pattern will be reinitialized
-      FHSTOCH=240
+      echo "stoch_ini not available, setting stochini=F"
+      stochini=F
    fi
    
    iaudelthrs=${iau_delthrs}
@@ -290,17 +256,26 @@ fi
 #fnacna=${sstpath}/${yeara}/icec_${charnanal2}.grib
 #fnsnoa='        ' # no input file, use model snow
 
+# halve time step if niter>1 and niter==nitermax
+if [[ $niter -gt 1 ]] && [[ $niter -eq $nitermax ]]; then
+    dt_atmos=`python -c "print(${dt_atmos}/2)"`
+    stochini=F
+    echo "dt_atmos changed to $dt_atmos..."
+    #DO_SKEB=F
+    #DO_SPPT=F
+    #DO_SHUM=F
+fi
+
 snoid='SNOD'
 
 # Turn off snow analysis if it has already been used.
 # (snow analysis only available once per day at 18z)
-fntsfa=${obs_datapath}/${RUN}.${yeara}${mona}${daya}/${houra}/${RUN}.t${houra}z.rtgssthr.grb
-#fntsfa=/scratch2/BMC/gsienkf/Philip.Pegion/obs/ostia/grb_files/${RUN}.${yeara}${mona}${daya}/${houra}/${RUN}.t${houra}z.ostia_sst.grb
-fnacna=${obs_datapath}/${RUN}.${yeara}${mona}${daya}/${houra}/${RUN}.t${houra}z.seaice.5min.grb
-#fnacna=/scratch2/BMC/gsienkf/Philip.Pegion/obs/ostia/grb_files/${RUN}.${yeara}${mona}${daya}/${houra}/${RUN}.t${houra}z.ostia_ice_fraction.grb
-fnsnoa=${obs_datapath}/${RUN}.${yeara}${mona}${daya}/${houra}/${RUN}.t${houra}z.snogrb_t1534.3072.1536
-fnsnog=${obs_datapath}/${RUN}.${yearprev}${monprev}${dayprev}/${hourprev}/${RUN}.t${hourprev}z.snogrb_t1534.3072.1536
+fntsfa=${obs_datapath}/${RUN}.${yeara}${mona}${daya}/${houra}/atmos/${RUN}.t${houra}z.rtgssthr.grb
+fnacna=${obs_datapath}/${RUN}.${yeara}${mona}${daya}/${houra}/atmos/${RUN}.t${houra}z.seaice.5min.grb
+fnsnoa=${obs_datapath}/${RUN}.${yeara}${mona}${daya}/${houra}/atmos/${RUN}.t${houra}z.snogrb_t1534.3072.1536
+fnsnog=${obs_datapath}/${RUN}.${yearprev}${monprev}${dayprev}/${hourprev}/atmos/${RUN}.t${hourprev}z.snogrb_t1534.3072.1536
 nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
+#nrecs_snow=0 # force no snow update (do this if NOAH-MP used)
 if [ $nrecs_snow -eq 0 ]; then
    # no snow depth in file, use model
    fnsnoa=' ' # no input file
@@ -323,9 +298,14 @@ fi
 
 ls -l 
 
-FHRESTART=${FHRESTART:-$ANALINC}
 if [ $nanals2 -gt 0 ] && [ $nmem -le $nanals2 ]; then
    longer_fcst="YES"
+   # if longfcst_singletime=0, FHMAX_LONGER is divisible by 6, and only a single forecast time
+   # (the end of the forecast) beyond FHMAX is saved.  If longfcst_singletime=3, then it is 
+   # assumed that all the times in the 6-h window centered on FHMAX_LONGER - 3 are desired so
+   # that the GSI observer can be run.
+   longfcst_singletime=`python -c "from __future__ import print_function; print($FHMAX_LONGER % 6)"`
+   echo "longfcst_singletime=$longfcst_singletime"
 else
    longer_fcst="NO"
 fi
@@ -335,12 +315,7 @@ if [ "${iau_delthrs}" != "-1" ]; then
    else
       FHMAX_FCST=`expr $FHMAX + $ANALINC`
    fi
-   FHSTOCH=`expr $FHRESTART + $ANALINC \/ 2`
    if [ ${cold_start} = "true" ]; then
-      FHSTOCH=${FHSTOCH:-$ANALINC}
-      if [ $analdate -le 2021032400 ]; then
-         FHRESTART=`expr $ANALINC \/ 2`
-      fi
       if [ $longer_fcst = "YES" ]; then
          FHMAX_FCST=$FHMAX_LONGER
       else
@@ -348,12 +323,15 @@ if [ "${iau_delthrs}" != "-1" ]; then
       fi
    fi
 else
-   FHSTOCH=$FHRESTART
    if [ $longer_fcst = "YES" ]; then
       FHMAX_FCST=$FHMAX_LONGER
    else
       FHMAX_FCST=$FHMAX
    fi
+fi
+
+if [ $FHCYC -gt 0 ]; then
+  skip_global_cycle=1
 fi
 
 if [ $cold_start = "false" ] && [ -z $skip_global_cycle ]; then
@@ -414,11 +392,21 @@ if [ $NST_GSI -gt 0 ] && [ $FHCYC -gt 0 ]; then
    fnacna='        '
 fi
 export timestep_hrs=`python -c "from __future__ import print_function; print($dt_atmos / 3600.)"`
-if [ $cold_start == "true" ] && [ $analdate -gt 2021032400 ]; then
-   restart_interval="$timestep_hrs $ANALINC"
+if [ "${iau_delthrs}" != "-1" ]  && [ "${cold_start}" == "false" ]; then
+   FHROT=3
+else
+   if [ $cold_start == "true" ] && [ $analdate -gt 2021032400 ]; then
+     FHROT=3
+   else
+     FHROT=0
+   fi
+fi
+if [ $cold_start == "true" ] && [ $analdate -gt 2021032400 ] && [ "${iau_delthrs}" != "-1" ]; then
+   # cold start ICS at end of window, need one timestep restart
+   restart_interval=`python -c "from __future__ import print_function; print($FHROT + $timestep_hrs)"`
    output_1st_tstep_rst=".true."
 else
-   restart_interval=$FHRESTART
+   restart_interval="$RESTART_FREQ -1"
    output_1st_tstep_rst=".false."
 fi
 
@@ -433,6 +421,7 @@ start_hour:              ${hour}
 start_minute:            0
 start_second:            0
 nhours_fcst:             ${FHMAX_FCST}
+fhrot:                   ${FHROT}
 RUN_CONTINUE:            F
 ENS_SPS:                 F
 dt_atmos:                ${dt_atmos} 
@@ -458,8 +447,7 @@ jchunk2d:                ${LATB}
 ichunk3d:                0
 jchunk3d:                0
 kchunk3d:                0
-write_nemsioflip:        .true.
-write_fsyncflag:         .true.
+write_nsflip:            .true.
 iau_offset:              ${iaudelthrs}
 imo:                     ${LONB}
 jmo:                     ${LATB}
@@ -470,29 +458,9 @@ nsout:                   -1
 EOF
 cat model_configure
 
-# setup coupler.res (needed for restarts if current time != start time)
-if [ "${iau_delthrs}" != "-1" ]  && [ "${cold_start}" == "false" ]; then
-   echo "     2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)" > INPUT/coupler.res
-   echo "  ${year}  ${mon}  ${day}  ${hour}     0     0        Model start time:   year, month, day, hour, minute, second" >> INPUT/coupler.res
-   echo "  ${year_start}  ${mon_start}  ${day_start}  ${hour_start}     0     0        Current model time: year, month, day, hour, minute, second" >> INPUT/coupler.res
-   cat INPUT/coupler.res
-   elif [ $cold_start == "true" ] && [ $analdate -gt 2021032400 ]; then
-   echo "     2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)" > INPUT/coupler.res
-   echo "  ${year}  ${mon}  ${day}  ${hour}     0     0        Model start time:   year, month, day, hour, minute, second" >> INPUT/coupler.res
-   echo "  ${yrp3}  ${monp3}  ${dayp3}  ${hrp3}     0     0        Current model time: year, month, day, hour, minute, second" >> INPUT/coupler.res
-   cat INPUT/coupler.res
-else
-   /bin/rm -f INPUT/coupler.res # assume current time == start time
-fi
-
 # copy template namelist file, replace variables.
 /bin/cp -f ${enkfscripts}/${SUITE}.nml input.nml
-if [ $use_ipd = "YES" ]; then
-    sed -i -e '/SUITE/d' input.nml
-    sed -i -e '/oz_phys/d' input.nml
-else
-    sed -i -e "s/SUITE/${SUITE}/g" input.nml
-fi
+sed -i -e "s/SUITE/${SUITE}/g" input.nml
 sed -i -e "s/LAYOUT/${layout}/g" input.nml
 sed -i -e "s/NSTF_NAME/${nstf_name}/g" input.nml
 sed -i -e "s/NPX/${npx}/g" input.nml
@@ -509,7 +477,6 @@ sed -i -e "s/DO_shum/${DO_SHUM}/g" input.nml
 sed -i -e "s/SKEB/${SKEB}/g" input.nml
 sed -i -e "s/DO_skeb/${DO_SKEB}/g" input.nml
 sed -i -e "s/STOCHINI/${stochini}/g" input.nml
-sed -i -e "s/FHSTOCH/${FHSTOCH}/g" input.nml
 sed -i -e "s/FHOUT/${FHOUT}/g" input.nml
 sed -i -e "s/CDMBGWD/${cdmbgwd}/g" input.nml
 sed -i -e "s/ISEED_sppt/${ISEED_SPPT}/g" input.nml
@@ -525,6 +492,12 @@ sed -i -e "s/RESLATLONDYNAMICS/${reslatlondynamics}/g" input.nml
 sed -i -e "s/READ_INCREMENT/${readincrement}/g" input.nml
 sed -i -e "s/HYDROSTATIC/${hydrostatic}/g" input.nml
 sed -i -e "s/LAUNCH_LEVEL/${launch_level}/g" input.nml
+sed -i -e "s/FHCYC/${FHCYC}/g" input.nml
+sed -i -e "s!FIXDIR!${FIXDIR_gcyc}!g" input.nml
+sed -i -e "s!SSTFILE!${fntsfa}!g" input.nml
+sed -i -e "s!ICEFILE!${fnacna}!g" input.nml
+sed -i -e "s!SNOFILE!${fnsnoa}!g" input.nml
+sed -i -e "s/FSNOL_PARM/${FSNOL}/g" input.nml
 cat input.nml
 ls -l INPUT
 
@@ -541,6 +514,18 @@ else
 fi
 
 export DATOUT=${DATOUT:-$datapathp1}
+# this is a hack to work around the fact that first time step history
+# file is not written if restart file requested at first time step.
+if [ $cold_start == "true" ] && [ $analdate -gt 2021032400 ]; then
+   if [ ! -s  dynf003.nc ]; then
+     echo "dynf003.nc missing, copy dynf004"
+     /bin/cp -f dynf004.nc dynf003.nc
+   fi
+   if [ ! -s  phyf003.nc ]; then
+     echo "phyf003.nc missing, copy phyf004"
+     /bin/cp -f phyf004.nc phyf003.nc
+   fi
+fi
 # rename netcdf history files.
 ls -l dyn*.nc
 ls -l phy*.nc
@@ -548,7 +533,8 @@ fh=$FHMIN
 while [ $fh -le $FHMAX ]; do
   charfhr="fhr"`printf %02i $fh`
   charfhr2="f"`printf %03i $fh`
-  if [ $longer_fcst = "YES" ] && [ $fh -eq $FHMAX ]; then
+  if [ $longer_fcst = "YES" ] && [ $fh -eq $FHMAX ] && [ $longfcst_singletime -gt 0 ]; then
+     # copy file, it will be duplicated as sfg2
      /bin/cp -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
   else
      /bin/mv -f dyn${charfhr2}.nc ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
@@ -557,7 +543,8 @@ while [ $fh -le $FHMAX ]; do
      echo "netcdffile missing..."
      exit 1
   fi
-  if [ $longer_fcst = "YES" ] && [ $fh -eq $FHMAX ]; then
+  if [ $longer_fcst = "YES" ] && [ $fh -eq $FHMAX ] && [ $longfcst_singletime -gt 0 ]; then
+     # copy file, it will be duplicated as bfg2
      /bin/cp -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
   else
      /bin/mv -f phy${charfhr2}.nc ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
@@ -569,24 +556,36 @@ while [ $fh -le $FHMAX ]; do
   fh=$[$fh+$FHOUT]
 done
 if [ $longer_fcst = "YES" ]; then
-    fh=$FHMAX
-    analdatep2=`$incdate $analdatep1 $ANALINC`
-    mkdir -p $datapath/$analdatep2
-    while [ $fh -le $FHMAX_LONGER ]; do
-      charfhr="fhr"`printf %02i $fh`
-      charfhr2="f"`printf %03i $fh`
-      /bin/mv -f dyn${charfhr2}.nc ${datapath}/${analdatep2}/sfg2_${analdatep2}_${charfhr}_${charnanal}
-      if [ $? -ne 0 ]; then
-         echo "netcdffile missing..."
-         exit 1
-      fi
-      /bin/mv -f phy${charfhr2}.nc ${datapath}/${analdatep2}/bfg2_${analdatep2}_${charfhr}_${charnanal}
-      if [ $? -ne 0 ]; then
-         echo "netcdf file missing..."
-         exit 1
-      fi
-      fh=$[$fh+$FHOUT]
-    done
+    if [ $longfcst_singletime -eq 0 ]; then
+       # save just the last file (to compare with IFS analysis in grid space, no time interp
+       # needed for GSI observer)
+       analdatep2=`$incdate $analdate $FHMAX_LONGER`
+       mkdir -p $datapath/$analdatep2
+       charfhr="fhr"`printf %02i $FHMAX_LONGER`
+       charfhr2="f"`printf %03i $FHMAX_LONGER`
+       /bin/mv -f dyn${charfhr2}.nc ${datapath}/${analdatep2}/sfg2_${analdatep2}_${charfhr}_${charnanal}
+       /bin/mv -f phy${charfhr2}.nc ${datapath}/${analdatep2}/bfg2_${analdatep2}_${charfhr}_${charnanal}
+    else
+       fh=`expr $FHMAX_LONGER - $ANALINC`
+       fhmax2=`expr $FHMAX_LONGER - $ANALINC \/ 2`
+       analdatep2=`$incdate $analdate $fhmax2`
+       mkdir -p $datapath/$analdatep2
+       while [ $fh -le $FHMAX_LONGER ]; do
+         charfhr="fhr"`printf %02i $fh`
+         charfhr2="f"`printf %03i $fh`
+         /bin/mv -f dyn${charfhr2}.nc ${datapath}/${analdatep2}/sfg2_${analdatep2}_${charfhr}_${charnanal}
+         if [ $? -ne 0 ]; then
+            echo "netcdffile missing..."
+            exit 1
+         fi
+         /bin/mv -f phy${charfhr2}.nc ${datapath}/${analdatep2}/bfg2_${analdatep2}_${charfhr}_${charnanal}
+         if [ $? -ne 0 ]; then
+            echo "netcdf file missing..."
+            exit 1
+         fi
+         fh=$[$fh+$FHOUT]
+       done
+    fi
 fi
 /bin/rm -f phy*nc dyn*nc
 
@@ -607,16 +606,10 @@ if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
         exit 1
       fi
    done
+   if [ -s  ${datapathp1}/${charnanal}/INPUT/ca_data.tile1.nc ]; then
+      touch ${datapathp1}/${charnanal}/INPUT/ca_data.nc
+   fi
    cd ..
-fi
-
-# if random pattern restart file exists for end of IAU window, copy it.
-ls -l stoch_out*
-charfh="F"`printf %06i $FHSTOCH`
-if [ -s stoch_out.${charfh} ]; then
-  mkdir -p ${DATOUT}/${charnanal}
-  echo "copying stoch_out.${charfh} ${DATOUT}/${charnanal}/stoch_ini"
-  /bin/mv -f "stoch_out.${charfh}" ${DATOUT}/${charnanal}/stoch_ini
 fi
 
 ls -l ${DATOUT}

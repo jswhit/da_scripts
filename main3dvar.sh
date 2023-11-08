@@ -155,13 +155,13 @@ export datapath2="${datapath}/${analdate}/"
 /bin/cp -f ${ANAVINFO_ENKF} ${datapath2}/anavinfo
 
 # setup node parameters used in blendinc.sh and compute_ensmean_fcst.sh
-export mpitaskspernode=`python -c "from __future__ import print_function; import math; print(int(math.ceil(float(${nanals})/float(${NODES}))))"`
-if [ $mpitaskspernode -lt 1 ]; then
-  export mpitaskspernode 1
-fi
-export OMP_NUM_THREADS=`expr $corespernode \/ $mpitaskspernode`
-echo "mpitaskspernode = $mpitaskspernode threads = $OMP_NUM_THREADS"
-export nprocs=$nanals
+#export mpitaskspernode=`python -c "from __future__ import print_function; import math; print(int(math.ceil(float(${nanals})/float(${NODES}))))"`
+#if [ $mpitaskspernode -lt 1 ]; then
+#  export mpitaskspernode 1
+#fi
+#export OMP_NUM_THREADS=`expr $corespernode \/ $mpitaskspernode`
+#echo "mpitaskspernode = $mpitaskspernode threads = $OMP_NUM_THREADS"
+#export nprocs=$nanals
 
 # current analysis time.
 export analdate=$analdate
@@ -269,6 +269,7 @@ echo "export analdate=${analdate}" > $startupenv
 echo "export analdate_end=${analdate_end}" >> $startupenv
 echo "export fg_only=false" > $datapath/fg_only.sh
 echo "export cold_start=false" >> $datapath/fg_only.sh
+echo "unset skip_calc_increment" >> $datapath/fg_only.sh
 
 cd $homedir
 

@@ -4,7 +4,7 @@ echo "running on $machine using $NODES nodes and $cores CORES"
 
 export ndates_job=1 # number of DA cycles to run in one job submission
 # resolution of control and ensmemble.
-export RES=192 
+export RES=96   
 export RES_CTL=$RES
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
@@ -24,7 +24,7 @@ export beta=0 # percentage of enkf increment (*10)
 # in this case, to recenter around EnVar analysis set recenter_control_wgt=100
 export recenter_control_wgt=100
 export recenter_ensmean_wgt=`expr 100 - $recenter_control_wgt`
-export exptname="C${RES}_3dvar_test"
+export exptname="C${RES}_3dvar_iau"
 # for 'passive' or 'replay' cycling of control fcst 
 export replay_controlfcst='false'
 
@@ -45,7 +45,7 @@ export replay_run_observer='true' # run observer on replay control forecast
 # YYYYMMDDHH analysis date string to see if
 # full ensemble should be saved to HPSS (returns 0 if 
 # HPSS save should be done)
-if [ $machine == "orion" ]; then
+if [ $machine == "orion" ] || [ $machine == "hercules" ]; then
    export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
    export save_hpss="false"
 else
@@ -119,6 +119,26 @@ elif [ "$machine" == 'orion' ]; then
    export PYTHONPATH=/home/jwhitake/.local/lib/python3.7/site-packages
    export HDF5_DISABLE_VERSION_CHECK=1
    module list
+elif [ $machine == "hercules" ]; then
+   source $MODULESHOME/init/sh
+   export basedir=/work2/noaa/gsienkf/${USER}
+   export datadir=$basedir
+   export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
+   export obs_datapath=/work/noaa/rstprod/dump
+   ulimit -s unlimited
+   source $MODULESHOME/init/sh
+   module use /work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-dev-20230717/envs/unified-env/install/modulefiles/Core
+   module use /work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-dev-20230717/envs/unified-env/install/modulefiles/intel-oneapi-mpi/2021.9.0/intel/2021.9.0
+   module load stack-intel/2021.9.0
+   module load stack-intel-oneapi-mpi/2021.9.0
+   module load intel-oneapi-mkl/2022.2.1
+   module load grib-util
+   module load parallelio
+   module load bufr/11.7.0
+   module load crtm/2.4.0
+   export PATH="/work/noaa/gsienkf/whitaker/miniconda3/bin:$PATH"
+   export HDF5_DISABLE_VERSION_CHECK=1
+   export WGRIB=`which wgrib`
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f2/dev/${USER}
    export datadir=/lustre/f2/scratch/${USER}
@@ -126,7 +146,7 @@ elif [ "$machine" == 'gaea' ]; then
    #export hsidir="/3year/NCEPDEV/GEFSRR/${exptname}"
    export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/dumps
 else
-   echo "machine must be 'hera', 'orion' or 'gaea' got $machine"
+   echo "machine must be 'hera', 'orion', 'hercules' or 'gaea' got $machine"
    exit 1
 fi
 export datapath="${datadir}/${exptname}"
@@ -177,9 +197,9 @@ elif [ $LEVS -eq 127 ]; then
   export gpstop=55
   export GRIDOPTS="nlayers(63)=1,nlayers(64)=1,"
   if [ $DONST == "YES" ]; then
-     export SUITE="FV3_GFS_v16beta"
+     export SUITE="FV3_GFS_v16"
   else
-     export SUITE="FV3_GFS_v16beta_no_nsst"
+     export SUITE="FV3_GFS_v16_no_nsst"
   fi
 else
   echo "LEVS must be 64 or 127"
@@ -259,7 +279,7 @@ elif [ $RES_CTL -eq 192 ]; then
    export LATB_CTL=384
 elif [ $RES_CTL -eq 96 ]; then
    export dt_atmos_ctl=900
-   export cdmbgwd="0.14,1.8,1.0,1.0"  # mountain blocking, ogwd, cgwd, cgwd src scaling
+   export cdmbgwd_ctl="0.14,1.8,1.0,1.0"  # mountain blocking, ogwd, cgwd, cgwd src scaling
    export JCAP_CTL=188
    export LONB_CTL=384  
    export LATB_CTL=192
@@ -278,14 +298,15 @@ export ANALINC=6
 export FHMIN=3
 export FHMAX=9
 export FHOUT=3
+export FHCYC=6
 FHMAXP1=`expr $FHMAX + 1`
 export FHMAX_LONGER=`expr $FHMAX + $ANALINC`
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
-#export iaufhrs="3,6,9"
-#export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
-# IAU off
 export iaufhrs="6"
-export iau_delthrs=-1
+export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
+# IAU off
+#export iaufhrs="6"
+#export iau_delthrs=-1
 
 # other model variables set in ${rungfs}
 # other gsi variables set in ${rungsi}
@@ -359,10 +380,6 @@ fi
 # use pre-generated bias files.
 #export biascorrdir=${datadir}/biascor
 
-export nanals=1                                                    
-# if nanals2>0, extend nanals2 members out to FHMAX + ANALINC (one extra assim window)
-export nanals2=-1 # longer extension. Set to -1 to disable 
-#export nanals2=$NODES
 export nitermax=1 # number of retries
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
@@ -380,15 +397,19 @@ if [ "$machine" == 'hera' ]; then
    export enkfbin=${execdir}/global_enkf
    export gsiexec=${execdir}/global_gsi
    export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
-elif [ "$machine" == 'orion' ]; then
+elif [ "$machine" == 'orion' ] || [ $machine == "hercules" ]; then
    export python=`which python`
-   export fv3gfspath=/work/noaa/global/glopara
-   export FIXFV3=$fv3gfspath/fix_nco_gfsv16/fix_fv3_gmted2010
-   export FIXGLOBAL=$fv3gfspath/fix_nco_gfsv16/fix_am
-   export gsipath=${basedir}/GSI-enkf64bit
+   export fv3gfspath=/work/noaa/global/glopara/fix_NEW
+   export FIXDIR=/work/noaa/nems/emc.nemspara/RT/NEMSfv3gfs/input-data-20220414
+   export FIXDIR_gcyc=${fv3gfspath}
+   export FIXFV3=${fv3gfspath}/fix_fv3_gmted2010
+   export FIXGLOBAL=${fv3gfspath}/fix_am
+   export gsipath=/work/noaa/gsienkf/whitaker/GSI
    export fixgsi=${gsipath}/fix
-   #export fixcrtm=${basedir}/fix/crtm/v2.2.6/fix
-   export fixcrtm=$fv3gfspath/crtm/crtm_v2.3.0
+   export fixcrtm=/work/noaa/global/glopara/crtm/crtm_v2.3.0
+   if [ $machine == "hercules" ]; then
+      export fixcrtm=$CRTM_FIX
+   fi
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export gsiexec=${execdir}/global_gsi
@@ -435,45 +456,8 @@ export NLAT=$((${LATA}+2))
 #export BERROR=${basedir}/staticB/global_berror_enkf.l${LEVS}y${NLAT}.f77
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_janjulysmooth0p5
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_annmeansmooth0p5
-export REALTIME=YES # if NO, use historical files set in main.sh
+export REALTIME=NO # if NO, use historical files set in main.sh
 
 cd $enkfscripts
 echo "run main driver script"
-if [ $nanals -eq 1 ]; then
-    sh ./main3dvar.sh
-elif [ $controlanal == "true" ]; then
-   # run as in NCEP ops, with high-res control forecast updated by GSI hyb 4denvar,
-   # and enkf analysis recentered around upscaled control analysis.
-   # use static B weights and localization scales for GSI from files.
-   # (s_ens_h, s_ens_v, beta_s0, beta_e0 will be ignored)
-   export readin_localization=".true."
-   export readin_beta=".true."
-   export replay_controlfcst=".false."
-   export hybgain=".false." # controlanal takes precedence over hybgain
-   export HYBENSINFO=${fixgsi}/global_hybens_info.l${LEVS}.txt # only used if readin_beta or readin_localization=T
-   # uncomment to smooth ensemble perturbations
-   #export HYBENSMOOTHINFO=${fixgsi}/global_hybens_smoothinfo.l${LEVS}.txt
-   sh ./main_controlanal.sh
-else
-   # GSI sees ensemble mean background (high-res control forecast is a replay to ens mean analysis)
-   # (s_ens_h, s_ens_v, beta_s0, beta_e0, alpha, beta used)
-   if [ $hybgain == "false" ]; then
-      # use static B weights and localization scales for GSI from files.
-      # (alpha, beta ignored)
-      #export readin_localization=".true."
-      #export readin_beta=".true."
-      # use constant values (alpha and beta parameters)
-      export readin_beta=.false.
-      export readin_localization=.false.
-      # these only used for hybrid covariance (hyb 4denvar) in GSI
-      export beta_s0=`python -c "from __future__ import print_function; print($alpha / 1000.)"` # weight given to static B in hyb cov
-      # beta_e0 parameter (ensemble weight) in my GSI branch (not in GSI/develop)
-      export beta_e0=`python -c "from __future__ import print_function; print($beta / 1000.)"` # weight given to ensemble B in hyb cov
-   else
-      export beta_s0=1.000 # 3dvar
-      export beta_e0=0.0
-      export readin_beta=.false.
-      export readin_localization=.false.
-   fi
-   sh ./main.sh
-fi
+sh ./main3dvar.sh
