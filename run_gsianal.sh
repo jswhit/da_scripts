@@ -27,12 +27,8 @@ fi
 
 while [ $alldone == "no" ] && [ $niter -le $nitermax ]; do
 
-export JCAP_A=$JCAP
-if [ $controlanal == 'true' ]; then
-  export JCAP_B=$JCAP_CTL # high res control background
-else
-  export JCAP_B=$JCAP # ensmean background
-fi
+export JCAP_A=$JCAP_CTL
+export JCAP_B=$JCAP_CTL # high res control background
 export HXONLY='NO'
 export VERBOSE=YES  
 export OMP_NUM_THREADS=$gsi_control_threads
@@ -68,6 +64,7 @@ if [ "$cold_start_bias" == "true" ]; then
     /bin/rm -rf $tmpdir
     if [  ! -s ${datapath2}/diag_conv_uv_ges.${analdate}_${charnanal2}.nc4 ]; then
        echo "gsi observer step failed"
+       echo "no" > ${current_logdir}/run_gsi_anal.log 2>&1
        exit 1
     fi
 fi

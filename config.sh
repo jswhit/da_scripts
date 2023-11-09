@@ -40,10 +40,8 @@ export resubmit='true'
 # full ensemble should be saved to HPSS (returns 0 if 
 # HPSS save should be done)
 if [ $machine == "orion" ] || [ $machine == "hercules" ]; then
-   export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
    export save_hpss="false"
 else
-   export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
    export save_hpss="true"
 fi
 # override values from above for debugging.
@@ -53,7 +51,7 @@ fi
 #export cleanup_fg='false'
 #export resubmit='false'
 #export do_cleanup='false'
-#export save_hpss_subset="false" # save a subset of data each analysis time to HPSS
+#export save_hpss="false" # save data each analysis time to HPSS
 
 source $MODULESHOME/init/sh
 if [ "$machine" == 'hera' ]; then
