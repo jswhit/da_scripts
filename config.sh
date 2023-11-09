@@ -254,7 +254,7 @@ export use_correlated_oberrs=".true."
 # use pre-generated bias files.
 #export biascorrdir=${datadir}/biascor
 
-export nitermax=2 # number of retries
+export nitermax=1 # number of retries
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
