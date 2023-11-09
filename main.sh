@@ -499,12 +499,6 @@ fi
 if [ $cold_start == 'false' ]; then
 
 # cleanup
-if [ $do_cleanup == 'true' ]; then
-   sh ${enkfscripts}/clean.sh > ${current_logdir}/clean.out 2>&1
-fi # do_cleanup = true
-
-wait # wait for backgrounded processes to finish
-
 # only save full ensemble data to hpss if checkdate.py returns 0
 # a subset will be saved if save_hpss_subset="true" and save_hpss="true"
 date_check=`python ${homedir}/checkdate.py ${analdate}`
@@ -513,6 +507,12 @@ if [ $date_check -eq 0 ]; then
 else
   export save_hpss_full="false"
 fi
+if [ $do_cleanup == 'true' ]; then
+   sh ${enkfscripts}/clean.sh > ${current_logdir}/clean.out 2>&1
+fi # do_cleanup = true
+
+wait # wait for backgrounded processes to finish
+
 cd $homedir
 if [ $save_hpss == 'true' ]; then
    cat ${machine}_preamble_hpss hpss.sh > job_hpss.sh
