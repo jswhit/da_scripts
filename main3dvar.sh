@@ -17,119 +17,14 @@ source $datapath/fg_only.sh # define fg_only variable.
 export startupenv="${datapath}/analdate.sh"
 source $startupenv
 
-# if SATINFO in obs dir, use it
-#if [ -s ${obs_datapath}/bufr_${analdate}/global_satinfo.txt ]; then
-#   export SATINFO=${obs_datapath}/bufr_${analdate}/global_satinfo.txt
-#fi
-#export OZINFO=`sh ${enkfscripts}/pickinfo.sh ${analdate} ozinfo`
-#export CONVINFO=`sh ${enkfscripts}/pickinfo.sh ${analdate} convinfo`
-# if $REALTIME == "YES", use OZINFO,CONVINFO,SATINFO set in config.sh
-if [ "$REALTIME" == "NO" ]; then
-
-#cd build_gsinfo
-#info=`sh pickinfo.sh $analdate convinfo`
-#export CONVINFO="$PWD/$info"
-#echo "CONVINFO: $CONVINFO"
-#info=`sh pickinfo.sh $analdate ozinfo`
-#export OZINFO="$PWD/$info"
-#echo "OZINFO: $OZINFO"
-#export SATINFO=$datapath/$analdate/satinfo
-#sh create_satinfo.sh $analdate > $SATINFO
-#cd ..
-
-#   Set CONVINFO
-if [[  "$analdate" -ge 2020091612 ]]; then
-    export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2020091612
-elif [[  "$analdate" -ge 2020091612 ]]; then
-    export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2020052612
-elif [[  "$analdate" -ge 2020040718 ]]; then
-    export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2020040718
-elif [[  "$analdate" -ge 2019110706 ]]; then
-    export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2019110706
-elif [[  "$analdate" -ge 2019021900 ]]; then
-    export CONVINFO=$fixgsi/gfsv16_historical/global_convinfo.txt.2019021900
-elif [[ "$analdate" -ge "2018022818" ]]; then
-    export CONVINFO=$fixgsi/fv3_historical/global_convinfo.txt.2018022818
-elif [[ "$analdate" -ge "2018010512" ]]; then
-    export CONVINFO=$fixgsi/fv3_historical/global_convinfo.txt.2018010512
-elif [[ "$analdate" -ge "2017071912" ]]; then
-    export CONVINFO=$fixgsi/fv3_historical/global_convinfo.txt.2017071912
-elif [[ "$analdate" -ge "2016031512" ]]; then
-    export CONVINFO=$fixgsi/fv3_historical/global_convinfo.txt.2016031512
-elif [[ "$analdate" -ge "2014041400" ]]; then
-    export CONVINFO=$fixgsi/fv3_historical/global_convinfo.txt.2014041400
-else
-    echo "no convinfo found"
-    exit 1
-fi
-
-#   Set OZINFO
-if [[  "$analdate" -ge 2020011806 ]]; then
-    export OZINFO=$fixgsi/gfsv16_historical/global_ozinfo.txt.2020011806
-elif [[  "$analdate" -ge 2020011600 ]]; then
-    export OZINFO=$fixgsi/gfsv16_historical/global_ozinfo.txt.2020011600
-elif [[  "$analdate" -ge 2020011600 ]]; then
-    export OZINFO=$fixgsi/gfsv16_historical/global_ozinfo.txt.2020021900
-elif [[  "$analdate" -ge 2020011806 ]]; then
-    export CONVINFO=$fixgsi/gfsv16_historical/global_ozinfo.txt.2020011806
-elif [[ "$analdate" -ge "2020011806" ]]; then
-    export OZINFO=$fixgsi/fv3_historical/global_ozinfo.txt.2020011806
-elif [[ "$analdate" -ge "2020011600" ]]; then
-    export OZINFO=$fixgsi/fv3_historical/global_ozinfo.txt.2020011600
-elif [[ "$analdate" -ge "2018110700" ]]; then
-    export OZINFO=$fixgsi/fv3_historical/global_ozinfo.txt.2018110700
-elif [[ "$analdate" -ge "2015110500" ]]; then
-    export OZINFO=$fixgsi/fv3_historical/global_ozinfo.txt.2015110500
-else
-    echo "no ozinfo found"
-    exit 1
-fi
-
-#   Set SATINFO
-if [[ "$analdate" -ge "2020022012" ]]; then
-    export SATINFO=$fixgsi/gfsv16_historical/global_satinfo.txt.2020022012
-elif [[ "$analdate" -ge "2019110706" ]]; then
-    export SATINFO=$fixgsi/gfsv16_historical/global_satinfo.txt.2019110706
-elif [[ "$analdate" -ge "2019021900" ]]; then
-    export SATINFO=$fixgsi/gfsv16_historical/global_satinfo.txt.2019021900
-elif [[ "$analdate" -ge "2018053012" ]]; then
-    export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2018053012
-elif [[ "$analdate" -ge "2018021212" ]]; then
-    export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2018021212
-elif [[ "$analdate" -ge "2017103118" ]]; then
-    export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2017103118
-elif [[ "$analdate" -ge "2017031612" ]]; then
-    export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2017031612
-elif [[ "$analdate" -ge "2017030812" ]]; then
-    export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2017030812
-elif [[ "$analdate" -ge "2016110812" ]]; then
-    export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2016110812
-elif [[ "$analdate" -ge "2016090912" ]]; then
-    export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2016090912
-elif [[ "$analdate" -ge "2016020312" ]]; then
-    export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2016020312
-elif [[ "$analdate" -ge "2016011912" ]]; then
-    export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2016011912
-elif [[ "$analdate" -ge "2015111012" ]]; then
-    export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2015111012
-elif [[ "$analdate" -ge "2015100118" ]]; then
-    export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2015100118
-elif [[ "$analdate" -ge "2015070218" ]]; then
-    export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2015070218
-elif [[ "$analdate" -ge "2015011412" ]]; then
-    export SATINFO=$fixgsi/fv3_historical/global_satinfo.txt.2015011412
-else
-    echo "no satinfo found"
-    exit 1
-fi
-fi
-
-if [ ! -z $HYBENSINFO ]; then
-   /bin/cp -f ${HYBENSINFO} ${datapath}/${analdate}/hybens_info
-fi
-if [ ! -z $HYBENSMOOTHINFO ];  then
-   /bin/cp -f ${HYBENSMOOTHINFO} $datapath2/${analdate}/hybens_smoothinfo
-fi
+cd build_gsinfo
+export SATINFO=$datapath/$analdate/satinfo
+export CONVINFO=$datapath/$analdate/convinfo
+export OZINFO=$datapath/$analdate/ozinfo
+sh create_satinfo.sh $analdate > $SATINFO
+sh create_convinfo.sh $analdate > $CONVINFO
+sh create_ozinfo.sh $analdate > $OZINFO
+cd ..
 
 #------------------------------------------------------------------------
 mkdir -p $datapath
@@ -153,15 +48,6 @@ export ANALHR=$hr
 # set environment analdate
 export datapath2="${datapath}/${analdate}/"
 /bin/cp -f ${ANAVINFO_ENKF} ${datapath2}/anavinfo
-
-# setup node parameters used in blendinc.sh and compute_ensmean_fcst.sh
-#export mpitaskspernode=`python -c "from __future__ import print_function; import math; print(int(math.ceil(float(${nanals})/float(${NODES}))))"`
-#if [ $mpitaskspernode -lt 1 ]; then
-#  export mpitaskspernode 1
-#fi
-#export OMP_NUM_THREADS=`expr $corespernode \/ $mpitaskspernode`
-#echo "mpitaskspernode = $mpitaskspernode threads = $OMP_NUM_THREADS"
-#export nprocs=$nanals
 
 # current analysis time.
 export analdate=$analdate

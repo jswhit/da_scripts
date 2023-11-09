@@ -1,14 +1,5 @@
 #!/bin/sh
 echo "Time starting at `date` "
-source $MODULESHOME/init/sh
-module list
-env | grep OMP
-
-#if [ $machine == "hera" ]; then
-#   source $MODULESHOME/init/sh
-#   module switch intel intel/19.0.4.243
-#   module switch impi impi/2019.0.5 
-#fi
 
 VERBOSE=${VERBOSE:-"YES"}
 if [[ "$VERBOSE" = "YES" ]]; then
@@ -77,7 +68,7 @@ fdatev=`${incdate} $fdatei $fhr`
 echo "fdatei=$fdatei fhr=$fhr fdatev=$fdatev"
 gdate0=`echo $gdate | cut -c1-8`
 obs_datapath=${obs_datapath:-/scratch1/NCEPDEV/global/glopara/dump}
-datobs=$obs_datapath/${RUN}.${iy}${im}${id}/${ih}
+datobs=$obs_datapath/${RUN}.${iy}${im}${id}/${ih}/atmos
 
 # Set runtime and save directories
 tmpdir=${tmpdir:-$datges/gsitmp$$}
@@ -144,7 +135,7 @@ if [ $use_correlated_oberrs == ".true." ];  then
 else
   lupdqc=.false.
 fi
-SETUP="verbose=.true.,reduce_diag=.true.,lwrite_peakwt=.true.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=.true.,ens_nstarthr=3,iwrtinc=-1,nhr_assimilation=6,nhr_obsbin=$FHOUT,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=$lobsdiag_forenkf,lwrite_predterms=.true.,thin4d=.true.,lupdqc=$lupdqc"
+SETUP="verbose=.true.,reduce_diag=.true.,lwrite_peakwt=.true.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=.true.,ens_nstarthr=3,iwrtinc=-1,nhr_assimilation=6,nhr_obsbin=$FHOUT,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=$lobsdiag_forenkf,lwrite_predterms=.true.,thin4d=.true.,lupdqc=$lupdqc,nhr_anal=$iaufhrs,lwrite_sfcanl=.false."
 
 if [[ "$HXONLY" = "YES" ]]; then
    #SETUP="$SETUP,lobserver=.true.,l4dvar=.true." # can't use reduce_diag=T
@@ -153,11 +144,15 @@ fi
 if [[ "$HXONLY" != "YES" ]]; then
    if [[ $beta_s0 > 0.999 ]]; then # 3dvar or hybrid gain
       STRONGOPTS="tlnmc_option=1,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5"
-      SETUP="$SETUP,miter=1,niter(1)=150,niter(2)=0"
+      if [ $NOOUTERLOOP == "YES" ]; then
+         SETUP="$SETUP,miter=1,niter(1)=150,niter(2)=0"
+      else
+         SETUP="$SETUP,miter=2,niter(1)=100,niter(2)=100"
+      fi
    else # envar
-      STRONGOPTS="tlnmc_option=3,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
+      STRONGOPTS="tlnmc_option=3,nstrong=1,nvmodes_keep=48,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
       # balance constraint on 3dvar part of envar increment
-      #STRONGOPTS="tlnmc_option=4,nstrong=1,nvmodes_keep=8,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
+      #STRONGOPTS="tlnmc_option=4,nstrong=1,nvmodes_keep=48,period_max=6.,period_width=1.5,baldiag_full=.true.,baldiag_inc=.true.,"
       # no strong bal constraint
       if [ $NOTLNMC == "YES" ]; then
          STRONGOPTS="tlnmc_option=0,nstrong=0,nvmodes_keep=0,baldiag_full=.false.,baldiag_inc=.false.,"
@@ -267,7 +262,7 @@ cat <<EOF > gsiparm.anl
  &OBSQC
    dfact=0.75,dfact1=3.0,noiqc=.true.,oberrflg=.false.,c_varqc=0.04,
    use_poq7=.true.,qc_noirjaco3_pole=.true.,vqc=.false.,nvqc=.true.,
-   aircraft_t_bc=.true.,biaspredt=1.0e5,upd_aircraft=.true.,cleanup_tail=.true.,
+   aircraft_t_bc=$aircraft_t_bc,biaspredt=1.0e5,upd_aircraft=$upd_aircraft,cleanup_tail=.true.,
    tcp_width=60.0,tcp_ermin=2.0,tcp_ermax=12.0,
    $OBSQC
  /
@@ -514,8 +509,8 @@ GSATANG=${GSATANG:-$datgesm1/${prefix_tbc}.satang}
 # CRTM Spectral and Transmittance coefficients
 mkdir -p crtm_coeffs
 for file in $(awk '{if($1!~"!"){print $1}}' satinfo | sort | uniq); do
-   $nln $fixcrtm/${file}.SpcCoeff.bin ./crtm_coeffs/
-   $nln $fixcrtm/${file}.TauCoeff.bin ./crtm_coeffs/
+   $nln $fixcrtm/${file}.SpcCoeff.bin ./crtm_coeffs/${file}.SpcCoeff.bin
+   $nln $fixcrtm/${file}.TauCoeff.bin ./crtm_coeffs/${file}.TauCoeff.bin
 done
 
 $nln $fixcrtm/Nalli.IRwater.EmisCoeff.bin   ./crtm_coeffs/Nalli.IRwater.EmisCoeff.bin
@@ -798,10 +793,10 @@ echo "Time before GSI `date` "
 export PGM=$tmpdir/gsi.x
 ${enkfscripts}/runmpi
 rc=$?
-if [[ $rc -ne 0 ]];then
-  echo "GSI failed with exit code $rc"
-  exit $rc
-fi
+#if [[ $rc -ne 0 ]];then
+#  echo "GSI failed with exit code $rc"
+#  exit $rc
+#fi
 else
 echo "some input files missing, exiting ..."
 ls -l ./satbias_in

@@ -22,9 +22,12 @@ charnanal2=`printf %02i $nmem`
 export ISEED_SPPT=$((analdate*1000 + nmem*10 + 0 + niter))
 export ISEED_SKEB=$((analdate*1000 + nmem*10 + 1 + niter))
 export ISEED_SHUM=$((analdate*1000 + nmem*10 + 2 + niter))
+#export ISEED_CA=$((analdate*1000 + nmem*10 + 3 + niter)) # doesn't work, too long
+export ISEED_CA=$((analdate+nmem))
 #export ISEED_SPPT=$((analdate*1000 + nmem*10 + 0))
 #export ISEED_SKEB=$((analdate*1000 + nmem*10 + 1))
 #export ISEED_SHUM=$((analdate*1000 + nmem*10 + 2))
+#export ISEED_CA=$((analdate*1000 + nmem*10 + 3))
 export npx=`expr $RES + 1`
 export LEVP=`expr $LEVS \+ 1`
 # yr,mon,day,hr at middle of assim window (analysis time)
@@ -93,11 +96,11 @@ if [ $? -ne 0 ]; then
   echo "cd to ${datapath2}/${charnanal} failed, stopping..."
   exit 1
 fi
-/bin/rm -f dyn* phy* *nemsio* PET*
+/bin/rm -f dyn* phy* PET*
 export DIAG_TABLE=${DIAG_TABLE:-$enkfscripts/diag_table}
 /bin/cp -f $DIAG_TABLE diag_table
-/bin/cp -f $enkfscripts/nems.configure .
-/bin/cp -f $enkfscripts/fd_nems.yaml .
+/bin/cp -f $enkfscripts/ufs.configure .
+/bin/cp -f $enkfscripts/fd_ufs.yaml .
 # insert correct starting time and output interval in diag_table template.
 sed -i -e "s/YYYY MM DD HH/${year} ${mon} ${day} ${hour}/g" diag_table
 sed -i -e "s/FHOUT/${RESTART_FREQ}/g" diag_table
@@ -119,32 +122,44 @@ fi
 
 # Grid and orography data
 n=1
+if [[ $RES -eq 96 ]]; then
+   fv3_input_data=FV3_input_data
+else
+   fv3_input_data=FV3_input_data${RES}
+fi
 while [ $n -le 6 ]; do
- ln -fs $FIXFV3/C${RES}/C${RES}_grid.tile${n}.nc     C${RES}_grid.tile${n}.nc
- ln -fs $FIXFV3/C${RES}/C${RES}_oro_data.tile${n}.nc oro_data.tile${n}.nc
+ ln -fs $FIXDIR/${fv3_input_data}/INPUT_L127/C${RES}_grid.tile${n}.nc C${RES}_grid.tile${n}.nc
+ ln -fs $FIXDIR/FV3_fix_tiled/C${RES}/oro_C${RES}.${OCNRES}.tile${n}.nc oro_data.tile${n}.nc
+ ln -fs $FIXDIR/${fv3_input_data}/INPUT_L127/oro_data_ls.tile${n}.nc oro_data_ls.tile${n}.nc
+ ln -fs $FIXDIR/${fv3_input_data}/INPUT_L127/oro_data_ss.tile${n}.nc oro_data_ss.tile${n}.nc
  n=$((n+1))
 done
-ln -fs $FIXFV3/C${RES}/C${RES}_mosaic.nc  grid_spec.nc
+ln -fs $FIXDIR/${fv3_input_data}/INPUT/grid_spec.nc  C${RES}_mosaic.nc
+ln -fs $FIXDIR/CPL_FIX/aC${RES}o${ORES3}/grid_spec.nc  grid_spec.nc
+ln -fs $FIXDIR/MOM6_FIX/${ORES3}/ocean_mosaic.nc ocean_mosaic.nc
+# symlinks one level up from INPUT
 cd ..
-#ln -fs $FIXGLOBAL/global_o3prdlos.f77               global_o3prdlos.f77
-# new ozone and h2o physics for stratosphere
-ln -fs $FIXGLOBAL/ozprdlos_2015_new_sbuvO3_tclm15_nuchem.f77 global_o3prdlos.f77
-ln -fs $FIXGLOBAL/global_h2o_pltc.f77 global_h2oprdlos.f77 # used if h2o_phys=T
-# co2, ozone, surface emiss and aerosol data.
-ln -fs $FIXGLOBAL/global_solarconstant_noaa_an.txt  solarconstant_noaa_an.txt
-ln -fs $FIXGLOBAL/global_sfc_emissivity_idx.txt     sfc_emissivity_idx.txt
-ln -fs $FIXGLOBAL/global_co2historicaldata_glob.txt co2historicaldata_glob.txt
-ln -fs $FIXGLOBAL/co2monthlycyc.txt                 co2monthlycyc.txt
-for file in `ls $FIXGLOBAL/co2dat_4a/global_co2historicaldata* ` ; do
-   ln -fs $file $(echo $(basename $file) |sed -e "s/global_//g")
+/bin/cp -f $enkfscripts/noahmptable.tbl .
+ln -fs $FIXDIR/FV3_fix/fix_co2_proj/* .
+#ln -fs $FIXDIR/FV3_fix/*grb .
+ln -fs $FIXDIR/FV3_fix/*txt .
+ln -fs $FIXDIR/FV3_fix/*f77 .
+ln -fs $FIXDIR/FV3_fix/*dat .
+ln -fs $FIXDIR/FV3_input_data_RRTMGP/* .
+ln -fs $FIXDIR/FV3_input_data_gsd/CCN_ACTIVATE.BIN CCN_ACTIVATE.BIN 
+ln -fs $FIXDIR/FV3_input_data_gsd/freezeH2O.dat freezeH2O.dat   
+ln -fs $FIXDIR/FV3_input_data_gsd/qr_acr_qg.dat qr_acr_qg.dat
+ln -fs $FIXDIR/FV3_input_data_gsd/qr_acr_qs.dat qr_acr_qs.dat 
+ln -fs $FIXDIR/FV3_input_data/ugwp_C384_tau.nc ugwp_limb_tau.nc
+# for ugwpv1 and MERRA aerosol climo (IAER=1011)
+for n in 01 02 03 04 05 06 07 08 09 10 11 12; do
+  ln -fs $FIXDIR/FV3_input_data_INCCN_aeroclim/MERRA2/merra2.aerclim.2003-2014.m${n}.nc aeroclim.m${n}.nc
 done
-ln -fs $FIXGLOBAL/global_climaeropac_global.txt     aerosol.dat
-for file in `ls $FIXGLOBAL/global_volcanic_aerosols* ` ; do
-   ln -fs $file $(echo $(basename $file) |sed -e "s/global_//g")
-done
-# for Thompson microphysics
-#ln -fs $FIXGLOBAL/CCN_ACTIVATE.BIN CCN_ACTIVATE.BIN
-#ln -fs $FIXGLOBAL/freezeH2O.dat freezeH2O.dat
+ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_BC.v1_3.dat  optics_BC.dat
+ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_OC.v1_3.dat  optics_OC.dat
+ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_DU.v15_3.dat optics_DU.dat
+ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_SS.v3_3.dat  optics_SS.dat
+ln -fs  $FIXDIR/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_SU.v1_3.dat  optics_SU.dat
 
 # create netcdf increment files.
 if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
@@ -191,17 +206,6 @@ EOF
       #fi
    done # do next forecast
    cd ..
-else
-   if [ $cold_start == "false" ] ; then
-      cd INPUT
-      iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
-# move already computed increment files
-      for fh in $iaufhrs2; do
-         export increment_file="fv3_increment${fh}.nc"
-         /bin/mv -f ${datapath2}/incr_${analdate}_fhr0${fh}_${charnanal} ${increment_file}
-      done
-      cd ..
-   fi
 fi
 
 # setup model namelist parameters
@@ -255,6 +259,8 @@ fi
 #fntsfa=${sstpath}/${yeara}/sst_${charnanal2}.grib
 #fnacna=${sstpath}/${yeara}/icec_${charnanal2}.grib
 #fnsnoa='        ' # no input file, use model snow
+export FTSFS=99999 # no sst analysis, use model
+export FAISS=99999 # no sea ice analysis, use model
 
 # halve time step if niter>1 and niter==nitermax
 if [[ $niter -gt 1 ]] && [[ $niter -eq $nitermax ]]; then
@@ -298,17 +304,7 @@ fi
 
 ls -l 
 
-if [ $nanals2 -gt 0 ] && [ $nmem -le $nanals2 ]; then
-   longer_fcst="YES"
-   # if longfcst_singletime=0, FHMAX_LONGER is divisible by 6, and only a single forecast time
-   # (the end of the forecast) beyond FHMAX is saved.  If longfcst_singletime=3, then it is 
-   # assumed that all the times in the 6-h window centered on FHMAX_LONGER - 3 are desired so
-   # that the GSI observer can be run.
-   longfcst_singletime=`python -c "from __future__ import print_function; print($FHMAX_LONGER % 6)"`
-   echo "longfcst_singletime=$longfcst_singletime"
-else
-   longer_fcst="NO"
-fi
+longer_fcst="NO"
 if [ "${iau_delthrs}" != "-1" ]; then
    if [ $longer_fcst = "YES" ]; then
       FHMAX_FCST=`expr $FHMAX_LONGER + $ANALINC`
@@ -328,46 +324,6 @@ else
    else
       FHMAX_FCST=$FHMAX
    fi
-fi
-
-if [ $FHCYC -gt 0 ]; then
-  skip_global_cycle=1
-fi
-
-if [ $cold_start = "false" ] && [ -z $skip_global_cycle ]; then
-   # run global_cycle to update surface in restart file.
-   export BASE_GSM=${fv3gfspath}
-   export FIXfv3=$FIXFV3
-   # global_cycle chokes for 3,9,15,18 UTC hours in CDATE
-   #export CDATE="${year_start}${mon_start}${day_start}${hour_start}"
-   export CDATE=${analdate}
-   export CYCLEXEC=${execdir}/global_cycle
-   export CYCLESH=${enkfscripts}/global_cycle.sh
-   export COMIN=${PWD}/INPUT
-   export COMOUT=$COMIN
-   export FNTSFA="${fntsfa}"
-   export FNSNOA="${fnsnoa}"
-   export FNACNA="${fnacna}"
-   export CASE="C${RES}"
-   export PGM="${execdir}/global_cycle"
-   if [ $NST_GSI -gt 0 ]; then
-       export GSI_FILE=${datapath2}/${PREINP}dtfanl.nc
-   fi
-   sh ${enkfscripts}/global_cycle_driver.sh
-   n=1
-   while [ $n -le 6 ]; do
-     ls -l ${COMOUT}/sfcanl_data.tile${n}.nc
-     ls -l ${COMOUT}/sfc_data.tile${n}.nc
-     if [ -s ${COMOUT}/sfcanl_data.tile${n}.nc ]; then
-         /bin/mv -f ${COMOUT}/sfcanl_data.tile${n}.nc ${COMOUT}/sfc_data.tile${n}.nc
-     else
-         echo "global_cycle failed, exiting .."
-         exit 1
-     fi
-     ls -l ${COMOUT}/sfc_data.tile${n}.nc
-     n=$((n+1))
-   done
-   /bin/rm -rf rundir*
 fi
 
 # NSST Options
@@ -462,7 +418,7 @@ cat model_configure
 /bin/cp -f ${enkfscripts}/${SUITE}.nml input.nml
 sed -i -e "s/SUITE/${SUITE}/g" input.nml
 sed -i -e "s/LAYOUT/${layout}/g" input.nml
-sed -i -e "s/NSTF_NAME/${nstf_name}/g" input.nml
+sed -i -e "s/NSTFNAME/${nstf_name}/g" input.nml
 sed -i -e "s/NPX/${npx}/g" input.nml
 sed -i -e "s/NPY/${npx}/g" input.nml
 sed -i -e "s/LEVP/${LEVP}/g" input.nml
@@ -482,6 +438,8 @@ sed -i -e "s/CDMBGWD/${cdmbgwd}/g" input.nml
 sed -i -e "s/ISEED_sppt/${ISEED_SPPT}/g" input.nml
 sed -i -e "s/ISEED_shum/${ISEED_SHUM}/g" input.nml
 sed -i -e "s/ISEED_skeb/${ISEED_SKEB}/g" input.nml
+sed -i -e "s/ISEED_CA/${ISEED_CA}/g" input.nml
+sed -i -e "s/FRAC_GRID/${FRAC_GRID}/g" input.nml
 sed -i -e "s/IAU_FHRS/${iaufhrs}/g" input.nml
 sed -i -e "s/IAU_DELTHRS/${iaudelthrs}/g" input.nml
 sed -i -e "s/IAU_INC_FILES/${iau_inc_files}/g" input.nml

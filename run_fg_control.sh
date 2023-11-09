@@ -16,6 +16,7 @@ export mpitaskspernode=`expr $corespernode \/ $OMP_NUM_THREADS`
 echo "mpitaskspernode = $mpitaskspernode"
 
 export RES=$RES_CTL
+export JCAP=$JCAP_CTL
 echo "RES = $RES"
 export LONB=$LONB_CTL
 echo "LONB = ${LONB_CTL}"

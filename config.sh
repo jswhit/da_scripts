@@ -6,12 +6,8 @@ export ndates_job=1 # number of DA cycles to run in one job submission
 # resolution of control and ensmemble.
 export RES=96   
 export RES_CTL=$RES
-# Penney 2014 Hybrid Gain algorithm with beta_1=1.0
-# beta_2=alpha and beta_3=0 in eqn 6 
-# (https://journals.ametsoc.org/doi/10.1175/MWR-D-13-00131.1)
-export hybgain="true" # hybrid gain approach, if false use hybrid covariance
-export alpha=1000 # percentage of 3dvar increment (beta_2*1000) 
-export beta=0 # percentage of enkf increment (*10)
+export OCNRES="mx100"
+export ORES3=`echo $OCNRES | cut -c3-5`
 # if replay_controlfcst='true', weight given to ens mean vs control 
 # forecast in recentered backgrond ensemble (x100).  if recenter_control_wgt=0, then
 # no recentering is done. If recenter_control_wgt=100, then the background
@@ -35,12 +31,10 @@ export rungfs='run_fv3.sh' # ensemble forecast
 
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
 export cleanup_fg='true'
-export cleanup_ensmean='true'
 export cleanup_anal='true'
 export cleanup_controlanl='true'
 export cleanup_observer='true' 
 export resubmit='true'
-export replay_run_observer='true' # run observer on replay control forecast
 # python script checkdate.py used to check
 # YYYYMMDDHH analysis date string to see if
 # full ensemble should be saved to HPSS (returns 0 if 
@@ -52,20 +46,10 @@ else
    export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
    export save_hpss="true"
 fi
-export ensmean_restart='false'
-export recenter_anal="true"
-export recenter_fcst="false"
-export controlanal="false" # hybrid-cov high-res control analysis as in ops
-# controlanal takes precedence over hybgain
-# (hybgain will be set to false if controlanal=true)
-
 # override values from above for debugging.
-#export cleanup_ensmean='false'
-#export recenter_fcst="false"
 #export cleanup_controlanl='false'
 #export cleanup_observer='false'
 #export cleanup_anal='false'
-#export recenter_anal="false"
 #export cleanup_fg='false'
 #export resubmit='false'
 #export do_cleanup='false'
@@ -127,8 +111,10 @@ elif [ $machine == "hercules" ]; then
    export obs_datapath=/work/noaa/rstprod/dump
    ulimit -s unlimited
    source $MODULESHOME/init/sh
-   module use /work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-dev-20230717/envs/unified-env/install/modulefiles/Core
-   module use /work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-dev-20230717/envs/unified-env/install/modulefiles/intel-oneapi-mpi/2021.9.0/intel/2021.9.0
+   #module use /work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-dev-20230717/envs/unified-env/install/modulefiles/Core
+   module use /work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-1.5.0/envs/unified-env/install/modulefiles/Core
+   #module use /work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-dev-20230717/envs/unified-env/install/modulefiles/intel-oneapi-mpi/2021.9.0/intel/2021.9.0
+   module use /work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-1.5.0/envs/unified-env/install/modulefiles/intel-oneapi-mpi/2021.9.0/intel/2021.9.0
    module load stack-intel/2021.9.0
    module load stack-intel-oneapi-mpi/2021.9.0
    module load intel-oneapi-mkl/2022.2.1
@@ -169,42 +155,19 @@ export NST_RESV=0
 export ZSEA1=0
 export ZSEA2=0
 export NSTINFO=0          # number of elements added in obs. data array (default = 0)
-export NST_GSI=3          # default 0: No NST info at all;
+export NST_GSI=0          # default 0: No NST info at all;
                           #         1: Input NST info but not used in GSI;
                           #         2: Input NST info, used in CRTM simulation, no Tr analysis
                           #         3: Input NST info, used in both CRTM simulation and Tr analysis
-
-# turn off NST
-export DONST="NO"
-export NST_MODEL=0
-export NST_GSI=0
 
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
 
 export LEVS=127  
-if [ $LEVS -eq 64 ]; then
-  export nsig_ext=12
-  export gpstop=50
-  export GRIDOPTS="nlayers(63)=3,nlayers(64)=6,"
-  if [ $DONST == "YES" ]; then
-     export SUITE="FV3_GFS_v15p2"
-  else
-     export SUITE="FV3_GFS_v15p2_no_nsst"
-  fi
-elif [ $LEVS -eq 127 ]; then
-  export nsig_ext=56
-  export gpstop=55
-  export GRIDOPTS="nlayers(63)=1,nlayers(64)=1,"
-  if [ $DONST == "YES" ]; then
-     export SUITE="FV3_GFS_v16"
-  else
-     export SUITE="FV3_GFS_v16_no_nsst"
-  fi
-else
-  echo "LEVS must be 64 or 127"
-  exit 1
-fi
+export nsig_ext=56
+export gpstop=55
+export GRIDOPTS="nlayers(63)=1,nlayers(64)=1,"
+export SUITE="FV3_GFS_v17_p8"
 
 # radiance thinning parameters for GSI
 export dmesh1=145
@@ -221,43 +184,7 @@ export DO_SPPT=F
 export SHUM=0
 export DO_SHUM=F
 
-export imp_physics=11 # used by GSI, not model
-
-# resolution dependent model parameters
-if [ $RES -eq 384 ]; then
-   export JCAP=766
-   export LONB=1536
-   export LATB=768
-   export dt_atmos=225 # for n_split=6
-   export cdmbgwd="1.1,0.72,1.0,1.0"
-elif [ $RES -eq 192 ]; then
-   export JCAP=382 
-   export LONB=768   
-   export LATB=384  
-   export dt_atmos=450
-   export cdmbgwd="0.23,1.5,1.0,1.0"
-elif [ $RES -eq 128 ]; then
-   export JCAP=254 
-   export LONB=512   
-   export LATB=256  
-   export dt_atmos=720
-   export cdmbgwd="0.19,1.6,1.0,1.0"  
-elif [ $RES -eq 96 ]; then
-   export JCAP=188 
-   export LONB=384   
-   export LATB=190  
-   export dt_atmos=900
-   export cdmbgwd="0.14,1.8,1.0,1.0"  # mountain blocking, ogwd, cgwd, cgwd src scaling
-elif [ $RES -eq 48 ]; then
-   export JCAP=94
-   export LONB=192   
-   export LATB=96   
-   export dt_atmos=1800
-   export cdmbgwd="0.071,2.1,1.0,1.0"  
-else
-   echo "model parameters for ensemble resolution C$RES not set"
-   exit 1
-fi
+export imp_physics=8 # used by GSI, not model
 
 if [ $RES_CTL -eq 768 ]; then
    export cdmbgwd_ctl="4.0,0.15,1.0,1.0"
@@ -278,7 +205,7 @@ elif [ $RES_CTL -eq 192 ]; then
    export LONB_CTL=768  
    export LATB_CTL=384
 elif [ $RES_CTL -eq 96 ]; then
-   export dt_atmos_ctl=900
+   export dt_atmos_ctl=720
    export cdmbgwd_ctl="0.14,1.8,1.0,1.0"  # mountain blocking, ogwd, cgwd, cgwd src scaling
    export JCAP_CTL=188
    export LONB_CTL=384  
@@ -287,11 +214,10 @@ else
    echo "model parameters for control resolution C$RES_CTL not set"
    exit 1
 fi
-export FHCYC=0 # run global_cycle instead of gcycle inside model
 
 # analysis is done at ensemble resolution
-export LONA=$LONB
-export LATA=$LATB      
+export LONA=$LONB_CTL
+export LATA=$LATB_CTL      
 
 export ANALINC=6
 
@@ -299,6 +225,8 @@ export FHMIN=3
 export FHMAX=9
 export FHOUT=3
 export FHCYC=6
+export FRAC_GRID=T
+export RESTART_FREQ=3
 FHMAXP1=`expr $FHMAX + 1`
 export FHMAX_LONGER=`expr $FHMAX + $ANALINC`
 export enkfstatefhrs=`python -c "from __future__ import print_function; print(list(range(${FHMIN},${FHMAXP1},${FHOUT})))" | cut -f2 -d"[" | cut -f1 -d"]"`
@@ -325,62 +253,10 @@ export WRITE_STRAT_EFOLD="incvars_efold= $INCVARS_EFOLD,"
 export use_correlated_oberrs=".true."
 # NOTE: most other GSI namelist variables are in ${rungsi}
 
-export SMOOTHINF=35 # inflation smoothing (spectral truncation)
-export covinflatemax=1.e2
-export reducedgrid=.false. # if T, used reduced gaussian analysis grid in EnKF
-export covinflatemin=1.0                                            
-export analpertwtnh=0.85
-export analpertwtsh=0.85
-export analpertwttr=0.85
-export analpertwtnh_rtpp=0.0
-export analpertwtsh_rtpp=0.0
-export analpertwttr_rtpp=0.0
-export pseudo_rh=.true.
-export write_ensmean=.false. # write out ens mean analysis in EnKF
-if [[ $write_ensmean == ".true." ]]; then
-   export ENKFVARS="write_ensmean=${write_ensmean},"
-fi
-export letkf_flag=.true.
-export letkf_bruteforce_search=.false.
-export denkf=.true.
-export getkf=.true.
-export getkf_inflation=.false.
-export modelspace_vloc=.true.
-export letkf_novlocal=.true.
-export nobsl_max=10000
-export corrlengthnh=1250
-export corrlengthtr=1250
-export corrlengthsh=1250
-# The lnsigcutoff* parameters are ignored if modelspace_vloc=T
-export lnsigcutoffnh=1.5
-export lnsigcutofftr=1.5
-export lnsigcutoffsh=1.5
-export lnsigcutoffpsnh=1.5
-export lnsigcutoffpstr=1.5
-export lnsigcutoffpssh=1.5
-export lnsigcutoffsatnh=1.5 
-export lnsigcutoffsattr=1.5  
-export lnsigcutoffsatsh=1.5  
-export paoverpb_thresh=0.998  # ignored for LETKF, set to 1 to use all obs in serial EnKF
-export saterrfact=1.0
-export deterministic=.true.
-export sortinc=.true.
-
-# these only used for hybrid covariance (hyb 4denvar) in GSI
-export beta_s0=`python -c "from __future__ import print_function; print($alpha / 1000.)"` # weight given to static B in hyb cov
-# beta_e0 parameter (ensemble weight) in my GSI branch (not in GSI/develop)
-export beta_e0=`python -c "from __future__ import print_function; print($beta / 1000.)"` # weight given to ensemble B in hyb cov
-export s_ens_h=343.     # 1250 km horiz localization in GSI
-#export s_ens_v=-0.58    # 1.5 scale heights in GSI
-if [ $LEVS -eq 64 ]; then
-  export s_ens_v=5.4 # 14 levels
-elif [ $LEVS -eq 127 ]; then
-  export s_ens_v=7.7 # 20 levels
-fi
 # use pre-generated bias files.
 #export biascorrdir=${datadir}/biascor
 
-export nitermax=1 # number of retries
+export nitermax=2 # number of retries
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
 export incdate="${enkfscripts}/incdate.sh"
@@ -433,30 +309,17 @@ else
    echo "${machine} unsupported machine"
    exit 1
 fi
-# set to .true. to run hydrostatic version of model 
-export hydrostatic=.false.
-if [ $hydrostatic == ".true." ]; then
-   export FCSTEXEC=${execdir}/fv3-hydro.exe
-else
-   export FCSTEXEC=${execdir}/fv3-nonhydro.exe
-fi
+export FCSTEXEC=${execdir}/fv3-nonhydro.exe
 
 
 export ANAVINFO=${fixgsi}/global_anavinfo.l${LEVS}.txt
-export ANAVINFO_ENKF=${ANAVINFO}
-export HYBENSINFO=${fixgsi}/global_hybens_info.l${LEVS}.txt # only used if readin_beta or readin_localization=T
-# comment out next line to disable smoothing of ensemble perturbations
-# in stratosphere/mesosphere
-#export HYBENSMOOTHINFO=${fixgsi}/global_hybens_smoothinfo.l${LEVS}.txt
-export OZINFO=${fixgsi}/global_ozinfo.txt
-export CONVINFO=${fixgsi}/global_convinfo.txt
-export SATINFO=${fixgsi}/global_satinfo.txt
 export NLAT=$((${LATA}+2))
 # default is to use berror file in gsi fix dir.
 #export BERROR=${basedir}/staticB/global_berror_enkf.l${LEVS}y${NLAT}.f77
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_janjulysmooth0p5
 #export BERROR=${basedir}/staticB/24h/global_berror.l${LEVS}y${NLAT}.f77_annmeansmooth0p5
-export REALTIME=NO # if NO, use historical files set in main.sh
+export beta_s0=1
+export beta_e0=0
 
 cd $enkfscripts
 echo "run main driver script"
