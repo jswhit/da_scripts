@@ -177,7 +177,7 @@ if [ "$cold_start" == "false" ] && [ -z $skip_calc_increment ]; then
       fi
    cat > calc_increment_ncio.nml << EOF
 &setup
-   no_mpinc=.true.
+   no_mpinc=.false.
    no_delzinc=.false.
    taper_strat=.true.
    taper_strat_ozone=.false.
