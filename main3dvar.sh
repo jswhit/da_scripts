@@ -81,8 +81,6 @@ export PREINP="${RUN}.t${hr}z."
 export PREINP1="${RUN}.t${hrp1}z."
 export PREINPm1="${RUN}.t${hrm1}z."
 
-if [ $fg_only ==  'false' ]; then
-
 # if ${datapathm1}/cold_start_bias exists, GSI run in 'observer' mode
 # to generate diag_rad files to initialize angle-dependent 
 # bias correction.
@@ -91,6 +89,8 @@ if [ -f ${datapathm1}/cold_start_bias ]; then
 else
    export cold_start_bias "false"
 fi
+
+if [ $fg_only ==  'false' ]; then
 
 type="3DVar"
 export charnanal='control' 
