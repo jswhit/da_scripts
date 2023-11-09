@@ -804,7 +804,6 @@ ls -l ./satbias_angle
 ls -l ./sfcf03
 ls -l ./sfcf06
 ls -l ./sfcf09
-ls -l ./sfcanl
 ls -l ./sigf03
 ls -l ./sigf06
 ls -l ./sigf09
