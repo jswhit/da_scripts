@@ -1,7 +1,7 @@
 git clone https://github.com/jswhit/da_scripts C96_3dvar_iau
 cd C96_3dvar_iau
 git checkout 3dvar_workflow
-git submodule update --init --recursive
+git submodule update --init --recursive # to checkout build_gsinfo submodule
 
 config.sh is main script, hpss.sh is script to archive on hpss
 ${machine}_preamble is job scheduler preamble for config.sh
@@ -12,11 +12,20 @@ most of GSI namelist parameters set in run_gsi_4denvar.sh, some in config.sh.
 Resolution specific processor layout stuff for FV3 is set in <machine>_preamble_
 
 To cold start, create an initial directory in the experiment directory (i.e <expthome>/2000010100)
+Use replay restarts (from /NCEPDEV/cpcnudge/5year/Yan.1.Wang/ERA5_ORAS5_replay_C96mx100/RESTART_FILES for
+C96) to populate the directory.
+Grab bias correction files (gdas*t*bias*) from NCEP runhistory to put in that directory.
+If you don't have one, 
 touch an empty file (touch <expthome>/2000010100/cold_start_bias).  This will tell the scripts
 that there is no initial bias correction file.  Copy the dummy files gdas1.t00z.abias and abias_pc
-from this directory to <expthome>/2000010100.  Copy the initial conditions files to 2000010100.
+from this directory to <expthome>/2000010100. 
+
+You will also need to put an increment file (fv3_increment6.nc) in control/INPUT. There is one
+on orion at /work/noaa/gsienkf/whitaker/ics/C96_fv3_increment6_zeros.nc.
+
 Create analdate.sh and fg_only.sh in the top level experiment directory (<expthome>).
-fg_only should contain "export fg_only=true" plus "export cold_start=true" and analdate.csh should contain
+fg_only should contain "export fg_only=true" plus "export cold_start=false" and "export skip_calc_increment=1"
+and analdate.csh should contain
 "export analdate=YYYYMMDDHH" and "export analdate_end=YYYYMMDDHH", where YYYYMMDDHH is the
 date you want the experiment to start and end.
 
