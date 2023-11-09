@@ -451,11 +451,12 @@ sed -i -e "s/READ_INCREMENT/${readincrement}/g" input.nml
 sed -i -e "s/HYDROSTATIC/${hydrostatic}/g" input.nml
 sed -i -e "s/LAUNCH_LEVEL/${launch_level}/g" input.nml
 sed -i -e "s/FHCYC/${FHCYC}/g" input.nml
-sed -i -e "s!FIXDIR!${FIXDIR_gcyc}!g" input.nml
+sed -i -e "s!FIXDIR!${FIXDIR}!g" input.nml
 sed -i -e "s!SSTFILE!${fntsfa}!g" input.nml
 sed -i -e "s!ICEFILE!${fnacna}!g" input.nml
 sed -i -e "s!SNOFILE!${fnsnoa}!g" input.nml
 sed -i -e "s/FSNOL_PARM/${FSNOL}/g" input.nml
+sed -i -e "s/CRES/C${RES}/g" input.nml
 cat input.nml
 ls -l INPUT
 
