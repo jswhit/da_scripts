@@ -311,8 +311,12 @@ fi
 export FCSTEXEC=${execdir}/fv3-nonhydro.exe
 
 
-#export ANAVINFO=${fixgsi}/global_anavinfo.l${LEVS}.txt
-export ANAVINFO=${fixgsi}/global_anavinfo_allhydro.l${LEVS}.txt
+export no_mpinc=".false."
+if [ $no_mpinc == ".false." ]; then
+    export ANAVINFO=${fixgsi}/global_anavinfo_allhydro.l${LEVS}.txt
+else
+    export ANAVINFO=${fixgsi}/global_anavinfo.l${LEVS}.txt
+fi
 export NLAT=$((${LATA}+2))
 # default is to use berror file in gsi fix dir.
 #export BERROR=${basedir}/staticB/global_berror_enkf.l${LEVS}y${NLAT}.f77
