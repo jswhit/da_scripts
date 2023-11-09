@@ -13,7 +13,7 @@ EARTH_attributes::
 ::
 
 # ATM #
-ATM_model:                      FV3          
+ATM_model:                      fv3          
 ATM_omp_num_threads:            1
 ATM_attributes::
   Verbosity = 0
