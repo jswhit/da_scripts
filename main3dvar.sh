@@ -47,7 +47,6 @@ export hr=`echo $analdate | cut -c9-10`
 export ANALHR=$hr
 # set environment analdate
 export datapath2="${datapath}/${analdate}/"
-/bin/cp -f ${ANAVINFO_ENKF} ${datapath2}/anavinfo
 
 # current analysis time.
 export analdate=$analdate
