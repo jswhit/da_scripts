@@ -96,7 +96,7 @@ type="3DVar"
 export charnanal='control' 
 export charnanal2='control'
 echo "$analdate run $type `date`"
-sh ${enkfscripts}/run_gsianal.sh > ${current_logdir}/run_gsianal.out 2>&1
+sh ${scriptsdir}/run_gsianal.sh > ${current_logdir}/run_gsianal.out 2>&1
 # once gsi has completed, check log files.
 gsi_done=`cat ${current_logdir}/run_gsi_anal.log`
 if [ $gsi_done == 'yes' ]; then
@@ -109,7 +109,7 @@ fi
 fi # skip to here if fg_only = true
 
 echo "$analdate run control first guess `date`"
-sh ${enkfscripts}/run_fg_control.sh  > ${current_logdir}/run_fg_control.out  2>&1
+sh ${scriptsdir}/run_fg_control.sh  > ${current_logdir}/run_fg_control.out  2>&1
 control_done=`cat ${current_logdir}/run_fg_control.log`
 if [ $control_done == 'yes' ]; then
   echo "$analdate control first-guess completed successfully `date`"
@@ -123,7 +123,7 @@ if [ $cold_start == 'false' ]; then
 
 # cleanup
 if [ $do_cleanup == 'true' ]; then
-   sh ${enkfscripts}/clean.sh > ${current_logdir}/clean.out 2>&1
+   sh ${scriptsdir}/clean.sh > ${current_logdir}/clean.out 2>&1
 fi # do_cleanup = true
 
 wait # wait for backgrounded processes to finish

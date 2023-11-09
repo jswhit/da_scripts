@@ -60,7 +60,7 @@ if [ "$cold_start_bias" == "true" ]; then
     export HXONLY='YES'
     /bin/rm -rf $tmpdir
     mkdir -p $tmpdir
-    sh ${enkfscripts}/${rungsi}
+    sh ${scriptsdir}/${rungsi}
     /bin/rm -rf $tmpdir
     if [  ! -s ${datapath2}/diag_conv_uv_ges.${analdate}_${charnanal2}.nc4 ]; then
        echo "gsi observer step failed"
@@ -80,7 +80,7 @@ echo "${analdate} compute gsi analysis increment `date`"
 /bin/rm -rf $tmpdir
 mkdir -p $tmpdir
 /bin/cp -f $datapath2/hybens_info $tmpdir
-sh ${enkfscripts}/${rungsi}
+sh ${scriptsdir}/${rungsi}
 status=$?
 if [ "$cold_start_bias" == "true" ]; then
   export cold_start_bias=="false"
@@ -89,7 +89,7 @@ if [ "$cold_start_bias" == "true" ]; then
   export GBIASAIR=${datapath2}/${PREINP}abias_air
   /bin/rm -f ${datapath2}/diag*${charnanal2}*nc4
   echo "${analdate} re-compute gsi analysis increment `date`"
-  sh ${enkfscripts}/${rungsi}
+  sh ${scriptsdir}/${rungsi}
   status=$?
 fi
 if [ $status -ne 0 ]; then

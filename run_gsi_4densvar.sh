@@ -61,7 +61,7 @@ im=`echo $adate | cut -c5-6`
 id=`echo $adate | cut -c7-8`
 ih=`echo $adate | cut -c9-10`
 echo "iy,im,id,ih = $iy $im $id $ih"
-date_fhour=`$python ${enkfscripts}/getidate.py ${datges}/bfg_${adate}_fhr03_${charnanal}`
+date_fhour=`$python ${scriptsdir}/getidate.py ${datges}/bfg_${adate}_fhr03_${charnanal}`
 fdatei=`echo $date_fhour | cut -f1 -d " "`
 fhr=`echo $date_fhour | cut -f2 -d " "`
 fdatev=`${incdate} $fdatei $fhr`
@@ -791,7 +791,7 @@ pwd
 ls -l
 echo "Time before GSI `date` "
 export PGM=$tmpdir/gsi.x
-${enkfscripts}/runmpi
+${scriptsdir}/runmpi
 rc=$?
 #if [[ $rc -ne 0 ]];then
 #  echo "GSI failed with exit code $rc"
@@ -934,9 +934,9 @@ for loop in $loops; do
             export PGM="${execdir}/nc_diag_cat_serial.x -o ${savdir}/diag_${type}_${string}.${adate}_${charnanal2}.nc4  pe*${type}_${loop}*nc4"
             ls -l pe*${type}_${loop}*nc4
             nodecount=$((nodecount+1))
-            echo "node = $nodecount ${enkfscripts}/runmpi 1> ${current_logdir}/nc_diag_cat_${type}_${string}_${charnanal2}.out"
-            ${enkfscripts}/runmpi 1> ${current_logdir}/nc_diag_cat_${type}_${string}_${charnanal2}.out 2> ${current_logdir}/nc_diag_cat_${type}_${string}_${charnanal2}.err &
-            #${enkfscripts}/runmpi 1> nc_diag_cat_${type}_${string}.out &
+            echo "node = $nodecount ${scriptsdir}/runmpi 1> ${current_logdir}/nc_diag_cat_${type}_${string}_${charnanal2}.out"
+            ${scriptsdir}/runmpi 1> ${current_logdir}/nc_diag_cat_${type}_${string}_${charnanal2}.out 2> ${current_logdir}/nc_diag_cat_${type}_${string}_${charnanal2}.err &
+            #${scriptsdir}/runmpi 1> nc_diag_cat_${type}_${string}.out &
             if [ $nodecount -eq $totnodes ]; then
                echo "waiting... nodecount=$nodecount"
                wait

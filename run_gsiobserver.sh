@@ -99,7 +99,7 @@ export tmpdir=$datapath2/gsitmp_${charnanal2}
 /bin/rm -rf $tmpdir
 mkdir -p $tmpdir
 /bin/cp -f $datapath2/hybens_info $tmpdir
-sh ${enkfscripts}/${rungsi}
+sh ${scriptsdir}/${rungsi}
 status=$?
 
 if [ $status -ne 0 ]; then

@@ -255,9 +255,9 @@ export use_correlated_oberrs=".true."
 #export biascorrdir=${datadir}/biascor
 
 export nitermax=1 # number of retries
-export enkfscripts="${basedir}/scripts/${exptname}"
-export homedir=$enkfscripts
-export incdate="${enkfscripts}/incdate.sh"
+export scriptsdir="${basedir}/scripts/${exptname}"
+export homedir=$scriptsdir
+export incdate="${scriptsdir}/incdate.sh"
 
 if [ "$machine" == 'hera' ]; then
    export python=/contrib/anaconda/2.3.0/bin/python
@@ -267,7 +267,7 @@ if [ "$machine" == 'hera' ]; then
    export gsipath=${basedir}/gsi/GSI-github-jswhit-master
    export fixgsi=${gsipath}/fix
    export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0
-   export execdir=${enkfscripts}/exec_${machine}
+   export execdir=${scriptsdir}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export gsiexec=${execdir}/global_gsi
    export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
@@ -283,7 +283,7 @@ elif [ "$machine" == 'orion' ] || [ $machine == "hercules" ]; then
    if [ $machine == "hercules" ]; then
       export fixcrtm=$CRTM_FIX
    fi
-   export execdir=${enkfscripts}/exec_${machine}
+   export execdir=${scriptsdir}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export gsiexec=${execdir}/global_gsi
    export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
@@ -298,7 +298,7 @@ elif [ "$machine" == 'gaea' ]; then
    export fixgsi=${gsipath}/fix
    export fixcrtm=/lustre/f2/pdata/ncep_shared/NCEPLIBS/lib/crtm/v2.2.6/fix
    #export fixcrtm=${fixgsi}/crtm_v2.2.3
-   export execdir=${enkfscripts}/exec_${machine}
+   export execdir=${scriptsdir}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export gsiexec=${execdir}/global_gsi
    export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
@@ -323,6 +323,6 @@ export NLAT=$((${LATA}+2))
 export beta_s0=1
 export beta_e0=0
 
-cd $enkfscripts
+cd $scriptsdir
 echo "run main driver script"
 sh ./main3dvar.sh

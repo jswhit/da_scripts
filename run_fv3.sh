@@ -97,15 +97,15 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 /bin/rm -f dyn* phy* PET*
-export DIAG_TABLE=${DIAG_TABLE:-$enkfscripts/diag_table}
+export DIAG_TABLE=${DIAG_TABLE:-$scriptsdir/diag_table}
 /bin/cp -f $DIAG_TABLE diag_table
-/bin/cp -f $enkfscripts/ufs.configure .
-/bin/cp -f $enkfscripts/fd_ufs.yaml .
+/bin/cp -f $scriptsdir/ufs.configure .
+/bin/cp -f $scriptsdir/fd_ufs.yaml .
 # insert correct starting time and output interval in diag_table template.
 sed -i -e "s/YYYY MM DD HH/${year} ${mon} ${day} ${hour}/g" diag_table
 sed -i -e "s/FHOUT/${RESTART_FREQ}/g" diag_table
-/bin/cp -f $enkfscripts/field_table_${SUITE} field_table
-/bin/cp -f $enkfscripts/data_table . 
+/bin/cp -f $scriptsdir/field_table_${SUITE} field_table
+/bin/cp -f $scriptsdir/data_table . 
 /bin/rm -rf RESTART
 mkdir -p RESTART
 mkdir -p INPUT
@@ -139,7 +139,7 @@ ln -fs $FIXDIR/CPL_FIX/aC${RES}o${ORES3}/grid_spec.nc  grid_spec.nc
 ln -fs $FIXDIR/MOM6_FIX/${ORES3}/ocean_mosaic.nc ocean_mosaic.nc
 # symlinks one level up from INPUT
 cd ..
-/bin/cp -f $enkfscripts/noahmptable.tbl .
+/bin/cp -f $scriptsdir/noahmptable.tbl .
 ln -fs $FIXDIR/FV3_fix/fix_co2_proj/* .
 #ln -fs $FIXDIR/FV3_fix/*grb .
 ln -fs $FIXDIR/FV3_fix/*txt .
@@ -190,7 +190,7 @@ EOF
       echo "create ${increment_file}"
       /bin/rm -f ${increment_file}
       export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file}"
-      nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
+      nprocs=1 mpitaskspernode=1 ${scriptsdir}/runmpi
       if [ $? -ne 0 -o ! -s ${increment_file} ]; then
          echo "problem creating ${increment_file}, stopping .."
          exit 1
@@ -199,7 +199,7 @@ EOF
       #/bin/rm -f ${increment_file}
       ## last three args:  no_mpinc no_delzinc, taper_strat
       #export "PGM=${execdir}/calc_increment_ncio.x ${fgfile} ${analfile} ${increment_file} T $hydrostatic T"
-      #nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
+      #nprocs=1 mpitaskspernode=1 ${scriptsdir}/runmpi
       #if [ $? -ne 0 -o ! -s ${increment_file} ]; then
       #   echo "problem creating ${increment_file}, stopping .."
       #   exit 1
@@ -415,7 +415,7 @@ EOF
 cat model_configure
 
 # copy template namelist file, replace variables.
-/bin/cp -f ${enkfscripts}/${SUITE}.nml input.nml
+/bin/cp -f ${scriptsdir}/${SUITE}.nml input.nml
 sed -i -e "s/SUITE/${SUITE}/g" input.nml
 sed -i -e "s/LAYOUT/${layout}/g" input.nml
 sed -i -e "s/NSTFNAME/${nstf_name}/g" input.nml
@@ -464,7 +464,7 @@ ls -l INPUT
 export PGM=$FCSTEXEC
 ldd $FCSTEXEC
 echo "start running model `date`"
-${enkfscripts}/runmpi
+${scriptsdir}/runmpi
 if [ $? -ne 0 ]; then
    echo "model failed..."
    exit 1
