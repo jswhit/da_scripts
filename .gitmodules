@@ -1,0 +1,4 @@
+[submodule "build_gsinfo"]
+	path = build_gsinfo
+	url = https://github.com/jswhit/build_gsinfo
+	branch = GMAO
