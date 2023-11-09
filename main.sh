@@ -124,10 +124,12 @@ if [ $hr = "04" ] || [ $hr = "10" ] || [ $hr = "16" ] || [ $hr = "22" ]; then
    export time_window_max=1.0
    export min_offset=60
    export nhr_assimilation=2
+   #export CONVINFO=${enkfscripts}/global_convinfo.txt2_acft
 else
    export time_window_max=0.5
    export min_offset=30
    export nhr_assimilation=1
+   #export CONVINFO=${enkfscripts}/global_convinfo.txt_acft
 fi
 
 export PREINP="${RUN}.t${hr}z."
@@ -447,62 +449,50 @@ if [ $replay_controlfcst == 'true' ]; then
     fi
 fi
 
-#if [ $fg_only == "true" ]; then
-   echo "$analdate run enkf ens first guess `date`"
-   sh ${enkfscripts}/run_fg_ens.sh > ${current_logdir}/run_fg_ens.out  2>&1
-   ens_done=`cat ${current_logdir}/run_fg_ens.log`
-   if [ $ens_done == 'yes' ]; then
-     echo "$analdate enkf first-guess completed successfully `date`"
-   else
-     echo "$analdate enkf first-guess did not complete successfully, exiting `date`"
-     exit 1
-   fi
-#fi
+echo "$analdate run enkf ens first guess `date`"
+sh ${enkfscripts}/run_fg_ens.sh > ${current_logdir}/run_fg_ens.out  2>&1
+ens_done=`cat ${current_logdir}/run_fg_ens.log`
+if [ $ens_done == 'yes' ]; then
+  echo "$analdate enkf first-guess completed successfully `date`"
+else
+  echo "$analdate enkf first-guess did not complete successfully, exiting `date`"
+  exit 1
+fi
 
 if [ $cold_start == 'false' ]; then
 
 # cleanup
-#if [ $fg_only == "true" ]; then
-   if [ $do_cleanup == 'true' ]; then
-      sh ${enkfscripts}/clean.sh > ${current_logdir}/clean.out 2>&1
-   fi # do_cleanup = true
-#fi
+# only save full ensemble data to hpss if checkdate.py returns 0
+# a subset will be saved if save_hpss_subset="true" and save_hpss="true"
+date_check=`python ${homedir}/checkdate.py ${analdate}`
+if [ $date_check -eq 0 ]; then
+  export save_hpss_full="true"
+else
+  export save_hpss_full="false"
+fi
+if [ $do_cleanup == 'true' ]; then
+   sh ${enkfscripts}/clean.sh > ${current_logdir}/clean.out 2>&1
+fi # do_cleanup = true
 
 wait # wait for backgrounded processes to finish
 
-#if [ $fg_only == "true" ]; then
-   # only save full ensemble data to hpss if checkdate.py returns 0
-   # a subset will be saved if save_hpss_subset="true" and save_hpss="true"
-   date_check=`python ${homedir}/checkdate.py ${analdate}`
-   if [ $date_check -eq 0 ]; then
-     export save_hpss_full="true"
-   else
-     export save_hpss_full="false"
-   fi
-   cd $homedir
-   if [ $save_hpss == 'true' ]; then
-      cat ${machine}_preamble_hpss hpss.sh > job_hpss.sh
-   fi
-   sbatch --export=ALL job_hpss.sh
-   #sbatch --export=machine=${machine},analdate=${analdate},datapath2=${datapath2},hsidir=${hsidir},save_hpss_full=${save_hpss_full},save_hpss_subset=${save_hpss_subset} job_hpss.sh
-#fi
+cd $homedir
+if [ $save_hpss == 'true' ]; then
+   cat ${machine}_preamble_hpss hpss.sh > job_hpss.sh
+fi
+sbatch --export=ALL job_hpss.sh
+#sbatch --export=machine=${machine},analdate=${analdate},datapath2=${datapath2},hsidir=${hsidir},save_hpss_full=${save_hpss_full},save_hpss_subset=${save_hpss_subset} job_hpss.sh
 
 fi # skip to here if cold_start = true
 
 echo "$analdate all done"
 
 # next analdate: increment by $ANALINC
-#if [ $fg_only == 'true' ]; then
-   export analdate=`${incdate} $analdate $ANALINC`
-#fi
+export analdate=`${incdate} $analdate $ANALINC`
 
 echo "export analdate=${analdate}" > $startupenv
 echo "export analdate_end=${analdate_end}" >> $startupenv
-#if [ $fg_only == "true" ]; then
-   echo "export fg_only=false" > $datapath/fg_only.sh
-#else
-#   echo "export fg_only=true" > $datapath/fg_only.sh
-#fi
+echo "export fg_only=false" > $datapath/fg_only.sh
 echo "export cold_start=false" >> $datapath/fg_only.sh
 
 cd $homedir
@@ -521,11 +511,7 @@ if [ $analdate -le $analdate_end ]  && [ $resubmit == 'true' ]; then
    if [ $resubmit == 'true' ]; then
       echo "resubmit script"
       echo "machine = $machine"
-      #if [ $fg_only == "true" ]; then
-         cat ${machine}_preamble config.sh > job.sh
-      #else
-      #   cat ${machine}_preamble2 config.sh > job.sh
-      #fi
+      cat ${machine}_preamble config.sh > job.sh
       sbatch --export=ALL job.sh
    fi
 fi
