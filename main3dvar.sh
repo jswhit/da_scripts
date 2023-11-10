@@ -85,10 +85,13 @@ export PREINPm1="${RUN}.t${hrm1}z."
 # to generate diag_rad files to initialize angle-dependent 
 # bias correction.
 if [ -f ${datapathm1}/cold_start_bias ]; then
+   ls -l ${datapathm1}/cold_start_bias
+   echo "cold start bias correction"
    export cold_start_bias="true"
 else
-   export cold_start_bias "false"
+   export cold_start_bias="false"
 fi
+echo "cold_start_bias = $cold_start_bias"
 
 if [ $fg_only ==  'false' ]; then
 
