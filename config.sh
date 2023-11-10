@@ -120,6 +120,7 @@ elif [ $machine == "hercules" ]; then
    module load parallelio
    module load bufr/11.7.0
    module load crtm/2.4.0
+   module load gsi-ncdiag
    export PATH="/work/noaa/gsienkf/whitaker/miniconda3/bin:$PATH"
    export HDF5_DISABLE_VERSION_CHECK=1
    export WGRIB=`which wgrib`
