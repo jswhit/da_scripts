@@ -33,4 +33,15 @@ and analdate.csh should contain
 "export analdate=YYYYMMDDHH1" and "export analdate_end=YYYYMMDDHH2", where YYYYMMDDHH1,2 is the
 date you want the experiment to start and end.
 
-* to turn off IAU, set iaudelthrs=-1 and iaufhrs=6 in config.sh
+executables need to be in exec_<machine>.  For example, 
+[jwhitake@hercules-login-4 C96_3dvar_iau]$ ls -l exec_hercules/
+total 199820
+-rwxr-x--- 1 jwhitake gsienkf   1766264 Nov  8 11:59 calc_increment_ncio.x
+-rwxr-x--- 1 jwhitake gsienkf 128521088 Nov 10 10:56 fv3-nonhydro.exe
+-rwxr-x--- 1 jwhitake gsienkf  12832360 Nov 10 10:57 global_enkf
+-rwxr-x--- 1 jwhitake gsienkf  65461104 Nov 10 10:57 global_gsi
+global_enkf and global_gsi are from github.com/NOAA-EMC/GSI.
+calc_increment_ncio.x is from github.com/jswhit/GSI-utils (branch calc_inc_fix).
+fv3-nonhydro.exe is from github.com/ufs-community/ufs-weather-model.
+
+to turn off IAU, set iaudelthrs=-1 and iaufhrs=6 in config.sh
