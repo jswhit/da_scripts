@@ -269,8 +269,7 @@ if [ "$machine" == 'hera' ]; then
    export fixgsi=${gsipath}/fix
    export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0
    export execdir=${scriptsdir}/exec_${machine}
-   export enkfbin=${execdir}/global_enkf
-   export gsiexec=${execdir}/global_gsi
+   export gsiexec=${execdir}/gsi.x
    export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
 elif [ "$machine" == 'orion' ] || [ $machine == "hercules" ]; then
    export python=`which python`
@@ -285,8 +284,7 @@ elif [ "$machine" == 'orion' ] || [ $machine == "hercules" ]; then
       export fixcrtm=$CRTM_FIX
    fi
    export execdir=${scriptsdir}/exec_${machine}
-   export enkfbin=${execdir}/global_enkf
-   export gsiexec=${execdir}/global_gsi
+   export gsiexec=${execdir}/gsi.x
    export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
 elif [ "$machine" == 'gaea' ]; then
    export python=/ncrc/sw/gaea/PythonEnv-noaa/1.4.0/.spack/opt/spack/linux-sles12-x86_64/gcc-4.8/python-2.7.14-zyx34h36bfp2c6ftp5bhdsdduqjxbvp6/bin/python
@@ -300,14 +298,13 @@ elif [ "$machine" == 'gaea' ]; then
    export fixcrtm=/lustre/f2/pdata/ncep_shared/NCEPLIBS/lib/crtm/v2.2.6/fix
    #export fixcrtm=${fixgsi}/crtm_v2.2.3
    export execdir=${scriptsdir}/exec_${machine}
-   export enkfbin=${execdir}/global_enkf
-   export gsiexec=${execdir}/global_gsi
+   export gsiexec=${execdir}/gsi.x
    export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
 else
    echo "${machine} unsupported machine"
    exit 1
 fi
-export FCSTEXEC=${execdir}/fv3-nonhydro.exe
+export FCSTEXEC=${execdir}/fv3_intel.exe
 
 
 export no_mpinc=".false."
