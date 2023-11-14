@@ -28,4 +28,4 @@ fi
 
 export fg_proc=$corespernode
 export fg_threads=1
-export gsi_control_threads=2
+export gsi_control_threads=8
