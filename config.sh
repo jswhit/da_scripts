@@ -128,8 +128,31 @@ elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f2/dev/${USER}
    export datadir=/lustre/f2/scratch/${USER}
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   #export hsidir="/3year/NCEPDEV/GEFSRR/${exptname}"
    export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/dumps
+   ulimit -s unlimited
+   source /lustre/f2/dev/role.epic/contrib/Lmod_init.sh
+   module unload cray-libsci
+   module load PrgEnv-intel/8.3.3
+   module load intel-classic/2023.1.0
+   module load cray-mpich/8.1.25
+   #module use /lustre/f2/dev/wpo/role.epic/contrib/spack-stack/c5/modulefiles
+   #module use /lustre/f2/dev/wpo/role.epic/contrib/spack-stack/c5/spack-stack-1.5.0/envs/unified-env/install/modulefiles/Core
+   module use /lustre/f2/dev/wpo/role.epic/contrib/spack-stack/c5/spack-stack-dev-20230717/envs/unified-env/install/modulefiles/Core
+   module use /lustre/f2/dev/wpo/role.epic/contrib/spack-stack/c5/modulefiles
+   module load stack-intel/2023.1.0
+   module load stack-cray-mpich/8.1.25
+   module load stack-python/3.9.12
+   module load parallelio
+   module load bufr/11.7.0
+   module load crtm/2.4.0
+   module load gsi-ncdiag
+   module load grib-util
+   module list
+   export PATH="/lustre/f2/dev/Jeffrey.S.Whitaker/conda/bin:${PATH}"
+   #export MKLROOT=/opt/intel/oneapi/mkl/2022.0.2
+   #export LD_LIBRARY_PATH="${MKLROOT}/lib/intel64:${LD_LIBRARY_PATH}"
+   export HDF5_DISABLE_VERSION_CHECK=1
+   export WGRIB=`which wgrib`
 else
    echo "machine must be 'hera', 'orion', 'hercules' or 'gaea' got $machine"
    exit 1
@@ -270,7 +293,6 @@ if [ "$machine" == 'hera' ]; then
    export fixcrtm=/scratch2/NCEPDEV/nwprod/NCEPLIBS/fix/crtm_v2.3.0
    export execdir=${scriptsdir}/exec_${machine}
    export gsiexec=${execdir}/gsi.x
-   export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
 elif [ "$machine" == 'orion' ] || [ $machine == "hercules" ]; then
    export python=`which python`
    export fv3gfspath=/work/noaa/global/glopara/fix_NEW
@@ -285,21 +307,17 @@ elif [ "$machine" == 'orion' ] || [ $machine == "hercules" ]; then
    fi
    export execdir=${scriptsdir}/exec_${machine}
    export gsiexec=${execdir}/gsi.x
-   export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
 elif [ "$machine" == 'gaea' ]; then
-   export python=/ncrc/sw/gaea/PythonEnv-noaa/1.4.0/.spack/opt/spack/linux-sles12-x86_64/gcc-4.8/python-2.7.14-zyx34h36bfp2c6ftp5bhdsdduqjxbvp6/bin/python
-   #export PYTHONPATH=/ncrc/home2/Jeffrey.S.Whitaker/anaconda2/lib/python2.7/site-packages
-   #export fv3gfspath=/lustre/f1/pdata/ncep_shared/fv3/fix-fv3gfs/
-   export fv3gfspath=/lustre/f2/dev/Jeffrey.S.Whitaker/fv3_reanl/fv3gfs/global_shared.v15.0.0
-   export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
-   export FIXGLOBAL=${fv3gfspath}/fix/fix_am
-   export gsipath=/lustre/f2/dev/Jeffrey.S.Whitaker/GSI-github-jswhit
+   export fv3gfspath=/lustre/f2/dev/Jeffrey.S.Whitaker/fix_NEW
+   export FIXDIR=/lustre/f2/pdata/ncep_shared/emc.nemspara/RT/NEMSfv3gfs/input-data-20220414
+   export FIXFV3=${fv3gfspath}/fix_fv3_gmted2010
+   export FIXGLOBAL=${fv3gfspath}/fix_am
+   export gsipath=/lustre/f2/dev/Jeffrey.S.Whitaker/GSI
    export fixgsi=${gsipath}/fix
-   export fixcrtm=/lustre/f2/pdata/ncep_shared/NCEPLIBS/lib/crtm/v2.2.6/fix
-   #export fixcrtm=${fixgsi}/crtm_v2.2.3
+   export fixcrtm=$CRTM_FIX
    export execdir=${scriptsdir}/exec_${machine}
+   export enkfbin=${execdir}/enkf.x
    export gsiexec=${execdir}/gsi.x
-   export CHGRESEXEC=${execdir}/enkf_chgres_recenter_nc.x
 else
    echo "${machine} unsupported machine"
    exit 1

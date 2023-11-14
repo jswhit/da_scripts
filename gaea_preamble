@@ -1,74 +1,31 @@
 #!/bin/sh
-#SBATCH -q urgent
+##SBATCH -q urgent
 ##SBATCH -q debug
-#SBATCH --clusters c4
-#SBATCH -t 04:00:00
-##SBATCH -t 00:30:00
+#SBATCH --cluster=c5
+#SBATCH -t 02:00:00
 #SBATCH -A nggps_psd
-##SBATCH -A cpo_ngrr_e
-#SBATCH -N 21    
-#SBATCH -J C192_hybgain_test
-#SBATCH -e C192_hybgain_test.err
-#SBATCH -o C192_hybgain_test.out
+#SBATCH -N 7     
+#SBATCH -J C96_3dvar_iau
+#SBATCH -e C96_3dvar_iau.err
+#SBATCH -o C96_3dvar_iau.out
 
 export NODES=$SLURM_NNODES
 export corespernode=$SLURM_CPUS_ON_NODE
 export machine='gaea'
 
 # for control forecast
-if [ $NODES -eq 10 ]; then
-  # 20 nodes, 1 threads
-  #export control_threads=2 # control forecast threads
-  #export control_proc=444   # total number of processors for control forecast
+if [ $NODES -eq 7 ]; then
+  # 10 nodes, 1 threads
   export control_threads=1
-  export control_proc=312
+  export control_proc=448
   export write_groups_ctl=4 # write groups for control forecast.
-  export layout_ctl="6,8" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
-elif [ $NODES -eq 20 ] || [ $NODES -eq 21 ]; then
-  # 20 nodes, 3 threads
-  #export control_threads=2 # control forecast threads
-  #export control_proc=444   # total number of processors for control forecast
-  export control_threads=3
-  export control_proc=666
-  export control_proc_noquilt=648
-  export write_groups_ctl=1 # write groups for control forecast.
-  export layout_ctl="6,6" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
-elif [ $NODES -eq 40 ] || [ $NODES -eq 41 ]; then
-  # 40 nodes, 6 threads
-  export control_threads=6 
-  export control_proc=1332 
-  export control_proc_noquilt=1296
-  export write_groups_ctl=1
-  export layout_ctl="6, 6"
-elif [ $NODES -eq 80 ]; then
-  # 80 nodes, 6 threads
-  export control_threads=6
-  export control_proc=2664 
-  export write_groups_ctl=1
-  export layout_ctl="12, 12" 
+  export write_tasks_ctl=16
+  export layout_ctl="8,8" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
 else
   echo "processor layout for $NODES nodes not set"
   exit 1
 fi
 
-# for ensemble forecast and GSI
-export fg_proc=$corespernode 
+export fg_proc=$corespernode
 export fg_threads=1
-export write_groups=1
-export write_tasks=6 
-if [ $corespernode -eq 36 ]; then
-export enkf_threads=9
-export gsi_control_threads=6
-export write_groups=2
-export layout="2, 2" 
-elif [ $corespernode -eq 32 ]; then
-export enkf_threads=8
-export gsi_control_threads=4
-export fg_proc=30
-export layout="2, 2" 
-elif [ $corespernode -eq 24 ]; then
-export layout="3, 1" 
-else
-echo "layout for ensemble forecast not specified for corespernode=$corespernode"
-exit 1
-fi
+export gsi_control_threads=2
