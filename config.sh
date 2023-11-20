@@ -76,7 +76,8 @@ elif [ "$machine" == 'orion' ]; then
    export basedir=/work/noaa/gsienkf/${USER}
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   export obs_datapath=/work/noaa/sfc-perts/gbates/hrlyda_dumps/6hrly
+   export obs_datapath=/work/noaa/rstprod/dump
+   export sstice_datapath=/work2/noaa/gsienkf/whitaker/era5sstice
    ulimit -s unlimited
    source $MODULESHOME/init/sh
 
@@ -108,6 +109,7 @@ elif [ $machine == "hercules" ]; then
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    export obs_datapath=/work/noaa/rstprod/dump
+   export sstice_datapath=/work2/noaa/gsienkf/whitaker/era5sstice
    ulimit -s unlimited
    source $MODULESHOME/init/sh
    module use /work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-dev-20230717/envs/unified-env/install/modulefiles/Core
