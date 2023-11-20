@@ -59,6 +59,7 @@ if [ "$machine" == 'hera' ]; then
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    export obs_datapath=/scratch1/NCEPDEV/global/glopara/dump
+   export sstice_datapath=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/era5sstice
    module purge
    module load intel/18.0.5.274
    module load impi/2018.0.4 
@@ -129,6 +130,7 @@ elif [ "$machine" == 'gaea' ]; then
    export datadir=/lustre/f2/scratch/${USER}
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
    export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/dumps
+   export sstice_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/era5sstice
    ulimit -s unlimited
    source /lustre/f2/dev/role.epic/contrib/Lmod_init.sh
    module unload cray-libsci
