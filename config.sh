@@ -277,12 +277,14 @@ export WRITE_INCR_ZERO="incvars_to_zero= $INCREMENTS_TO_ZERO,"
 export WRITE_ZERO_STRAT="incvars_zero_strat= $INCVARS_ZERO_STRAT,"
 export WRITE_STRAT_EFOLD="incvars_efold= $INCVARS_EFOLD,"
 export use_correlated_oberrs=".true."
+export aircraft_t_bc=.true.
+export upd_aircraft=.true.
 # NOTE: most other GSI namelist variables are in ${rungsi}
 
 # use pre-generated bias files.
 #export biascorrdir=${datadir}/biascor
 
-export nitermax=1 # number of retries
+export nitermax=2 # number of retries
 export scriptsdir="${basedir}/scripts/${exptname}"
 export homedir=$scriptsdir
 export incdate="${scriptsdir}/incdate.sh"
