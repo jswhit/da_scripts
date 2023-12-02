@@ -30,7 +30,6 @@ cd ..
 mkdir -p $datapath
 
 echo "BaseDir: ${basedir}"
-echo "EnKFBin: ${enkfbin}"
 echo "DataPath: ${datapath}"
 
 ############################################################################

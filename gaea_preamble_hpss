@@ -1,5 +1,5 @@
 #!/bin/sh
-#SBATCH -q normal  
+##SBATCH -q normal  
 #SBATCH --clusters es
 #SBATCH --partition=rdtn
 #SBATCH -t 16:00:00

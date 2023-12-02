@@ -4,7 +4,7 @@
 #SBATCH --cluster=c5
 #SBATCH -t 02:00:00
 #SBATCH -A nggps_psd
-#SBATCH -N 7     
+#SBATCH -N 4     
 #SBATCH -J C96_3dvar_iau
 #SBATCH -e C96_3dvar_iau.err
 #SBATCH -o C96_3dvar_iau.out
@@ -15,11 +15,17 @@ export machine='gaea'
 
 # for control forecast
 if [ $NODES -eq 7 ]; then
-  # 10 nodes, 1 threads
+  # 7 nodes, 1 threads
   export control_threads=1
-  export control_proc=448
+  export control_proc=896
+  export write_groups_ctl=1 # write groups for control forecast.
+  export write_tasks_ctl=32
+  export layout_ctl="12,12" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+elif [ $NODES -eq 4 ]; then
+  export control_threads=1
+  export control_proc=512
   export write_groups_ctl=4 # write groups for control forecast.
-  export write_tasks_ctl=16
+  export write_tasks_ctl=32
   export layout_ctl="8,8" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
 else
   echo "processor layout for $NODES nodes not set"
