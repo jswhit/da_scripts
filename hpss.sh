@@ -13,7 +13,7 @@ $hsi ls -l $hsidir
 $hsi mkdir ${hsidir}/
 cd ${datapath}
 pwd
-$htar -cvf ${hsidir}/${analdate}.tar ${analdate}/gdas* ${analdate}/*control* ${analdate}/logs ${analdate}/gsi*
+$htar -cvf ${hsidir}/${analdate}.tar ${analdate}/gdas* ${analdate}/*control* ${analdate}/logs ${analdate}/gsi* ${analdate}/*info*
 $hsi ls -l ${hsidir}/${analdate}.tar
 exitstat=$?
 if [  $exitstat -ne 0 ]; then

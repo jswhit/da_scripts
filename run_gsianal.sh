@@ -118,5 +118,6 @@ if [ $alldone == 'no' ]; then
     echo "no" > ${current_logdir}/run_gsi_anal.log 2>&1
 else
     echo "yes" > ${current_logdir}/run_gsi_anal.log 2>&1
+    /bin/cp -f $tmpdir/gsiparm.anl $datapath2
     /bin/rm -rf $tmpdir
 fi
