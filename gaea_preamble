@@ -4,7 +4,7 @@
 #SBATCH --cluster=c5
 #SBATCH -t 02:00:00
 #SBATCH -A nggps_psd
-#SBATCH -N 4     
+#SBATCH -N 10     
 #SBATCH -J C96_3dvar_iau
 #SBATCH -e C96_3dvar_iau.err
 #SBATCH -o C96_3dvar_iau.out
@@ -14,8 +14,13 @@ export corespernode=$SLURM_CPUS_ON_NODE
 export machine='gaea'
 
 # for control forecast
-if [ $NODES -eq 7 ]; then
-  # 7 nodes, 1 threads
+if [ $NODES -eq 10 ]; then
+  export control_threads=1
+  export control_proc=1280
+  export write_groups_ctl=4 # write groups for control forecast.
+  export write_tasks_ctl=32
+  export layout_ctl="12,16" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+elif [ $NODES -eq 7 ]; then
   export control_threads=1
   export control_proc=896
   export write_groups_ctl=1 # write groups for control forecast.
@@ -34,4 +39,4 @@ fi
 
 export fg_proc=$corespernode
 export fg_threads=1
-export gsi_control_threads=8
+export gsi_control_threads=16

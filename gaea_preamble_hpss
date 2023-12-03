@@ -1,6 +1,6 @@
 #!/bin/sh
 ##SBATCH -q normal  
-#SBATCH --clusters es
+#SBATCH --clusters=es
 #SBATCH --partition=rdtn
 #SBATCH -t 16:00:00
 #SBATCH -A nggps_psd
