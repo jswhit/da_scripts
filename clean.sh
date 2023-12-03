@@ -6,4 +6,5 @@ charnanal='control'
 /bin/rm -f *log
 /bin/rm -rf *tmp*
 #/bin/rm -rf ${charnanal}
+/bin/rm -f ${charnanal}/PET* ${charnanal}/log*
 echo "unwanted files removed `date`"

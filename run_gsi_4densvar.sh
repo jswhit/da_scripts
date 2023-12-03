@@ -974,6 +974,7 @@ fi # skipcat
 # If requested, clean up $tmpdir
 if [[ "$CLEAN" = "YES" ]];then
   cd $tmpdir
+  cp gsiparm.anl $savdir
   cd ../
   /bin/rm -rf $tmpdir
 fi
