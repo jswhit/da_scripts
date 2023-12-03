@@ -135,7 +135,7 @@ if [ $save_hpss == 'true' ]; then
    cat ${machine}_preamble_hpss hpss.sh > job_hpss.sh
 fi
 #sbatch --export=ALL job_hpss.sh
-sbatch --export=machine=${machine},analdate=${analdate},datapath2=${datapath2},hsidir=${hsidir},save_hpss=${save_hpss} job_hpss.sh
+sbatch --export=machine=${machine},analdate=${analdate},datapath=${datapath},hsidir=${hsidir},save_hpss=${save_hpss} job_hpss.sh
 
 fi # skip to here if cold_start = true
 
