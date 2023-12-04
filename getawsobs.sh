@@ -19,7 +19,7 @@ if [ $? -ne 0 ]; then
       module load stack-intel/2021.9.0
       module load awscli
    else
-      echo "cluster must be 'service' (hercules) or 'es' (gaea)"
+      echo "cluster must be 'hercules' or 'es' (gaea)"
       exit 1
    fi
 fi
