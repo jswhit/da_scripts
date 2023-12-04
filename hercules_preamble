@@ -18,9 +18,16 @@ if [ $NODES -eq 5 ]; then
   # 5 nodes, 1 threads
   export control_threads=1
   export control_proc=400
-  export write_groups_ctl=4 # write groups for control forecast.
-  export write_tasks_ctl=4
+  export write_groups_ctl=1 # write groups for control forecast.
+  export write_tasks_ctl=16
   export layout_ctl="8,8" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
+elif [ $NODES -eq 8 ]; then
+  # 7 nodes, 1 threads
+  export control_threads=1
+  export control_proc=640
+  export write_groups_ctl=1 # write groups for control forecast.
+  export write_tasks_ctl=64
+  export layout_ctl="8,12" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc/$fg_threads) - $write_tasks*$write_groups)
 else
   echo "processor layout for $NODES nodes not set"
   exit 1
@@ -28,4 +35,4 @@ fi
 
 export fg_proc=$corespernode
 export fg_threads=1 
-export gsi_control_threads=2
+export gsi_control_threads=4

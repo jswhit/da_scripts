@@ -97,12 +97,9 @@ if [ $fg_only ==  'false' ]; then
 # optionally, get obs from aws
 if [ $use_s3obs == "true" ]; then
     echo "$analdate get bufr dumps `date`"
-    if [ $machine == "gaea" ]; then
-       # aws cli only works on eslogin partition
-       sbatch --wait --export=obs_datapath=${obs_datapath},analdate=${analdate},obtyp="all" getawsobs.sh
-    else
-       sh getawsobs.sh $analdate $obs_datapath "all" > ${current_logdir}/getawsobs.out 2>&1 
-    fi
+    # aws cli only works on eslogin partition on gaea, or service partition on hercules/orion
+    cat ${machine}_preamble_frontend getawsobs.sh > job_getawsobs.sh
+    sbatch --wait --export=obs_datapath=${obs_datapath},analdate=${analdate},obtyp="all" job_getawsobs.sh
     if [ $? -eq 0 ] && [ -s $obs_datapath/gdas.${yr}${mon}${day}/${hr}/atmos/gdas.t${hr}z.prepbufr ]; then
        echo "$analdate done getting bufr dumps `date`"
     else
