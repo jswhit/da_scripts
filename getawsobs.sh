@@ -1,13 +1,3 @@
-#!/bin/sh
-#SBATCH --cluster=es
-#SBATCH --partition=eslogin
-#SBATCH -t 01:00:00
-#SBATCH -A nggps_psd
-#SBATCH -N 1     
-#SBATCH -J getawsobs
-#SBATCH -e getawsobs.out
-#SBATCH -o getawsobs.out
-
 obtyp_default="all"
 YYYYMMDDHH=${analdate:-$1}
 OUTPATH=${obs_datapath:-$2}
@@ -15,20 +5,21 @@ obtyp=${obtyp_default:-$3} # specify single ob type, default is all obs.
 
 which aws
 if [ $? -ne 0 ]; then
-   source /lustre/f2/dev/role.epic/contrib/Lmod_init.sh
    echo "SLURM_CLUSTER_NAME=$SLURM_CLUSTER_NAME"
-   if [ $SLURM_CLUSTER_NAME == 'c5' ]; then
-      module use /lustre/f2/dev/wpo/role.epic/contrib/spack-stack/c5/modulefiles
-      module use /lustre/f2/dev/wpo/role.epic/contrib/spack-stack/c5/spack-stack-1.5.0/envs/unified-env/install/modulefiles/Core
-      module load stack-intel/2023.1.0
-      module load awscli
-   elif  [ $SLURM_CLUSTER_NAME == 'es' ]; then
+   if  [ $SLURM_CLUSTER_NAME == 'es' ]; then #
+      source /lustre/f2/dev/role.epic/contrib/Lmod_init.sh
       module use /lustre/f2/dev/wpo/role.epic/contrib/spack-stack/c4/modulefiles
       module use /lustre/f2/dev/wpo/role.epic/contrib/spack-stack/c4/spack-stack-1.5.0/envs/unified-env/install/modulefiles/Core
       module load stack-intel/2022.0.2
       module load awscli
+   elif [ $SLURM_CLUSTER_NAME == 'hercules' ]; then
+      module purge
+      module use /work/noaa/epic/role-epic/spack-stack/hercules/modulefiles
+      module use /work/noaa/epic/role-epic/spack-stack/hercules//spack-stack-1.5.0/envs/unified-env/install/modulefiles/Core
+      module load stack-intel/2021.9.0
+      module load awscli
    else
-      echo "cluster must be es or c5"
+      echo "cluster must be 'service' (hercules) or 'es' (gaea)"
       exit 1
    fi
 fi
