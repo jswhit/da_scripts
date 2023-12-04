@@ -1,0 +1,8 @@
+#!/bin/sh
+#SBATCH -t 00:10:00
+#SBATCH -A gsienkf
+#SBATCH -N 1  
+#SBATCH -p service
+#SBATCH -J getawsobs
+#SBATCH -e getawsobs.out
+#SBATCH -o getawsobs.out
