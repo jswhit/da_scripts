@@ -1,20 +1,43 @@
-#!/bin/bash
+#!/bin/sh
+#SBATCH --cluster=es
+#SBATCH --partition=eslogin
+#SBATCH -t 01:00:00
+#SBATCH -A nggps_psd
+#SBATCH -N 1     
+#SBATCH -J getawsobs
+#SBATCH -e getawsobs.out
+#SBATCH -o getawsobs.out
+
+obtyp_default="all"
+YYYYMMDDHH=${analdate:-$1}
+OUTPATH=${obs_datapath:-$2}
+obtyp=${obtyp_default:-$3} # specify single ob type, default is all obs.
+
 which aws
 if [ $? -ne 0 ]; then
-   module purge
-   # hera
-   #module use /scratch1/NCEPDEV/nems/role.epic/spack-stack/spack-stack-1.5.0/envs/unified-env/install/modulefiles/Core
-   #module use /scratch1/NCEPDEV/nems/role.epic/spack-stack/spack-stack-1.5.0/envs/unified-env/install/intel/2021.5.0
-   #module load stack-intel/2021.5.0
-   # hercules
-   module use /work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-1.5.0/envs/unified-env/install/modulefiles/Core
-   module use /work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-1.5.0/envs/unified-env/install/modulefiles/intel-oneapi-mpi/2021.9.0/intel/2021.9.0
-   module load stack-intel/2021.9.0
-
-   module load awscli
+   source /lustre/f2/dev/role.epic/contrib/Lmod_init.sh
+   echo "SLURM_CLUSTER_NAME=$SLURM_CLUSTER_NAME"
+   if [ $SLURM_CLUSTER_NAME == 'c5' ]; then
+      module use /lustre/f2/dev/wpo/role.epic/contrib/spack-stack/c5/modulefiles
+      module use /lustre/f2/dev/wpo/role.epic/contrib/spack-stack/c5/spack-stack-1.5.0/envs/unified-env/install/modulefiles/Core
+      module load stack-intel/2023.1.0
+      module load awscli
+   elif  [ $SLURM_CLUSTER_NAME == 'es' ]; then
+      module use /lustre/f2/dev/wpo/role.epic/contrib/spack-stack/c4/modulefiles
+      module use /lustre/f2/dev/wpo/role.epic/contrib/spack-stack/c4/spack-stack-1.5.0/envs/unified-env/install/modulefiles/Core
+      module load stack-intel/2022.0.2
+      module load awscli
+   else
+      echo "cluster must be es or c5"
+      exit 1
+   fi
 fi
-YYYYMMDDHH=$1 # analysis date.
-obtyp=${2:-"all"} # specify single ob type, default is all obs.
+which aws
+if [ $? -ne 0 ]; then
+   echo "awscli not found"
+   exit 1
+fi
+
 YYYYMM=`echo $YYYYMMDDHH | cut -c1-6`
 YYYYMMDD=`echo $YYYYMMDDHH | cut -c1-8`
 HH=`echo $YYYYMMDDHH | cut -c9-10`
@@ -22,7 +45,6 @@ DD=`echo $YYYYMMDDHH | cut -c7-8`
 MM=`echo $YYYYMMDDHH | cut -c5-6`
 YYYY=`echo $YYYYMMDDHH | cut -c1-4`
 CDUMP='gdas'
-OUTPATH=/work/noaa/gsienkf/whitaker/awsobs
 S3PATH=/noaa-reanalyses-pds/observations/reanalysis
 # directory structure required by global-workflow
 TARGET_DIR=${OUTPATH}/${CDUMP}.${YYYYMMDD}/${HH}/atmos
@@ -51,9 +73,9 @@ for n in ${!obtypes[@]}; do
         s3file=s3:/"${S3PATH}/${obtypes[$n]}/${dirs[$n]}/${YYYY}/${MM}/bufr/${dumpnames[$n]}.${YYYYMMDD}.t${HH}z.${obnames[$n]}.tm00.bufr_d"
         localfile="${TARGET_DIR}/${CDUMP}.t${HH}z.${obnames[$n]}.tm00.bufr_d"
      fi
-     aws s3 ls --no-sign-request $s3file
-     aws s3 cp --no-sign-request $s3file $localfile
-     ls -l $localfile
+     #aws s3 ls --no-sign-request $s3file
+     aws s3 cp --no-sign-request --only-show-errors $s3file $localfile &
+     #ls -l $localfile
   fi
 done
 # prepbufr
@@ -66,9 +88,9 @@ for obtype in $obtypes; do
          s3file=s3:/"${S3PATH}/conv/${obtype}/${YYYY}/${MM}/bufr/gdas.${YYYYMMDD}.t${HH}z.${obtype}.nr"
       fi
       localfile="${TARGET_DIR}/${CDUMP}.t${HH}z.${obtype}"
-      aws s3 ls --no-sign-request $s3file
-      aws s3 cp --no-sign-request $s3file $localfile
-      ls -l $localfile
+      #aws s3 ls --no-sign-request $s3file
+      aws s3 cp --no-sign-request --only-show-errors $s3file $localfile &
+      #ls -l $localfile
    fi
 done
 # ozone
@@ -76,17 +98,17 @@ done
 if [ $obtyp == "osbuv8" ] || [ $obtyp == "all" ]; then
    s3file=s3:/"${S3PATH}/ozone/cfsr/${YYYY}/${MM}/bufr/gdas.${YYYYMMDD}.t${HH}z.osbuv8.tm00.bufr_d"
    localfile="${TARGET_DIR}/${CDUMP}.t${HH}z.osbuv8.tm00.bufr_d"
-   aws s3 ls --no-sign-request $s3file
-   aws s3 cp --no-sign-request $s3file $localfile
-   ls -l $localfile
+   #aws s3 ls --no-sign-request $s3file
+   aws s3 cp --no-sign-request --only-show-errors $s3file $localfile &
+   #ls -l $localfile
 fi
 # NASA bufr
 if [ $obtyp == "sbuv_v87" ] || [ $obtyp == "all" ]; then
    s3file=s3:/"${S3PATH}/ozone/nasa/sbuv_v87/${YYYY}/${MM}/bufr/sbuv_v87.${YYYYMMDD}.${HH}z.bufr"
    localfile="${TARGET_DIR}/${CDUMP}.t${HH}z.sbuv_v87.tm00.bufr_d"
-   aws s3 ls --no-sign-request $s3file
-   aws s3 cp --no-sign-request $s3file $localfile
-   ls -l $localfile
+   #aws s3 ls --no-sign-request $s3file
+   aws s3 cp --no-sign-request --only-show-errors $s3file $localfile &
+   #ls -l $localfile
 fi
 # NASA netcdf
 obtypes=("ozone" "ozone" "ozone" "ozone" "ozone")
@@ -97,8 +119,10 @@ for n in ${!obtypes[@]}; do
   if [ ${obtypes[$n]} == $obtyp ] || [ $obtyp == "all" ]; then
      s3file=s3:/"${S3PATH}/${obtypes[$n]}/${dirs[$n]}/${obnames[$n]}/${YYYY}/${MM}/netcdf/${dumpnames[$n]}.${YYYYMMDD}_${HH}z.nc"
      localfile="${TARGET_DIR}/${dumpnames[$n]}.${YYYYMMDD}_${HH}z.nc"
-     aws s3 ls --no-sign-request $s3file
-     aws s3 cp --no-sign-request $s3file $localfile
-     ls -l $localfile
+     #aws s3 ls --no-sign-request $s3file
+     aws s3 cp --no-sign-request --only-show-errors $s3file $localfile &
+     #ls -l $localfile
   fi
 done
+wait
+ls -l ${TARGET_DIR}

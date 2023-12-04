@@ -29,6 +29,7 @@ export ensda="enkf_run.sh"
 export rungsi='run_gsi_4densvar.sh'
 export rungfs='run_fv3.sh' # ensemble forecast
 
+export use_s3obs="false" # use obs from NOAA reanalysis s3 buckets
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
 export cleanup_fg='true'
 export cleanup_anal='true'
@@ -57,8 +58,14 @@ source $MODULESHOME/init/sh
 if [ "$machine" == 'hera' ]; then
    export basedir=/scratch2/BMC/gsienkf/${USER}
    export datadir=$basedir
+   export datapath="${datadir}/${exptname}"
+   export logdir="${datadir}/logs/${exptname}"
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   export obs_datapath=/scratch1/NCEPDEV/global/glopara/dump
+   if [ $use_s3obs == "true" ]; then
+      export obs_datapath=${datapath}/dumps
+   else
+      export obs_datapath=/scratch1/NCEPDEV/global/glopara/dump
+   fi
    export sstice_datapath=/scratch2/NCEPDEV/stmp1/Jeffrey.S.Whitaker/era5sstice
    module purge
    module load intel/18.0.5.274
@@ -75,8 +82,14 @@ if [ "$machine" == 'hera' ]; then
 elif [ "$machine" == 'orion' ]; then
    export basedir=/work/noaa/gsienkf/${USER}
    export datadir=$basedir
+   export datapath="${datadir}/${exptname}"
+   export logdir="${datadir}/logs/${exptname}"
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   export obs_datapath=/work/noaa/rstprod/dump
+   if [ $use_s3obs == "true" ]; then
+      export obs_datapath=${datapath}/dumps
+   else
+      export obs_datapath=/work/noaa/rstprod/dump
+   fi
    export sstice_datapath=/work2/noaa/gsienkf/whitaker/era5sstice
    ulimit -s unlimited
    source $MODULESHOME/init/sh
@@ -107,15 +120,19 @@ elif [ $machine == "hercules" ]; then
    source $MODULESHOME/init/sh
    export basedir=/work2/noaa/gsienkf/${USER}
    export datadir=$basedir
+   export datapath="${datadir}/${exptname}"
+   export logdir="${datadir}/logs/${exptname}"
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   export obs_datapath=/work/noaa/rstprod/dump
+   if [ $use_s3obs == "true" ]; then
+      export obs_datapath=${datapath}/dumps
+   else
+      export obs_datapath=/work/noaa/rstprod/dump
+   fi
    export sstice_datapath=/work2/noaa/gsienkf/whitaker/era5sstice
    ulimit -s unlimited
    source $MODULESHOME/init/sh
    module use /work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-dev-20230717/envs/unified-env/install/modulefiles/Core
-   #module use /work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-1.5.0/envs/unified-env/install/modulefiles/Core
    module use /work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-dev-20230717/envs/unified-env/install/modulefiles/intel-oneapi-mpi/2021.9.0/intel/2021.9.0
-   #module use /work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-1.5.0/envs/unified-env/install/modulefiles/intel-oneapi-mpi/2021.9.0/intel/2021.9.0
    module load stack-intel/2021.9.0
    module load stack-intel-oneapi-mpi/2021.9.0
    module load intel-oneapi-mkl/2022.2.1
@@ -130,8 +147,14 @@ elif [ $machine == "hercules" ]; then
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f2/dev/${USER}
    export datadir=/lustre/f2/scratch/${USER}
+   export datapath="${datadir}/${exptname}"
+   export logdir="${datadir}/logs/${exptname}"
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/dumps
+   if [ $use_s3obs == "true" ]; then
+      export obs_datapath=${datapath}/dumps
+   else
+      export obs_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/dumps
+   fi
    export sstice_datapath=/lustre/f2/dev/Jeffrey.S.Whitaker/era5sstice
    ulimit -s unlimited
    source /lustre/f2/dev/role.epic/contrib/Lmod_init.sh
@@ -139,8 +162,6 @@ elif [ "$machine" == 'gaea' ]; then
    module load PrgEnv-intel/8.3.3
    module load intel-classic/2023.1.0
    module load cray-mpich/8.1.25
-   #module use /lustre/f2/dev/wpo/role.epic/contrib/spack-stack/c5/modulefiles
-   #module use /lustre/f2/dev/wpo/role.epic/contrib/spack-stack/c5/spack-stack-1.5.0/envs/unified-env/install/modulefiles/Core
    module use /lustre/f2/dev/wpo/role.epic/contrib/spack-stack/c5/spack-stack-dev-20230717/envs/unified-env/install/modulefiles/Core
    module use /lustre/f2/dev/wpo/role.epic/contrib/spack-stack/c5/modulefiles
    module load stack-intel/2023.1.0
@@ -161,8 +182,6 @@ else
    echo "machine must be 'hera', 'orion', 'hercules' or 'gaea' got $machine"
    exit 1
 fi
-export datapath="${datadir}/${exptname}"
-export logdir="${datadir}/logs/${exptname}"
 
 export NOSAT="NO" # if yes, no radiances assimilated
 export NOCONV="NO"
