@@ -1,8 +1,8 @@
 #!/bin/sh
 ##SBATCH -q urgent
-#SBATCH -t 00:30:00
+#SBATCH -t 01:00:00
 #SBATCH -A gsienkf
-#SBATCH -N 5  
+#SBATCH -N 8  
 #SBATCH --ntasks-per-node=80
 #SBATCH -p hercules
 #SBATCH -J C96_3dvar_iau
