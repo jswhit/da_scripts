@@ -93,6 +93,25 @@ if [ $obtyp == "osbuv8" ] || [ $obtyp == "all" ]; then
    aws s3 cp --no-sign-request --only-show-errors $s3file $localfile &
    #ls -l $localfile
 fi
+# NCEP bufr
+obtypes=("ozone" "ozone" "ozone")
+dirs=("ncep" "ncep" "ncep")
+obnames=("omps-lp" "ompsn8" "ompst8")
+dumpnames=("gdas" "gdas" "gdas")
+for n in ${!obtypes[@]}; do
+  if [ ${obtypes[$n]} == $obtyp ] || [ $obtyp == "all" ]; then
+     if [ ${obnames[$n]} == 'omps-lp' ]; then
+        s3file=s3:/"${S3PATH}/${obtypes[$n]}/${dirs[$n]}/${obnames[$n]}/${YYYY}/${MM}/bufr/${dumpnames[$n]}.${YYYYMMDD}.t${HH}z.ompslp.tm00.bufr_d"
+        localfile="${TARGET_DIR}/${CDUMP}.t${HH}z.ompslp.tm00.bufr_d"
+     else
+        s3file=s3:/"${S3PATH}/${obtypes[$n]}/${dirs[$n]}/${obnames[$n]}/${YYYY}/${MM}/bufr/${dumpnames[$n]}.${YYYYMMDD}.t${HH}z.${obnames[$n]}.tm00.bufr_d"
+        localfile="${TARGET_DIR}/${CDUMP}.t${HH}z.${obnames[$n]}.tm00.bufr_d"
+     fi
+     #aws s3 ls --no-sign-request $s3file
+     aws s3 cp --no-sign-request --only-show-errors $s3file $localfile &
+     #ls -l $localfile
+  fi
+done
 # NASA bufr
 if [ $obtyp == "sbuv_v87" ] || [ $obtyp == "all" ]; then
    s3file=s3:/"${S3PATH}/ozone/nasa/sbuv_v87/${YYYY}/${MM}/bufr/sbuv_v87.${YYYYMMDD}.${HH}z.bufr"
