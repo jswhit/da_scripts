@@ -2,7 +2,7 @@
 ##SBATCH -q urgent
 ##SBATCH -q debug
 #SBATCH --cluster=c5
-#SBATCH -t 02:00:00
+#SBATCH -t 00:30:00
 #SBATCH -A nggps_psd
 #SBATCH -N 10     
 #SBATCH -J C96_3dvar_iau
