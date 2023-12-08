@@ -302,8 +302,6 @@ OBS_INPUT::
    hirs3bufr      hirs3       n15         hirs3_n15           0.0     1      1
    hirs3bufr      hirs3       n16         hirs3_n16           0.0     1      1
    hirs3bufr      hirs3       n17         hirs3_n17           0.0     1      1
-   hirs4bufr      hirs4       metop-a     hirs4_metop-a       0.0     1      1
-   hirs4bufr      hirs4       metop-b     hirs4_metop-b       0.0     1      1
    gimgrbufr      goes_img    g11         imgr_g11            0.0     1      0
    gimgrbufr      goes_img    g12         imgr_g12            0.0     1      0
    airsbufr       airs        aqua        airs_aqua           0.0     1      1
@@ -315,13 +313,11 @@ OBS_INPUT::
    amsuabufr      amsua       n16         amsua_n16           0.0     1      1
    amsuabufr      amsua       n17         amsua_n17           0.0     1      1
    amsuabufr      amsua       n18         amsua_n18           0.0     1      1
-   amsuabufr      amsua       metop-a     amsua_metop-a       0.0     1      1
    airsbufr       amsua       aqua        amsua_aqua          0.0     1      1
    amsubbufr      amsub       n15         amsub_n15           0.0     1      1
    amsubbufr      amsub       n16         amsub_n16           0.0     1      1
    amsubbufr      amsub       n17         amsub_n17           0.0     1      1
    mhsbufr        mhs         n18         mhs_n18             0.0     1      1
-   mhsbufr        mhs         metop-a     mhs_metop-a         0.0     1      1
    ssmitbufr      ssmi        f08         ssmi_f08            0.0     1      0
    ssmitbufr      ssmi        f10         ssmi_f10            0.0     1      0
    ssmitbufr      ssmi        f11         ssmi_f11            0.0     1      0
@@ -360,9 +356,6 @@ OBS_INPUT::
    gsnd1bufr      sndrd2      g15         sndrD2_g15          0.0     1      0
    gsnd1bufr      sndrd3      g15         sndrD3_g15          0.0     1      0
    gsnd1bufr      sndrd4      g15         sndrD4_g15          0.0     1      0
-   iasibufr       iasi        metop-a     iasi_metop-a        0.0     1      1
-   gomebufr       gome        metop-a     gome_metop-a        0.0     2      0
-   gomebufr       gome        metop-a     gome_metop-a        0.0     2      0
    hirs4bufr      hirs4       n19         hirs4_n19           0.0     1      1
    amsuabufr      amsua       n19         amsua_n19           0.0     1      1
    mhsbufr        mhs         n19         mhs_n19             0.0     1      1
@@ -371,20 +364,32 @@ OBS_INPUT::
    seviribufr     seviri      m09         seviri_m09          0.0     1      0
    seviribufr     seviri      m10         seviri_m10          0.0     1      0
    seviribufr     seviri      m10         seviri_m11          0.0     1      0
+   hirs4bufr      hirs4       metop-a     hirs4_metop-a       0.0     1      1
    hirs4bufr      hirs4       metop-b     hirs4_metop-b       0.0     1      0
+   amsuabufr      amsua       metop-a     amsua_metop-a       0.0     1      1
    amsuabufr      amsua       metop-b     amsua_metop-b       0.0     1      0
+   amsuabufr      amsua       metop-c     amsua_metop-c       0.0     1      0
+   mhsbufr        mhs         metop-a     mhs_metop-a         0.0     1      1
    mhsbufr        mhs         metop-b     mhs_metop-b         0.0     1      0
+   mhsbufr        mhs         metop-c     mhs_metop-c         0.0     1      0
+   iasibufr       iasi        metop-a     iasi_metop-a        0.0     1      1
    iasibufr       iasi        metop-b     iasi_metop-b        0.0     1      0
+   iasibufr       iasi        metop-c     iasi_metop-c        0.0     1      0
+   gomebufr       gome        metop-a     gome_metop-a        0.0     2      0
    gomebufr       gome        metop-b     gome_metop-b        0.0     2      0
+   gomebufr       gome        metop-c     gome_metop-c        0.0     2      0
    atmsbufr       atms        npp         atms_npp            0.0     1      1
    atmsbufr       atms        n20         atms_n20            0.0     1      1
+   atmsbufr       atms        n20         atms_n21            0.0     1      1
    crisbufr       cris        npp         cris_npp            0.0     1      0
    crisfsbufr     cris-fsr    npp         cris-fsr_npp        0.0     1      0
    crisfsbufr     cris-fsr    n20         cris-fsr_n20        0.0     1      0
+   crisfsbufr     cris-fsr    n21         cris-fsr_n21        0.0     1      0
    avhambufr      avhrr       n15         avhrr3_n15          0.0     1      0
    avhambufr      avhrr       n17         avhrr3_n17          0.0     1      0
    avhambufr      avhrr       metop-a     avhrr3_metop-a      0.0     1      0
    avhambufr      avhrr       metop-b     avhrr3_metop-b      0.0     1      0
+   avhambufr      avhrr       metop-c     avhrr3_metop-c      0.0     1      0
    avhpmbufr      avhrr       n14         avhrr2_n14          0.0     1      0
    avhpmbufr      avhrr       n16         avhrr3_n16          0.0     1      0
    avhpmbufr      avhrr       n18         avhrr3_n18          0.0     1      0
@@ -394,8 +399,10 @@ OBS_INPUT::
    gmibufr        gmi         gpm         gmi_gpm             0.0     3      0
    saphirbufr     saphir      meghat      saphir_meghat       0.0     3      0
    ahibufr        ahi         himawari8   ahi_himawari8       0.0     1      0
+   ahibufr        ahi         himawari9   ahi_himawari9       0.0     1      0
    abibufr        abi         g16         abi_g16             0.0     1      0
    abibufr        abi         g17         abi_g17             0.0     1      0
+   abibufr        abi         g18         abi_g18             0.0     1      0
    rapidscatbufr  uv          null        uv                  0.0     0      0
    amsuabufr      amsua       metop-c     amsua_metop-c       0.0     1      1
    mhsbufr        mhs         metop-c     mhs_metop-c         0.0     1      1
@@ -768,8 +775,8 @@ fi
 
 # make symlinks for diag files to initialize angle dependent bias correction for new channels.
 satdiag=$(cat ${scriptsdir}/build_gsinfo/satinfo/satellites)
-#satdiag="ssu_n14 hirs2_n11 hirs2_n12 hirs2_n14 msu_n11 msu_n12 msu_n14 sndr_g08 sndr_g09 sndr_g11 sndr_g12 sndr_g13 sndr_g08_prep sndr_g11_prep sndr_g12_prep sndr_g13_prep sndrd1_g11 sndrd2_g11 sndrd3_g11 sndrd4_g11 sndrd1_g12 sndrd2_g12 sndrd3_g12 sndrd4_g12 sndrd1_g13 sndrd2_g13 sndrd3_g13 sndrd4_g13 sndrd1_g14 sndrd2_g14 sndrd3_g14 sndrd4_g14 sndrd1_g15 sndrd2_g15 sndrd3_g15 sndrd4_g15 hirs2_n14 hirs3_n15 hirs3_n16 hirs3_n17 amsua_n15 amsua_n16 amsua_n17 amsub_n15 amsub_n16 amsub_n17 hsb_aqua airs_aqua amsua_aqua imgr_g08 imgr_g11 imgr_g12 imgr_g14 imgr_g15 gome_metop-a omi_aura mls_aura ssmi_f13 ssmi_f14 ssmi_f15 hirs4_n18 hirs4_metop-a amsua_n18 amsua_metop-a mhs_n18 mhs_metop-a amsre_low_aqua amsre_mid_aqua amsre_hig_aqua ssmis_las_f16 ssmis_uas_f16 ssmis_img_f16 ssmis_env_f16 ssmis_las_f17 ssmis_uas_f17 ssmis_img_f17 ssmis_env_f17 ssmis_las_f18 ssmis_uas_f18 ssmis_img_f18 ssmis_env_f18 ssmis_las_f19 ssmis_uas_f19 ssmis_img_f19 ssmis_env_f19 ssmis_las_f20 ssmis_uas_f20 ssmis_img_f20 ssmis_env_f20 ssmis_f20 iasi_metop-a hirs4_n19 amsua_n19 mhs_n19 seviri_m08 seviri_m09 seviri_m10 cris_npp atms_npp hirs4_metop-b amsua_metop-b mhs_metop-b iasi_metop-b gome_metop-b avhrr_n18 avhrr_metop-a avhrr_n15 avhrr_n16 avhrr_n17 avhrr_n19 avhrr_metop-a amsr2_gcom-w1 gmi_gpm saphir_meghat ahi_himawari8 abi_g16 abi_g17 amsua_metop-c mhs_metop-c iasi_metop-c avhrr_metop-c cris-fsr_npp cris-fsr_n20 atms_n20"
-alldiag="$satdiag conv_tcp conv_gps conv_t conv_q conv_uv conv_ps sbuv2_n09 sbuv2_n11 sbuv2_n14 sbuv2_n16 sbuv2_n17 sbuv2_n18 sbuv2_n19 gome_metop-a gome_metop-b gome_metop-c omi_aura mls30_aura ompsnp_npp ompstc8_npp ompsnp_n20 ompstc8_n20"
+ozdiag=$(cat ${scriptsdir}/build_gsinfo/oznfo/satellites)
+alldiag="$satdiag $ozdiag conv_tcp conv_gps conv_t conv_q conv_uv conv_ps"
 string='ges'
 for type in $satdiag; do
     if [[ "$cold_start_bias" = "true" ]]; then
