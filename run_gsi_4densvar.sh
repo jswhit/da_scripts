@@ -776,7 +776,7 @@ fi
 
 # make symlinks for diag files to initialize angle dependent bias correction for new channels.
 satdiag=$(cat ${scriptsdir}/build_gsinfo/satinfo/satellites)
-ozdiag=$(cat ${scriptsdir}/build_gsinfo/oznfo/satellites)
+ozdiag=$(cat ${scriptsdir}/build_gsinfo/ozinfo/satellites)
 alldiag="$satdiag $ozdiag conv_tcp conv_gps conv_t conv_q conv_uv conv_ps"
 string='ges'
 for type in $satdiag; do
