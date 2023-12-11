@@ -308,6 +308,7 @@ OBS_INPUT::
    msubufr        msu         n11         msu_n11             0.0     1      1
    msubufr        msu         n12         msu_n12             0.0     1      1
    msubufr        msu         n14         msu_n14             0.0     1      1
+   ssubufr        ssu         n11         ssu_n11             0.0     1      1
    ssubufr        ssu         n14         ssu_n14             0.0     1      1
    amsuabufr      amsua       n15         amsua_n15           0.0     1      1
    amsuabufr      amsua       n16         amsua_n16           0.0     1      1
