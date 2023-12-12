@@ -289,6 +289,7 @@ OBS_INPUT::
    gpsrobufr      gps_bnd     null        gps                 0.0     0      0
    ssmirrbufr     pcp_ssmi    dmsp        pcp_ssmi            0.0    -1      0
    tmirrbufr      pcp_tmi     trmm        pcp_tmi             0.0    -1      0
+   sbuvbufr       sbuv2       nim07       sbuv8_nim07         0.0     0      0
    sbuvbufr       sbuv2       n09         sbuv8_n09           0.0     0      0
    sbuvbufr       sbuv2       n11         sbuv8_n11           0.0     0      0
    sbuvbufr       sbuv2       n14         sbuv8_n14           0.0     0      0
@@ -296,6 +297,12 @@ OBS_INPUT::
    sbuvbufr       sbuv2       n17         sbuv8_n17           0.0     0      0
    sbuvbufr       sbuv2       n18         sbuv8_n18           0.0     0      0
    sbuvbufr       sbuv2       n19         sbuv8_n19           0.0     0      0
+   hirs2bufr      hirs2       tirosn      hirs2_tirosn        0.0     1      1
+   hirs2bufr      hirs2       n06         hirs2_n06           0.0     1      1
+   hirs2bufr      hirs2       n07         hirs2_n07           0.0     1      1
+   hirs2bufr      hirs2       n07         hirs2_n08           0.0     1      1
+   hirs2bufr      hirs2       n07         hirs2_n09           0.0     1      1
+   hirs2bufr      hirs2       n10         hirs2_n10           0.0     1      1
    hirs2bufr      hirs2       n11         hirs2_n11           0.0     1      1
    hirs2bufr      hirs2       n12         hirs2_n12           0.0     1      1
    hirs2bufr      hirs2       n14         hirs2_n14           0.0     1      1
@@ -305,9 +312,20 @@ OBS_INPUT::
    gimgrbufr      goes_img    g11         imgr_g11            0.0     1      0
    gimgrbufr      goes_img    g12         imgr_g12            0.0     1      0
    airsbufr       airs        aqua        airs_aqua           0.0     1      1
+   msubufr        msu         tirosn      msu_tirosn          0.0     1      1
+   msubufr        msu         n06         msu_n06             0.0     1      1
+   msubufr        msu         n07         msu_n07             0.0     1      1
+   msubufr        msu         n08         msu_n08             0.0     1      1
+   msubufr        msu         n09         msu_n09             0.0     1      1
+   msubufr        msu         n10         msu_n10             0.0     1      1
    msubufr        msu         n11         msu_n11             0.0     1      1
    msubufr        msu         n12         msu_n12             0.0     1      1
    msubufr        msu         n14         msu_n14             0.0     1      1
+   ssubufr        ssu         tirosn      ssu_tirosn          0.0     1      1
+   ssubufr        ssu         n06         ssu_n06             0.0     1      1
+   ssubufr        ssu         n07         ssu_n07             0.0     1      1
+   ssubufr        ssu         n08         ssu_n08             0.0     1      1
+   ssubufr        ssu         n09         ssu_n09             0.0     1      1
    ssubufr        ssu         n11         ssu_n11             0.0     1      1
    ssubufr        ssu         n14         ssu_n14             0.0     1      1
    amsuabufr      amsua       n15         amsua_n15           0.0     1      1
