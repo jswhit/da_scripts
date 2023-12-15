@@ -4,6 +4,6 @@
 #SBATCH -t 00:10:00
 #SBATCH -A nggps_psd
 #SBATCH -N 1     
-#SBATCH -J getawsobs
-#SBATCH -e getawsobs.out
-#SBATCH -o getawsobs.out
+#SBATCH -J getawsdata
+#SBATCH -e getawsdata.out
+#SBATCH -o getawsdata.out

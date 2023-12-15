@@ -147,9 +147,13 @@ wait # wait for backgrounded processes to finish
 cd $homedir
 if [ $save_hpss == 'true' ]; then
    cat ${machine}_preamble_hpss hpss.sh > job_hpss.sh
+elif [ $save_s3 == 'true' ]; then
+   cat ${machine}_preamble_frontend s3archive.sh > job_hpss.sh
 fi
-#sbatch --export=ALL job_hpss.sh
-sbatch --export=machine=${machine},analdate=${analdate},datapath=${datapath},hsidir=${hsidir},save_hpss=${save_hpss} job_hpss.sh
+
+if [ $save_hpss == 'true' ] || [ $save_s3 == 'true' ]; then
+   sbatch --export=machine=${machine},analdate=${analdate},analdatem1=${analdatem1},datapath=${datapath},hsidir=${hsidir},save_hpss=${save_hpss},obs_datapath=${obs_datapath} job_hpss.sh
+fi
 
 fi # skip to here if cold_start = true
 
