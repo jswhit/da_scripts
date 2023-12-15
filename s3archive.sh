@@ -29,8 +29,8 @@ fi
 cd $datapath
 MM=`echo $analdate | cut -c5-6`
 YYYY=`echo $analdate | cut -c1-4`
-s3path=s3://noaa-reanalyses-pds/analyses/scount_runs/GSI3DVar/1979stream/${YYYY}/${MM}/${analdate}/
-aws s3 cp --recursive ${analdate} $s3path --profile aws-nnja
+s3path=s3://noaa-reanalyses-pds/analyses/scout_runs/GSI3DVar/1979stream/${YYYY}/${MM}/${analdate}/
+aws s3 cp --recursive --quiet ${analdate} $s3path --profile aws-nnja
 
 if [ $? -ne 0 ]; then
   echo "s3 archive failed "$filename
