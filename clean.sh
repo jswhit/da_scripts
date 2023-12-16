@@ -1,7 +1,7 @@
 echo "clean up files `date`"
 cd $datapath2
 charnanal='control'
-/bin/rm -f ${charnanal}/*txt ${charnanal}/*grb ${charnanal}/*dat ${charnanal}/co2*
+/bin/rm -f ${charnanal}/*nc ${charnanal}/*txt* ${charnanal}/*f77 ${charnanal}/*BIN ${charnanal}/*grb ${charnanal}/*dat ${charnanal}/MEMO ${charnanal}/*co2*
 /bin/rm -f fort*
 /bin/rm -f *log
 /bin/rm -rf *tmp*

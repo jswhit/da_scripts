@@ -29,7 +29,7 @@ export ensda="enkf_run.sh"
 export rungsi='run_gsi_4densvar.sh'
 export rungfs='run_fv3.sh' # ensemble forecast
 
-export use_s3obs="false" # use obs from NOAA reanalysis s3 buckets
+export use_s3obs="true" # use obs from NOAA reanalysis s3 buckets
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
 export cleanup_fg='true'
 export cleanup_anal='true'
@@ -41,9 +41,11 @@ export resubmit='true'
 # full ensemble should be saved to HPSS (returns 0 if 
 # HPSS save should be done)
 if [ $machine == "orion" ] || [ $machine == "hercules" ]; then
+   export save_s3="false"
    export save_hpss="false"
 else
-   export save_hpss="true"
+   export save_hpss="false"
+   export save_s3="true"
 fi
 # override values from above for debugging.
 #export cleanup_controlanl='false'
