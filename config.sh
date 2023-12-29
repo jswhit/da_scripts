@@ -339,6 +339,8 @@ elif [ "$machine" == 'gaea' ]; then
    export FIXDIR=/lustre/f2/pdata/ncep_shared/emc.nemspara/RT/NEMSfv3gfs/input-data-20220414
    export FIXFV3=${fv3gfspath}/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix_am
+   # optional - specify location of co2 files for model
+   export CO2DIR=/lustre/f2/dev/Jeffrey.S.Whitaker/fix_NEW/fix_am/co2dat_4a
    export gsipath=/lustre/f2/dev/Jeffrey.S.Whitaker/GSI
    export fixgsi=${gsipath}/fix
    export fixcrtm=$CRTM_FIX

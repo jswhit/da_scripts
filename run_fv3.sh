@@ -140,7 +140,10 @@ ln -fs $FIXDIR/MOM6_FIX/${ORES3}/ocean_mosaic.nc ocean_mosaic.nc
 # symlinks one level up from INPUT
 cd ..
 /bin/cp -f $scriptsdir/noahmptable.tbl .
-ln -fs $FIXDIR/FV3_fix/fix_co2_proj/* .
+#ln -fs $FIXDIR/FV3_fix/fix_co2_proj/* .
+#ln -fs /lustre/f2/dev/Jeffrey.S.Whitaker/fix_NEW/fix_am/co2dat_4a/* .
+export CO2DIR=${CO2DIR:-$FIXDIR/FV3_fix/fix_co2_proj}
+ln -fs $CO2DIR/* .
 #ln -fs $FIXDIR/FV3_fix/*grb .
 ln -fs $FIXDIR/FV3_fix/*txt .
 ln -fs $FIXDIR/FV3_fix/*f77 .
