@@ -1,7 +1,6 @@
 #!/bin/sh
 # do hybrid analysis.
 
-export CO2DIR=$fixgsi
 export SIGANL03=${datapath2}/sanl_${analdate}_fhr03_${charnanal}
 export SIGANL04=${datapath2}/sanl_${analdate}_fhr04_${charnanal}
 export SIGANL05=${datapath2}/sanl_${analdate}_fhr05_${charnanal}
@@ -53,37 +52,35 @@ fi
 export GSATANG=$fixgsi/global_satangbias.txt # not used, but needs to exist
 
 export tmpdir=$datapath2/hybridtmp$$
+/bin/rm -rf $tmpdir
+mkdir -p $tmpdir
+/bin/cp -f $datapath2/hybens_info $tmpdir
+export lread_obs_save=".false."
+export lread_obs_skip=".false."
 if [ "$cold_start_bias" == "true" ]; then
-    export lread_obs_save=".true."
-    export lread_obs_skip=".false."
     echo "${analdate} compute gsi observer to cold start bias correction"
     export HXONLY='YES'
-    /bin/rm -rf $tmpdir
-    mkdir -p $tmpdir
     sh ${scriptsdir}/${rungsi}
-    /bin/rm -rf $tmpdir
+    ls -l $tmpdir/satbias_out.int
     if [  ! -s ${datapath2}/diag_conv_uv_ges.${analdate}_${charnanal2}.nc4 ]; then
        echo "gsi observer step failed"
        echo "no" > ${current_logdir}/run_gsi_anal.log 2>&1
        exit 1
     fi
 fi
-export lread_obs_save=".false."
-export lread_obs_skip=".false."
 export HXONLY='NO'
 if [ -s $SIGANL06 ] && [ -s ${datapath2}/diag_conv_uv_ges.${analdate}_${charnanal2}.nc4 ]; then
   echo "gsi already completed"
   echo "yes" > ${current_logdir}/run_gsi_anal.log
   exit 0
 fi
+if [ "$cold_start_bias" == "true" ]; then
+  export GBIAS=./satbias_out.int
+fi
 echo "${analdate} compute gsi analysis increment `date`"
-/bin/rm -rf $tmpdir
-mkdir -p $tmpdir
-/bin/cp -f $datapath2/hybens_info $tmpdir
 sh ${scriptsdir}/${rungsi}
 status=$?
-if [ "$cold_start_bias" == "true" ]; then
-  export cold_start_bias=="false"
+if [ $newsat == "true" ] || [ "$cold_start_bias" == "true" ]; then
   export GBIAS=${datapath2}/${PREINP}abias
   export GBIAS_PC=${datapath2}/${PREINP}abias_pc
   export GBIASAIR=${datapath2}/${PREINP}abias_air

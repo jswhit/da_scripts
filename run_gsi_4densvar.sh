@@ -798,14 +798,10 @@ ozdiag=$(cat ${scriptsdir}/build_gsinfo/ozinfo/satellites)
 alldiag="$satdiag $ozdiag conv_tcp conv_gps conv_t conv_q conv_uv conv_ps"
 string='ges'
 for type in $satdiag; do
-    if [[ "$cold_start_bias" = "true" ]]; then
-       if [ -s $datges/diag_${type}_${string}.${adate}_${charnanal2}.nc4 ]; then
-          ln -fs $datges/diag_${type}_${string}.${adate}_${charnanal2}.nc4 diag_${type}.nc4
-       fi
-    else
-       if [ -s $datgesm1/diag_${type}_${string}.${adatem1}_${charnanal2}.nc4 ]; then
-          ln -fs $datgesm1/diag_${type}_${string}.${adatem1}_${charnanal2}.nc4 diag_${type}.nc4
-       fi
+    if [ -s $datges/diag_${type}_${string}.${adate}_${charnanal2}.nc4 ]; then
+       ln -fs $datges/diag_${type}_${string}.${adate}_${charnanal2}.nc4 diag_${type}.nc4
+    elif [ -s $datgesm1/diag_${type}_${string}.${adatem1}_${charnanal2}.nc4 ]; then
+       ln -fs $datgesm1/diag_${type}_${string}.${adatem1}_${charnanal2}.nc4 diag_${type}.nc4
     fi
 done
 

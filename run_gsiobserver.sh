@@ -5,16 +5,12 @@ if [ -z $charnanal2 ]; then
   export charnanal2=$charnanal
 fi
 
-if [ $charnanal == "control" ]; then
-   # run observer on full res control forecast grid
-   export LONA=$LONB_CTL
-   export LATA=$LATB_CTL
-   export JCAP=$JCAP_CTL
-fi      
+# run observer on full res control forecast grid
+export LONA=$LONB_CTL
+export LATA=$LATB_CTL
+export JCAP=$JCAP_CTL
 ##export CLEAN="NO"
 export NLAT=$((${LATA}+2))
-
-export CO2DIR=$fixgsi
 
 # charanal is an env var set in parent script
 export SIGANL03=${datapath2}/sanl_${analdate}_fhr03_${charnanal}
@@ -29,29 +25,11 @@ export BIASO_PC=${datapath2}/${PREINP}abias_pc
 export SATANGO=${datapath2}/${PREINP}satang
 export DTFANL=${datapath2}/${PREINP}dtfanl.nc
 echo "NOCONV:" $NOCONV
-if [ $skipcat == 'false' ]; then
-   if [ $NOCONV == 'YES' ]; then
-     diagfile=${datapath2}/diag_amsua_n15_ges.${analdate}_${charnanal2}.nc4
-   else
-     diagfile=${datapath2}/diag_conv_uv_ges.${analdate}_${charnanal2}.nc4
-   fi
-else
-   if [ $NOCONV == 'YES' ]; then
-     diagfile=${datapath2}/gsitmp_${charnanal2}/pe0000.amsua_n15_01.nc4
-   else
-     diagfile=${datapath2}/gsitmp_${charnanal2}/pe0000.conv_uv_01.nc4
-   fi
-fi
-echo "skipcat $skipcat diagfile $diagfile"
+diagfile=${datapath2}/diag_conv_uv_ges.${analdate}_${charnanal2}.nc4
 
 if [ $cleanup_observer == 'true' ]; then
-  if [ $skipcat == 'false' ];  then
-     echo "removing diag files"
-     /bin/rm -f ${datapath2}/diag*${charnanal2}*nc4
-  else
-     echo "removing ${datapath2}/gsitmp_${charnanal2}"
-     /bin/rm -rf ${datapath2}/gsitmp_${charnanal2}
-  fi
+  echo "removing diag files"
+  /bin/rm -rf ${datapath2}/diag*nc4
 fi
 ls -l $diagfile
 
@@ -129,7 +107,5 @@ if [ $alldone == 'no' ]; then
     echo "no" > ${current_logdir}/run_gsi_observer.log 2>&1
 else
     echo "yes" > ${current_logdir}/run_gsi_observer.log 2>&1
-    if [ $skipcat == 'false' ]; then
-        /bin/rm -rf $tmpdir
-    fi
+    /bin/rm -rf $tmpdir
 fi
