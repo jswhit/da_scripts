@@ -15,7 +15,10 @@ export DTFANL=${datapath2}/${PREINP}dtfanl.nc
 
 if [ $cleanup_controlanl == 'true' ]; then
    /bin/rm -f ${SIGANL06}
-   /bin/rm -f ${datapath2}/diag*${charnanal2}*nc4
+   /bin/rm -f ${datapath2}/*abias*
+   if [ $newsat != "true" ]; then
+      /bin/rm -f ${datapath2}/diag*${charnanal2}*nc4
+   fi
 fi
 
 niter=1

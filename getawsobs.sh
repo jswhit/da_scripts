@@ -41,16 +41,16 @@ S3PATH=/noaa-reanalyses-pds/observations/reanalysis
 TARGET_DIR=${OUTPATH}/${CDUMP}.${YYYYMMDD}/${HH}/atmos
 mkdir -p $TARGET_DIR
 obtypes=("airs" "amsua" "amsub" "amv" "atms" "cris" "cris" "geo" "geo" "gps" "hirs" "hirs" "hirs" "iasi" "mhs" "msu" "saphir" "seviri" "ssmi" "ssmis" "ssu")
-if [ $YYYYMMDDHH -lt "2009050106" ]; then
-# before 2009050106 for amsua use nasa/r21c_repro/gmao_r21c_repro
-   dirs=("nasa" "nasa/r21c_repro" "1bamub" "merged" "atms" "cris" "crisf4" "goesnd" "goesfv" "gpsro" "1bhrs2" "1bhrs3" "1bhrs4" "mtiasi" "1bmhs" "1bmsu" "saphir" "sevcsr" "eumetsat" "eumetsat" "1bssu")
-   obnames=("aqua" "1bamu" "1bamub" "satwnd" "atms" "cris" "crisf4" "goesnd" "goesfv" "gpsro" "1bhrs2" "1bhrs3" "1bhrs4" "mtiasi" "1bmhs" "1bmsu" "saphir" "sevcsr" "ssmit" "ssmisu" "1bssu")
-   dumpnames=("airs_disc_final" "gmao_r21c_repro" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas")
-else
+#if [ $YYYYMMDDHH -lt "2009050106" ]; then
+## before 2009050106 for amsua use nasa/r21c_repro/gmao_r21c_repro
+#   dirs=("nasa" "nasa/r21c_repro" "1bamub" "merged" "atms" "cris" "crisf4" "goesnd" "goesfv" "gpsro" "1bhrs2" "1bhrs3" "1bhrs4" "mtiasi" "1bmhs" "1bmsu" "saphir" "sevcsr" "eumetsat" "eumetsat" "1bssu")
+#   obnames=("aqua" "1bamu" "1bamub" "satwnd" "atms" "cris" "crisf4" "goesnd" "goesfv" "gpsro" "1bhrs2" "1bhrs3" "1bhrs4" "mtiasi" "1bmhs" "1bmsu" "saphir" "sevcsr" "ssmit" "ssmisu" "1bssu")
+#   dumpnames=("airs_disc_final" "gmao_r21c_repro" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas")
+#else
    dirs=("nasa" "1bamua" "1bamub" "merged" "atms" "cris" "crisf4" "goesnd" "goesfv" "gpsro" "1bhrs2" "1bhrs3" "1bhrs4" "mtiasi" "1bmhs" "1bmsu" "saphir" "sevcsr" "eumetsat" "eumetsat" "1bssu")
    obnames=("aqua" "1bamua" "1bamub" "satwnd" "atms" "cris" "crisf4" "goesnd" "goesfv" "gpsro" "1bhrs2" "1bhrs3" "1bhrs4" "mtiasi" "1bmhs" "1bmsu" "saphir" "sevcsr" "ssmit" "ssmisu" "1bssu")
    dumpnames=("airs_disc_final" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas")
-fi
+#fi
 for n in ${!obtypes[@]}; do
   if [ ${obtypes[$n]} == $obtyp ] || [ $obtyp == "all" ]; then
      if [ ${obtypes[$n]} == "airs" ] && [ ${dirs[$n]} == "nasa" ]; then
