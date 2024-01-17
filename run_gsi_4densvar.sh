@@ -546,6 +546,10 @@ fi
 GBIAS=${GBIAS:-$datgesm1/${prefix_tbc}.abias}
 GBIAS_PC=${GBIAS_PC:-$datgesm1/${prefix_tbc}.abias_pc}
 GBIASAIR=${GBIASAIR:-$datgesm1/${prefix_tbc}.abias_air}
+$nmv $GBIASAIR           ${GBIASAIR}.save
+# sometimes aircraft tail number has non-ascii chars in abias_air
+# which causes GSI to crash.  Remove lines with non-ascii chars.
+python ${scriptsdir}/remove_nonascii.py ${GBIASAIR}.save $GBIASAIR
 GSATANG=${GSATANG:-$datgesm1/${prefix_tbc}.satang}
 
 ##############################################################
