@@ -157,7 +157,7 @@ elif [ "$machine" == 'gaea' ]; then
    else
       export obs_datapath=${datadir}/dumps
    fi
-   export sstice_datapath=/gpfs/f5/nggps_psd/proj-shared/era5sstice
+   export sstice_datapath=/gpfs/f5/nggps_psd/proj-shared/${USER}/era5sstice
    ulimit -s unlimited
    #source /lustre/f2/dev/role.epic/contrib/Lmod_init.sh
    #module unload cray-libsci
