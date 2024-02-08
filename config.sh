@@ -337,7 +337,7 @@ elif [ "$machine" == 'orion' ] || [ $machine == "hercules" ]; then
    export gsiexec=${execdir}/gsi.x
 elif [ "$machine" == 'gaea' ]; then
    export fv3gfspath=/gpfs/f5/nggps_psd/proj-shared/Jeffrey.S.Whitaker/fix_NEW
-   export FIXDIR=/gpfs/f5/epic/world-shared/lustre/epic/UFS-WM_RT/NEMSfv3gfs/input-data-20221101
+   export FIXDIR=/gpfs/f5/epic/world-shared/UFS-WM_RT/NEMSfv3gfs/input-data-20221101
    export FIXFV3=${fv3gfspath}/fix_fv3_gmted2010
    export FIXGLOBAL=${fv3gfspath}/fix_am
    # optional - specify location of co2 files for model
