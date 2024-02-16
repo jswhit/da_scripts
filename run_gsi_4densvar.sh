@@ -136,7 +136,7 @@ if [ $use_correlated_oberrs == ".true." ];  then
 else
   lupdqc=.false.
 fi
-SETUP="verbose=.true.,reduce_diag=.true.,lwrite_peakwt=.true.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=.true.,ens_nstarthr=3,iwrtinc=-1,nhr_assimilation=6,nhr_obsbin=$FHOUT,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=$lobsdiag_forenkf,lwrite_predterms=.true.,thin4d=.true.,lupdqc=$lupdqc,nhr_anal=$iaufhrs"
+SETUP="verbose=.false.,reduce_diag=.true.,lwrite_peakwt=.true.,lread_obs_save=$lread_obs_save,lread_obs_skip=$lread_obs_skip,l4densvar=.true.,ens_nstarthr=3,iwrtinc=-1,nhr_assimilation=6,nhr_obsbin=$FHOUT,use_prepb_satwnd=$use_prepb_satwnd,lwrite4danl=$lwrite4danl,passive_bc=.true.,newpc4pred=.true.,adp_anglebc=.true.,angord=4,use_edges=.false.,diag_precon=.true.,step_start=1.e-3,emiss_bc=.true.,lobsdiag_forenkf=$lobsdiag_forenkf,lwrite_predterms=.true.,thin4d=.true.,lupdqc=$lupdqc,nhr_anal=$iaufhrs"
 
 if [[ "$HXONLY" = "YES" ]]; then
    #SETUP="$SETUP,lobserver=.true.,l4dvar=.true." # can't use reduce_diag=T
@@ -426,18 +426,23 @@ OBS_INPUT::
    amsuabufr      amsua       metop-c     amsua_metop-c       0.0     1      1
    mhsbufr        mhs         metop-c     mhs_metop-c         0.0     1      1
    iasibufr       iasi        metop-c     iasi_metop-c        0.0     1      1
-   mlsbufr        mls30       aura        mls30_aura          0.0     0      0
 !--ozone bufr dumps
-   ompsnpbufr     ompsnp      npp         ompsnp_npp          0.0     0      0
-   ompsnpbufr     ompsnp      n20         ompsnp_n20          0.0     0      0
+!  mlsbufr        mls30       aura        mls30_aura          0.0     0      0
+!  ompsnpbufr     ompsnp      npp         ompsnp_npp          0.0     0      0
+!  ompsnpbufr     ompsnp      n20         ompsnp_n20          0.0     0      0
+!  ompsnpbufr     ompsnp      n21         ompsnp_n21          0.0     0      0
+!  ompslpbufr     ompslp      npp         ompslp_npp          0.0     0      0
+!  ompslpbufr     ompslp      n21         ompslp_n21          0.0     0      0
    ompstcbufr     ompstc8     npp         ompstc8_npp         0.0     2      0
    ompstcbufr     ompstc8     n20         ompstc8_n20         0.0     2      0
-   omibufr        omi         aura        omi_aura            0.0     2      0
+   ompstcbufr     ompstc8     n21         ompstc8_n21         0.0     2      0
+!  omibufr        omi         aura        omi_aura            0.0     2      0
 !--nasa netcdf ozone (can't have both bufr and netcdf versions at the same time)
-!  ompslpnc       ompslpnc    npp         ompslpnc_npp        0.0     0      0
-!  ompsnmeffnc    ompsnmeff   npp         ompsnmeff_npp       0.0     0      0
-!  mls55nc        mls55       aura        mls55_aura          0.0     0      0
-!  omieffnc       omieff      aura        omieff_aura         0.0     2      0
+   ompslpnc       ompslpnc    npp         ompslpnc_npp        0.0     0      0
+   ompsnpnc       ompsnpnc    npp         ompsnpnc_npp        0.0     0      0
+   ompsnmeffnc    ompsnmeff   npp         ompsnmeff_npp       0.0     2      0
+   mls55nc        mls55       aura        mls55_aura          0.0     0      0
+   omieffnc       omieff      aura        omieff_aura         0.0     2      0
 ::
  &SUPEROB_RADAR
    $SUPERRAD
@@ -682,8 +687,14 @@ fi
 if [[ -s $datobs/OMPSNM.${yyyymmdda}_${hha}z.nc ]]; then
 $nln $datobs/OMPSNM.${yyyymmdda}_${hha}z.nc ompsnmeffnc
 fi
+if [[ -s $datobs/OMPSNP.${yyyymmdda}_${hha}z.nc ]]; then
+$nln $datobs/OMPSNP.${yyyymmdda}_${hha}z.nc ompsnpnc
+fi
 if [[ -s $datobs/${prefix_obs}.ompsn8.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.ompsn8.${suffix}     ./ompsnpbufr
+fi
+if [[ -s $datobs/${prefix_obs}.ompslp.${suffix} ]]; then
+$nln $datobs/${prefix_obs}.ompslp.${suffix}     ./ompslpbufr
 fi
 if [[ -s $datobs/${prefix_obs}.ompst8.${suffix} ]]; then
 $nln $datobs/${prefix_obs}.ompst8.${suffix}     ./ompstcbufr
