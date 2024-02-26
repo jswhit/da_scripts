@@ -45,7 +45,7 @@ if [ $machine == "orion" ] || [ $machine == "hercules" ]; then
    export save_hpss="false"
 else
    export save_hpss="false"
-   export save_s3="true"
+   export save_s3="false"
 fi
 # override values from above for debugging.
 #export cleanup_controlanl='false'
@@ -133,17 +133,20 @@ elif [ $machine == "hercules" ]; then
    export sstice_datapath=/work2/noaa/gsienkf/whitaker/era5sstice
    ulimit -s unlimited
    source $MODULESHOME/init/sh
-   module use /work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-dev-20230717/envs/unified-env/install/modulefiles/Core
-   module use /work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-dev-20230717/envs/unified-env/install/modulefiles/intel-oneapi-mpi/2021.9.0/intel/2021.9.0
+   module use /work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-1.6.0/envs/gsi-addon-env/install/modulefiles/Core 
    module load stack-intel/2021.9.0
+   module load crtm-fix/2.4.0.1_emc
    module load stack-intel-oneapi-mpi/2021.9.0
    module load intel-oneapi-mkl/2022.2.1
    module load grib-util
    module load parallelio
-   module load bufr/11.7.0
+   module load bufr/11.7.0 ## worked jan 5
    module load crtm/2.4.0
    module load gsi-ncdiag
-   export PATH="/work/noaa/gsienkf/whitaker/miniconda3/bin:$PATH"
+   module load python
+   module load py-netcdf4
+   module list
+   #export PATH="/work/noaa/gsienkf/whitaker/miniconda3/bin:$PATH"
    export HDF5_DISABLE_VERSION_CHECK=1
    export WGRIB=`which wgrib`
 elif [ "$machine" == 'gaea' ]; then

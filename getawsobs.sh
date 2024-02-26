@@ -12,10 +12,9 @@ if [ $? -ne 0 ]; then
       module load awscli-v2
    elif [ $SLURM_CLUSTER_NAME == 'hercules' ]; then
       module purge
-      module use /work/noaa/epic/role-epic/spack-stack/hercules/modulefiles
-      module use /work/noaa/epic/role-epic/spack-stack/hercules//spack-stack-1.5.0/envs/unified-env/install/modulefiles/Core
+      module use /work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-1.6.0/envs/unified-env/install/modulefiles/Core
       module load stack-intel/2021.9.0
-      module load awscli
+      module load awscli-v2
    else
       echo "cluster must be 'hercules' or 'es' (gaea)"
       exit 1
