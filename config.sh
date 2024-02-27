@@ -45,7 +45,7 @@ if [ $machine == "orion" ] || [ $machine == "hercules" ]; then
    export save_hpss="false"
 else
    export save_hpss="false"
-   export save_s3="false"
+   export save_s3="true"
 fi
 # override values from above for debugging.
 #export cleanup_controlanl='false'
