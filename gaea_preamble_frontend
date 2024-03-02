@@ -1,7 +1,6 @@
 #!/bin/sh
 #SBATCH --cluster=es
-#SBATCH --partition=rdtn_c5
-##SBATCH --partition=eslogin_c5
+#SBATCH --partition=eslogin_c5
 #SBATCH -t 00:10:00
 #SBATCH -A nggps_psd
 #SBATCH -N 1     
