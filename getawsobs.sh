@@ -2,6 +2,7 @@ obtyp_default="all"
 YYYYMMDDHH=${analdate:-$1}
 OUTPATH=${obs_datapath:-$2}
 obtyp=${obtyp_default:-$3} # specify single ob type, default is all obs.
+nbackmax=${nbackmax:-10}
 
 which aws
 if [ $? -ne 0 ]; then
@@ -12,9 +13,10 @@ if [ $? -ne 0 ]; then
       module load awscli-v2
    elif [ $SLURM_CLUSTER_NAME == 'hercules' ]; then
       module purge
-      module use /work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-1.6.0/envs/unified-env/install/modulefiles/Core
+      module use /work/noaa/epic/role-epic/spack-stack/hercules/modulefiles
+      module use /work/noaa/epic/role-epic/spack-stack/hercules//spack-stack-1.5.0/envs/unified-env/install/modulefiles/Core
       module load stack-intel/2021.9.0
-      module load awscli-v2
+      module load awscli
    else
       echo "cluster must be 'hercules' or 'es' (gaea)"
       exit 1
@@ -38,16 +40,17 @@ S3PATH=/noaa-reanalyses-pds/observations/reanalysis
 TARGET_DIR=${OUTPATH}/${CDUMP}.${YYYYMMDD}/${HH}/atmos
 mkdir -p $TARGET_DIR
 obtypes=("airs" "amsua" "amsub" "amv" "atms" "cris" "cris" "geo" "geo" "gps" "hirs" "hirs" "hirs" "iasi" "mhs" "msu" "saphir" "seviri" "ssmi" "ssmis" "ssu")
-#if [ $YYYYMMDDHH -lt "2009050106" ]; then
-## before 2009050106 for amsua use nasa/r21c_repro/gmao_r21c_repro
-#   dirs=("nasa" "nasa/r21c_repro" "1bamub" "merged" "atms" "cris" "crisf4" "goesnd" "goesfv" "gpsro" "1bhrs2" "1bhrs3" "1bhrs4" "mtiasi" "1bmhs" "1bmsu" "saphir" "sevcsr" "eumetsat" "eumetsat" "1bssu")
-#   obnames=("aqua" "1bamu" "1bamub" "satwnd" "atms" "cris" "crisf4" "goesnd" "goesfv" "gpsro" "1bhrs2" "1bhrs3" "1bhrs4" "mtiasi" "1bmhs" "1bmsu" "saphir" "sevcsr" "ssmit" "ssmisu" "1bssu")
-#   dumpnames=("airs_disc_final" "gmao_r21c_repro" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas")
-#else
+if [ $YYYYMMDDHH -lt "0009050106" ]; then
+# before 2009050106 for amsua use nasa/r21c_repro/gmao_r21c_repro
+   dirs=("nasa" "nasa/r21c_repro" "1bamub" "merged" "atms" "cris" "crisf4" "goesnd" "goesfv" "gpsro" "1bhrs2" "1bhrs3" "1bhrs4" "mtiasi" "1bmhs" "1bmsu" "saphir" "sevcsr" "eumetsat" "eumetsat" "1bssu")
+   obnames=("aqua" "1bamu" "1bamub" "satwnd" "atms" "cris" "crisf4" "goesnd" "goesfv" "gpsro" "1bhrs2" "1bhrs3" "1bhrs4" "mtiasi" "1bmhs" "1bmsu" "saphir" "sevcsr" "ssmit" "ssmisu" "1bssu")
+   dumpnames=("airs_disc_final" "gmao_r21c_repro" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas")
+else
    dirs=("nasa" "1bamua" "1bamub" "merged" "atms" "cris" "crisf4" "goesnd" "goesfv" "gpsro" "1bhrs2" "1bhrs3" "1bhrs4" "mtiasi" "1bmhs" "1bmsu" "saphir" "sevcsr" "eumetsat" "eumetsat" "1bssu")
    obnames=("aqua" "1bamua" "1bamub" "satwnd" "atms" "cris" "crisf4" "goesnd" "goesfv" "gpsro" "1bhrs2" "1bhrs3" "1bhrs4" "mtiasi" "1bmhs" "1bmsu" "saphir" "sevcsr" "ssmit" "ssmisu" "1bssu")
    dumpnames=("airs_disc_final" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas" "gdas")
-#fi
+fi
+nback=0
 for n in ${!obtypes[@]}; do
   if [ ${obtypes[$n]} == $obtyp ] || [ $obtyp == "all" ]; then
      if [ ${obtypes[$n]} == "airs" ] && [ ${dirs[$n]} == "nasa" ]; then
@@ -62,10 +65,16 @@ for n in ${!obtypes[@]}; do
         localfile="${TARGET_DIR}/${CDUMP}.t${HH}z.${obnames[$n]}.tm00.bufr_d"
      fi
      #aws s3 ls --no-sign-request $s3file
+     nback=$[$nback+1]
      aws s3 cp --no-sign-request --only-show-errors $s3file $localfile &
+     if [ $nback -eq $nbackmax ]; then
+        wait
+	nback=0
+     fi
      #ls -l $localfile
   fi
 done
+wait
 # prepbufr
 obtypes="prepbufr prepbufr.acft_profiles"
 for obtype in $obtypes; do
